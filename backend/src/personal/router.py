@@ -23,3 +23,8 @@ def read_personas(db: Session = Depends(get_db)):
 def read_persona(persona_id: int, db: Session = Depends(get_db)):
     return services.leer_persona(db, persona_id)
 
+@router.put("/{persona_id}", response_model=schemas.Persona)
+def update_persona(persona_id: int, persona: schemas.PersonaUpdate, db: Session = Depends(get_db)):
+    return services.modificar_persona(db, persona_id, persona)
+
+
