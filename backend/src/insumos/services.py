@@ -27,3 +27,11 @@ def leer_insumo(db: Session, insumo_id: int) -> schemas.Insumo:
     if db_insumo is None:
         raise exceptions.InsumoNoEncontrado()
     return db_insumo
+
+def eliminar_insumo(db: Session, insumo_id: int) -> schemas.InsumoDelete:
+    db_insumo = leer_insumo(db, insumo_id)
+    if db_insumo is None:
+        raise exceptions.InsumoNoEncontrado()
+    db.execute(delete(Insumo).where(Insumo.id == insumo_id))
+    db.commit()
+    return db_insumo
