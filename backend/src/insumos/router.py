@@ -16,11 +16,11 @@ router = APIRouter(prefix="/insumos", tags=["insumos"])
 def create_insumo(insumo: schemas.InsumoCreate, db: Session = Depends(get_db)):
     return services.crear_insumo(db, insumo)
 
-@router.get("/", response_model=list[schemas.Insumos])
-def read_mascotas(db: Session = Depends(get_db)):
+@router.get("/", response_model=list[schemas.Insumo])
+def read_insumos(db: Session = Depends(get_db)):
     logger.info("Listando insumos desde router") # <- este mensaje se verá por la terminal
     return services.listar_insumos(db)
 
 @router.get("/{insumo_id}", response_model=schemas.Insumo)
 def read_insumo(insumo_id: int, db: Session = Depends(get_db)):
-    return services.leer_mascota(db, insumo_id)
+    return services.leer_insumo(db, insumo_id)

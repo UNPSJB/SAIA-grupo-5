@@ -25,5 +25,5 @@ def listar_insumos(db: Session) -> List[schemas.Insumo]:
 def leer_insumo(db: Session, insumo_id: int) -> schemas.Insumo:
     db_insumo = db.scalar(select(Insumo).where(Insumo.id == insumo_id))
     if db_insumo is None:
-        raise exceptions.PersonaNoEncontrada()
+        raise exceptions.InsumoNoEncontrado()
     return db_insumo
