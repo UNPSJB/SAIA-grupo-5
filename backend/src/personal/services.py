@@ -5,13 +5,20 @@ from sqlalchemy.orm import Session
 from src.personal.models import Persona
 from src.personal import schemas, exceptions
 
+# Creamos un logger para este módulo específico. Más info.: https://docs.python.org/3/library/logging.html
 logger = logging.getLogger(__name__)
 
+# operaciones CRUD para Personal
+def crear_persona(db: Session, persona: schemas.PersonaCreate) -> schemas.Persona:
+    _persona = Persona(**persona.model_dump())
+    db.add(_persona)
+    db.commit()
+    db.refresh(_persona)
+    return _persona
 
 def listar_personas(db: Session) -> List[schemas.Persona]:
     logger.info("Listando personal desde services")
     return db.scalars(select(Persona)).all()
-
 
 def leer_persona(db: Session, persona_id: int) -> schemas.Persona:
     db_persona = db.scalar(select(Persona).where(Persona.id == persona_id))

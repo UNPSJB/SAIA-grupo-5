@@ -12,3 +12,6 @@ class Persona(PersonaBase):
     id: int
 
     model_config = ConfigDict(from_attributes=True)
+
+class PersonaCreate(PersonaBase):
+    pass
