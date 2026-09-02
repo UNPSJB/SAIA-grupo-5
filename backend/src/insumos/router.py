@@ -28,3 +28,7 @@ def read_insumo(insumo_id: int, db: Session = Depends(get_db)):
 @router.delete("/{insumo_id}", response_model=schemas.InsumoDelete)
 def delete_insumo(insumo_id: int, db: Session = Depends(get_db)):
     return services.eliminar_insumo(db, insumo_id)
+
+@router.put("/{insumo_id}", response_model=schemas.Insumo)
+def update_insumo(insumo_id: int, insumo: schemas.InsumoUpdate, db: Session = Depends(get_db)):
+    return services.modificar_insumo(db, insumo_id, insumo)
