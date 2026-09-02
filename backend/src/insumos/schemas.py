@@ -3,7 +3,7 @@ from typing import Annotated
 
 class InsumoBase(BaseModel):
     nombre: Annotated[str, Field(min_length=1, max_length=40)]      # Esto hace que como minimo el nombre debe tener 1 caracter para cumplir con el criterio de aceptacion
-    unidad_medida: Annotated[str, Field(min_length=1, max_length=20)]
+    unidad_medida: Annotated[str, Field(min_length=1, max_length=20)] # TODO: Esto podría ser un enum para unificar las posibles valores
 
 class InsumoCreate(InsumoBase):
     pass

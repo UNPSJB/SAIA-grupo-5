@@ -8,7 +8,6 @@ from src.insumos import schemas, exceptions
 # Creamos un logger para este módulo específico. Más info.: https://docs.python.org/3/library/logging.html
 logger = logging.getLogger(__name__)
 
-
 # operaciones CRUD para Insumos
 
 def crear_insumo(db: Session, insumo: schemas.InsumoCreate) -> schemas.Insumo:
@@ -19,7 +18,6 @@ def crear_insumo(db: Session, insumo: schemas.InsumoCreate) -> schemas.Insumo:
     return _insumo
 
 def listar_insumos(db: Session) -> List[schemas.Insumo]:
-    logger.info("Listando Insumos desde services")  # <- este mensaje se verá por la terminal
     return db.scalars(select(Insumo)).all()
 
 def leer_insumo(db: Session, insumo_id: int) -> schemas.Insumo:

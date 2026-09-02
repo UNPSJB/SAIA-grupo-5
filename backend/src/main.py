@@ -10,8 +10,6 @@ from src.config import settings
 from src.logger import setup_logging
 
 # Importamos los routers desde nuestros modulos
-from src.personas.router import router as personas_router
-from src.mascotas.router import router as mascotas_router
 from src.insumos.router import router as insumos_router
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -42,6 +40,4 @@ app.add_middleware(
 
 
 # asociamos los routers a nuestra app
-app.include_router(personas_router)
-app.include_router(mascotas_router)
 app.include_router(insumos_router)
