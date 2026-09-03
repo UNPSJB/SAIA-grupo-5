@@ -1,26 +1,14 @@
-import { useState } from 'react'
+import { Outlet } from 'react-router';
+import { Nav } from './components/Nav';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <section id="center">
-        <div>
-          <h1>Get started</h1>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+    <div className="d-flex">
+      <Nav />
+      <div className="text-center pt-4 flex-grow-1">
+        <Outlet />
+      </div>
+    </div>
   )
 }
 
