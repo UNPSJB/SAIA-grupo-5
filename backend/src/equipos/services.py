@@ -13,7 +13,10 @@ def crear_equipo(db: Session, equipo: schemas.EquipoCreate) -> schemas.Equipo:
     db.commit()
     db.refresh(_equipo)
     return _equipo
-    
+
+def listar_equipos(db:Session) -> List[schemas.Equipo]:
+    return db.scalars(select(Equipo)).all()
+
 def leer_equipo(db: Session, equipo_id: int) -> schemas.Equipo:
     db_equipo = db.scalar(select(Equipo).where(Equipo.id == equipo_id))
     if db_equipo is None:
