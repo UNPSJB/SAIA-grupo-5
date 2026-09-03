@@ -20,3 +20,5 @@ class PersonaUpdate(PersonaBase):
     operar: Optional[bool] = None
     administrar:Optional [bool] = None
 
+class PersonaDelete(Persona):
+    pass  #creo que deberia ser solo pass?

@@ -27,4 +27,6 @@ def read_persona(persona_id: int, db: Session = Depends(get_db)):
 def update_persona(persona_id: int, persona: schemas.PersonaUpdate, db: Session = Depends(get_db)):
     return services.modificar_persona(db, persona_id, persona)
 
-
+@router.delete("/{persona_id}", response_model=schemas.Persona)
+def delete_persona(persona_id: int, db: Session = Depends(get_db)):
+    return services.eliminar_persona(db, persona_id)

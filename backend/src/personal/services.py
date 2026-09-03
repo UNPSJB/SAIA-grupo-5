@@ -32,3 +32,11 @@ def modificar_persona(db: Session, persona_id: int, persona: schemas.PersonaUpda
     db.commit()
     db.refresh(db_persona)
     return db_persona
+
+def eliminar_persona(db: Session, persona_id: int) -> schemas.Persona:
+    db_persona = leer_persona(db, persona_id)
+    if db_persona is None:
+        raise exceptions.PersonaNoEncontrada()
+    db.delete(db_persona)
+    db.commit()
+    return db_persona
