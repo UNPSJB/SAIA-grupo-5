@@ -28,7 +28,7 @@ def modificar_equipo(
     db_equipo = leer_equipo(db, equipo_id)
     db.execute(
         update(Equipo)
-        .where(equipo.id == equipo_id)
+        .where(Equipo.id == equipo_id)
         .values(**equipo.model_dump(exclude_unset=True))
     )
     db.commit()

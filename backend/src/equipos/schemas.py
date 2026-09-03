@@ -12,7 +12,7 @@ class EquipoCreate(EquipoBase):
 
 class EquipoUpdate(BaseModel):
     # INLUIR UN exclude_unset=True EN LOS model.dump en services
-    nombre: str | None = Field(default=None, min_length=1)
+    nombre: str | None = None
     categoria: str | None = None
     ubicacion: str | None = None
 
