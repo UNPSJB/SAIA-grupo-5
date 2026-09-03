@@ -20,6 +20,22 @@ def leer_equipo(db: Session, equipo_id: int) -> schemas.Equipo:
         raise exceptions.EquipoNoEncontrado()
     return db_equipo
 
+def modificar_equipo(
+        db: Session, equipo_id: int, equipo: schemas.EquipoUpdate) -> Equipo:
+    db_equipo = leer_equipo(db, equipo_id)
+    db.execute(
+        update(Equipo)
+        .where(equipo.id == equipo_id)
+        .values(**equipo.model_dump(exclude_unset=True))
+    )
+    db.commit()
+    db.refresh(db_equipo)
+    logger.info(
+        f"Se actualizo correctamente el equipo: "
+        f"{db_equipo.nombre}"
+    )
+    return db_equipo
+
 def eliminar_equipo(db: Session, equipo_id: int) -> schemas.Equipo:
     db_equipo = leer_equipo(db, equipo_id)
     #AGREGAR PLAN LIMPIEZA SI HAY UNA RESTRICCION
