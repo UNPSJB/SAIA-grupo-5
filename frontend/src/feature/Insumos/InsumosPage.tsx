@@ -7,12 +7,16 @@ export function InsumosPage() {
     const { data, error, isLoading } = useApi<Insumo[]>("/insumos")
 
     if (isLoading) return (
-        <Spinner animation="border" role="status">
-            <span className="visually-hidden">Loading...</span>
-        </Spinner>
+        <>
+            <PeageHeader title="Listado de Insumos" />
+            <Spinner animation="border" role="status">
+                <span className="visually-hidden">Loading...</span>
+            </Spinner>
+        </>
     )
     if (error) return (
         <Container>
+            <PeageHeader title="Listado de Insumos" />
             <Row className="justify-content-center">
                 <Col md={6}>
                     <Alert variant="danger">Ocurrió un error al cargar Insumos</Alert>
