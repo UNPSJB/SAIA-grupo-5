@@ -3,11 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { PeageHeader } from "../../components/PageHeader";
 import { InsumoForm } from "./InsumoForm";
 import { api } from "../../libs/axios";
+import type { UnidadMedida } from "./types";
 
 export function NuevoInsumoPage(){
     const navigate = useNavigate();     // Esto se usa para cambiar de pagina cuando cree el insumo
 
-    const guardarInsumo = async (datos: {nombre: string, unidad_medida: string}) => {
+    const guardarInsumo = async (datos: {nombre: string, unidad_medida: UnidadMedida}) => {
         try{
             await api.post("/insumos", datos);
             navigate("/insumos");
@@ -16,13 +17,14 @@ export function NuevoInsumoPage(){
             console.log(error)
         }
     };
-
+    
+// Como valoresIniciales tiene el ? no es necesario enviarlo 
     return(
         <>
             <PeageHeader title="Crear nuevo Insumo"/>
 
             <Container>
-                <InsumoForm textoBoton="Crear Insumo" onSubmit={guardarInsumo}/>
+                <InsumoForm textoBoton="Crear Insumo" onSubmit={guardarInsumo}/>     
             </Container>
         </>
     )
