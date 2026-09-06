@@ -1,5 +1,5 @@
 import useSWR from 'swr'
-import { api } from '../lib/axios'
+import { api } from '../libs/axios'
 
 async function featcher(url: string) {
     const res = await api.get(url)
