@@ -11,6 +11,7 @@ from src.logger import setup_logging
 
 # Importamos los routers desde nuestros modulos
 from src.equipos.router import router as equipos_router
+from src.insumos.router import router as insumos_router
 from fastapi.middleware.cors import CORSMiddleware
 
 ENV = settings.ENV.upper()
@@ -41,3 +42,4 @@ app.add_middleware(
 
 # asociamos los routers a nuestra app
 app.include_router(equipos_router)
+app.include_router(insumos_router)
