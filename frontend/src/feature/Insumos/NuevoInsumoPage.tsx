@@ -12,7 +12,8 @@ export function NuevoInsumoPage(){
             await api.post("/insumos", datos);
             navigate("/insumos");
         } catch (error){
-            alert("No se pudo crear el insumo.");       // Esto se puede cambiar
+            alert("No se pudo crear el insumo.");       // Esto se puede cambiar porque se ve como la alerta de google que esta fea
+            console.log(error)
         }
     };
 

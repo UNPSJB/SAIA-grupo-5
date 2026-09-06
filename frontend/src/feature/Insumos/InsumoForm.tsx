@@ -1,5 +1,6 @@
 import { Button, Form } from 'react-bootstrap';
 import { useState } from 'react';
+import { UnidadMedida } from './types';
 
 interface InsumoFormProps{
   textoBoton: string;
@@ -25,7 +26,14 @@ export function InsumoForm({ textoBoton, onSubmit }: InsumoFormProps) {
 
       <Form.Group className="mb-3" controlId="formUnidadMedida">
         <Form.Label>Unidad de medida</Form.Label>
-        <Form.Control type="text" placeholder="Ingrese la unidad de medida" value={unidadMedida} onChange={(e) => setUnidadMedida(e.target.value)} />
+        <Form.Select value={unidadMedida} onChange={(e) => setUnidadMedida(e.target.value)} >
+          <option value="" disabled> Seleccione una unidad de medida</option>
+          {Object.entries(UnidadMedida).map(([clave, valor]) => (     // Esto transforma el enum de types en una lista de clave valor para mostrarlo en las opciones
+            <option key={clave} value={valor}>
+              {clave} ({valor})
+            </option>
+          ))}
+        </Form.Select>
       </Form.Group>
       <Button variant="primary" type="submit">
         {textoBoton}
