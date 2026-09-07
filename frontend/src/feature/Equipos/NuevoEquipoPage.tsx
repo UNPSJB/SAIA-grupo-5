@@ -1,6 +1,6 @@
 import { Container } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { PeageHeader } from "../../components/PageHeader";
+import { PageHeader } from "../../components/PageHeader";
 import { EquipoForm } from "./EquipoForm";
 import { api } from "../../libs/axios";
 
@@ -20,7 +20,7 @@ export function NuevoEquipoPage(){
 // Como valoresIniciales tiene el ? no es necesario enviarlo 
     return(
         <>
-            <PeageHeader title="Crear nuevo Equipo"/>
+            <PageHeader title="Crear nuevo Equipo"/>
 
             <Container>
                 <EquipoForm textoBoton="Crear Equipo" onSubmit={guardarEquipo}/>     
