@@ -1,12 +1,12 @@
 import App from './App.tsx'
 import { createBrowserRouter } from 'react-router-dom';
-import { InsumosPage } from './feature/Insumos/InsumosPage.tsx';
-import { NuevoInsumoPage } from './feature/Insumos/NuevoInsumoPage.tsx';
-import { EditarInsumoPage } from './feature/Insumos/EditarInsumoPage.tsx';
+import { NuevoInsumoPage } from './feature/Insumos/pages/NuevoInsumoPage.tsx';
+import { EditarInsumoPage } from './feature/Insumos/pages/EditarInsumoPage.tsx';
 import { HomePage } from './feature/Home/HomePage.tsx';
 import { EquiposPage } from './feature/Equipos/EquiposPage.tsx';
 import { NuevoEquipoPage } from './feature/Equipos/NuevoEquipoPage.tsx';
 import { PersonalPage } from './feature/Personal/PersonalPage.tsx';
+import { ListPage } from './feature/Insumos/pages/ListPage.tsx';
 
 const router = createBrowserRouter([
   {
@@ -14,9 +14,14 @@ const router = createBrowserRouter([
     element: <App />,
     children: [
       { index: true, element: <HomePage /> },
-      { path: "insumos", element: <InsumosPage /> },
-      { path: "insumos/new", element: <NuevoInsumoPage />},
-      { path: "insumos/:id/edit", element: <EditarInsumoPage/>},
+      {
+        path: "insumos",
+        children: [
+          { index: true, element: <ListPage /> },             // /insumos
+          { path: "new", element: <NuevoInsumoPage /> },      // /insumos/new
+          { path: ":id/edit", element: <EditarInsumoPage /> },// /insumos/:id/edit
+        ],
+      },
       { path: "equipos", element: <EquiposPage /> },
       { path: "equipos/new", element: <NuevoEquipoPage />},
       { path: "personal", element: <PersonalPage /> },

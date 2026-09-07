@@ -1,10 +1,10 @@
-import { PeageHeader } from "../../components/PageHeader";
+import { PageHeader } from "../../components/PageHeader";
 
 export function EquiposPage() {
     return (
         <div className="cover-container mx-auto">
             <main className="px-3">
-                <PeageHeader title="Equipos" />
+                <PageHeader title="Equipos" />
                 <p className="lead fs-6 fst-italic">
                     Esta es una pagina de inicio creada para
                     tener valores de referencia y tener en cuenta a
