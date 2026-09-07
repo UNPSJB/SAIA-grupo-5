@@ -1,14 +1,14 @@
 import { Container } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { PeageHeader } from "../../components/PageHeader";
-import { InsumoForm } from "./InsumoForm";
-import { api } from "../../libs/axios";
-import type { UnidadMedida } from "./types";
+import { PageHeader } from "../../../components/PageHeader";
+import { InsumoForm } from "../components/InsumoForm";
+import { api } from "../../../libs/axios";
+import type { NewInsumo } from "../types";
 
 export function NuevoInsumoPage(){
     const navigate = useNavigate();     // Esto se usa para cambiar de pagina cuando cree el insumo
 
-    const guardarInsumo = async (datos: {nombre: string, unidad_medida: UnidadMedida}) => {
+    const guardarInsumo = async (datos: NewInsumo) => {
         try{
             await api.post("/insumos", datos);
             navigate("/insumos");
@@ -21,7 +21,7 @@ export function NuevoInsumoPage(){
 // Como valoresIniciales tiene el ? no es necesario enviarlo 
     return(
         <>
-            <PeageHeader title="Crear nuevo Insumo"/>
+            <PageHeader title="Crear nuevo Insumo"/>
 
             <Container>
                 <InsumoForm textoBoton="Crear Insumo" onSubmit={guardarInsumo}/>     

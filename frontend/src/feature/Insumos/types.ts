@@ -17,3 +17,8 @@ export type Insumo = {
     nombre: string
     unidad_medida: UnidadMedida
 }
+
+export type NewInsumo = {
+    nombre: string
+    unidad_medida: UnidadMedida
+}

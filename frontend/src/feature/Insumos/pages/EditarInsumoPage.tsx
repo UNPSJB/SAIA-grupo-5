@@ -1,10 +1,10 @@
 import { Container, Spinner, Alert, Col, Row } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
-import { PeageHeader } from "../../components/PageHeader";
-import { InsumoForm } from "./InsumoForm";
-import { api } from "../../libs/axios";
-import { useApi } from "../../hooks/useApi";
-import type { Insumo, UnidadMedida } from "./types";
+import { PageHeader } from "../../../components/PageHeader";
+import { InsumoForm } from "../components/InsumoForm";
+import { api } from "../../../libs/axios";
+import { useApi } from "../../../hooks/useApi";
+import type { Insumo, NewInsumo } from "../types";
 
 export function EditarInsumoPage(){
     const navigate = useNavigate();     // Esto se usa para cambiar de pagina cuando cree el insumo
@@ -12,7 +12,7 @@ export function EditarInsumoPage(){
 
     const { data: insumo, isLoading, error } = useApi<Insumo>(`/insumos/${id}`);
 
-    const actualizarInsumo = async (datos: {nombre: string, unidad_medida: UnidadMedida}) => {
+    const actualizarInsumo = async (datos: NewInsumo) => {
         try{
             await api.put(`/insumos/${id}`, datos);
             navigate("/insumos");
@@ -24,7 +24,7 @@ export function EditarInsumoPage(){
 
     if (isLoading) return (
         <>
-            <PeageHeader title="Editar Insumo" />
+            <PageHeader title="Editar Insumo" />
             <Spinner animation="border" role="status">
                 <span className="visually-hidden">Loading...</span>
             </Spinner>
@@ -32,7 +32,7 @@ export function EditarInsumoPage(){
     )
     if (!insumo) return (
         <Container>
-            <PeageHeader title="Insumo no encontrado" />
+            <PageHeader title="Insumo no encontrado" />
             <Row className="justify-content-center">
                 <Col md={6}>
                     <Alert variant="danger">El insumo ingresado no existe</Alert>
@@ -43,7 +43,7 @@ export function EditarInsumoPage(){
 
     if (error) return (
         <Container>
-            <PeageHeader title="Editar Insumo" />
+            <PageHeader title="Editar Insumo" />
             <Row className="justify-content-center">
                 <Col md={6}>
                     <Alert variant="danger">Ocurrió un error al cargar el Insumo</Alert>
@@ -55,7 +55,7 @@ export function EditarInsumoPage(){
 
     return(
         <>
-            <PeageHeader title="Editar Insumo"/>
+            <PageHeader title="Editar Insumo"/>
 
             <Container>
                 <InsumoForm textoBoton="Editar Insumo"

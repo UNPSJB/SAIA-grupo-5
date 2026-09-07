@@ -1,6 +1,6 @@
 import { Button, Form } from 'react-bootstrap';
 import { useState } from 'react';
-import { UnidadMedida } from './types';
+import { UnidadMedida } from '../types';
 
 interface InsumoFormProps{
   textoBoton: string;
