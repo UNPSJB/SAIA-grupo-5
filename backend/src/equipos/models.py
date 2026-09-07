@@ -8,7 +8,7 @@ class Equipo(ModeloBase):
     __tablename__ = "equipos"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    nombre: Mapped[str] = mapped_column(String(100), nullable=False)
+    nombre: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
     categoria: Mapped[str] = mapped_column(String(100))
     ubicacion: Mapped[str] = mapped_column(String(100))
 
