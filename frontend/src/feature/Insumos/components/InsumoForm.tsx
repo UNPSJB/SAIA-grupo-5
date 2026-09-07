@@ -14,7 +14,7 @@ export function InsumoForm({ textoBoton, onSubmit, valoresIniciales }: InsumoFor
   const [unidadMedida, setUnidadMedida] = useState<UnidadMedida | "">(valoresIniciales?.unidad_medida || "");     // Se agrega el <UnidadMedida | ""> para exigir que los valores unicamente puedan ser los de las unidades de medidas que definio Alex
 
   // El handleSubmit se usa para que no actualice la pagina al apretar el boton y envia a la pagina que lo utilice los datos
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {   // El FormEvent esta deprecated, consultar al profe cual se usa actualmente
+  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {   // El FormEvent esta deprecated, consultar al profe cual se usa actualmente
     e.preventDefault();
     onSubmit({ nombre, unidad_medida: unidadMedida as UnidadMedida });
   }
