@@ -1,5 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field
 from typing import Annotated, Optional
+from src.personal.constants import Capacidades
 
 
 class PersonaBase(BaseModel):
@@ -9,6 +10,7 @@ class PersonaBase(BaseModel):
 
 class Persona(PersonaBase):
     id: int
+    capacidades: set[Capacidades]
 
     model_config = ConfigDict(from_attributes=True)
 
