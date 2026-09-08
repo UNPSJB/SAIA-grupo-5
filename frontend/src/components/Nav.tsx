@@ -25,6 +25,7 @@ export function Nav() {
                 <BSNav.Link as={NavLink} to="/insumos">Insumos</BSNav.Link>
                 <BSNav.Link as={NavLink} to="/equipos">Equipos</BSNav.Link>
                 <BSNav.Link as={NavLink} to="/personal">Personal</BSNav.Link>
+                <BSNav.Link as={NavLink} to="/capacidades">Capacidades</BSNav.Link>
             </BSNav>
         </div>
     );

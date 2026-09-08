@@ -1,3 +1,4 @@
+import { Container } from 'react-bootstrap'
 import { type TableColumn } from 'react-data-table-component'
 
 import { AppTable } from '../../../components/AppTable'
@@ -44,9 +45,9 @@ const columns: TableColumn<Capacidad>[] = [
 
 export function ListPage() {
   return (
-    <main className="page-container">
+    <Container>
       <PageHeader title="Listado de Capacidades" />
       <AppTable columns={columns} data={capacidades} />
-    </main>
+    </Container>
   )
 }
