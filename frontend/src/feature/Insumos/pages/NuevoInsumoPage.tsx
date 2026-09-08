@@ -10,7 +10,7 @@ export function NuevoInsumoPage(){
 
     const guardarInsumo = async (datos: NewInsumo) => {
         try{
-            await api.post("/insumos", datos);
+            await api.post("/insumos/", datos);
             navigate("/insumos");
         } catch (error){
             alert("No se pudo crear el insumo.");       // Esto se puede cambiar porque se ve como la alerta de google que esta fea

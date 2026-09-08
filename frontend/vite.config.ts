@@ -11,6 +11,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/personal': 'http://localhost:8000',
+      '/insumos': 'http://localhost:8000',
     },
   },
 })
