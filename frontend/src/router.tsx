@@ -9,6 +9,7 @@ import { ListPage as PersonalListPage } from './feature/Personal/pages/ListPage.
 import { EditarPersonaPage } from './feature/Personal/pages/EditarPersonaPage.tsx';
 import { PersonalPage } from './feature/Personal/PersonalPage.tsx';
 import { ListPage } from './feature/Insumos/pages/ListPage.tsx';
+import { NuevaPersonaPage } from './feature/Personal/pages/NuevaPersonaPage.tsx';
 
 const router = createBrowserRouter([
   {
@@ -30,6 +31,7 @@ const router = createBrowserRouter([
         path: "personal",
         children: [
           { index: true, element: <PersonalListPage /> },             // /personal
+          { path: "new", element: <NuevaPersonaPage /> },             // /personal/new
           { path: ":id/edit", element: <EditarPersonaPage /> },       // /personal/:id/edit
         ],
       },
