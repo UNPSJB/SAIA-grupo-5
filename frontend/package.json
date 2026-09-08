@@ -9,13 +9,15 @@
     "lint": "eslint .",
     "preview": "vite preview"
   },
-  "overrides": {
-  "rolldown": "~1.2.4"
-},
   "dependencies": {
+    "axios": "^1.20.0",
+    "bootstrap": "^5.3.8",
     "react": "^19.2.8",
+    "react-bootstrap": "^2.10.10",
     "react-data-table-component": "^8.9.0",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.3",
+    "swr": "^2.5.1"
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",
@@ -25,7 +27,7 @@
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
-    "@vitejs/plugin-react": "^6.1.1",
+    "@vitejs/plugin-react": "^6.1.0",
     "babel-plugin-react-compiler": "^1.0.0",
     "eslint": "^10.9.0",
     "eslint-plugin-react-hooks": "^7.1.1",

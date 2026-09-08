@@ -1,8 +1,15 @@
-import { ListPage } from './feature/Capacidades/pages/ListPage'
-import './App.css'
+import { Outlet } from 'react-router-dom';
+import { Nav } from './components/Nav';
 
 function App() {
-  return <ListPage />
+  return (
+    <div className="d-flex">
+      <Nav />
+      <div className="text-center pt-4 flex-grow-1">
+        <Outlet />
+      </div>
+    </div>
+  )
 }
 
 export default App
