@@ -1,13 +1,13 @@
 export const UnidadMedida = {
-    TONELADA: "t",
-    KILOGRAMO: "kg",
-    GRAMO: "g",
-    MILIGRAMO: "mg",
-    LITRO: "l",
-    DECILITRO: "dl",
-    MILILITRO: "ml",
-    UNIDAD: "ud",
-    DOCENA: "doc",
+    TONELADA: "Tonelada",
+    KILOGRAMO: "Kilogramo",
+    GRAMO: "Gramo",
+    MILIGRAMO: "Miligramo",
+    LITRO: "Litro",
+    DECILITRO: "Decilitro",
+    MILILITRO: "Mililitro",
+    UNIDAD: "Unidad",
+    DOCENA: "Docena",
 } as const;
 
 export type UnidadMedida = typeof UnidadMedida[keyof typeof UnidadMedida];

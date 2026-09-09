@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { mutate } from 'swr';
-import { Alert, Button, Col, Container, OverlayTrigger, Row, Spinner, Tooltip } from 'react-bootstrap';
+import { Alert, Button, Col, Container, Row, Spinner } from 'react-bootstrap';      // Se volo Tooltip y OverlayTrigger porque no es necesario ya que el boton de Nuevo Insumo ya es muy explicativo
 import { useNavigate } from 'react-router-dom';
 import { type TableColumn } from 'react-data-table-component';
 
@@ -58,20 +58,20 @@ export function ListPage() {
             selector: row => row.unidad_medida,
             sortable: true,
             center: true,
-            cell: row => (
+            cell: row => (       
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div
                         style={{
-                            width: 32,
-                            height: 32,
-                            borderRadius: '50%',
+                            padding: '4px 12px',
+                            borderRadius: '16px',
                             background: '#dbeafe',
                             color: '#1d4ed8',
                             fontWeight: 700,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                        }}
+                            whiteSpace: 'nowrap',
+                        }}      // Se modifico para poder poner las unidades de medida con los nombres completos y que se vean bien
                     >
                         {row.unidad_medida}
                     </div>
@@ -80,6 +80,7 @@ export function ListPage() {
         },
         {
             name: "Acciones",
+            center: true,       // Se agrego esto para que queden centrada las acciones
             cell: (row) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <Button
@@ -101,27 +102,24 @@ export function ListPage() {
         },
     ];
 
+    // Se modifico el primer Row para mostrar el cartel de Nuevo Insumo +
     return (
-        <Container>
-            <Row className="p-2">
-                <Col xs lg="11">
+        <Container> 
+            <Row className="p-2" align-tiems-center>
+                <Col>
                     <PageHeader title="Listado de Insumos" />
                 </Col>
-                <Col>
-                    <OverlayTrigger
-                        placement="left"
-                        delay={{ show: 250, hide: 400 }}
-                        overlay={(props) => (
-                            <Tooltip id="button-tooltip" {...props}>
-                                Agregar Insumo
-                            </Tooltip>
-                        )}
-                    >   
-                        <Button size="lg" onClick={() => navigate("/insumos/new")}>+</Button>
-                    </OverlayTrigger>
-
+                <Col xs="auto" className="d-flex justify-content-end">
+                    <Button
+                        variant="primary"
+                        size='sm'
+                        onClick={() => navigate("/insumos/new")}
+                        style={{ whiteSpace: "nowrap" }}
+                    >
+                        Nuevo Insumo +
+                    </Button>
                 </Col>
-            </Row>
+            </Row>      
             <AppTable columns={columns} data={insumos} />
             <DeleteInsumoModal
                 insumo={insumoToDelete}
