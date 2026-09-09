@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 
 import { HomePage } from './feature/Home/HomePage.tsx';
+import { Page404 } from './feature/NotFound/Page404.tsx';
 
 import { ListPage } from './feature/Insumos/pages/ListPage.tsx';
 import { NuevoInsumoPage } from './feature/Insumos/pages/NuevoInsumoPage.tsx';
@@ -22,6 +23,7 @@ const router = createBrowserRouter([
           { path: ":id/edit", element: <EditarInsumoPage /> },// /insumos/:id/edit
         ],
       },
+      { path: "*", element: <Page404 /> },
     ]
   },
 ]);
