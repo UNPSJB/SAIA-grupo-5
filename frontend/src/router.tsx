@@ -1,11 +1,12 @@
-import App from './App.tsx'
 import { createBrowserRouter } from 'react-router-dom';
+
+import { HomePage } from './feature/Home/HomePage.tsx';
+
+import { ListPage } from './feature/Insumos/pages/ListPage.tsx';
 import { NuevoInsumoPage } from './feature/Insumos/pages/NuevoInsumoPage.tsx';
 import { EditarInsumoPage } from './feature/Insumos/pages/EditarInsumoPage.tsx';
-import { HomePage } from './feature/Home/HomePage.tsx';
-import { EquiposPage } from './feature/Equipos/EquiposPage.tsx';
-import { PersonalPage } from './feature/Personal/PersonalPage.tsx';
-import { ListPage } from './feature/Insumos/pages/ListPage.tsx';
+
+import App from './App.tsx'
 
 const router = createBrowserRouter([
   {
@@ -21,8 +22,6 @@ const router = createBrowserRouter([
           { path: ":id/edit", element: <EditarInsumoPage /> },// /insumos/:id/edit
         ],
       },
-      { path: "equipos", element: <EquiposPage /> },
-      { path: "personal", element: <PersonalPage /> },
     ]
   },
 ]);

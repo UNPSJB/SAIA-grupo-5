@@ -14,7 +14,7 @@ import type { Insumo } from '../types';
 
 export function ListPage() {
     const navigate = useNavigate();     // Esto se usa para cambiar de pagina cuando cree el insumo
-    const { data: insumos, error, isLoading } = useApi<Insumo[]>("/insumos")
+    const { data: insumos, error, isLoading } = useApi<Insumo[]>("/insumos/")
     const [insumoToDelete, setInsumoToDelete] = useState<Insumo | null>(null);
 
 
@@ -124,7 +124,7 @@ export function ListPage() {
             <DeleteInsumoModal
                 insumo={insumoToDelete}
                 onHide={() => setInsumoToDelete(null)}
-                onDeleted={() => mutate("/insumos")}
+                onDeleted={() => mutate("/insumos/")}
             />
         </Container>
     );
