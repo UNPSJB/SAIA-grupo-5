@@ -1,1 +1,0 @@
-from src.insumos.schemas import Insumo
