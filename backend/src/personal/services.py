@@ -28,15 +28,23 @@ def leer_persona(db: Session, persona_id: int) -> schemas.Persona:
 
 def modificar_persona(db: Session, persona_id: int, persona: schemas.PersonaUpdate) -> schemas.Persona:
     db_persona = leer_persona(db, persona_id)
+    if not db_persona.activo:
+        raise exceptions.PersonaDadaDeBaja()
     db.execute(update(Persona).where(Persona.id == persona_id).values(**persona.model_dump(exclude_unset=True))) #Uso exclude_unset=True para no sobreescribir los datos que no se envian
+    db.commit()
+    db.refresh(db_persona)
+    return db_persona
+
+def cambiar_estado_persona(db: Session, persona_id: int) -> schemas.Persona:
+    db_persona = leer_persona(db, persona_id)
+    db_persona.activo = not db_persona.activo
     db.commit()
     db.refresh(db_persona)
     return db_persona
 
 def eliminar_persona(db: Session, persona_id: int) -> schemas.Persona:
     db_persona = leer_persona(db, persona_id)
-    if db_persona is None:
-        raise exceptions.PersonaNoEncontrada()
-    db.delete(db_persona)
+    db_persona.activo = False
     db.commit()
+    db.refresh(db_persona)
     return db_persona

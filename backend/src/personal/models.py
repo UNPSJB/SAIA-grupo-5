@@ -11,6 +11,7 @@ class Persona(ModeloBase):
     nombre: Mapped[str] = mapped_column(String(40), index=True, nullable=False) 
     operar: Mapped[bool] = mapped_column(nullable=False, default=False)
     administrar: Mapped[bool] = mapped_column(nullable=False, default=False)
+    activo: Mapped[bool] = mapped_column(nullable=False, default=True)
 
     @property
     def capacidades(self) -> set[Capacidades]:

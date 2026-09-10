@@ -1,10 +1,12 @@
 import { Alert, Badge, Button, Col, Container, OverlayTrigger, Row, Spinner, Tooltip } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import { type TableColumn } from 'react-data-table-component'
+import { mutate } from 'swr'
 
 import { AppTable } from '../../../components/AppTable'
 import { PageHeader } from '../../../components/PageHeader'
 import { useApi } from '../../../hooks/useApi'
+import { api } from '../../../libs/axios'
 import { Capacidades } from '../../../types'
 import type { Persona } from '../types'
 
@@ -16,6 +18,16 @@ const capacidadLabels: Record<string, string> = {
 export function ListPage() {
   const navigate = useNavigate()
   const { data: personal, error, isLoading } = useApi<Persona[]>('/personal/')
+
+  const cambiarEstado = async (persona: Persona) => {
+    try {
+      await api.patch<Persona>(`/personal/${persona.id}/estado`)
+      await mutate('/personal/')
+    } catch (error) {
+      alert(`No se pudo ${persona.activo ? 'dar de baja' : 'dar de alta'} la persona.`)
+      console.log(error)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -81,15 +93,30 @@ export function ListPage() {
       ),
     },
     {
+      name: 'Estado',
+      selector: (row) => row.activo ? 'Activo' : 'Dado de baja',
+      sortable: true,
+      center: true,
+      cell: (row) => <Badge bg={row.activo ? 'success' : 'secondary'}>{row.activo ? 'Activo' : 'Dado de baja'}</Badge>,
+    },
+    {
       name: 'Acciones',
       cell: (row) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <Button
             variant="outline-primary"
             size="sm"
+            disabled={!row.activo}
             onClick={() => navigate(`/personal/${row.id}/edit`)}
           >
-            editar
+            Editar
+          </Button>
+          <Button
+            variant={row.activo ? 'outline-danger' : 'outline-success'}
+            size="sm"
+            onClick={() => cambiarEstado(row)}
+          >
+            {row.activo ? 'Dar de baja' : 'Dar de Alta'}
           </Button>
         </div>
       ),

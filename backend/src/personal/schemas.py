@@ -10,6 +10,7 @@ class PersonaBase(BaseModel):
 
 class Persona(PersonaBase):
     id: int
+    activo: bool
     capacidades: set[Capacidades]
 
     model_config = ConfigDict(from_attributes=True)

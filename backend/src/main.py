@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from sqlalchemy import inspect, text
 from src.database import engine
 from src.models import ModeloBase
 
@@ -21,6 +22,9 @@ setup_logging()
 @asynccontextmanager
 async def db_creation_lifespan(app: FastAPI):
     ModeloBase.metadata.create_all(bind=engine)
+    if not any(column["name"] == "activo" for column in inspect(engine).get_columns("personal")):
+        with engine.begin() as connection:
+            connection.execute(text("ALTER TABLE personal ADD COLUMN activo BOOLEAN NOT NULL DEFAULT 1"))
     yield
 
 

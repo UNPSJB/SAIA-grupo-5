@@ -5,6 +5,7 @@ export type Persona = {
   nombre: string
   operar: boolean
   administrar: boolean
+  activo: boolean
   capacidades: Capacidad[]
 }
 
