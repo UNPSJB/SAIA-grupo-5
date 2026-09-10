@@ -18,7 +18,7 @@ def crear_insumo(db: Session, insumo: schemas.InsumoCreate) -> schemas.Insumo:
     return _insumo
 
 def listar_insumos(db: Session) -> List[schemas.Insumo]:
-    return db.scalars(select(Insumo)).all()
+    return db.scalars(select(Insumo).where(Insumo.activo == True)).all()
 
 def leer_insumo(db: Session, insumo_id: int) -> schemas.Insumo:
     db_insumo = db.scalar(select(Insumo).where(Insumo.id == insumo_id))
@@ -28,8 +28,9 @@ def leer_insumo(db: Session, insumo_id: int) -> schemas.Insumo:
 
 def eliminar_insumo(db: Session, insumo_id: int) -> schemas.InsumoDelete:
     db_insumo = leer_insumo(db, insumo_id)
-    db.execute(delete(Insumo).where(Insumo.id == insumo_id))
+    db_insumo.activo = False
     db.commit()
+    db.refresh(db_insumo)
     return db_insumo
 
 def modificar_insumo(db: Session, insumo_id: int, insumo: schemas.InsumoUpdate) -> schemas.Insumo:  # Permite modificar el insumo pero si o si se tienen que enviar todos los campos

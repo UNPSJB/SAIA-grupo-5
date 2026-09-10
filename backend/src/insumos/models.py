@@ -1,6 +1,6 @@
 from src.models import ModeloBase
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import String, Enum
+from sqlalchemy import String, Enum, Boolean
 from src.insumos.constants import UnidadMedida
 
 def _valores_unidad_medida(enum_cls):
@@ -18,5 +18,6 @@ class Insumo(ModeloBase):
         Enum(UnidadMedida, values_callable=_valores_unidad_medida),
         nullable=False,
     )
+    activo: Mapped[bool] = mapped_column(Boolean, default=True)
 
 
