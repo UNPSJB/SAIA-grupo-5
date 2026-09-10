@@ -112,7 +112,7 @@ export function ListPage() {
               </Tooltip>
             )}
           >
-            <Button size="lg" onClick={() => navigate('/personal/new')}>+</Button>
+            <Button size="sm" onClick={() => navigate('/personal/new')}>+</Button>
           </OverlayTrigger>
         </Col>
       </Row>

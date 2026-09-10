@@ -34,7 +34,7 @@ export function PersonaForm({ textoBoton, onSubmit, valoresIniciales }: PersonaF
 
       <Form.Group className="mb-3" controlId="formCapacidades">
         <Form.Label>Capacidades</Form.Label>
-        <div>
+        <div className="text-start">
           <Form.Check
             type="checkbox"
             id="capacidad-operar"
