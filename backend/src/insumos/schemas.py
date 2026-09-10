@@ -14,6 +14,7 @@ class InsumoUpdate(InsumoBase):
 
 class Insumo(InsumoBase):
     id: int
+    activo: bool
 
     model_config = ConfigDict(from_attributes=True)
 

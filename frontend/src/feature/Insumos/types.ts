@@ -16,6 +16,7 @@ export type Insumo = {
     id: number
     nombre: string
     unidad_medida: UnidadMedida
+    activo: boolean
 }
 
 export type NewInsumo = {

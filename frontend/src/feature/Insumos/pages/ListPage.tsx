@@ -101,6 +101,31 @@ export function ListPage() {
             ),
         },
         {
+            name: 'Estado',
+            selector: row => row.activo ? 'Activo' : 'Inactivo',
+            sortable: true,
+            center: true,
+            cell: row => (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10}}>
+                    <div
+                        style={{
+                            padding: '4px 12px',
+                            borderRadius: '16px',
+                            background: row.activo ? '#dcfce7' : '#fee2e2',
+                            color: row.activo ? '#166534' : '#991b1b',
+                            fontWeight: 700,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            whiteSpace: 'nowrap',
+                        }}
+                    >
+                        {row.activo ? 'Activo' : 'Inactivo'}
+                    </div>
+                </div>
+            )
+        },
+        {
             name: "Acciones",
             center: true,       // Se agrego esto para que queden centrada las acciones
             cell: (row) => (
@@ -110,14 +135,14 @@ export function ListPage() {
                         size="sm"
                         onClick={() => navigate(`/insumos/${row.id}/edit`)}
                     >
-                        editar
+                        <i className="bi bi-pencil me-1"></i>Editar
                     </Button>
                     <Button
                         variant="outline-danger"
                         size="sm"
                         onClick={() => setInsumoToDelete(row)}
                     >
-                        eliminar
+                        <i className="bi bi-trash3 me-1"></i>Eliminar
                     </Button>
                 </div>
             )
@@ -140,7 +165,7 @@ export function ListPage() {
                         onClick={() => navigate("/insumos/new")}
                         style={{ whiteSpace: "nowrap" }}
                     >
-                        Nuevo Insumo +
+                        + Nuevo Insumo
                     </Button>
                 </Col>
             </Row>

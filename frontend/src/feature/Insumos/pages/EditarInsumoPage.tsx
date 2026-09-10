@@ -17,6 +17,7 @@ export function EditarInsumoPage(){
         try{
             await api.put(`/insumos/${id}`, datos);
             await mutate("/insumos/");
+            await mutate(`/insumos/${id}`);     // Se agrego esto ya que habia un bug en el editar
             navigate("/insumos");
         } catch (error){
             alert("No se pudo editar el insumo.");       // Esto se puede cambiar porque se ve como la alerta de google que esta fea

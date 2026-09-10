@@ -2,7 +2,7 @@ import enum
 
 class ErrorCode:
     INSUMO_NO_ENCONTRADO = "El insumo no fue encontrado."
-    NOMBRE_DUPLICADO = "El nombre ya existe."
+    INSUMO_DUPLICADO = "Ya existe un insumo con ese nombre y unidad de medida."
 
 class UnidadMedida(str, enum.Enum):
     TONELADA = "Tonelada"

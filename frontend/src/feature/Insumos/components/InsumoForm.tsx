@@ -1,6 +1,7 @@
 import { Button, Form } from 'react-bootstrap';
 import { useState } from 'react';
 import { UnidadMedida } from '../types';
+import { useNavigate } from 'react-router-dom';
 
 interface InsumoFormProps {
   textoBoton: string;
@@ -10,6 +11,7 @@ interface InsumoFormProps {
 
 export function InsumoForm({ textoBoton, onSubmit, valoresIniciales }: InsumoFormProps) {
   const [validated, setValidated] = useState(false);
+  const navigate = useNavigate();
 
   // Usamos useState y definimos que los valores pueden ser vacios por si se crea un nuevo insumo o que tengan un valor anterior para mostrarlos en caso de editar el insumo
   const [nombre, setNombre] = useState(valoresIniciales?.nombre || "");
@@ -60,8 +62,12 @@ export function InsumoForm({ textoBoton, onSubmit, valoresIniciales }: InsumoFor
           </Form.Control.Feedback>
         </Form.Group>
         <Button variant="primary" type="submit">
-          {textoBoton}
+          <i className="bi bi-floppy me-1"></i> {textoBoton}
         </Button>
+        <Button variant="secondary" className="ms-2" type="button"
+          onClick={() => navigate('/insumos')}>
+            <i className="bi bi-x-circle me-1"></i>Cancelar
+          </Button>
       </Form>
     </div>
   );

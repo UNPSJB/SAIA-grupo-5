@@ -6,5 +6,5 @@ class InsumoNoEncontrado(NotFound):
     DETAIL = ErrorCode.INSUMO_NO_ENCONTRADO
 
 
-class NombreDuplicado(BadRequest):
-    DETAIL = ErrorCode.NOMBRE_DUPLICADO
+class InsumoDuplicado(BadRequest):
+    DETAIL = ErrorCode.INSUMO_DUPLICADO

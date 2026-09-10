@@ -8,13 +8,12 @@ export function Nav() {
             flex-shrink-0
             p-3
             min-vh-100
-            text-bg-dark"
-            style={{ minWidth: 220 }}
+            text-white"
+            style={{ minWidth: 220, backgroundColor: "#0a0091"}}
         >
             <div className="sticky-top" style={{ top: 0 }}>
                 <span className="text-white fs-4">
-                    <i className="bi bi-check2-square me-2"></i>
-                    Navbar
+                    SAIA-5
                 </span>
                 <hr />
                 <BSNav
@@ -24,7 +23,7 @@ export function Nav() {
                         "--bs-nav-link-hover-color": "#fff"
                     } as React.CSSProperties}
                 >
-                    <BSNav.Link as={NavLink} to="/" end>
+                    <BSNav.Link as={NavLink} to="/" end> 
                         <i className="bi bi-house-door me-2"></i>
                         Home
                     </BSNav.Link>

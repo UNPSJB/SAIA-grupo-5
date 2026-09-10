@@ -14,8 +14,13 @@ export function NuevoInsumoPage(){
             await api.post("/insumos/", datos);
             await mutate("/insumos/");
             navigate("/insumos");
-        } catch (error){
-            alert("No se pudo crear el insumo.");       // Esto se puede cambiar porque se ve como la alerta de google que esta fea
+        } catch (error: any){   // Se modifico esto para poder mostrar el mensaje que tenemos en exceptions
+            if(error.response && error.response.data && error.response.data.detail){
+                alert(error.response.data.detail);
+            } else {
+                alert("No se pudo crear el insumo.");       // Esto se puede cambiar porque se ve como la alerta de google que esta fea
+            }
+                
             console.log(error)
         }
     };
