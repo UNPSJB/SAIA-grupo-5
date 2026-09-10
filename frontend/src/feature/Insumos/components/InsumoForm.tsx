@@ -19,8 +19,8 @@ export function InsumoForm({ textoBoton, onSubmit, valoresIniciales }: InsumoFor
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {   // Se actualizo a React.SubmitEvent
     e.preventDefault();
     setValidated(true);
-    if (!nombre || !unidadMedida) return; // corta acá si falta algo
-    onSubmit({ nombre, unidad_medida: unidadMedida as UnidadMedida });
+    if (!nombre.trim() || !unidadMedida) return; // corta acá si falta algo
+    onSubmit({ nombre: nombre.trim(), unidad_medida: unidadMedida as UnidadMedida });
   }
 
   return (
@@ -33,7 +33,7 @@ export function InsumoForm({ textoBoton, onSubmit, valoresIniciales }: InsumoFor
             type="text"
             placeholder="Ingrese el nombre"
             value={nombre} onChange={(e) => setNombre(e.target.value)}
-            isInvalid={validated && !nombre}
+            isInvalid={validated && !nombre.trim()}
           />
           <Form.Control.Feedback type="invalid">
             El nombre del insumo es obligatorio.

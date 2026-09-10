@@ -8,10 +8,4 @@ export default defineConfig({
     react(),
     babel({ presets: [reactCompilerPreset()] })
   ],
-  server: {
-    proxy: {
-      '/personal': 'http://localhost:8000',
-      '/insumos': 'http://localhost:8000',
-    },
-  },
 })

@@ -1,5 +1,6 @@
 import { Container, Spinner, Alert, Col, Row } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
+import { mutate } from "swr";
 import { PageHeader } from "../../../components/PageHeader";
 import { InsumoForm } from "../components/InsumoForm";
 import { api } from "../../../libs/axios";
@@ -8,13 +9,14 @@ import type { Insumo, NewInsumo } from "../types";
 
 export function EditarInsumoPage(){
     const navigate = useNavigate();     // Esto se usa para cambiar de pagina cuando cree el insumo
-    const { id } = useParams();         // 
+    const { id } = useParams();         //
 
     const { data: insumo, isLoading, error } = useApi<Insumo>(`/insumos/${id}`);
 
     const actualizarInsumo = async (datos: NewInsumo) => {
         try{
             await api.put(`/insumos/${id}`, datos);
+            await mutate("/insumos/");
             navigate("/insumos");
         } catch (error){
             alert("No se pudo editar el insumo.");       // Esto se puede cambiar porque se ve como la alerta de google que esta fea

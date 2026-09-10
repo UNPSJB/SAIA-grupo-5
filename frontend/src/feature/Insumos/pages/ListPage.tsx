@@ -18,6 +18,27 @@ export function ListPage() {
     const { data: insumos, error, isLoading } = useApi<Insumo[]>("/insumos/")
     const [insumoToDelete, setInsumoToDelete] = useState<Insumo | null>(null);
 
+    // useMemo infiere que retorna un array de tipo Insumo[]
+    const filteredInsumos = useMemo(() => {
+        return (insumos ?? []).filter((insumo) => {
+            return (
+                insumo.nombre.toLowerCase().includes(search.toLowerCase()) ||
+                insumo.unidad_medida.toLowerCase().includes(search.toLowerCase())
+            );
+        });
+    }, [search, insumos]);
+
+    const subHeaderComponentMemo = useMemo(() => {
+        return (
+            <Form.Control
+                type="text"
+                placeholder="Buscar insumo..."
+                className=" mr-sm-2"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
+            />
+        );
+    }, [search]);
+
     if (isLoading) return (
         <>
             <PageHeader title="Listado de Insumos" />
@@ -100,28 +121,7 @@ export function ListPage() {
                 </div>
             )
         },
-    ];    
-
-    // useMemo infiere que retorna un array de tipo Insumo[]
-    const filteredInsumos = useMemo(() => {
-        return insumos.filter((insumo) => {
-            return (
-                insumo.nombre.toLowerCase().includes(search.toLowerCase()) ||
-                insumo.unidad_medida.toLowerCase().includes(search.toLowerCase())
-            );
-        });
-    }, [search]);
-
-    const subHeaderComponentMemo = useMemo(() => {
-        return (
-            <Form.Control
-                type="text"
-                placeholder="Buscar insumo..."
-                className=" mr-sm-2"
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
-            />
-        );
-    }, [search]);
+    ];
 
     return (
         <Container>
