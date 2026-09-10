@@ -19,5 +19,6 @@ class EquipoUpdate(BaseModel):
 
 class Equipo(EquipoBase):
     id: int
+    estado: bool
 
     model_config = ConfigDict(from_attributes=True)

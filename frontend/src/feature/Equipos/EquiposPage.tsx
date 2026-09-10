@@ -1,16 +1,120 @@
-import { PageHeader } from "../../components/PageHeader";
+import { useState } from "react";
+import { Alert, Button, Col, Container, OverlayTrigger, Row, Spinner, Tooltip } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
+import { type TableColumn } from 'react-data-table-component';
+
+import { AppTable } from '../../components/AppTable';
+import { PageHeader } from '../../components/PageHeader';
+import { useApi } from '../../hooks/useApi';
+
+/* import { DeleteInsumoModal } from '../components/DeleteInsumoModal'; */
+import type { Equipo } from "./types";
 
 export function EquiposPage() {
-    return (
-        <div className="cover-container mx-auto">
-            <main className="px-3">
-                <PageHeader title="Equipos" />
-                <p className="lead fs-6 fst-italic">
-                    Esta es una pagina de inicio creada para
-                    tener valores de referencia y tener en cuenta a
-                    la hora de empezar con el proyecto de Desarrollo.
-                </p>
-            </main>
-        </div>
+    const navigate = useNavigate();
+    const { data: equipos, error, isLoading } = useApi<Equipo[]>("/equipos")
+    const [equipoToDelete, setEquipoToDelete] = useState<Equipo | null>(null);
+    
+    if (isLoading) return (
+        <>
+            <PageHeader title="Listado de Equipos" />
+            <Spinner animation="border" role="status">
+                <span className="visually-hidden">Loading...</span>
+            </Spinner>
+        </>
     )
+    if (!equipos || error) return (
+        <Container>
+            <PageHeader title="Listado de Equipos" />
+            <Row className="justify-content-center">
+                <Col md={6}>
+                    <Alert variant="danger">Ocurrió un error al cargar los Equipos</Alert>
+                </Col>
+            </Row>
+        </Container>
+    )
+
+    const columns: TableColumn<Equipo>[] = [
+        {
+            name: "ID",
+            selector: row => row.id,
+            sortable: true,
+            center: true,
+            maxWidth: "60px",
+        },
+        {
+            name: "Nombre",
+            selector: row => row.nombre,
+            sortable: true,
+            grow: 2,
+        },
+        {
+            name: "Categoría",
+            selector: row => row.categoria,
+            sortable: true,
+            grow: 2,
+        },
+        {
+            name: "Ubicación",
+            selector: row => row.ubicacion,
+            sortable: true,
+            grow: 2,
+        },
+        {
+            name: "Estado",
+            selector: row => row.estado ? "Activo" : "Inactivo",
+            sortable: true,
+            center: true,
+        },
+        {
+            name: "Acciones",
+            center: true,
+            minWidth: "220px",
+            cell: (row) => (
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <Button
+                variant="outline-primary"
+                size="sm"
+                onClick={() => navigate(`/equipos/${row.id}/edit`)}
+                >
+                Editar
+                </Button>
+
+                <Button
+                variant="outline-danger"
+                size="sm"
+                onClick={() => setEquipoToDelete(row)}
+                >
+                Eliminar
+                </Button>
+            </div>
+            ),
+        },
+    ];
+
+    return (
+        <Container>
+            <Row className="p-2">
+                <Col xs lg="11">
+                    <PageHeader title="Listado de Equipos" />
+                </Col>
+                <Col>
+                    <OverlayTrigger
+                        placement="left"
+                        delay={{ show: 250, hide: 400 }}
+                        overlay={(props) => (
+                            <Tooltip id="button-tooltip" {...props}>
+                                Agregar Equipo
+                            </Tooltip>
+                        )}
+                    >   
+                        <Button size="lg" onClick={() => navigate("/equipos/new")}>+</Button>
+                    </OverlayTrigger>
+
+                </Col>
+            </Row>
+            <AppTable columns={columns} data={equipos} />
+            
+        </Container>
+    );
 }

@@ -11,6 +11,7 @@ class Equipo(ModeloBase):
     nombre: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
     categoria: Mapped[str] = mapped_column(String(100))
     ubicacion: Mapped[str] = mapped_column(String(100))
+    estado: Mapped[bool] = mapped_column(default=True)
 
     """ # Implementaciones abiertas a cambios futuros
 

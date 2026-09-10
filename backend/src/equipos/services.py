@@ -19,8 +19,8 @@ def listar_equipos(db:Session) -> List[schemas.Equipo]:
 
 def leer_equipo(db: Session, equipo_id: int) -> schemas.Equipo:
     db_equipo = db.scalar(select(Equipo).where(Equipo.id == equipo_id))
-    if db_equipo is None:
-        raise exceptions.EquipoNoEncontrado()
+    if not db_equipo.estado:
+        ValueError("El equipo esta dado de baja")
     return db_equipo
 
 def modificar_equipo(
@@ -42,7 +42,12 @@ def modificar_equipo(
 def eliminar_equipo(db: Session, equipo_id: int) -> schemas.Equipo:
     db_equipo = leer_equipo(db, equipo_id)
     #AGREGAR PLAN LIMPIEZA SI HAY UNA RESTRICCION
-    db.execute(delete(Equipo).where(Equipo.id == equipo_id))
+    db.execute(
+        update(Equipo)
+        .where(Equipo.id == db_equipo.id)
+        .values(estado=False)
+    )
     db.commit()
+    db.refresh(db_equipo)
     return db_equipo
 

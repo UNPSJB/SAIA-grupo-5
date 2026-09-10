@@ -3,4 +3,11 @@ export type Equipo = {
     nombre: string
     categoria: string
     ubicacion: string
+    estado: boolean
+}
+
+export type NewEquipo = {
+    nombre: string
+    categoria: string
+    ubicacion: string
 }
