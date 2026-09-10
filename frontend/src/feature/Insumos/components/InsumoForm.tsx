@@ -9,6 +9,8 @@ interface InsumoFormProps {
 }
 
 export function InsumoForm({ textoBoton, onSubmit, valoresIniciales }: InsumoFormProps) {
+  const [validated, setValidated] = useState(false);
+
   // Usamos useState y definimos que los valores pueden ser vacios por si se crea un nuevo insumo o que tengan un valor anterior para mostrarlos en caso de editar el insumo
   const [nombre, setNombre] = useState(valoresIniciales?.nombre || "");
   const [unidadMedida, setUnidadMedida] = useState<UnidadMedida | "">(valoresIniciales?.unidad_medida || "");     // Se agrega el <UnidadMedida | ""> para exigir que los valores unicamente puedan ser los de las unidades de medidas que definio Alex
@@ -16,34 +18,51 @@ export function InsumoForm({ textoBoton, onSubmit, valoresIniciales }: InsumoFor
   // El handleSubmit se usa para que no actualice la pagina al apretar el boton y envia a la pagina que lo utilice los datos
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {   // Se actualizo a React.SubmitEvent
     e.preventDefault();
+    setValidated(true);
+    if (!nombre || !unidadMedida) return; // corta acá si falta algo
     onSubmit({ nombre, unidad_medida: unidadMedida as UnidadMedida });
   }
 
   return (
-    <Form onSubmit={handleSubmit} className="p-4 border rounded bg-white shadow-sm mt-3">
-      <Form.Group className="mb-3" controlId="formNombre">
-        <Form.Label>Nombre del Insumo</Form.Label>
-        <Form.Control
-          required
-          type="text"
-          placeholder="Ingrese el nombre"
-          value={nombre} onChange={(e) => setNombre(e.target.value)} />
-      </Form.Group>
+    <div className="col-md-6 mx-auto">
+      <Form onSubmit={handleSubmit} className="p-4 border rounded bg-white shadow-sm mt-3" noValidate>
+        <Form.Group className="mb-3 text-start" controlId="formNombre">
+          <Form.Label className="p-1 fw-bold">Nombre del Insumo</Form.Label>
+          <Form.Control
+            required
+            type="text"
+            placeholder="Ingrese el nombre"
+            value={nombre} onChange={(e) => setNombre(e.target.value)}
+            isInvalid={validated && !nombre}
+          />
+          <Form.Control.Feedback type="invalid">
+            El nombre del insumo es obligatorio.
+          </Form.Control.Feedback>
+        </Form.Group>
 
-      <Form.Group className="mb-3" controlId="formUnidadMedida">
-        <Form.Label>Unidad de medida</Form.Label>
-        <Form.Select required value={unidadMedida} onChange={(e) => setUnidadMedida(e.target.value as UnidadMedida)} >
-          <option value="" disabled> Seleccione una unidad de medida</option>
-          {Object.entries(UnidadMedida).map(([clave, valor]) => (     // Esto transforma el enum de types en una lista de clave valor para mostrarlo en las opciones
-            <option key={clave} value={valor}>
-              {valor}
-            </option>
-          ))}
-        </Form.Select>
-      </Form.Group>
-      <Button variant="primary" type="submit">
-        {textoBoton}
-      </Button>
-    </Form>
+        <Form.Group className="mb-3 text-start" controlId="formUnidadMedida">
+          <Form.Label className="p-1 fw-bold">Unidad de medida</Form.Label>
+          <Form.Select
+            required
+            value={unidadMedida}
+            onChange={(e) => setUnidadMedida(e.target.value as UnidadMedida)}
+            isInvalid={validated && !unidadMedida}
+          >
+            <option value="" disabled> Seleccione una unidad de medida</option>
+            {Object.entries(UnidadMedida).map(([clave, valor]) => (     // Esto transforma el enum de types en una lista de clave valor para mostrarlo en las opciones
+              <option key={clave} value={valor}>
+                {valor}
+              </option>
+            ))}
+          </Form.Select>
+          <Form.Control.Feedback type="invalid">
+            La unidad de medida es obligatoria.
+          </Form.Control.Feedback>
+        </Form.Group>
+        <Button variant="primary" type="submit">
+          {textoBoton}
+        </Button>
+      </Form>
+    </div>
   );
 }

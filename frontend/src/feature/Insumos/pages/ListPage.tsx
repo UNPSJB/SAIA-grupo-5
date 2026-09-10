@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { mutate } from 'swr';
-import { Alert, Button, Col, Container, Row, Spinner } from 'react-bootstrap';      // Se volo Tooltip y OverlayTrigger porque no es necesario ya que el boton de Nuevo Insumo ya es muy explicativo
+import { Alert, Button, Col, Container, Form, Row, Spinner } from 'react-bootstrap';      // Se volo Tooltip y OverlayTrigger porque no es necesario ya que el boton de Nuevo Insumo ya es muy explicativo
 import { useNavigate } from 'react-router-dom';
 import { type TableColumn } from 'react-data-table-component';
 
@@ -14,9 +14,9 @@ import type { Insumo } from '../types';
 
 export function ListPage() {
     const navigate = useNavigate();     // Esto se usa para cambiar de pagina cuando cree el insumo
+    const [search, setSearch] = useState('');
     const { data: insumos, error, isLoading } = useApi<Insumo[]>("/insumos/")
     const [insumoToDelete, setInsumoToDelete] = useState<Insumo | null>(null);
-
 
     if (isLoading) return (
         <>
@@ -58,7 +58,7 @@ export function ListPage() {
             selector: row => row.unidad_medida,
             sortable: true,
             center: true,
-            cell: row => (       
+            cell: row => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div
                         style={{
@@ -100,14 +100,37 @@ export function ListPage() {
                 </div>
             )
         },
-    ];
+    ];    
 
-    // Se modifico el primer Row para mostrar el cartel de Nuevo Insumo +
+    // useMemo infiere que retorna un array de tipo Insumo[]
+    const filteredInsumos = useMemo(() => {
+        return insumos.filter((insumo) => {
+            return (
+                insumo.nombre.toLowerCase().includes(search.toLowerCase()) ||
+                insumo.unidad_medida.toLowerCase().includes(search.toLowerCase())
+            );
+        });
+    }, [search]);
+
+    const subHeaderComponentMemo = useMemo(() => {
+        return (
+            <Form.Control
+                type="text"
+                placeholder="Buscar insumo..."
+                className=" mr-sm-2"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
+            />
+        );
+    }, [search]);
+
     return (
-        <Container> 
+        <Container>
             <Row className="p-2" align-tiems-center>
                 <Col>
                     <PageHeader title="Listado de Insumos" />
+                </Col>
+                <Col xs="auto" className="align-self-center">
+                    {subHeaderComponentMemo}
                 </Col>
                 <Col xs="auto" className="d-flex justify-content-end">
                     <Button
@@ -119,8 +142,8 @@ export function ListPage() {
                         Nuevo Insumo +
                     </Button>
                 </Col>
-            </Row>      
-            <AppTable columns={columns} data={insumos} />
+            </Row>
+            <AppTable columns={columns} data={filteredInsumos} />
             <DeleteInsumoModal
                 insumo={insumoToDelete}
                 onHide={() => setInsumoToDelete(null)}
