@@ -1,6 +1,6 @@
 import { Container, Spinner, Alert, Col, Row } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
-
+import { mutate } from "swr";
 import { PageHeader } from "../../../components/PageHeader";
 import { EquipoForm } from "../components/EquipoForm";
 import { api } from "../../../libs/axios";
@@ -16,6 +16,8 @@ export function EditarEquipoPage(){
     const actualizarEquipo = async (datos: NewEquipo) => {
         try{
             await api.put(`/equipos/${id}`, datos);
+            await mutate("/equipos");
+            await mutate('/equipos/${id}');
             navigate("/equipos");
         } catch (error){
             alert("No se pudo editar el equipo.");       // Esto se puede cambiar porque se ve como la alerta de google que esta fea
