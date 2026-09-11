@@ -61,13 +61,13 @@ export function InsumoForm({ textoBoton, onSubmit, valoresIniciales }: InsumoFor
             La unidad de medida es obligatoria.
           </Form.Control.Feedback>
         </Form.Group>
-        <Button variant="primary" type="submit">
+        <Button variant="secondary" type="button"
+          onClick={() => navigate('/insumos')}>
+          <i className="bi bi-x-circle me-1"></i>Cancelar
+        </Button>
+        <Button className="ms-2" variant="primary" type="submit">
           <i className="bi bi-floppy me-1"></i> {textoBoton}
         </Button>
-        <Button variant="secondary" className="ms-2" type="button"
-          onClick={() => navigate('/insumos')}>
-            <i className="bi bi-x-circle me-1"></i>Cancelar
-          </Button>
       </Form>
     </div>
   );
