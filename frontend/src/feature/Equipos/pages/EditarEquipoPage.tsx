@@ -5,7 +5,7 @@ import { PageHeader } from "../../../components/PageHeader";
 import { EquipoForm } from "../components/EquipoForm";
 import { api } from "../../../libs/axios";
 import { useApi } from "../../../hooks/useApi";
-import type { Equipo, NewEquipo } from "./types";
+import type { Equipo, NewEquipo } from "../types";
 
 export function EditarEquipoPage(){
     const navigate = useNavigate();     // Esto se usa para cambiar de pagina cuando cree el equipo
