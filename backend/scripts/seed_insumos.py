@@ -13,6 +13,7 @@ fake = Faker("es_AR")
 Faker.seed(42)
 
 CANTIDAD_INSUMOS = 30
+CANTIDAD_INSUMOS_INACTIVOS = 6
 
 NOMBRES_INSUMOS = {
     "Harina 000": UnidadMedida.KILOGRAMO,
@@ -58,8 +59,15 @@ NOMBRES_INSUMOS = {
 def generar_insumos(cantidad: int) -> list[Insumo]:
     cantidad = min(cantidad, len(NOMBRES_INSUMOS))
     nombres = fake.random_elements(elements=list(NOMBRES_INSUMOS), length=cantidad, unique=True)
+
+    inactivos = set(fake.random_elements(elements=nombres, length=CANTIDAD_INSUMOS_INACTIVOS, unique=True))
+
     return [
-        Insumo(nombre=nombre, unidad_medida=NOMBRES_INSUMOS[nombre])
+        Insumo(
+            nombre=nombre,
+            unidad_medida=NOMBRES_INSUMOS[nombre],
+            activo=nombre not in inactivos,
+        )
         for nombre in nombres
     ]
 
@@ -72,7 +80,8 @@ def main():
         db.add_all(insumos)
         db.commit()
 
-        print(f"Se insertaron {len(insumos)} insumos.")
+        inactivos = sum(1 for insumo in insumos if not insumo.activo)
+        print(f"Se insertaron {len(insumos)} insumos ({inactivos} inactivos).")
     finally:
         db.close()
 

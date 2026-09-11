@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { mutate } from 'swr';
-import { Alert, Button, Col, Container, Form, Row, Spinner } from 'react-bootstrap';      // Se volo Tooltip y OverlayTrigger porque no es necesario ya que el boton de Nuevo Insumo ya es muy explicativo
+import { Alert, Button, Col, Container, Form, Row, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { type TableColumn } from 'react-data-table-component';
 
@@ -127,7 +127,7 @@ export function ListPage() {
         },
         {
             name: "Acciones",
-            center: true,       // Se agrego esto para que queden centrada las acciones
+            center: true,
             cell: (row) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <Button

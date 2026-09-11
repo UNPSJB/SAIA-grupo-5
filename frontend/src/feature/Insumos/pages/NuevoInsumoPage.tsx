@@ -25,7 +25,6 @@ export function NuevoInsumoPage(){
         }
     };
     
-// Como valoresIniciales tiene el ? no es necesario enviarlo 
     return(
         <>
             <PageHeader title="Crear nuevo Insumo"/>
