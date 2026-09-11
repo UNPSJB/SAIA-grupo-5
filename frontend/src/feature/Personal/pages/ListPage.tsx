@@ -1,4 +1,5 @@
-import { Alert, Badge, Button, Col, Container, OverlayTrigger, Row, Spinner, Tooltip } from 'react-bootstrap'
+import React, { useMemo, useState } from 'react'
+import { Alert, Button, Col, Container, Form, Row, Spinner } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import { type TableColumn } from 'react-data-table-component'
 import { mutate } from 'swr'
@@ -17,7 +18,32 @@ const capacidadLabels: Record<string, string> = {
 
 export function ListPage() {
   const navigate = useNavigate()
+  const [search, setSearch] = useState('')
   const { data: personal, error, isLoading } = useApi<Persona[]>('/personal/')
+
+  const filteredPersonal = useMemo(() => {
+    if (!Array.isArray(personal)) return []
+    return (personal ?? []).filter((persona) => {
+      const capacidadesTexto = persona.capacidades
+        .map((capacidad) => capacidadLabels[capacidad] ?? capacidad)
+        .join(' ')
+      return (
+        persona.nombre.toLowerCase().includes(search.toLowerCase()) ||
+        capacidadesTexto.toLowerCase().includes(search.toLowerCase())
+      )
+    })
+  }, [search, personal])
+
+  const subHeaderComponentMemo = useMemo(() => {
+    return (
+      <Form.Control
+        type="text"
+        placeholder="Buscar personal..."
+        className=" mr-sm-2"
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
+      />
+    )
+  }, [search])
 
   const cambiarEstado = async (persona: Persona) => {
     try {
@@ -76,17 +102,27 @@ export function ListPage() {
       center: true,
       grow: 2,
       cell: (row) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
           {row.capacidades.length === 0 ? (
             <span className="text-muted">Sin capacidades</span>
           ) : (
             row.capacidades.map((capacidad) => (
-              <Badge
+              <div
                 key={capacidad}
-                bg={capacidad === Capacidades.ADMINISTRAR ? 'primary' : 'secondary'}
+                style={{
+                  padding: '4px 12px',
+                  borderRadius: '16px',
+                  background: capacidad === Capacidades.ADMINISTRAR ? '#dbeafe' : '#e5e7eb',
+                  color: capacidad === Capacidades.ADMINISTRAR ? '#1d4ed8' : '#374151',
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  whiteSpace: 'nowrap',
+                }}
               >
                 {capacidadLabels[capacidad] ?? capacidad}
-              </Badge>
+              </div>
             ))
           )}
         </div>
@@ -94,13 +130,32 @@ export function ListPage() {
     },
     {
       name: 'Estado',
-      selector: (row) => row.activo ? 'Activo' : 'Dado de baja',
+      selector: (row) => (row.activo ? 'Activo' : 'Inactivo'),
       sortable: true,
       center: true,
-      cell: (row) => <Badge bg={row.activo ? 'success' : 'secondary'}>{row.activo ? 'Activo' : 'Dado de baja'}</Badge>,
+      cell: (row) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div
+            style={{
+              padding: '4px 12px',
+              borderRadius: '16px',
+              background: row.activo ? '#dcfce7' : '#fee2e2',
+              color: row.activo ? '#166534' : '#991b1b',
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {row.activo ? 'Activo' : 'Inactivo'}
+          </div>
+        </div>
+      ),
     },
     {
       name: 'Acciones',
+      center: true,
       cell: (row) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <Button
@@ -109,13 +164,14 @@ export function ListPage() {
             disabled={!row.activo}
             onClick={() => navigate(`/personal/${row.id}/edit`)}
           >
-            Editar
+            <i className="bi bi-pencil me-1"></i>Editar
           </Button>
           <Button
             variant={row.activo ? 'outline-danger' : 'outline-success'}
             size="sm"
             onClick={() => cambiarEstado(row)}
           >
+            <i className={`bi ${row.activo ? 'bi-person-dash' : 'bi-person-check'} me-1`}></i>
             {row.activo ? 'Dar de baja' : 'Dar de Alta'}
           </Button>
         </div>
@@ -125,25 +181,25 @@ export function ListPage() {
 
   return (
     <Container>
-      <Row className="p-2">
-        <Col xs lg="11">
+      <Row className="p-2" align-items-center>
+        <Col>
           <PageHeader title="Listado de Personal" />
         </Col>
-        <Col>
-          <OverlayTrigger
-            placement="left"
-            delay={{ show: 250, hide: 400 }}
-            overlay={(props) => (
-              <Tooltip id="button-tooltip" {...props}>
-                Agregar Personal
-              </Tooltip>
-            )}
+        <Col xs="auto" className="align-self-center">
+          {subHeaderComponentMemo}
+        </Col>
+        <Col xs="auto" className="d-flex justify-content-end">
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => navigate('/personal/new')}
+            style={{ whiteSpace: 'nowrap' }}
           >
-            <Button size="sm" onClick={() => navigate('/personal/new')}>+</Button>
-          </OverlayTrigger>
+            + Nuevo Personal
+          </Button>
         </Col>
       </Row>
-      <AppTable columns={columns} data={personal} />
+      <AppTable columns={columns} data={filteredPersonal} />
     </Container>
   )
 }

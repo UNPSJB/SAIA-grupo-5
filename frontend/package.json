@@ -12,6 +12,7 @@
   "dependencies": {
     "axios": "^1.20.0",
     "bootstrap": "^5.3.8",
+    "bootstrap-icons": "^1.13.1",
     "react": "^19.2.8",
     "react-bootstrap": "^2.10.10",
     "react-data-table-component": "^8.9.0",

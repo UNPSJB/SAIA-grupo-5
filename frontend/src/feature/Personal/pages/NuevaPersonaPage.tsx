@@ -12,10 +12,14 @@ export function NuevaPersonaPage(){
     const guardarPersona = async (datos: NewPersona) => {
         try{
             await api.post("/personal", datos);
-            await mutate('/personal')
+            await mutate('/personal/')
             navigate("/personal");
-        } catch (error){
-            alert("No se pudo registrar el personal.");       // Esto se puede cambiar porque se ve como la alerta de google que esta fea
+        } catch (error: any){
+            if(error.response && error.response.data && error.response.data.detail){
+                alert(error.response.data.detail);
+            } else {
+                alert("No se pudo registrar el personal.");
+            }
             console.log(error)
         }
     };
