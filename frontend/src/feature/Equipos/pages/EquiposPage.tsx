@@ -1,13 +1,14 @@
 import { useState } from "react";
+import { mutate } from 'swr';
 import { Alert, Button, Col, Container, OverlayTrigger, Row, Spinner, Tooltip } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { type TableColumn } from 'react-data-table-component';
 
-import { AppTable } from '../../components/AppTable';
-import { PageHeader } from '../../components/PageHeader';
-import { useApi } from '../../hooks/useApi';
+import { AppTable } from '../../../components/AppTable';
+import { PageHeader } from '../../../components/PageHeader';
+import { useApi } from '../../../hooks/useApi';
 
-/* import { DeleteInsumoModal } from '../components/DeleteInsumoModal'; */
+ import { DeleteEquipoModal } from '../components/DeleteEquipoModal'; 
 import type { Equipo } from "./types";
 
 export function EquiposPage() {
@@ -73,19 +74,19 @@ export function EquiposPage() {
             cell: (row) => (
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <Button
-                variant="outline-primary"
-                size="sm"
-                onClick={() => navigate(`/equipos/${row.id}/edit`)}
+                    variant="outline-primary"
+                    size="sm"
+                    onClick={() => navigate(`/equipos/${row.id}/edit`)}
                 >
-                Editar
+                <i className="bi bi-pencil me-1"></i>Editar
                 </Button>
 
                 <Button
-                variant="outline-danger"
-                size="sm"
-                onClick={() => setEquipoToDelete(row)}
+                    variant="outline-danger"
+                    size="sm"
+                    onClick={() => setEquipoToDelete(row)}
                 >
-                Eliminar
+                    <i className="bi bi-trash3 me-1"></i>Eliminar
                 </Button>
             </div>
             ),
@@ -114,6 +115,11 @@ export function EquiposPage() {
                 </Col>
             </Row>
             <AppTable columns={columns} data={equipos} />
+            <DeleteEquipoModal
+                equipo={equipoToDelete}
+                onHide={() => setEquipoToDelete(null)}
+                onDeleted={() => mutate("/equipos")}
+            />
             
         </Container>
     );

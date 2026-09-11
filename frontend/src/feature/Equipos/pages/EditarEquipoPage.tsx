@@ -1,10 +1,10 @@
 import { Container, Spinner, Alert, Col, Row } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { PageHeader } from "../../components/PageHeader";
-import { EquipoForm } from "./EquipoForm";
-import { api } from "../../libs/axios";
-import { useApi } from "../../hooks/useApi";
+import { PageHeader } from "../../../components/PageHeader";
+import { EquipoForm } from "../components/EquipoForm";
+import { api } from "../../../libs/axios";
+import { useApi } from "../../../hooks/useApi";
 import type { Equipo, NewEquipo } from "./types";
 
 export function EditarEquipoPage(){
