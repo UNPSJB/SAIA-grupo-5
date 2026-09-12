@@ -23,9 +23,20 @@ setup_logging()
 @asynccontextmanager
 async def db_creation_lifespan(app: FastAPI):
     ModeloBase.metadata.create_all(bind=engine)
-    if not any(column["name"] == "activo" for column in inspect(engine).get_columns("personal")):
+    inspector = inspect(engine)
+    tablas = inspector.get_table_names()
+
+    if "personal" in tablas and not any(
+        column["name"] == "activo" for column in inspector.get_columns("personal")
+    ):
         with engine.begin() as connection:
             connection.execute(text("ALTER TABLE personal ADD COLUMN activo BOOLEAN NOT NULL DEFAULT 1"))
+
+    if "insumos" in tablas and not any(
+        column["name"] == "activo" for column in inspector.get_columns("insumos")
+    ):
+        with engine.begin() as connection:
+            connection.execute(text("ALTER TABLE insumos ADD COLUMN activo BOOLEAN NOT NULL DEFAULT 1"))
     yield
 
 
