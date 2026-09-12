@@ -3,10 +3,9 @@ import { type TableColumn } from 'react-data-table-component'
 
 import { AppTable } from '../../../components/AppTable'
 import { PageHeader } from '../../../components/PageHeader'
-import { Capacidades } from '../../../types'
-import type { Capacidad } from '../types'
+import { Capacidades, type CapacidadItem } from '../types'
 
-const capacidades: Capacidad[] = [
+const capacidades: CapacidadItem[] = [
   {
     id: 1,
     nombre: Capacidades.OPERAR,
@@ -19,7 +18,7 @@ const capacidades: Capacidad[] = [
   },
 ]
 
-const columns: TableColumn<Capacidad>[] = [
+const columns: TableColumn<CapacidadItem>[] = [
   {
     name: 'ID',
     selector: (row) => row.id,

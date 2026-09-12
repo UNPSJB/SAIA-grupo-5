@@ -8,7 +8,7 @@ import { AppTable } from '../../../components/AppTable'
 import { PageHeader } from '../../../components/PageHeader'
 import { useApi } from '../../../hooks/useApi'
 import { api } from '../../../libs/axios'
-import { Capacidades } from '../../../types'
+import { Capacidades } from '../../Capacidades/types'
 import type { Persona } from '../types'
 
 const capacidadLabels: Record<string, string> = {

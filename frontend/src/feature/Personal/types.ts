@@ -1,4 +1,4 @@
-import type { Capacidad } from '../../types'
+import type { Capacidad } from '../Capacidades/types'
 
 export type Persona = {
   id: number
