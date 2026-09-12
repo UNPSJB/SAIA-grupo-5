@@ -19,8 +19,8 @@ def listar_equipos(db:Session) -> List[schemas.Equipo]:
 
 def leer_equipo(db: Session, equipo_id: int) -> schemas.Equipo:
     db_equipo = db.scalar(select(Equipo).where(Equipo.id == equipo_id))
-    if not db_equipo.estado:
-        ValueError("El equipo esta dado de baja")
+    if db_equipo is None:
+        raise exceptions.EquipoNoEncontrado()
     return db_equipo
 
 def modificar_equipo(
