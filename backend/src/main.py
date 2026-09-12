@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from sqlalchemy import inspect, text
 from src.database import engine
 from src.models import ModeloBase
 
@@ -10,6 +11,7 @@ from src.config import settings
 from src.logger import setup_logging
 
 # Importamos los routers desde nuestros modulos
+from src.personal.router import router as personal_router
 from src.insumos.router import router as insumos_router
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -21,6 +23,20 @@ setup_logging()
 @asynccontextmanager
 async def db_creation_lifespan(app: FastAPI):
     ModeloBase.metadata.create_all(bind=engine)
+    inspector = inspect(engine)
+    tablas = inspector.get_table_names()
+
+    if "personal" in tablas and not any(
+        column["name"] == "activo" for column in inspector.get_columns("personal")
+    ):
+        with engine.begin() as connection:
+            connection.execute(text("ALTER TABLE personal ADD COLUMN activo BOOLEAN NOT NULL DEFAULT 1"))
+
+    if "insumos" in tablas and not any(
+        column["name"] == "activo" for column in inspector.get_columns("insumos")
+    ):
+        with engine.begin() as connection:
+            connection.execute(text("ALTER TABLE insumos ADD COLUMN activo BOOLEAN NOT NULL DEFAULT 1"))
     yield
 
 
@@ -43,4 +59,5 @@ app.add_middleware(
 
 
 # asociamos los routers a nuestra app
+app.include_router(personal_router)
 app.include_router(insumos_router)

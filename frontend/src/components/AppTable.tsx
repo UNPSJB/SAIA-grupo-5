@@ -19,7 +19,7 @@ export function AppTable<T>({ columns, data }: AppTableProps<T>) {
             columns={columns}
             data={data}
             pagination
-            noDataComponent={<div className="p-4 text-muted">No se encontraron resultados.</div>}      // Se agrego esto para mostrar un mensaje en caso de que no hayan insumos en la base o no se haya encontrado el insumo en el buscador
+            noDataComponent={<div className="p-4 text-muted">No se encontraron resultados.</div>}
             paginationComponentOptions={{
                 rowsPerPageText: "Filas por página",
                 rangeSeparatorText: "de",
