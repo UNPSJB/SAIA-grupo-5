@@ -19,6 +19,7 @@ export function AppTable<T>({ columns, data }: AppTableProps<T>) {
             columns={columns}
             data={data}
             pagination
+            noDataComponent={<div className="p-4 text-muted">No se encontraron resultados.</div>}
             paginationComponentOptions={{
                 rowsPerPageText: "Filas por página",
                 rangeSeparatorText: "de",

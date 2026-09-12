@@ -17,7 +17,7 @@ export function EditarEquipoPage(){
         try{
             await api.put(`/equipos/${id}`, datos);
             await mutate("/equipos");
-            await mutate('/equipos/${id}');
+            await mutate(`/equipos/${id}`);
             navigate("/equipos");
         } catch (error){
             alert("No se pudo editar el equipo.");       // Esto se puede cambiar porque se ve como la alerta de google que esta fea

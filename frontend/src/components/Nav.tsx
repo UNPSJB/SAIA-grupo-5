@@ -3,29 +3,44 @@ import { NavLink } from "react-router-dom";
 
 export function Nav() {
     return (
-        <div className="navbar 
-                d-flex 
-                flex-column 
-                justify-content-start 
-                align-items-start 
-                bg-dark 
-                p-3 
-                vh-100"
-            data-bs-theme="dark"
-            style={{ width: "150px" }}>
-            <span className="text-white fs-4 p-2">Navbar</span>
-            <BSNav
-                className="flex-column me-auto"
-                style={{
-                    "--bs-nav-link-color": "#adb5bd",
-                    "--bs-nav-link-hover-color": "#fff"
-                } as React.CSSProperties}
-            >
-                <BSNav.Link as={NavLink} to="/" end>Home</BSNav.Link>
-                <BSNav.Link as={NavLink} to="/insumos">Insumos</BSNav.Link>
-                <BSNav.Link as={NavLink} to="/equipos">Equipos</BSNav.Link>
-                <BSNav.Link as={NavLink} to="/personal">Personal</BSNav.Link>
-            </BSNav>
+        <div className="d-flex
+            flex-column
+            flex-shrink-0
+            p-3
+            min-vh-100
+            text-white"
+            style={{ minWidth: 220, backgroundColor: "#0a0091"}}
+        >
+            <div className="sticky-top" style={{ top: 0 }}>
+                <span className="text-white fs-4">
+                    SAIA-5
+                </span>
+                <hr />
+                <BSNav
+                    className="nav nav-pills flex-column mb-auto"
+                    style={{
+                        "--bs-nav-link-color": "#adb5bd",
+                        "--bs-nav-link-hover-color": "#fff"
+                    } as React.CSSProperties}
+                >
+                    <BSNav.Link as={NavLink} to="/" end> 
+                        <i className="bi bi-house-door me-2"></i>
+                        Home
+                    </BSNav.Link>
+                    <BSNav.Link as={NavLink} to="/insumos">
+                        <i className="bi bi-box-seam me-2"></i>
+                        Insumos
+                    </BSNav.Link>
+                    <BSNav.Link as={NavLink} to="/equipos">
+                        <i className="bi bi-tools me-2"></i>
+                        Equipos
+                    </BSNav.Link>
+                    <BSNav.Link as={NavLink} to="/personal">
+                        <i className="bi bi-people me-2"></i>
+                        Personal
+                    </BSNav.Link>
+                </BSNav>
+            </div>
         </div>
     );
 }
