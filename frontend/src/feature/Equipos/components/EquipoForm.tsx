@@ -21,7 +21,7 @@ export function EquipoForm({ textoBoton, onSubmit, valoresIniciales}: EquipoForm
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {  
     e.preventDefault();
     setValidated(true);
-    if (!nombre.trim() || !categoria || !ubicacion) return;
+    if (!nombre.trim()) return;
     onSubmit({nombre: nombre.trim(), categoria, ubicacion});
   }
 
@@ -60,13 +60,14 @@ export function EquipoForm({ textoBoton, onSubmit, valoresIniciales}: EquipoForm
             value={ubicacion} onChange={(e) => setUbicacion(e.target.value)}/>
         </Form.Group>
 
-        <Button variant="primary" type="submit">
-          <i className="bi bi-floppy me-1"></i> {textoBoton}
-        </Button>
         <Button variant="secondary" className="ms-2" type="button"
           onClick={() => navigate('/equipos')}>
             <i className="bi bi-x-circle me-1"></i>Cancelar
-          </Button>
+        </Button>
+        <Button variant="primary" type="submit">
+          <i className="bi bi-floppy me-1"></i> {textoBoton}
+        </Button>
+        
       </Form>
     </div>
   );

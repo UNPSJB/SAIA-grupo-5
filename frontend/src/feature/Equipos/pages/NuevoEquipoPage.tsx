@@ -12,7 +12,12 @@ export function NuevoEquipoPage(){
             await api.post("/equipos", datos);
             navigate("/equipos");
         } catch (error){
-            alert("No se pudo crear el equipo.");       // Esto se puede cambiar porque se ve como la alerta de google que esta fea
+            if(error.response && error.response.data && error.response.data.detail){
+                alert(error.response.data.detail);
+            } else {
+                alert("No se pudo crear el equipo.");       // Esto se puede cambiar porque se ve como la alerta de google que esta fea
+            }
+
             console.log(error)
         }
     };

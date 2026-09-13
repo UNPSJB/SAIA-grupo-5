@@ -70,18 +70,21 @@ export function EquiposPage() {
             name: "Nombre",
             selector: row => row.nombre,
             sortable: true,
+            center: true,
             grow: 2,
         },
         {
             name: "Categoría",
             selector: row => row.categoria,
             sortable: true,
+            center: true,
             grow: 2,
         },
         {
             name: "Ubicación",
             selector: row => row.ubicacion,
             sortable: true,
+            center: true,
             grow: 2,
         },
         {

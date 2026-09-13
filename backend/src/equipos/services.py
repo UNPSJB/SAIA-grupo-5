@@ -8,6 +8,11 @@ from src.equipos import schemas, exceptions
 logger = logging.getLogger(__name__)
 
 def crear_equipo(db: Session, equipo: schemas.EquipoCreate) -> schemas.Equipo:
+    equipo_existente = db.scalars(select(Equipo).where(Equipo.nombre == equipo.nombre, Equipo.categoria == equipo.categoria, Equipo.ubicacion == equipo.ubicacion)).first()
+
+    if equipo_existente:
+        raise exceptions.EquipoDuplicado()
+
     _equipo = Equipo(**equipo.model_dump())
     db.add(_equipo)
     db.commit()
