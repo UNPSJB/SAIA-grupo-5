@@ -60,11 +60,11 @@ export function EquipoForm({ textoBoton, onSubmit, valoresIniciales}: EquipoForm
             value={ubicacion} onChange={(e) => setUbicacion(e.target.value)}/>
         </Form.Group>
 
-        <Button variant="secondary" className="ms-2" type="button"
+        <Button variant="secondary" type="button"
           onClick={() => navigate('/equipos')}>
             <i className="bi bi-x-circle me-1"></i>Cancelar
         </Button>
-        <Button variant="primary" type="submit">
+        <Button className="ms-2" variant="primary" type="submit">
           <i className="bi bi-floppy me-1"></i> {textoBoton}
         </Button>
         
