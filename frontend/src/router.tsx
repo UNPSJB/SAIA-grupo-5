@@ -7,6 +7,10 @@ import { ListPage as InsumosListPage } from './feature/Insumos/pages/ListPage.ts
 import { NuevoInsumoPage } from './feature/Insumos/pages/NuevoInsumoPage.tsx'
 import { EditarInsumoPage } from './feature/Insumos/pages/EditarInsumoPage.tsx'
 
+import { EquiposPage } from './feature/Equipos/pages/ListPage.tsx';
+import { EditarEquipoPage } from './feature/Equipos/pages/EditarEquipoPage.tsx';
+import { NuevoEquipoPage } from './feature/Equipos/pages/NuevoEquipoPage.tsx';
+
 import { ListPage as PersonalListPage } from './feature/Personal/pages/ListPage.tsx'
 import { EditarPersonaPage } from './feature/Personal/pages/EditarPersonaPage.tsx'
 import { NuevaPersonaPage } from './feature/Personal/pages/NuevaPersonaPage.tsx'
@@ -19,6 +23,14 @@ const router = createBrowserRouter([
     element: <App />,
     children: [
       { index: true, element: <HomePage /> },
+      { 
+        path: "equipos", 
+        children: [
+          { index: true, element: <EquiposPage /> },
+          { path: "new", element: <NuevoEquipoPage /> },
+          { path: ":id/edit", element: <EditarEquipoPage /> },
+        ],
+      },
       {
         path: 'insumos',
         children: [
