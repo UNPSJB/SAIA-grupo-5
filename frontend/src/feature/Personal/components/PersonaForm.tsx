@@ -19,7 +19,7 @@ export function PersonaForm({ textoBoton, onSubmit, valoresIniciales }: PersonaF
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
     setValidated(true)
-    if (!nombre.trim()) return
+    if (!nombre.trim() || (!operar && !administrar)) return
     onSubmit({ nombre: nombre.trim(), operar, administrar })
   }
 
@@ -60,6 +60,11 @@ export function PersonaForm({ textoBoton, onSubmit, valoresIniciales }: PersonaF
               onChange={(e) => setAdministrar(e.target.checked)}
             />
           </div>
+          {validated && !operar && !administrar && (
+            <div className="invalid-feedback d-block">
+              Debe seleccionar al menos una capacidad.
+            </div>
+          )}
         </Form.Group>
 
         <Button variant="secondary" type="button" onClick={() => navigate('/personal')}>
