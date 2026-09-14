@@ -137,13 +137,15 @@ export function ListPage() {
                     >
                         <i className="bi bi-pencil me-1"></i>Editar
                     </Button>
-                    <Button
-                        variant="outline-danger"
-                        size="sm"
-                        onClick={() => setInsumoToDelete(row)}
-                    >
-                        <i className="bi bi-trash3 me-1"></i>Eliminar
-                    </Button>
+                    {(row.activo &&
+                        <Button
+                            variant="outline-danger"
+                            size="sm"
+                            onClick={() => setInsumoToDelete(row)}
+                        >
+                            <i className="bi bi-trash3 me-1"></i>Eliminar
+                        </Button>
+                    )}
                 </div>
             )
         },

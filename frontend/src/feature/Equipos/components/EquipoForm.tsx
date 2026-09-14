@@ -29,7 +29,7 @@ export function EquipoForm({ textoBoton, onSubmit, valoresIniciales}: EquipoForm
     <div className="col-md-6 mx-auto">
       <Form onSubmit={handleSubmit} className="p-4 border rounded bg-white shadow-sm mt-3" noValidate>
         <Form.Group className="mb-3 text-start" controlId="formNombre">
-          <Form.Label className="p-1 fw-bold">Nombre del Equipo</Form.Label>
+          <Form.Label className="p-1 fw-bold">Nombre del Equipo *</Form.Label>
           <Form.Control
             required
             type="text"
@@ -59,7 +59,7 @@ export function EquipoForm({ textoBoton, onSubmit, valoresIniciales}: EquipoForm
             placeholder="Ingrese la ubicacion"
             value={ubicacion} onChange={(e) => setUbicacion(e.target.value)}/>
         </Form.Group>
-
+        
         <Button variant="secondary" type="button"
           onClick={() => navigate('/equipos')}>
             <i className="bi bi-x-circle me-1"></i>Cancelar

@@ -4,8 +4,8 @@ from typing import Annotated
 
 class EquipoBase(BaseModel):
     nombre: Annotated[str, Field(min_length=1, max_length=100)]
-    categoria: Annotated[str, Field(min_length=1, max_length=100)]
-    ubicacion: Annotated[str, Field(min_length=1, max_length=100)]
+    categoria: Annotated[str, Field(default=None, max_length=100)]
+    ubicacion: Annotated[str, Field(default=None, max_length=100)]
 
 
 class EquipoCreate(EquipoBase):
