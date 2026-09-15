@@ -11,6 +11,10 @@ import { EquiposPage } from './feature/Equipos/pages/ListPage.tsx';
 import { EditarEquipoPage } from './feature/Equipos/pages/EditarEquipoPage.tsx';
 import { NuevoEquipoPage } from './feature/Equipos/pages/NuevoEquipoPage.tsx';
 
+import { SectoresPage } from './feature/Sectores/pages/ListPage.tsx';
+import { EditarSectorPage } from './feature/Sectores/pages/EditarSectorPage.tsx';
+import { NuevoSectorPage } from './feature/Sectores/pages/NuevoSectorPage.tsx';
+
 import { ListPage as PersonalListPage } from './feature/Personal/pages/ListPage.tsx'
 import { EditarPersonaPage } from './feature/Personal/pages/EditarPersonaPage.tsx'
 import { NuevaPersonaPage } from './feature/Personal/pages/NuevaPersonaPage.tsx'
@@ -29,6 +33,14 @@ const router = createBrowserRouter([
           { index: true, element: <EquiposPage /> },
           { path: "new", element: <NuevoEquipoPage /> },
           { path: ":id/edit", element: <EditarEquipoPage /> },
+        ],
+      },
+      { 
+        path: "sectores", 
+        children: [
+          { index: true, element: <SectoresPage /> },
+          { path: "new", element: <NuevoSectorPage /> },
+          { path: ":id/edit", element: <EditarSectorPage /> },
         ],
       },
       {

@@ -17,7 +17,7 @@ def crear_sector(db: Session, sector: schemas.SectorCreate) -> schemas.Sector:
         raise exceptions.SectorDuplicado()
 
 
-    _sector = Sector(**Sector.model_dump())
+    _sector = Sector(**sector.model_dump())
     db.add(_sector)
     db.commit()
     db.refresh(_sector)
