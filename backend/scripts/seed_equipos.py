@@ -5,6 +5,7 @@ Uso: python -m scripts.seed_equipos
 """
 from faker import Faker
 
+import src.all_models
 from src.database import SessionLocal
 from src.equipos.models import Equipo
 

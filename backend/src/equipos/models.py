@@ -1,7 +1,11 @@
+from typing import TYPE_CHECKING
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.models import ModeloBase
 from sqlalchemy import ForeignKey
+
+if TYPE_CHECKING:
+    from src.sector.models import Sector
 
 
 class Equipo(ModeloBase):
@@ -12,6 +16,8 @@ class Equipo(ModeloBase):
     categoria: Mapped[str] = mapped_column(String(100))
     ubicacion: Mapped[str] = mapped_column(String(100))
     estado: Mapped[bool] = mapped_column(default=True)
+    sector_id: Mapped[int | None] = mapped_column(ForeignKey("sectores.id"), nullable=True)
+    sector: Mapped["Sector | None"] = relationship(back_populates="equipos")
 
     """ # Implementaciones abiertas a cambios futuros
 
