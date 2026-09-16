@@ -23,7 +23,7 @@ Al integrar `Sector`, `Equipo` y `PlanLimpieza` (se referencian entre sí), apar
 
 # TYPE_CHECKING 
 
-- `backend/src/main.py` Es una constante especial de Python que es False al ejecutar el programa, pero True para las herramientas que revisan los tipos de datos.
+- `backend/src/equipos/models.py` Es una constante especial de Python que es False al ejecutar el programa, pero True para las herramientas que revisan los tipos de datos.
 
 ##### ¿Para qué sirve?
 Evita importaciones circulares: Ocurre cuando dos archivos se necesitan mutuamente. Poner los tipos dentro de un bloque if TYPE_CHECKING: rompe ese ciclo.

@@ -5,7 +5,11 @@ from src.database import engine
 from src.models import ModeloBase
 
 # Registra todos los modelos antes de armar las relaciones entre ellos.
-import src.all_models
+from src.insumos.models import Insumo  
+from src.personal.models import Persona  
+from src.equipos.models import Equipo  
+from src.sector.models import Sector  
+from src.plan_limpieza.models import PlanLimpieza  
 
 # Importamos la configuración validada por Pydantic
 from src.config import settings
