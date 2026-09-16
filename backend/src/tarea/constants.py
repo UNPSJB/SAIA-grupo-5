@@ -1,5 +1,9 @@
 import enum
 
+class ErrorCode:
+    TAREA_NO_ENCONTRADA = "La tarea no fue encontrada."
+    TAREA_DATOS_INVALIDOS = "Los datos de la tarea no son válidos."
+
 class Frecuencia(int, enum.Enum):
     DIARIA = 1
     SEMANAL = 7

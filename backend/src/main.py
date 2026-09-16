@@ -24,6 +24,9 @@ from src.personal.router import router as personal_router
 from src.insumos.router import router as insumos_router
 from src.equipos.router import router as equipos_router
 from src.sector.router import router as sector_router
+from src.plan_limpieza.router import router as plan_limpieza_router
+from src.tarea.router import router as tarea_router
+from src.tareas_ocurrencia.router import router as tareas_ocurrencia_router
 from fastapi.middleware.cors import CORSMiddleware
 
 ENV = settings.ENV.upper()
@@ -74,4 +77,7 @@ app.include_router(personal_router)
 app.include_router(insumos_router)
 app.include_router(equipos_router)
 app.include_router(sector_router)
+app.include_router(plan_limpieza_router)
+app.include_router(tarea_router)
+app.include_router(tareas_ocurrencia_router)
 

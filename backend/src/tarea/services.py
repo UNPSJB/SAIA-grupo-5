@@ -1,0 +1,49 @@
+import logging
+from typing import List
+from sqlalchemy import select, update, delete
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
+from src.tarea.models import Tarea
+from src.tarea import schemas, exceptions
+
+logger = logging.getLogger(__name__)
+
+# operaciones CRUD para Tarea
+
+def crear_tarea(db: Session, tarea: schemas.TareaCreate) -> schemas.Tarea:
+    _tarea = Tarea(**tarea.model_dump())
+    db.add(_tarea)
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise exceptions.TareaDatosInvalidos()
+    db.refresh(_tarea)
+    return _tarea
+
+def listar_tareas(db: Session) -> List[schemas.Tarea]:
+    return db.scalars(select(Tarea)).all()
+
+def leer_tarea(db: Session, tarea_id: int) -> schemas.Tarea:
+    db_tarea = db.scalar(select(Tarea).where(Tarea.id == tarea_id))
+    if db_tarea is None:
+        raise exceptions.TareaNoEncontrada()
+    return db_tarea
+
+def modificar_tarea(db: Session, tarea_id: int, tarea: schemas.TareaUpdate) -> schemas.Tarea:
+    db_tarea = leer_tarea(db, tarea_id)
+    try:
+        db.execute(update(Tarea).where(Tarea.id == tarea_id).values(**tarea.model_dump()))
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise exceptions.TareaDatosInvalidos()
+    db.refresh(db_tarea)
+    return db_tarea
+
+def eliminar_tarea(db: Session, tarea_id: int) -> schemas.TareaDelete:
+    db_tarea = leer_tarea(db, tarea_id)
+    db.expunge(db_tarea)  # hard delete
+    db.execute(delete(Tarea).where(Tarea.id == tarea_id))
+    db.commit()
+    return db_tarea

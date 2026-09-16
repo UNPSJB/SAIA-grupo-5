@@ -1,6 +1,17 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
+from typing import Annotated
 from datetime import date
 from src.tareas_ocurrencia.constants import EstadoTareaOcurrencia
+
+class TareaOcurrenciaCreate(BaseModel):
+    operario_id: int | None = None
+    tarea_nombre_snap: Annotated[str, Field(min_length=1, max_length=80)]
+    tarea_descripcion_snap: Annotated[str | None, Field(max_length=255)] = None
+    frecuencia_snap: Annotated[str, Field(min_length=1, max_length=20)]
+    plan_nombre_snap: Annotated[str, Field(min_length=1, max_length=60)]
+    fecha: date
+    fecha_completado: date | None = None
+    estado: EstadoTareaOcurrencia = EstadoTareaOcurrencia.PENDIENTE
 
 class TareaOcurrencia(BaseModel):
     id: int
