@@ -10,3 +10,4 @@ from src.equipos.models import Equipo
 from src.sector.models import Sector  
 from src.plan_limpieza.models import PlanLimpieza
 from src.tarea.models import Tarea
+from src.tareas_ocurrencia.models import TareaOcurrencia
