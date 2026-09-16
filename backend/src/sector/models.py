@@ -13,6 +13,8 @@ class Sector(ModeloBase):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     nombre: Mapped[str] = mapped_column(String(40), index=True, nullable=False, unique=True)    
     equipos: Mapped[list["Equipo"]] = relationship(back_populates="sector")
-    planes: Mapped[list["PlanLimpieza"]] = relationship(back_populates="sector")
+    planes: Mapped[list["PlanLimpieza"]] = relationship(
+        secondary="sector_plan_limpieza", back_populates="sectores"
+    )
     activo: Mapped[bool] = mapped_column(Boolean, default=True)
     

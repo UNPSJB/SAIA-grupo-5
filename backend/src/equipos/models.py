@@ -6,6 +6,7 @@ from sqlalchemy import ForeignKey
 
 if TYPE_CHECKING:
     from src.sector.models import Sector
+    from src.plan_limpieza.models import PlanLimpieza
 
 
 class Equipo(ModeloBase):
@@ -18,14 +19,10 @@ class Equipo(ModeloBase):
     estado: Mapped[bool] = mapped_column(default=True)
     sector_id: Mapped[int | None] = mapped_column(ForeignKey("sectores.id"), nullable=True)
     sector: Mapped["Sector | None"] = relationship(back_populates="equipos")
+    plan_limpieza_id: Mapped[int] = mapped_column(ForeignKey("planes_limpieza.id"), nullable=False)
+    plan_limpieza: Mapped["PlanLimpieza"] = relationship(back_populates="equipos")
 
     """ # Implementaciones abiertas a cambios futuros
-
-    #Clave foranea al plan de limpieza del equipo
-    plan_limpieza_id: Mapped[int] = mapped_column(ForeignKey("plan_limpieza.id"))
-
-    #Relacion ORM para la navegacion con plan limpieza (Consultar la relacion Plan_Limpieza-Equipo)
-    plan_limpieza: Mapped["Plan_limpieza"] = relationship(back_populates="equipo")
 
     (DISCUTIR COMO RELACIONAR EL EQUIPO CON EL PLAN DE CALIBRACION)
     (DISCUTIR UN CAMPO ESTADO PARA BAJA LOGICA DEPENDIENDO SI QUEREMOS UN HISTORICO CON CALIBRACION) """

@@ -9,7 +9,8 @@ from src.insumos.models import Insumo
 from src.personal.models import Persona  
 from src.equipos.models import Equipo  
 from src.sector.models import Sector  
-from src.plan_limpieza.models import PlanLimpieza  
+from src.plan_limpieza.models import PlanLimpieza
+from src.tarea.models import Tarea
 
 # Importamos la configuración validada por Pydantic
 from src.config import settings
