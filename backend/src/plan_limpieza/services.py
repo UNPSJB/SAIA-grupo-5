@@ -39,10 +39,12 @@ def modificar_plan_limpieza(db: Session, plan_id: int, plan: schemas.PlanLimpiez
 
 def eliminar_plan_limpieza(db: Session, plan_id: int) -> schemas.PlanLimpiezaDelete:
     db_plan = leer_plan_limpieza(db, plan_id)
-    db.expunge(db_plan)  # hard delete: se desprende de la sesión para no intentar refrescarlo después del commit
     try:
-        db.execute(delete(PlanLimpieza).where(PlanLimpieza.id == plan_id))
+        if db_plan.tareas or db_plan.equipos:
+            raise exceptions.PlanLimpiezaEnUso()
+        db_plan.activo = False
         db.commit()
+        db.refresh(db_plan)
     except IntegrityError:
         db.rollback()
         raise exceptions.PlanLimpiezaEnUso()

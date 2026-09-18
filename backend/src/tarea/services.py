@@ -44,6 +44,9 @@ def modificar_tarea(db: Session, tarea_id: int, tarea: schemas.TareaUpdate) -> s
     db.refresh(db_tarea)
     return db_tarea
 
+
+# TODO: cuando se realice la relación con elemento_limpieza, debería 
+# realizarse baja lógica para no perder el historial de consumo de un elemento_limpieza
 def eliminar_tarea(db: Session, tarea_id: int) -> schemas.TareaDelete:
     db_tarea = leer_tarea(db, tarea_id)
     db.expunge(db_tarea)  # hard delete

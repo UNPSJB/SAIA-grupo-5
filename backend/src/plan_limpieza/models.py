@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 from src.models import ModeloBase
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, Table, Column, ForeignKey
+from sqlalchemy import String, Boolean, Table, Column, ForeignKey
 
 if TYPE_CHECKING:
     from src.sector.models import Sector
@@ -22,6 +22,7 @@ class PlanLimpieza(ModeloBase):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     nombre: Mapped[str] = mapped_column(String(60), nullable=False)
     descripcion: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    activo: Mapped[bool] = mapped_column(Boolean, default=True)
 
     sectores: Mapped[list["Sector"]] = relationship(
         secondary=sector_plan_limpieza, back_populates="planes"

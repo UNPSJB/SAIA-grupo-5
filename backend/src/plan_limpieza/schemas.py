@@ -19,6 +19,7 @@ class PlanLimpiezaUpdate(PlanLimpiezaBase):
 
 class PlanLimpieza(PlanLimpiezaBase):
     id: int
+    activo: bool
     sectores: list[SectorMinimal]
 
     model_config = ConfigDict(from_attributes=True)
