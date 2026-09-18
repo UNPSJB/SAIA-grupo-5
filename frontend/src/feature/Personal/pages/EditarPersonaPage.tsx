@@ -19,16 +19,17 @@ export function EditarPersonaPage() {
       await mutate(`/personal/${id}`, actualizada, false)
       await mutate('/personal/')
       navigate('/personal')
-    } catch (error) {
-      alert('No se pudo editar la persona.')
-      console.log(error)
+    } catch (err: any) {
+      const detail = err.response?.data?.detail || 'No se pudo editar la persona.'
+      alert(detail)
+      console.log(err)
     }
   }
 
   if (isLoading) {
     return (
       <>
-        <PageHeader title="Editar capacidades" />
+        <PageHeader title="Editar personal" />
         <Spinner animation="border" role="status">
           <span className="visually-hidden">Loading...</span>
         </Spinner>
@@ -52,7 +53,7 @@ export function EditarPersonaPage() {
   if (error) {
     return (
       <Container>
-        <PageHeader title="Editar capacidades" />
+        <PageHeader title="Editar personal" />
         <Row className="justify-content-center">
           <Col md={6}>
             <Alert variant="danger">Ocurrió un error al cargar la persona</Alert>
@@ -64,14 +65,19 @@ export function EditarPersonaPage() {
 
   return (
     <>
-      <PageHeader title="Editar capacidades" />
+      <PageHeader title="Editar personal" />
       <Container>
         <PersonaForm
           key={`${persona.id}-${persona.operar}-${persona.administrar}-${persona.nombre}`}
-          textoBoton="Guardar capacidades"
+          textoBoton="Guardar cambios"
+          isEditing={true}
           onSubmit={actualizarPersona}
           valoresIniciales={{
             nombre: persona.nombre,
+            apellido: persona.apellido,
+            dni: persona.dni,
+            mail: persona.mail,
+            username: persona.username,
             operar: persona.operar,
             administrar: persona.administrar,
           }}

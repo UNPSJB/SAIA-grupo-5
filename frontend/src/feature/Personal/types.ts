@@ -3,6 +3,10 @@ import type { Capacidad } from '../Capacidades/types'
 export type Persona = {
   id: number
   nombre: string
+  apellido: string
+  dni: string
+  mail: string
+  username: string
   operar: boolean
   administrar: boolean
   activo: boolean
@@ -11,6 +15,11 @@ export type Persona = {
 
 export type NewPersona = {
   nombre: string
+  apellido: string
+  dni: string
+  mail: string
+  username: string
+  password?: string
   operar: boolean
   administrar: boolean
 }

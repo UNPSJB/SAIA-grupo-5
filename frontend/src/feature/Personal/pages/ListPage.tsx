@@ -24,12 +24,16 @@ export function ListPage() {
   const filteredPersonal = useMemo(() => {
     if (!Array.isArray(personal)) return []
     return (personal ?? []).filter((persona) => {
-      const capacidadesTexto = persona.capacidades
+      const capacidadesTexto = (persona.capacidades || [])
         .map((capacidad) => capacidadLabels[capacidad] ?? capacidad)
         .join(' ')
+      const searchLower = search.toLowerCase()
       return (
-        persona.nombre.toLowerCase().includes(search.toLowerCase()) ||
-        capacidadesTexto.toLowerCase().includes(search.toLowerCase())
+        persona.nombre.toLowerCase().includes(searchLower) ||
+        (persona.apellido && persona.apellido.toLowerCase().includes(searchLower)) ||
+        (persona.username && persona.username.toLowerCase().includes(searchLower)) ||
+        (persona.dni && persona.dni.toLowerCase().includes(searchLower)) ||
+        capacidadesTexto.toLowerCase().includes(searchLower)
       )
     })
   }, [search, personal])
@@ -39,19 +43,20 @@ export function ListPage() {
       <Form.Control
         type="text"
         placeholder="Buscar personal..."
-        className=" mr-sm-2"
+        className="mr-sm-2"
         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
       />
     )
-  }, [search])
+  }, [])
 
   const cambiarEstado = async (persona: Persona) => {
     try {
       await api.patch<Persona>(`/personal/${persona.id}/estado`)
       await mutate('/personal/')
-    } catch (error) {
-      alert(`No se pudo ${persona.activo ? 'dar de baja' : 'dar de alta'} la persona.`)
-      console.log(error)
+    } catch (err: any) {
+      const detail = err.response?.data?.detail || `No se pudo ${persona.activo ? 'dar de baja' : 'dar de alta'} la persona.`
+      alert(detail)
+      console.log(err)
     }
   }
 
@@ -85,36 +90,51 @@ export function ListPage() {
       selector: (row) => row.id,
       sortable: true,
       center: true,
-      maxWidth: '160px',
+      maxWidth: '80px',
     },
     {
-      name: 'Nombre',
-      selector: (row) => row.nombre,
+      name: 'Nombre y Apellido',
+      selector: (row) => `${row.nombre} ${row.apellido || ''}`.trim(),
       sortable: true,
       center: true,
-      minWidth: '200px',
+      minWidth: '180px',
       grow: 2,
     },
     {
+      name: 'Usuario',
+      selector: (row) => row.username || '',
+      sortable: true,
+      center: true,
+      minWidth: '120px',
+    },
+    {
+      name: 'DNI',
+      selector: (row) => row.dni || '',
+      sortable: true,
+      center: true,
+      minWidth: '110px',
+    },
+    {
       name: 'Capacidades',
-      selector: (row) => row.capacidades.join(', '),
+      selector: (row) => (row.capacidades || []).join(', '),
       sortable: true,
       center: true,
       grow: 2,
       cell: (row) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
-          {row.capacidades.length === 0 ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
+          {!row.capacidades || row.capacidades.length === 0 ? (
             <span className="text-muted">Sin capacidades</span>
           ) : (
             row.capacidades.map((capacidad) => (
               <div
                 key={capacidad}
                 style={{
-                  padding: '4px 12px',
-                  borderRadius: '16px',
+                  padding: '3px 10px',
+                  borderRadius: '14px',
                   background: capacidad === Capacidades.ADMINISTRAR ? '#dbeafe' : '#e5e7eb',
                   color: capacidad === Capacidades.ADMINISTRAR ? '#1d4ed8' : '#374151',
-                  fontWeight: 700,
+                  fontWeight: 600,
+                  fontSize: '0.85rem',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -137,11 +157,12 @@ export function ListPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div
             style={{
-              padding: '4px 12px',
-              borderRadius: '16px',
+              padding: '3px 10px',
+              borderRadius: '14px',
               background: row.activo ? '#dcfce7' : '#fee2e2',
               color: row.activo ? '#166534' : '#991b1b',
-              fontWeight: 700,
+              fontWeight: 600,
+              fontSize: '0.85rem',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -156,8 +177,9 @@ export function ListPage() {
     {
       name: 'Acciones',
       center: true,
+      minWidth: '220px',
       cell: (row) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <Button
             variant="outline-primary"
             size="sm"
@@ -181,7 +203,7 @@ export function ListPage() {
 
   return (
     <Container>
-      <Row className="p-2" align-items-center>
+      <Row className="p-2 align-items-center">
         <Col>
           <PageHeader title="Listado de Personal" />
         </Col>
