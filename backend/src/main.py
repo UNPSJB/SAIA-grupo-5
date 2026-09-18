@@ -59,6 +59,14 @@ async def db_creation_lifespan(app: FastAPI):
         with engine.begin() as connection:
             connection.execute(text("ALTER TABLE planes_limpieza ADD COLUMN activo BOOLEAN NOT NULL DEFAULT 1"))
 
+    if "tareas_ocurrencia" in tablas:
+        columnas_ocurrencia = {c["name"] for c in inspector.get_columns("tareas_ocurrencia")}
+        with engine.begin() as connection:
+            if "tarea_id_origen" not in columnas_ocurrencia:
+                connection.execute(text("ALTER TABLE tareas_ocurrencia ADD COLUMN tarea_id_origen INTEGER"))
+            if "plan_id_origen" not in columnas_ocurrencia:
+                connection.execute(text("ALTER TABLE tareas_ocurrencia ADD COLUMN plan_id_origen INTEGER"))
+
     iniciar_scheduler()
     yield
     scheduler.shutdown()

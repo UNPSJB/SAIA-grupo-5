@@ -1,8 +1,11 @@
 import logging
+from datetime import date
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from src.database import get_db
 from src.plan_limpieza import schemas, services
+from src.tareas_ocurrencia import schemas as ocurrencia_schemas
+from src.tareas_ocurrencia.services import obtener_checklist
 
 # Creamos un logger para este módulo específico. Más info.: https://docs.python.org/3/library/logging.html
 logger = logging.getLogger(__name__)
@@ -33,3 +36,7 @@ def delete_plan_limpieza(plan_limpieza_id: int, db: Session = Depends(get_db)):
 @router.put("/{plan_limpieza_id}", response_model=schemas.PlanLimpieza)
 def update_plan_limpieza(plan_limpieza_id: int, plan: schemas.PlanLimpiezaUpdate, db: Session = Depends(get_db)):
     return services.modificar_plan_limpieza(db, plan_limpieza_id, plan)
+
+@router.get("/{plan_limpieza_id}/checklist", response_model=list[ocurrencia_schemas.TareaOcurrencia])
+def read_checklist(plan_limpieza_id: int, fecha: date | None = Query(None), db: Session = Depends(get_db)):
+    return obtener_checklist(db, plan_limpieza_id, fecha)

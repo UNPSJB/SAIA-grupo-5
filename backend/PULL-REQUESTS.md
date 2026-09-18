@@ -26,12 +26,20 @@
 - `PUT /{id}/completar`: setea `operario_id`, `estado=Completada`, `fecha_completado=hoy` (no un update genérico, no tiene sentido editar snapshot libremente).
 - `GET /tareas-ocurrencia/pendientes`: lista solo las de `estado=Pendiente`.
 - `POST /tareas-ocurrencia/generar-manual`: dispara la generación automática sin esperar al cron (solo para desarrollo — el proyecto no tiene auth todavía, queda abierto igual que el resto de las rutas).
+- Se agregaron `tarea_id_origen`/`plan_id_origen` (Integer plano, sin FK ni relationship a propósito — son de correlación, no de integridad referencial) para poder cruzar contra la `Tarea` viva sin romper el desacople del historial.
+
+## Checklist del día
+- `GET /planes-limpieza/{plan_id}/checklist?fecha=` (nested route, tiene sentido acá porque el checklist es inherentemente de un plan puntual): ahora es un **query directo** sobre `TareaOcurrencia` (`plan_id_origen == plan_id AND fecha == fecha`) — devuelve `list[TareaOcurrenciaResponse]`, el mismo schema que se usa para historial. Ya no arma items "virtuales" en memoria ni existe un schema `ChecklistItem` separado (se sacó).
+- Esto es posible porque la generación pasó a ser proactiva (ver abajo) — para cuando se pide el checklist, la ocurrencia del día ya debería existir. Si una `Tarea` se creó por una vía que no pasó por el hook, ese día no va a aparecer en el checklist — limitación conocida y aceptada, no resuelta acá.
+- Valida que el `plan_id` exista (`leer_plan_limpieza`) antes de armar el checklist — 404 si no, en vez de devolver `[]` silenciosamente (consistente con `GET /planes-limpieza/{id}`, a diferencia de los filtros por query param como `sector_id`, que sí devuelven lista vacía para un id inexistente).
 
 ## Generación automática de ocurrencias
-- `generar_ocurrencias_pendientes(db)` en `tareas_ocurrencia/services.py`: recorre todas las `Tarea`, compara `(hoy - ultima_generacion).days >= frecuencia` (una sola fórmula sirve para las 4 frecuencias gracias a que `Frecuencia` es numérica), genera la `TareaOcurrencia` correspondiente y actualiza `ultima_generacion`. No hace `commit()` — queda a cargo de quien la llama, para que sea testeable sin depender de una sesión ya comiteada.
-- `src/scheduler/scheduler.py`: `BackgroundScheduler` de APScheduler, cron diario a las 00:05 (`misfire_grace_time=3600`). Se arranca/apaga en el `lifespan` de `main.py`.
+- `generar_ocurrencias_pendientes(db)` en `tareas_ocurrencia/services.py`: recorre todas las `Tarea`, compara `(hoy - ultima_generacion).days >= frecuencia` (una sola fórmula sirve para las 4 frecuencias gracias a que `Frecuencia` es numérica), genera la `TareaOcurrencia` correspondiente y actualiza `ultima_generacion`. Es idempotente (correrla más de una vez el mismo día no duplica). No hace `commit()` — queda a cargo de quien la llama.
+- Cada `Tarea` del loop corre en su propio `try/except`: si falla la generación de una tarea puntual, se loguea (`logger.exception`) y se sigue con las demás, en vez de cortar toda la corrida.
+- **Ahora se dispara también de forma síncrona** al final de `crear_tarea` y `modificar_tarea` (en `tarea/services.py`), no solo desde el cron — dado el volumen chico del proyecto (decenas de tareas), correrla en el mismo request es aceptable, no hace falta background task. **No se enganchó** en alta/edición de `PlanLimpieza` ni en "reactivación" de `Tarea`/`PlanLimpieza`: no cambian qué tareas corresponden hoy, y además esas dos features de reactivación no existen todavía en el proyecto (ninguna de las dos entidades tiene una operación de reactivar hoy).
+- `src/scheduler/scheduler.py`: `BackgroundScheduler` de APScheduler, cron diario a las **07:00** (antes 00:05 — no tiene sentido generar a medianoche si cualquier alta/edición del día ya dispara la generación) (`misfire_grace_time=3600`). Se arranca/apaga en el `lifespan` de `main.py`.
 - Dependencias nuevas: `APScheduler==3.11.3`, `tzlocal==5.4.4` (agregadas a `requirements.txt`).
-- **Pendiente / a discutir:** no se revisó si el entorno de despliegue real va a correr con múltiples workers — con este approach (scheduler en el mismo proceso), correr `uvicorn --workers > 1` generaría ocurrencias duplicadas. Hoy no encontré ningún indicio de esa configuración en el repo (sin Dockerfile, sin `--workers`), pero conviene confirmarlo antes de producción.
+- Multi-worker: no es un problema a resolver en este proyecto (corre en un solo proceso/worker).
 
 ## Equipo
 - Se agregaron `sector_id` (FK a `Sector`, nullable) y `plan_limpieza_id` (FK a `PlanLimpieza`, **obligatoria**).

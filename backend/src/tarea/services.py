@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from src.tarea.models import Tarea
 from src.tarea import schemas, exceptions
+from src.tareas_ocurrencia.services import generar_ocurrencias_pendientes
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +20,10 @@ def crear_tarea(db: Session, tarea: schemas.TareaCreate) -> schemas.Tarea:
         db.rollback()
         raise exceptions.TareaDatosInvalidos()
     db.refresh(_tarea)
+
+    generar_ocurrencias_pendientes(db)
+    db.commit()
+
     return _tarea
 
 def listar_tareas(db: Session, plan_id: int | None = None) -> List[schemas.Tarea]:
@@ -42,6 +47,11 @@ def modificar_tarea(db: Session, tarea_id: int, tarea: schemas.TareaUpdate) -> s
         db.rollback()
         raise exceptions.TareaDatosInvalidos()
     db.refresh(db_tarea)
+
+    # Relevante sobre todo si cambió frecuencia o plan_limpieza_id.
+    generar_ocurrencias_pendientes(db)
+    db.commit()
+
     return db_tarea
 
 

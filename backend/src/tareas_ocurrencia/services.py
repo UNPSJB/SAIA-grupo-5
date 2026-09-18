@@ -4,6 +4,7 @@ from typing import List
 from sqlalchemy import select, update, delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
+from src.plan_limpieza.services import leer_plan_limpieza
 from src.tareas_ocurrencia.models import TareaOcurrencia
 from src.tareas_ocurrencia.constants import EstadoTareaOcurrencia
 from src.tareas_ocurrencia import schemas, exceptions
@@ -82,22 +83,28 @@ def generar_ocurrencias_pendientes(db: Session) -> list[TareaOcurrencia]:
 
     generadas = []
     for tarea in tareas:
-        if not corresponde_generar(tarea, hoy):
+        try:
+            if not corresponde_generar(tarea, hoy):
+                continue
+
+            ocurrencia = TareaOcurrencia(
+                tarea_id_origen=tarea.id,
+                plan_id_origen=tarea.plan_limpieza_id,
+                tarea_nombre_snap=tarea.nombre,
+                tarea_descripcion_snap=tarea.descripcion,
+                frecuencia_snap=str(tarea.frecuencia),
+                plan_nombre_snap=tarea.plan_limpieza.nombre,
+                fecha=hoy,
+                estado=EstadoTareaOcurrencia.PENDIENTE,
+            )
+            db.add(ocurrencia)
+            tarea.ultima_generacion = hoy
+            generadas.append(ocurrencia)
+        except Exception:
+            logger.exception(f"Error generando TareaOcurrencia para Tarea id={tarea.id}")
             continue
 
-        ocurrencia = TareaOcurrencia(
-            tarea_nombre_snap=tarea.nombre,
-            tarea_descripcion_snap=tarea.descripcion,
-            frecuencia_snap=str(tarea.frecuencia),
-            plan_nombre_snap=tarea.plan_limpieza.nombre,
-            fecha=hoy,
-            estado=EstadoTareaOcurrencia.PENDIENTE,
-        )
-        db.add(ocurrencia)
-        tarea.ultima_generacion = hoy
-        generadas.append(ocurrencia)
-
-    db.flush()  
+    db.flush()
     return generadas
 
 
@@ -105,3 +112,20 @@ def generar_ocurrencias_manual(db: Session) -> list[TareaOcurrencia]:
     generadas = generar_ocurrencias_pendientes(db)
     db.commit()
     return generadas
+
+
+# checklist del día, para un plan de limpieza puntual
+
+def obtener_checklist(db: Session, plan_id: int, fecha: date | None = None) -> list[schemas.TareaOcurrencia]:
+    plan = leer_plan_limpieza(db, plan_id)
+    
+    fecha = fecha or date.today()
+    
+    # checklist ese día. 
+    return db.scalars(
+        select(TareaOcurrencia).where(
+            TareaOcurrencia.plan_id_origen == plan.id,
+            TareaOcurrencia.fecha == fecha,
+            TareaOcurrencia.estado == EstadoTareaOcurrencia.PENDIENTE,
+        )
+    ).all()
