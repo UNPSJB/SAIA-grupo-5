@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from src.tareas_ocurrencia.models import TareaOcurrencia
 from src.tareas_ocurrencia.constants import EstadoTareaOcurrencia
 from src.tareas_ocurrencia import schemas, exceptions
+from src.tarea.models import Tarea
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +26,16 @@ def crear_tarea_ocurrencia(db: Session, ocurrencia: schemas.TareaOcurrenciaCreat
 
 def listar_tareas_ocurrencia(db: Session) -> List[schemas.TareaOcurrencia]:
     return db.scalars(select(TareaOcurrencia)).all()
+
+def listar_tareas_ocurrencia_pendientes(db: Session) -> List[schemas.TareaOcurrencia]:
+    return db.scalars(
+        select(TareaOcurrencia).where(TareaOcurrencia.estado == EstadoTareaOcurrencia.PENDIENTE)
+    ).all()
+
+def listar_tareas_ocurrencia_completadas(db: Session) -> List[schemas.TareaOcurrencia]:
+    return db.scalars(
+        select(TareaOcurrencia).where(TareaOcurrencia.estado == EstadoTareaOcurrencia.COMPLETADA)
+    ).all()
 
 def leer_tarea_ocurrencia(db: Session, ocurrencia_id: int) -> schemas.TareaOcurrencia:
     db_ocurrencia = db.scalar(select(TareaOcurrencia).where(TareaOcurrencia.id == ocurrencia_id))
@@ -55,3 +66,42 @@ def eliminar_tarea_ocurrencia(db: Session, ocurrencia_id: int) -> schemas.TareaO
     db.execute(delete(TareaOcurrencia).where(TareaOcurrencia.id == ocurrencia_id))
     db.commit()
     return db_ocurrencia
+
+
+################ generación automática de ocurrencias a partir de Tarea ########################
+
+def corresponde_generar(tarea: Tarea, hoy: date) -> bool:
+    if tarea.ultima_generacion is None:
+        return True
+    return (hoy - tarea.ultima_generacion).days >= tarea.frecuencia
+
+
+def generar_ocurrencias_pendientes(db: Session) -> list[TareaOcurrencia]:
+    hoy = date.today()
+    tareas = db.scalars(select(Tarea)).all()
+
+    generadas = []
+    for tarea in tareas:
+        if not corresponde_generar(tarea, hoy):
+            continue
+
+        ocurrencia = TareaOcurrencia(
+            tarea_nombre_snap=tarea.nombre,
+            tarea_descripcion_snap=tarea.descripcion,
+            frecuencia_snap=str(tarea.frecuencia),
+            plan_nombre_snap=tarea.plan_limpieza.nombre,
+            fecha=hoy,
+            estado=EstadoTareaOcurrencia.PENDIENTE,
+        )
+        db.add(ocurrencia)
+        tarea.ultima_generacion = hoy
+        generadas.append(ocurrencia)
+
+    db.flush()  
+    return generadas
+
+
+def generar_ocurrencias_manual(db: Session) -> list[TareaOcurrencia]:
+    generadas = generar_ocurrencias_pendientes(db)
+    db.commit()
+    return generadas

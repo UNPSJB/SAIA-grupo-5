@@ -1,5 +1,5 @@
 import logging
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from src.database import get_db
 from src.plan_limpieza import schemas, services
@@ -16,9 +16,11 @@ router = APIRouter(prefix="/planes-limpieza", tags=["planes-limpieza"])
 def create_plan_limpieza(plan: schemas.PlanLimpiezaCreate, db: Session = Depends(get_db)):
     return services.crear_plan_limpieza(db, plan)
 
+# Para listar planes de limpieza asociados a un sector
+# GET /planes-limpieza/?sector_id=3
 @router.get("/", response_model=list[schemas.PlanLimpieza])
-def read_planes_limpieza(db: Session = Depends(get_db)):
-    return services.listar_planes_limpieza(db)
+def read_planes_limpieza(sector_id: int | None = Query(None), db: Session = Depends(get_db)):
+    return services.listar_planes_limpieza(db, sector_id)
 
 @router.get("/{plan_limpieza_id}", response_model=schemas.PlanLimpieza)
 def read_plan_limpieza(plan_limpieza_id: int, db: Session = Depends(get_db)):

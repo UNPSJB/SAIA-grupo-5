@@ -21,8 +21,11 @@ def crear_tarea(db: Session, tarea: schemas.TareaCreate) -> schemas.Tarea:
     db.refresh(_tarea)
     return _tarea
 
-def listar_tareas(db: Session) -> List[schemas.Tarea]:
-    return db.scalars(select(Tarea)).all()
+def listar_tareas(db: Session, plan_id: int | None = None) -> List[schemas.Tarea]:
+    query = select(Tarea)
+    if plan_id is not None:
+        query = query.where(Tarea.plan_limpieza_id == plan_id)
+    return db.scalars(query).all()
 
 def leer_tarea(db: Session, tarea_id: int) -> schemas.Tarea:
     db_tarea = db.scalar(select(Tarea).where(Tarea.id == tarea_id))

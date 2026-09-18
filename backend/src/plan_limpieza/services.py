@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from src.plan_limpieza.models import PlanLimpieza
 from src.plan_limpieza import schemas, exceptions
+from src.sector.models import Sector
 
 logger = logging.getLogger(__name__)
 
@@ -17,8 +18,11 @@ def crear_plan_limpieza(db: Session, plan: schemas.PlanLimpiezaCreate) -> schema
     db.refresh(_plan)
     return _plan
 
-def listar_planes_limpieza(db: Session) -> List[schemas.PlanLimpieza]:
-    return db.scalars(select(PlanLimpieza)).all()
+def listar_planes_limpieza(db: Session, sector_id: int | None = None) -> List[schemas.PlanLimpieza]:
+    query = select(PlanLimpieza)
+    if sector_id is not None:
+        query = query.join(PlanLimpieza.sectores).where(Sector.id == sector_id)
+    return db.scalars(query).all()
 
 def leer_plan_limpieza(db: Session, plan_id: int) -> schemas.PlanLimpieza:
     db_plan = db.scalar(select(PlanLimpieza).where(PlanLimpieza.id == plan_id))

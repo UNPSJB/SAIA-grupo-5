@@ -16,9 +16,23 @@ router = APIRouter(prefix="/tareas-ocurrencia", tags=["tareas-ocurrencia"])
 def create_tarea_ocurrencia(ocurrencia: schemas.TareaOcurrenciaCreate, db: Session = Depends(get_db)):
     return services.crear_tarea_ocurrencia(db, ocurrencia)
 
+# Solo para desarrollo/testing
+# Revia las tareas con su ultima fecha de creación y genera las faltantes
+@router.post("/generar-manual", response_model=list[schemas.TareaOcurrencia])
+def generar_manual(db: Session = Depends(get_db)):
+    return services.generar_ocurrencias_manual(db)
+
 @router.get("/", response_model=list[schemas.TareaOcurrencia])
 def read_tareas_ocurrencia(db: Session = Depends(get_db)):
     return services.listar_tareas_ocurrencia(db)
+
+@router.get("/pendientes", response_model=list[schemas.TareaOcurrencia])
+def read_tareas_ocurrencia_pendientes(db: Session = Depends(get_db)):
+    return services.listar_tareas_ocurrencia_pendientes(db)
+
+@router.get("/completadas", response_model=list[schemas.TareaOcurrencia])
+def read_tareas_ocurrencia_pendientes(db: Session = Depends(get_db)):
+    return services.listar_tareas_ocurrencia_completadas(db)
 
 @router.get("/{ocurrencia_id}", response_model=schemas.TareaOcurrencia)
 def read_tarea_ocurrencia(ocurrencia_id: int, db: Session = Depends(get_db)):

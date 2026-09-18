@@ -27,6 +27,7 @@ from src.sector.router import router as sector_router
 from src.plan_limpieza.router import router as plan_limpieza_router
 from src.tarea.router import router as tarea_router
 from src.tareas_ocurrencia.router import router as tareas_ocurrencia_router
+from src.scheduler.scheduler import scheduler, iniciar_scheduler
 from fastapi.middleware.cors import CORSMiddleware
 
 ENV = settings.ENV.upper()
@@ -51,7 +52,10 @@ async def db_creation_lifespan(app: FastAPI):
     ):
         with engine.begin() as connection:
             connection.execute(text("ALTER TABLE insumos ADD COLUMN activo BOOLEAN NOT NULL DEFAULT 1"))
+
+    iniciar_scheduler()
     yield
+    scheduler.shutdown()
 
 
 app = FastAPI(root_path=ROOT_PATH, lifespan=db_creation_lifespan)

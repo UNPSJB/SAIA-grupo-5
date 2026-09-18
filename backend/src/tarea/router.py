@@ -1,5 +1,5 @@
 import logging
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from src.database import get_db
 from src.tarea import schemas, services
@@ -17,8 +17,8 @@ def create_tarea(tarea: schemas.TareaCreate, db: Session = Depends(get_db)):
     return services.crear_tarea(db, tarea)
 
 @router.get("/", response_model=list[schemas.Tarea])
-def read_tareas(db: Session = Depends(get_db)):
-    return services.listar_tareas(db)
+def read_tareas(plan_id: int | None = Query(None),db: Session = Depends(get_db)):
+    return services.listar_tareas(db, plan_id)
 
 @router.get("/{tarea_id}", response_model=schemas.Tarea)
 def read_tarea(tarea_id: int, db: Session = Depends(get_db)):

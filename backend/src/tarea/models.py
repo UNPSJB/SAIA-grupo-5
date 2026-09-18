@@ -1,7 +1,8 @@
+from datetime import date
 from typing import TYPE_CHECKING
 from src.models import ModeloBase
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, ForeignKey, Integer, CheckConstraint
+from sqlalchemy import String, ForeignKey, Integer, CheckConstraint, Date
 from src.tarea.constants import Frecuencia
 
 if TYPE_CHECKING:
@@ -25,6 +26,9 @@ class Tarea(ModeloBase):
     frecuencia: Mapped[int] = mapped_column(Integer, nullable=False)
     plan_limpieza_id: Mapped[int] = mapped_column(ForeignKey("planes_limpieza.id"), nullable=False)
     plan_limpieza: Mapped["PlanLimpieza"] = relationship(back_populates="tareas")
+    
+    # Para TareaOcurrencia
+    ultima_generacion: Mapped[date | None] = mapped_column(Date, nullable=True)
 
     # ElementoLimpieza
     # elementos_limpieza: Mapped[list["ElementoLimpieza"]] = relationship(
