@@ -1,5 +1,5 @@
 from src.auth.constants import ErrorCode
-from src.exceptions import BadRequest, NotAuthenticated, PermissionDenied
+from src.exceptions import BadRequest, NotAuthenticated
 
 
 class IncorrectUserOrPassword(BadRequest):
@@ -12,15 +12,3 @@ class InvalidCredentials(NotAuthenticated):
 
 class RefreshTokenNotValid(NotAuthenticated):
     DETAIL = ErrorCode.REFRESH_TOKEN_NOT_VALID
-
-
-class InvalidPasswordUpdateToken(NotAuthenticated):
-    DETAIL = ErrorCode.INVALID_PASSWORD_TOKEN
-
-
-class InvalidEmailCredentials(NotAuthenticated):
-    DETAIL = ErrorCode.EMAIL_AUTHENTICATION_REQUIRED
-
-
-class UserNotFound(NotAuthenticated):
-    DETAIL = "El usuario no fue encontrado"

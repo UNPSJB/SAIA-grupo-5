@@ -1,12 +1,24 @@
 import logging
 from typing import List, Optional
-from sqlalchemy import select, update
+from sqlalchemy import select, update, func
 from sqlalchemy.orm import Session
 from src.personal.models import Persona
 from src.personal import schemas, exceptions
 from src.auth.utils import get_password_hash
 
 logger = logging.getLogger(__name__)
+
+
+def _es_ultimo_administrador_activo(db: Session, persona_id: int) -> bool:
+    """True si, sacando a persona_id, no queda ningún otro administrador activo."""
+    otros_admins = db.scalar(
+        select(func.count()).select_from(Persona).where(
+            Persona.administrar.is_(True),
+            Persona.activo.is_(True),
+            Persona.id != persona_id,
+        )
+    )
+    return otros_admins == 0
 
 
 def crear_persona(db: Session, persona: schemas.PersonaCreate) -> Persona:
@@ -67,6 +79,9 @@ def modificar_persona(db: Session, persona_id: int, persona: schemas.PersonaUpda
     if not nuevo_operar and not nuevo_administrar:
         raise exceptions.DebeTenerCapacidad()
 
+    if db_persona.administrar and not nuevo_administrar and _es_ultimo_administrador_activo(db, persona_id):
+        raise exceptions.UltimoAdministrador()
+
     # Validar unicidad si cambian dni o mail
     if persona.dni and persona.dni != db_persona.dni:
         if db.scalar(select(Persona).where(Persona.dni == persona.dni, Persona.id != persona_id)):
@@ -93,6 +108,8 @@ def modificar_persona(db: Session, persona_id: int, persona: schemas.PersonaUpda
 
 def cambiar_estado_persona(db: Session, persona_id: int) -> Persona:
     db_persona = leer_persona(db, persona_id)
+    if db_persona.activo and db_persona.administrar and _es_ultimo_administrador_activo(db, persona_id):
+        raise exceptions.UltimoAdministrador()
     db_persona.activo = not db_persona.activo
     db.commit()
     db.refresh(db_persona)
@@ -101,6 +118,8 @@ def cambiar_estado_persona(db: Session, persona_id: int) -> Persona:
 
 def eliminar_persona(db: Session, persona_id: int) -> Persona:
     db_persona = leer_persona(db, persona_id)
+    if db_persona.activo and db_persona.administrar and _es_ultimo_administrador_activo(db, persona_id):
+        raise exceptions.UltimoAdministrador()
     db_persona.activo = False
     db.commit()
     db.refresh(db_persona)

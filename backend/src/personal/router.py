@@ -1,30 +1,25 @@
 import logging
-from fastapi import APIRouter, Depends
+from fastapi import Depends
 from sqlalchemy.orm import Session
 from src.database import get_db
 from src.personal import schemas, services, models
 from src.auth.dependencies import tiene_permiso_administrar, get_current_persona
+from src.auth.router_base import PermissionedRouter
 from src.exceptions import PermissionDenied
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/personal", tags=["personal"])
+router = PermissionedRouter(prefix="/personal", tags=["personal"])
 
 
 @router.post("/", response_model=schemas.Persona)
-def create_persona(
-    persona: schemas.PersonaCreate,
-    db: Session = Depends(get_db),
-    _admin: models.Persona = Depends(tiene_permiso_administrar),
-):
+def create_persona(persona: schemas.PersonaCreate, db: Session = Depends(get_db)):
     return services.crear_persona(db, persona)
 
 
-@router.get("/", response_model=list[schemas.Persona])
-def read_personas(
-    db: Session = Depends(get_db),
-    _admin: models.Persona = Depends(tiene_permiso_administrar),
-):
+# Excepción a la regla por default: el listado completo también requiere admin.
+@router.get("/", response_model=list[schemas.Persona], dependencies=[Depends(tiene_permiso_administrar)])
+def read_personas(db: Session = Depends(get_db)):
     logger.info("Consultando la lista de personal desde endpoint...")
     return services.listar_personas(db)
 
@@ -41,28 +36,15 @@ def read_persona(
 
 
 @router.put("/{persona_id}", response_model=schemas.Persona)
-def update_persona(
-    persona_id: int,
-    persona: schemas.PersonaUpdate,
-    db: Session = Depends(get_db),
-    _admin: models.Persona = Depends(tiene_permiso_administrar),
-):
+def update_persona(persona_id: int, persona: schemas.PersonaUpdate, db: Session = Depends(get_db)):
     return services.modificar_persona(db, persona_id, persona)
 
 
 @router.patch("/{persona_id}/estado", response_model=schemas.Persona)
-def change_persona_status(
-    persona_id: int,
-    db: Session = Depends(get_db),
-    _admin: models.Persona = Depends(tiene_permiso_administrar),
-):
+def change_persona_status(persona_id: int, db: Session = Depends(get_db)):
     return services.cambiar_estado_persona(db, persona_id)
 
 
 @router.delete("/{persona_id}", response_model=schemas.Persona)
-def delete_persona(
-    persona_id: int,
-    db: Session = Depends(get_db),
-    _admin: models.Persona = Depends(tiene_permiso_administrar),
-):
+def delete_persona(persona_id: int, db: Session = Depends(get_db)):
     return services.eliminar_persona(db, persona_id)

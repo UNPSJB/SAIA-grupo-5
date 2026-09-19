@@ -29,3 +29,7 @@ class MailExistente(BadRequest):
 
 class DebeTenerCapacidad(BadRequest):
     DETAIL = ErrorCode.DEBE_TENER_CAPACIDAD
+
+
+class UltimoAdministrador(BadRequest):
+    DETAIL = ErrorCode.ULTIMO_ADMINISTRADOR

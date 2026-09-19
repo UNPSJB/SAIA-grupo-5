@@ -6,11 +6,9 @@ export const NoAutorizado: React.FC = () => {
     const navigate = useNavigate();
 
     const goBack = () => {
-        if (window.history.length > 2) {
-            navigate(-1);
-        } else {
-            navigate('/', { replace: true });
-        }
+        // No usamos navigate(-1): Vamos a un
+        // lugar que sabemos que es accesible para cualquier logueado.
+        navigate('/', { replace: true });
     };
 
     return (

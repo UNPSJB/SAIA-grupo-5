@@ -5,11 +5,13 @@ import { PageHeader } from '../../../components/PageHeader'
 import { PersonaForm } from '../components/PersonaForm'
 import { api } from '../../../libs/axios'
 import { useApi } from '../../../hooks/useApi'
+import { useAuth } from '../../../hooks/useAuth'
 import type { NewPersona, Persona } from '../types'
 
 export function EditarPersonaPage() {
   const navigate = useNavigate()
   const { id } = useParams()
+  const { currentUser, refreshCurrentUser } = useAuth()
 
   const { data: persona, isLoading, error } = useApi<Persona>(`/personal/${id}`)
 
@@ -17,6 +19,14 @@ export function EditarPersonaPage() {
     try {
       const { data: actualizada } = await api.put<Persona>(`/personal/${id}`, datos)
       await mutate(`/personal/${id}`, actualizada, false)
+
+      // Si te editaste a vos mismo (ej. te sacaste el permiso de administrar),
+      // el estado de currentUser queda desactualizado y el resto de la app
+      // sigue pensando que tenés los permisos viejos hasta que se refresque.
+      if (currentUser && actualizada.id === currentUser.id) {
+        await refreshCurrentUser()
+      }
+
       await mutate('/personal/')
       navigate('/personal')
     } catch (err: any) {

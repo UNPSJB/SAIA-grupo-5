@@ -1,7 +1,7 @@
 # scripts/seed_personal.py
 """
 Pobla la base de datos con personal de prueba.
-Uso: py -m scripts.seed_personal
+Uso: python -m scripts.seed_personal
 """
 from faker import Faker
 

@@ -125,6 +125,13 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         }
     }, [fetchCurrentUser]);
 
+    // Vuelve a pedir los datos de currentUser (ej. cuando la propia persona
+    // edita sus permisos y el estado en memoria queda desactualizado).
+    const refreshCurrentUser = useCallback(async (): Promise<void> => {
+        if (!currentUser) return
+        await fetchCurrentUser(currentUser.id, token)
+    }, [currentUser, token, fetchCurrentUser])
+
     const logout = async (): Promise<void> => {
         try {
             await api.delete(LOGOUT_API_URL, { withCredentials: true });
@@ -148,6 +155,7 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                 setError,
                 login,
                 logout,
+                refreshCurrentUser,
                 api,
             }}
         >

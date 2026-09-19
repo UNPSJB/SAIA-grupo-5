@@ -15,6 +15,7 @@ export interface AuthContextType {
     setError: (value: string | null) => void;
     login: (loginData: LoginData) => Promise<boolean>;
     logout: () => Promise<void>;
+    refreshCurrentUser: () => Promise<void>;
     api: AxiosInstance;
 }
 
