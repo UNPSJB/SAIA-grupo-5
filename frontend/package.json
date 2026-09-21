@@ -17,6 +17,7 @@
     "react-bootstrap": "^2.10.10",
     "react-data-table-component": "^8.9.0",
     "react-dom": "^19.2.8",
+    "react-hook-form": "^7.88.0",
     "react-router-dom": "^7.18.3",
     "swr": "^2.5.1"
   },
