@@ -153,7 +153,7 @@ export function ListPage() {
 
     return (
         <Container>
-            <Row className="p-2" align-items-center>
+            <Row className="p-2 align-items-center" >
                 <Col>
                     <PageHeader title="Listado de Insumos" />
                 </Col>
