@@ -11,7 +11,7 @@ interface InsumoQuimicoFormProps {
     valoresIniciales?: { nombre: string; unidad_medida: UnidadMedida, tipo_quimico_id: number };
 }
 
-// 1. Definimos la interfaz interna para RHF
+
 interface InsumoQuimicoFormData {
     nombre: string;
     unidad_medida: UnidadMedida | "";
@@ -82,14 +82,14 @@ export function InsumoQuimicoForm({ textoBoton, onSubmit, valoresIniciales }: In
                 <Form.Label className="p-1 fw-bold">Tipo de Quimico</Form.Label>
                 <Form.Select
                     {...register("tipo_quimico_id", {
-                        required: "El tipo de quimico es obligatorio."
+                    required: "El tipo de quimico es obligatorio."
                     })}
                     isInvalid={!!errors.tipo_quimico_id}
                 >
                     <option value="" disabled> Seleccione un tipo de quimico</option>
                     {isLoading && <option disabled> Cargando tipos de quimicos...</option>}
                     {tiposQuimicos?.map((tipo) => (
-                        <option key={tipo.id} value={tipo.nombre}>
+                        <option key={tipo.id} value={tipo.id}>
                             {tipo.nombre}
                         </option>
                     ))}

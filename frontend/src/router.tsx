@@ -15,7 +15,12 @@ import { ListPage as PersonalListPage } from './feature/Personal/pages/ListPage.
 import { EditarPersonaPage } from './feature/Personal/pages/EditarPersonaPage.tsx'
 import { NuevaPersonaPage } from './feature/Personal/pages/NuevaPersonaPage.tsx'
 
+import { ListPage as InsumoQuimicoListPage } from './feature/InsumosQuimicos/pages/ListPage.tsx'
+import { NuevoInsumoQuimicoPage } from './feature/InsumosQuimicos/pages/NuevoInsumoQuimicoPage.tsx'
+import { EditarInsumoQuimicoPage } from './feature/InsumosQuimicos/pages/EditarInsumoQuimicoPage.tsx'
+
 import App from './App.tsx'
+
 
 const router = createBrowserRouter([
   {
@@ -45,6 +50,14 @@ const router = createBrowserRouter([
           { index: true, element: <PersonalListPage /> },
           { path: 'new', element: <NuevaPersonaPage /> },
           { path: ':id/edit', element: <EditarPersonaPage /> },
+        ],
+      },
+      {
+        path: 'insumos-quimicos',
+        children: [
+          {index: true, element: <InsumoQuimicoListPage />},
+          {path: 'new', element: <NuevoInsumoQuimicoPage />},
+          {path: ':id/edit', element: <EditarInsumoQuimicoPage />}
         ],
       },
       { path: '*', element: <Page404 /> },

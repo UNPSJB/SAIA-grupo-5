@@ -39,7 +39,12 @@ def eliminar_insumo_quimico(db: Session, insumo_quimico_id: int) -> schemas.Insu
 
 def modificar_insumo_quimico(db: Session, insumo_quimico_id: int, insumo_quimico: schemas.InsumoQuimicoUpdate) -> schemas.InsumoQuimico:  # Permite modificar el insumo pero si o si se tienen que enviar todos los campos
     db_insumo_quimico = leer_insumo_quimico(db, insumo_quimico_id)
-    db.execute(update(InsumoQuimico).where(InsumoQuimico.id == insumo_quimico_id).values(**insumo_quimico.model_dump()))
+
+    # Se modifico esto ya que generaba problemas al tratar de editar un insumo quimico
+    insumo_quimico_actualizado = insumo_quimico.model_dump()
+    for key, value in insumo_quimico_actualizado.items():
+        setattr(db_insumo_quimico, key, value)
+
     db.commit()
     db.refresh(db_insumo_quimico)
     return db_insumo_quimico
