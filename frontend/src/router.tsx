@@ -11,7 +11,7 @@ import { EquiposPage } from './feature/Equipos/pages/ListPage.tsx';
 import { EditarEquipoPage } from './feature/Equipos/pages/EditarEquipoPage.tsx';
 import { NuevoEquipoPage } from './feature/Equipos/pages/NuevoEquipoPage.tsx';
 
-import { SectoresPage } from './feature/Sectores/pages/ListPage.tsx';
+import { ListPage as SectoresPage } from './feature/Sectores/pages/ListPage.tsx';
 import { EditarSectorPage } from './feature/Sectores/pages/EditarSectorPage.tsx';
 import { NuevoSectorPage } from './feature/Sectores/pages/NuevoSectorPage.tsx';
 

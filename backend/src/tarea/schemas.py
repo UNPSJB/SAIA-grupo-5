@@ -6,6 +6,8 @@ class TareaBase(BaseModel):
     nombre: Annotated[str, Field(min_length=1, max_length=80)]
     descripcion: Annotated[str | None, Field(max_length=255)] = None
     frecuencia: Frecuencia
+    foto_obligatoria: bool = False
+    accion_correctiva: Annotated[str | None, Field(max_length=255)] = None
     plan_limpieza_id: int
 
 class TareaCreate(TareaBase):

@@ -9,14 +9,16 @@ import { PageHeader } from '../../../components/PageHeader';
 import { useApi } from '../../../hooks/useApi';
 
 import { DeleteSectorModal } from '../components/DeleteSectorModal';
+import { EquiposDeSectorModal } from '../components/EquiposDeSectorModal';
 import type { Sector } from '../types';
 
 
-export function SectoresPage() {
+export function ListPage() {
     const navigate = useNavigate();     // Esto se usa para cambiar de pagina cuando cree el sector
     const [search, setSearch] = useState('');
     const { data: sectores, error, isLoading } = useApi<Sector[]>("/sectores/")
     const [sectorToDelete, setSectorToDelete] = useState<Sector | null>(null);
+    const [sectorEquipos, setSectorEquipos] = useState<Sector | null>(null);
 
     // useMemo infiere que retorna un array de tipo Sector[]
     const filteredSectores = useMemo(() => {
@@ -98,6 +100,20 @@ export function SectoresPage() {
             )
         },
         {
+            name: "Equipos",
+            center: true,
+            minWidth: "160px",
+            cell: (row) => (
+                <Button
+                    variant="outline-primary"
+                    size="sm"
+                    onClick={() => setSectorEquipos(row)}
+                >
+                    <i className="bi bi-eye me-1"></i>Ver equipos
+                </Button>
+            )
+        },
+        {
             name: "Acciones",
             center: true,
             minWidth: "220px",
@@ -149,6 +165,10 @@ export function SectoresPage() {
                 sector={sectorToDelete}
                 onHide={() => setSectorToDelete(null)}
                 onDeleted={() => mutate("/sectores/")}
+            />
+            <EquiposDeSectorModal
+                sector={sectorEquipos}
+                onHide={() => setSectorEquipos(null)}
             />
         </Container>
     );

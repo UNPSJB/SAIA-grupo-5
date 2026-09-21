@@ -7,6 +7,7 @@ if TYPE_CHECKING:
     from src.sector.models import Sector
     from src.tarea.models import Tarea
     from src.equipos.models import Equipo
+    from src.superficies.models import Superficie
 
 sector_plan_limpieza = Table(
     "sector_plan_limpieza",
@@ -29,3 +30,6 @@ class PlanLimpieza(ModeloBase):
     )
     tareas: Mapped[list["Tarea"]] = relationship(back_populates="plan_limpieza")
     equipos: Mapped[list["Equipo"]] = relationship(back_populates="plan_limpieza")
+    superficies: Mapped[list["Superficie"]] = relationship(
+        secondary="superficie_plan_limpieza", back_populates="planes"
+    )

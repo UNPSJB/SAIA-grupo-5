@@ -12,6 +12,7 @@ from src.sector.models import Sector
 from src.plan_limpieza.models import PlanLimpieza
 from src.tarea.models import Tarea
 from src.tareas_ocurrencia.models import TareaOcurrencia
+from src.superficies.models import Superficie
 
 # Importamos la configuración validada por Pydantic
 from src.config import settings
@@ -27,6 +28,7 @@ from src.sector.router import router as sector_router
 from src.plan_limpieza.router import router as plan_limpieza_router
 from src.tarea.router import router as tarea_router
 from src.tareas_ocurrencia.router import router as tareas_ocurrencia_router
+from src.superficies.router import router as superficies_router
 from src.scheduler.scheduler import scheduler, iniciar_scheduler
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -98,4 +100,5 @@ app.include_router(sector_router)
 app.include_router(plan_limpieza_router)
 app.include_router(tarea_router)
 app.include_router(tareas_ocurrencia_router)
+app.include_router(superficies_router)
 
