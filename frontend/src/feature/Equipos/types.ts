@@ -6,11 +6,12 @@ export type Equipo = {
     categoria: string
     ubicacion: string
     estado: boolean
-    sector: Sector
+    sector: Sector | null
 }
 
 export type NewEquipo = {
     nombre: string
     categoria: string
     ubicacion: string
+    sector_id: number | null
 }

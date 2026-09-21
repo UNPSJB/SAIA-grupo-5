@@ -3,11 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { PageHeader } from "../../../components/PageHeader";
 import { EquipoForm } from "../components/EquipoForm";
 import { api } from "../../../libs/axios";
+import type { NewEquipo } from "../types";
 
 export function NuevoEquipoPage(){
     const navigate = useNavigate();     // Esto se usa para cambiar de pagina cuando cree el equipo
 
-    const guardarEquipo = async (datos: {nombre: string, categoria: string; ubicacion: string}) => {
+    const guardarEquipo = async (datos: NewEquipo) => {
         try{
             await api.post("/equipos", datos);
             navigate("/equipos");
