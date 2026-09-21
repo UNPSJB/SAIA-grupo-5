@@ -1,4 +1,4 @@
-import { useState, useMemo} from "react";
+import { useState, useMemo } from "react";
 import { mutate } from 'swr';
 import { Alert, Button, Col, Container, Form, Row, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
@@ -8,15 +8,17 @@ import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
 import { useApi } from '../../../hooks/useApi';
 
- import { DeleteEquipoModal } from '../components/DeleteEquipoModal'; 
+import { DeleteEquipoModal } from '../components/DeleteEquipoModal';
 import type { Equipo } from "../types";
+import { AgregarSectorModal } from "../components/AgregarSectorModal";
 
 export function EquiposPage() {
     const navigate = useNavigate();
     const [search, setSearch] = useState('');
     const { data: equipos, error, isLoading } = useApi<Equipo[]>("/equipos")
     const [equipoToDelete, setEquipoToDelete] = useState<Equipo | null>(null);
-    
+    const [equipoSector, setEquipoSector] = useState<Equipo | null>(null);
+
     const filteredInsumos = useMemo(() => {
         if (!Array.isArray(equipos)) return [];
         return (equipos ?? []).filter((equipo) => {
@@ -27,7 +29,7 @@ export function EquiposPage() {
             );
         });
     }, [search, equipos]);
-    
+
     const subHeaderComponentMemo = useMemo(() => {
         return (
             <Form.Control
@@ -81,8 +83,14 @@ export function EquiposPage() {
             grow: 2,
         },
         {
-            name: "Ubicación",
-            selector: row => row.ubicacion,
+            name: "Sector",
+            selector: row => row.sector ? row.sector.nombre : (<Button
+                variant="outline-primary"
+                size="sm"
+                onClick={() => setEquipoSector(row)}
+            >
+                <i className="bi bi-plus-lg me-1"></i>Sector
+            </Button>),
             sortable: true,
             center: true,
             grow: 2,
@@ -93,7 +101,7 @@ export function EquiposPage() {
             sortable: true,
             center: true,
             cell: row => (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10}}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div
                         style={{
                             padding: '4px 12px',
@@ -127,22 +135,24 @@ export function EquiposPage() {
                     </Button>
 
                     {row.estado && (
-                    <Button
-                        variant="outline-danger"
-                        size="sm"
-                        onClick={() => setEquipoToDelete(row)}
-                    >
-                        <i className="bi bi-trash3 me-1"></i>Eliminar
-                    </Button>
+                        <Button
+                            variant="outline-danger"
+                            size="sm"
+                            onClick={() => setEquipoToDelete(row)}
+                        >
+                            <i className="bi bi-trash3 me-1"></i>Eliminar
+                        </Button>
                     )}
                 </div>
             )
         },
     ];
 
+    console.log(equipos)
+
     return (
         <Container>
-            <Row className="p-2" align-items-center>
+            <Row className="p-2">
                 <Col>
                     <PageHeader title="Listado de Equipos" />
                 </Col>
@@ -153,8 +163,8 @@ export function EquiposPage() {
                     <Button
                         variant="primary"
                         size="sm"
-                        onClick={() => navigate("/equipos/new")}     
-                        style={{whiteSpace: "nowrap"}}               
+                        onClick={() => navigate("/equipos/new")}
+                        style={{ whiteSpace: "nowrap" }}
                     >
                         + Nuevo Equipo
                     </Button>
@@ -166,7 +176,11 @@ export function EquiposPage() {
                 onHide={() => setEquipoToDelete(null)}
                 onDeleted={() => mutate("/equipos")}
             />
-            
+            <AgregarSectorModal
+                equipo={equipoSector}
+                onHide={() => setEquipoSector(null)}
+            />
+
         </Container>
     );
 }

@@ -19,8 +19,8 @@ class Equipo(ModeloBase):
     estado: Mapped[bool] = mapped_column(default=True)
     sector_id: Mapped[int | None] = mapped_column(ForeignKey("sectores.id"), nullable=True)
     sector: Mapped["Sector | None"] = relationship(back_populates="equipos")
-    plan_limpieza_id: Mapped[int] = mapped_column(ForeignKey("planes_limpieza.id"), nullable=False)
-    plan_limpieza: Mapped["PlanLimpieza"] = relationship(back_populates="equipos")
+    plan_limpieza_id: Mapped[int | None] = mapped_column(ForeignKey("planes_limpieza.id"), nullable=True)
+    plan_limpieza: Mapped["PlanLimpieza | None"] = relationship(back_populates="equipos")
 
     """ # Implementaciones abiertas a cambios futuros
 
