@@ -25,9 +25,9 @@ def listar_insumos_quimicos(db: Session) -> List[schemas.InsumoQuimico]:
     return db.scalars(select(InsumoQuimico).options(joinedload(InsumoQuimico.tipo))).all()
 
 def leer_insumo_quimico(db: Session, insumo_quimico_id: int) -> schemas.InsumoQuimico:
-    db_insumo_quimico = db.scalar(select(InsumoQuimico).where(InsumoQuimico.id == insumo_quimico_id).options(joinedload(InsumoQuimico.tipo)))
+    db_insumo_quimico = db.scalar(select(InsumoQuimico).where(InsumoQuimico.id == insumo_quimico_id).options(joinedload(InsumoQuimico.tipo)))       # El joinedload es para traer toda la informacion del tipo de quimico
     if db_insumo_quimico is None:
-        raise exceptions.InsumoQuimicoNoEncontrado
+        raise exceptions.InsumoQuimicoNoEncontrado()
     return db_insumo_quimico
 
 def eliminar_insumo_quimico(db: Session, insumo_quimico_id: int) -> schemas.InsumoQuimicoDelete:
