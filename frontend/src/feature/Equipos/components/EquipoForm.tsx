@@ -2,24 +2,27 @@ import { Alert, Button, Form } from 'react-bootstrap';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Sector } from '../../Sectores/types';
+import type { PlanLimpieza } from '../../PlanesLimpieza/types';
 import { useApi } from '../../../hooks/useApi';
 
 interface EquipoFormProps {
   textoBoton: string;
-  onSubmit: (datos: { nombre: string; categoria: string; ubicacion: string; sector_id: number | null }) => void;
-  valoresIniciales?: { nombre: string; categoria: string; ubicacion: string; sector_id?: number | null }
+  onSubmit: (datos: { nombre: string; categoria: string; ubicacion: string; sector_id: number | null; plan_limpieza_id: number | null }) => void;
+  valoresIniciales?: { nombre: string; categoria: string; ubicacion: string; sector_id?: number | null; plan_limpieza_id?: number | null }
 }
 
 export function EquipoForm({ textoBoton, onSubmit, valoresIniciales }: EquipoFormProps) {
   const [validated, setValidated] = useState(false);
   const navigate = useNavigate();
   const { data: sectores, error, isLoading } = useApi<Sector[]>("/sectores/")
+  const { data: planesLimpieza, error: errorPlanes, isLoading: isLoadingPlanes } = useApi<PlanLimpieza[]>("/planes-limpieza/")
 
   // Usamos useState y definimos que los valores pueden ser vacios por si se crea un nuevo equipo o que tengan un valor anterior para mostrarlos en caso de editar el insumo
   const [nombre, setNombre] = useState(valoresIniciales?.nombre || "");
   const [categoria, setCategoria] = useState(valoresIniciales?.categoria || "");
   const [ubicacion, setUbicacion] = useState(valoresIniciales?.ubicacion || "");
-  const [sector, setSector] = useState(valoresIniciales?.sector_id?.toString() || "");   
+  const [sector, setSector] = useState(valoresIniciales?.sector_id?.toString() || "");
+  const [planLimpieza, setPlanLimpieza] = useState(valoresIniciales?.plan_limpieza_id?.toString() || "");
 
   // El handleSubmit se usa para que no actualice la pagina al apretar el boton y envia a la pagina que lo utilice los datos
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
@@ -31,6 +34,7 @@ export function EquipoForm({ textoBoton, onSubmit, valoresIniciales }: EquipoFor
       categoria,
       ubicacion,
       sector_id: sector ? Number(sector) : null,
+      plan_limpieza_id: planLimpieza ? Number(planLimpieza) : null,
     });
   }
 
@@ -86,6 +90,27 @@ export function EquipoForm({ textoBoton, onSubmit, valoresIniciales }: EquipoFor
           {error && (
             <Alert variant="danger" className="mt-2 mb-0 py-2">
               No se pudieron cargar los sectores.
+            </Alert>
+          )}
+        </Form.Group>
+
+        <Form.Group className="mb-3 text-start" controlId="formPlanLimpieza">
+          <Form.Label className="p-1 fw-bold">Plan de Limpieza</Form.Label>
+          <Form.Select
+            value={planLimpieza}
+            onChange={(e) => setPlanLimpieza(e.target.value)}
+            disabled={isLoadingPlanes}
+          >
+            <option value="">Sin plan de limpieza asignado</option>
+            {(planesLimpieza ?? []).map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.nombre}
+              </option>
+            ))}
+          </Form.Select>
+          {errorPlanes && (
+            <Alert variant="danger" className="mt-2 mb-0 py-2">
+              No se pudieron cargar los planes de limpieza.
             </Alert>
           )}
         </Form.Group>

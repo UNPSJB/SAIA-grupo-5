@@ -21,7 +21,7 @@ def crear_equipo(db: Session, equipo: schemas.EquipoCreate) -> schemas.Equipo:
 
 def listar_equipos(db:Session) -> List[schemas.Equipo]:
     return db.scalars(
-        select(Equipo).options(joinedload(Equipo.sector))
+        select(Equipo).options(joinedload(Equipo.sector), joinedload(Equipo.plan_limpieza))
     ).all()
 
 def leer_equipo(db: Session, equipo_id: int) -> schemas.Equipo:

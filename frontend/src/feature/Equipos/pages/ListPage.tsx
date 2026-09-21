@@ -11,6 +11,7 @@ import { useApi } from '../../../hooks/useApi';
 import { DeleteEquipoModal } from '../components/DeleteEquipoModal';
 import type { Equipo } from "../types";
 import { AgregarSectorModal } from "../components/AgregarSectorModal";
+import { VerPlanLimpiezaModal } from "../components/VerPlanLimpiezaModal";
 
 export function EquiposPage() {
     const navigate = useNavigate();
@@ -18,6 +19,7 @@ export function EquiposPage() {
     const { data: equipos, error, isLoading } = useApi<Equipo[]>("/equipos")
     const [equipoToDelete, setEquipoToDelete] = useState<Equipo | null>(null);
     const [equipoSector, setEquipoSector] = useState<Equipo | null>(null);
+    const [equipoPlan, setEquipoPlan] = useState<Equipo | null>(null);
 
     const filteredInsumos = useMemo(() => {
         if (!Array.isArray(equipos)) return [];
@@ -62,17 +64,9 @@ export function EquiposPage() {
 
     const columns: TableColumn<Equipo>[] = [
         {
-            name: "ID",
-            selector: row => row.id,
-            sortable: true,
-            center: true,
-            maxWidth: "60px",
-        },
-        {
             name: "Nombre",
             selector: row => row.nombre,
             sortable: true,
-            center: true,
             grow: 2,
         },
         {
@@ -94,6 +88,20 @@ export function EquiposPage() {
             sortable: true,
             center: true,
             grow: 2,
+        },
+        {
+            name: "Plan de Limpieza",
+            center: true,
+            grow: 2,
+            cell: row => (
+                <Button
+                    variant="outline-primary"
+                    size="sm"
+                    onClick={() => setEquipoPlan(row)}
+                >
+                    <i className="bi bi-eye me-1"></i>Ver plan
+                </Button>
+            ),
         },
         {
             name: 'Estado',
@@ -179,6 +187,10 @@ export function EquiposPage() {
             <AgregarSectorModal
                 equipo={equipoSector}
                 onHide={() => setEquipoSector(null)}
+            />
+            <VerPlanLimpiezaModal
+                equipo={equipoPlan}
+                onHide={() => setEquipoPlan(null)}
             />
 
         </Container>
