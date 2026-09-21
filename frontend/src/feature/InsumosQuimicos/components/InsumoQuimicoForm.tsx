@@ -49,6 +49,14 @@ export function InsumoQuimicoForm({ textoBoton, onSubmit, valoresIniciales }: In
                     placeholder="Ingrese el nombre"
                     {...register("nombre", {
                     required: "El nombre del insumo es obligatorio.",
+                    minLength: {
+                        value: 3,
+                        message: "El nombre debe tener al menos 3 caracteres."
+                    },
+                    maxLength: {
+                        value: 40,
+                        message: "El nombre no puede superar los 40 caracteres."
+                    },
                     validate: (value) => value.trim() !== "" || "El nombre no puede ser solo espacios en blanco."
                     })}
                     isInvalid={!!errors.nombre}

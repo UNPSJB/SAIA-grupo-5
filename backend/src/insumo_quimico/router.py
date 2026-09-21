@@ -31,3 +31,7 @@ def delete_insumo_quimico(insumo_quimico_id: int, db: Session = Depends(get_db))
 @router.put("/{insumo_quimico_id}", response_model=schemas.InsumoQuimicoUpdate)
 def update_insumo_quimico(insumo_quimico_id: int, insumo_quimico: schemas.InsumoQuimicoUpdate, db: Session = Depends(get_db)):
     return services.modificar_insumo_quimico(db, insumo_quimico_id, insumo_quimico)
+
+@router.patch("/{insumo_quimico_id}/estado", response_model=schemas.InsumoQuimico)
+def cambiar_estado_insumo_quimico(insumo_quimico_id: int, db: Session = Depends(get_db)):
+    return services.cambiar_estado_insumo_quimico(db, insumo_quimico_id)

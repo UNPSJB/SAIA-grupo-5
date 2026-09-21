@@ -152,19 +152,19 @@ export function ListPage() {
                     <Button
                         variant="outline-primary"
                         size="sm"
+                        disabled={!row.activo}      // Si no esta activo se muestra en gris y no se puede editar
                         onClick={() => navigate(`/insumos-quimicos/${row.id}/edit`)}
                     >
                         <i className="bi bi-pencil me-1"></i>Editar
                     </Button>
-                    {(row.activo &&
-                        <Button
-                            variant="outline-danger"
-                            size="sm"
-                            onClick={() => setInsumoQuimicoToDelete(row)}
-                        >
-                            <i className="bi bi-trash3 me-1"></i>Eliminar
-                        </Button>
-                    )}
+                    <Button
+                        variant={row.activo ? 'outline-danger' : 'outline-success'}
+                        size="sm"
+                        onClick={() => setInsumoQuimicoToDelete(row)}
+                    >
+                        <i className={`bi ${row.activo ? 'bi-dash-circle' : 'bi-check-circle'} me-1`}></i>
+                        {row.activo ? 'Dar de baja' : 'Dar de alta'}
+                    </Button>
                 </div>
             )
         },

@@ -9,7 +9,10 @@ logger = logging.getLogger(__name__)
 
 
 def crear_insumo_quimico(db: Session, insumo_quimico: schemas.InsumoQuimicoCreate) -> schemas.InsumoQuimico:
-    insumo_quimico_existente = db.scalars(select(InsumoQuimico).where(InsumoQuimico.nombre == insumo_quimico.nombre, InsumoQuimico.unidad_medida == insumo_quimico.unidad_medida)).first()
+    insumo_quimico_existente = db.scalars(select(InsumoQuimico)
+                                .where(InsumoQuimico.nombre == insumo_quimico.nombre,
+                                InsumoQuimico.unidad_medida == insumo_quimico.unidad_medida,
+                                InsumoQuimico.tipo_quimico_id == insumo_quimico.tipo_quimico_id)).first()
 
     if insumo_quimico_existente:
         raise exceptions.InsumoQuimicoDuplicado()
@@ -38,6 +41,15 @@ def eliminar_insumo_quimico(db: Session, insumo_quimico_id: int) -> schemas.Insu
     return db_insumo_quimico
 
 def modificar_insumo_quimico(db: Session, insumo_quimico_id: int, insumo_quimico: schemas.InsumoQuimicoUpdate) -> schemas.InsumoQuimico:  # Permite modificar el insumo pero si o si se tienen que enviar todos los campos
+    insumo_quimico_existente = db.scalars(select(InsumoQuimico)
+                                .where(InsumoQuimico.nombre == insumo_quimico.nombre,
+                                InsumoQuimico.unidad_medida == insumo_quimico.unidad_medida,
+                                InsumoQuimico.tipo_quimico_id == insumo_quimico.tipo_quimico_id,
+                                InsumoQuimico.id != insumo_quimico_id)).first()
+
+    if insumo_quimico_existente:
+        raise exceptions.InsumoQuimicoDuplicado()
+
     db_insumo_quimico = leer_insumo_quimico(db, insumo_quimico_id)
 
     # Se modifico esto ya que generaba problemas al tratar de editar un insumo quimico
@@ -45,6 +57,16 @@ def modificar_insumo_quimico(db: Session, insumo_quimico_id: int, insumo_quimico
     for key, value in insumo_quimico_actualizado.items():
         setattr(db_insumo_quimico, key, value)
 
+    db.commit()
+    db.refresh(db_insumo_quimico)
+    return db_insumo_quimico
+
+def cambiar_estado_insumo_quimico(db: Session, insumo_quimico_id: int) -> schemas.InsumoQuimico:
+    db_insumo_quimico = leer_insumo_quimico(db, insumo_quimico_id)
+    if db_insumo_quimico is None:
+        raise exceptions.InsumoQuimicoNoEncontrado()
+    
+    db_insumo_quimico.activo = not db_insumo_quimico.activo
     db.commit()
     db.refresh(db_insumo_quimico)
     return db_insumo_quimico
