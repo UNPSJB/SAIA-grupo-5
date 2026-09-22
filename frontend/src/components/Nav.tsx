@@ -39,6 +39,14 @@ export function Nav() {
                         <i className="bi bi-people me-2"></i>
                         Personal
                     </BSNav.Link>
+                    <BSNav.Link as={NavLink} to="/consumos_productos" end>
+                        <i className="bi bi-droplet-half me-2"></i>
+                        Consumo de Insumo 
+                    </BSNav.Link>
+                    <BSNav.Link as={NavLink} to="/consumos_productos/consulta">
+                        <i className="bi bi-droplet-half me-2"></i>
+                        Consulta de Consumo
+                    </BSNav.Link>
                 </BSNav>
             </div>
         </div>

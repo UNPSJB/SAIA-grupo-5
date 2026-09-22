@@ -15,6 +15,11 @@ import { ListPage as PersonalListPage } from './feature/Personal/pages/ListPage.
 import { EditarPersonaPage } from './feature/Personal/pages/EditarPersonaPage.tsx'
 import { NuevaPersonaPage } from './feature/Personal/pages/NuevaPersonaPage.tsx'
 
+import { ListPage as ConsumoProductoListPage } from './feature/ConsumoProducto/pages/ListPage.tsx'
+import { EditarConsumoProductoPage } from './feature/ConsumoProducto/pages/EditarConsumoProductoPage.tsx'
+import { NuevoConsumoProductoPage } from './feature/ConsumoProducto/pages/NuevoConsumoProductoPage.tsx'
+import { ConsumoAcumuladoPage } from './feature/ConsumoProducto/pages/ConsumoAcumuladoPage.tsx'
+
 import App from './App.tsx'
 
 const router = createBrowserRouter([
@@ -47,6 +52,17 @@ const router = createBrowserRouter([
           { path: ':id/edit', element: <EditarPersonaPage /> },
         ],
       },
+      
+      {
+        path: 'consumos_productos',
+        children: [
+          { index: true, element: <ConsumoProductoListPage /> },
+          { path: 'new', element: <NuevoConsumoProductoPage /> },
+          { path: ':id/edit', element: <EditarConsumoProductoPage /> },
+          { path: 'consulta', element: <ConsumoAcumuladoPage /> },
+        ],
+      },
+      
       { path: '*', element: <Page404 /> },
     ],
   },
