@@ -26,7 +26,7 @@ class Superficie(ModeloBase):
     __tablename__ = "superficies"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    nombre: Mapped[str] = mapped_column(String(60), index=True, nullable=False, unique=True)
+    nombre: Mapped[str] = mapped_column(String(120), index=True, nullable=False, unique=True)
     # Puramente descriptivo, sin validación ni lógica asociada por ahora.
     tipo_contacto: Mapped[str] = mapped_column(String(20), nullable=False)
     activo: Mapped[bool] = mapped_column(Boolean, default=True)

@@ -15,7 +15,12 @@ export function VerPlanLimpiezaModal({ equipo, onHide }: VerPlanLimpiezaModalPro
     );
 
     return (
-        <Modal show={equipo !== null} onHide={onHide}>
+        <Modal 
+            show={equipo !== null} 
+            onHide={onHide}
+            size="lg"
+            aria-labelledby="example-custom-modal-styling-title"
+        >
             <Modal.Header closeButton>
                 <Modal.Title>Plan de limpieza de {equipo?.nombre}</Modal.Title>
             </Modal.Header>

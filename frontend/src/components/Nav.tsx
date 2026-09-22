@@ -39,6 +39,10 @@ export function Nav() {
                         <i className="bi bi-geo-alt me-2"></i>
                         Sectores
                     </BSNav.Link>
+                    <BSNav.Link as={NavLink} to="/superficies">
+                        <i className="bi bi-virus2 me-2"></i>
+                        Superficies
+                    </BSNav.Link>
                     <BSNav.Link as={NavLink} to="/personal">
                         <i className="bi bi-people me-2"></i>
                         Personal

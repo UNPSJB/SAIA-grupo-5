@@ -19,6 +19,10 @@ import { ListPage as PersonalListPage } from './feature/Personal/pages/ListPage.
 import { EditarPersonaPage } from './feature/Personal/pages/EditarPersonaPage.tsx'
 import { NuevaPersonaPage } from './feature/Personal/pages/NuevaPersonaPage.tsx'
 
+import { SuperficiesPage } from './feature/Superficies/pages/ListPage.tsx';
+import { NuevaSuperficiePage } from './feature/Superficies/pages/NuevoSuperficiePage.tsx';
+import { EditarSuperficiePage } from './feature/Superficies/pages/EditarSuperficiePage.tsx';
+
 import App from './App.tsx'
 
 const router = createBrowserRouter([
@@ -57,6 +61,14 @@ const router = createBrowserRouter([
           { index: true, element: <PersonalListPage /> },
           { path: 'new', element: <NuevaPersonaPage /> },
           { path: ':id/edit', element: <EditarPersonaPage /> },
+        ],
+      },
+      {
+        path: 'superficies',
+        children: [
+          { index: true, element: <SuperficiesPage /> },
+          { path: 'new', element: <NuevaSuperficiePage /> },
+          { path: ':id/edit', element: <EditarSuperficiePage /> },
         ],
       },
       { path: '*', element: <Page404 /> },
