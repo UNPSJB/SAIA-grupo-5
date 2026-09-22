@@ -49,56 +49,6 @@ async def db_creation_lifespan(app: FastAPI):
         with engine.begin() as connection:
             connection.execute(text("ALTER TABLE personal ADD COLUMN activo BOOLEAN NOT NULL DEFAULT 1"))
 
-    if "insumos" in tablas and not any(
-        column["name"] == "activo" for column in inspector.get_columns("insumos")
-    ):
-        with engine.begin() as connection:
-            connection.execute(text("ALTER TABLE insumos ADD COLUMN activo BOOLEAN NOT NULL DEFAULT 1"))
-
-    if "planes_limpieza" in tablas and not any(
-        column["name"] == "activo" for column in inspector.get_columns("planes_limpieza")
-    ):
-        with engine.begin() as connection:
-            connection.execute(text("ALTER TABLE planes_limpieza ADD COLUMN activo BOOLEAN NOT NULL DEFAULT 1"))
-
-    if "tareas_ocurrencia" in tablas:
-        columnas_ocurrencia = {c["name"] for c in inspector.get_columns("tareas_ocurrencia")}
-        with engine.begin() as connection:
-            if "tarea_id_origen" not in columnas_ocurrencia:
-                connection.execute(text("ALTER TABLE tareas_ocurrencia ADD COLUMN tarea_id_origen INTEGER"))
-            if "plan_id_origen" not in columnas_ocurrencia:
-                connection.execute(text("ALTER TABLE tareas_ocurrencia ADD COLUMN plan_id_origen INTEGER"))
-
-    if "equipos" in tablas:
-        columnas_equipo = {c["name"]: c for c in inspector.get_columns("equipos")}
-        plan_limpieza_col = columnas_equipo.get("plan_limpieza_id")
-        # SQLite no soporta ALTER COLUMN: se reconstruye la tabla para volver
-        # plan_limpieza_id nullable, preservando los equipos ya cargados.
-        if plan_limpieza_col is not None and not plan_limpieza_col["nullable"]:
-            with engine.begin() as connection:
-                connection.execute(text("ALTER TABLE equipos RENAME TO equipos_old"))
-                connection.execute(text("""
-                    CREATE TABLE equipos (
-                        id INTEGER NOT NULL,
-                        nombre VARCHAR(100) NOT NULL,
-                        categoria VARCHAR(100) NOT NULL,
-                        ubicacion VARCHAR(100) NOT NULL,
-                        estado BOOLEAN NOT NULL,
-                        sector_id INTEGER,
-                        plan_limpieza_id INTEGER,
-                        PRIMARY KEY (id),
-                        FOREIGN KEY(sector_id) REFERENCES sectores (id),
-                        FOREIGN KEY(plan_limpieza_id) REFERENCES planes_limpieza (id)
-                    )
-                """))
-                connection.execute(text(
-                    "INSERT INTO equipos (id, nombre, categoria, ubicacion, estado, sector_id, plan_limpieza_id) "
-                    "SELECT id, nombre, categoria, ubicacion, estado, sector_id, plan_limpieza_id FROM equipos_old"
-                ))
-                connection.execute(text("DROP TABLE equipos_old"))
-                connection.execute(text("CREATE INDEX ix_equipos_id ON equipos (id)"))
-                connection.execute(text("CREATE INDEX ix_equipos_nombre ON equipos (nombre)"))
-
     iniciar_scheduler()
     yield
     scheduler.shutdown()

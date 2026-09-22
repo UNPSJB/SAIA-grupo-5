@@ -8,7 +8,7 @@ import { useApi } from "../../../hooks/useApi";
 import type { Superficie, NewSuperficie } from "../types";
 
 export function EditarSuperficiePage(){
-    const navigate = useNavigate();     // Esto se usa para cambiar de pagina cuando cree la superficie
+    const navigate = useNavigate();
     const { id } = useParams();
 
     const { data: superficie, isLoading, error } = useApi<Superficie>(`/superficies/${id}`);

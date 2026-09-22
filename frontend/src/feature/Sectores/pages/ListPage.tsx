@@ -20,7 +20,6 @@ export function ListPage() {
     const [sectorToDelete, setSectorToDelete] = useState<Sector | null>(null);
     const [sectorEquipos, setSectorEquipos] = useState<Sector | null>(null);
 
-    // useMemo infiere que retorna un array de tipo Sector[]
     const filteredSectores = useMemo(() => {
         if (!Array.isArray(sectores)) return [];     // Se agrego una validacion para preguntar si sectores es un array
         return (sectores ?? []).filter((sector) => {

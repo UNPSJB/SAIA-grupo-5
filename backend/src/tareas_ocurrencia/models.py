@@ -18,9 +18,7 @@ class TareaOcurrencia(ModeloBase):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     operario_id: Mapped[int | None] = mapped_column(nullable=True)
 
-    # NO relationship() a propósito, para no romper el desacople del
-    # historial si la Tarea se edita o se borra después.
-    # Sirven para poder generar el checklist diario. 
+    # Sirven para poder generar el checklist diario
     tarea_id_origen: Mapped[int | None] = mapped_column(nullable=True)
     plan_id_origen: Mapped[int | None] = mapped_column(nullable=True)
 

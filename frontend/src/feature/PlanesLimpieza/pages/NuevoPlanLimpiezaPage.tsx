@@ -8,7 +8,7 @@ import { getErrorMessage } from "../../../libs/errors";
 import type { NewPlanLimpieza } from "../types";
 
 export function NuevoPlanLimpiezaPage(){
-    const navigate = useNavigate();     // Esto se usa para cambiar de pagina cuando cree el plan
+    const navigate = useNavigate();
 
     const guardarPlan = async (datos: NewPlanLimpieza) => {
         try{

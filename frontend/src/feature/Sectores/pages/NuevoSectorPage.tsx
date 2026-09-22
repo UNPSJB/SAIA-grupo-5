@@ -8,7 +8,7 @@ import { getErrorMessage } from "../../../libs/errors";
 import type { NewSector } from "../types";
 
 export function NuevoSectorPage(){
-    const navigate = useNavigate();     // Esto se usa para cambiar de pagina cuando cree el sector
+    const navigate = useNavigate();
 
     const guardarSector = async (datos: NewSector) => {
         try{

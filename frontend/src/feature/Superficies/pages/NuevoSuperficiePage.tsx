@@ -8,7 +8,7 @@ import { getErrorMessage } from "../../../libs/errors";
 import type { NewSuperficie } from "../types";
 
 export function NuevaSuperficiePage(){
-    const navigate = useNavigate();     // Esto se usa para cambiar de pagina cuando cree la superficie
+    const navigate = useNavigate();
 
     const guardarSuperficie = async (datos: NewSuperficie) => {
         try{
