@@ -1,6 +1,6 @@
 export const EstadoTareaOcurrencia = {
-    PENDIENTE: "PENDIENTE",
-    COMPLETADA: "COMPLETADA",
+    PENDIENTE: "Pendiente",
+    COMPLETADA: "Completada",
 } as const;
 
 export type EstadoTareaOcurrencia = typeof EstadoTareaOcurrencia[keyof typeof EstadoTareaOcurrencia];
@@ -12,12 +12,7 @@ export type TareaOcurrencia = {
     tarea_descripcion_snap: string | null
     frecuencia_snap: string
     plan_nombre_snap: string
-    fecha: string
+    fecha: string   
     fecha_completado: string | null
     estado: EstadoTareaOcurrencia
 }
-
-export type TareaOcurrenciaCompletar = {
-    operario_id: number
-}
-

@@ -15,6 +15,8 @@ import { ListPage as PersonalListPage } from './feature/Personal/pages/ListPage.
 import { EditarPersonaPage } from './feature/Personal/pages/EditarPersonaPage.tsx'
 import { NuevaPersonaPage } from './feature/Personal/pages/NuevaPersonaPage.tsx'
 
+import { ListPage as ChecklistListPage } from './feature/Checklist/pages/ListPage.tsx'
+
 import App from './App.tsx'
 
 const router = createBrowserRouter([
@@ -47,7 +49,11 @@ const router = createBrowserRouter([
           { path: ':id/edit', element: <EditarPersonaPage /> },
         ],
       },
+      {
+       path: 'checklist', element: <ChecklistListPage /> 
+      },
       { path: '*', element: <Page404 /> },
+
     ],
   },
 ])
