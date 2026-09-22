@@ -47,7 +47,7 @@ export function ConsumoProductoForm({ textoBoton, onSubmit, valoresIniciales }: 
                         isInvalid={validated && !tarea_id.trim()}
                     />
                     <Form.Control.Feedback type="invalid">
-                        El id de la tarea es obligatorio.
+                        El ID de la tarea es obligatorio.
                     </Form.Control.Feedback>
                 </Form.Group>
             </Col>

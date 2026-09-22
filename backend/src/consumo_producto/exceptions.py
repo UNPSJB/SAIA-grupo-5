@@ -8,5 +8,5 @@ class ConsumoNoEncontrado(NotFound):
 class ConsumoDuplicado(BadRequest):
     DETAIL = ErrorCode.CONSUMO_DUPLICADO
 
-class ProductoNoConsumido(BadRequest):
-    DETAIL = ErrorCode.PRODUCTO_NO_CONSUMIDO
+#class ProductoNoConsumido(BadRequest):
+#    DETAIL = ErrorCode.PRODUCTO_NO_CONSUMIDO

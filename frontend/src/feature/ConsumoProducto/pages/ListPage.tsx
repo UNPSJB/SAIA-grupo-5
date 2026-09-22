@@ -168,7 +168,6 @@ export function ListPage() {
                 </div>
             )
         },
-        
     ];
 
     return (

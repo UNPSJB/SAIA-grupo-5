@@ -47,9 +47,9 @@ def listar_consumos_productos(db:Session) -> List[schemas.ConsumoProducto]:
     return db.scalars(select(ConsumoProducto)).all()
 
 def listar_consumos_por_producto(db:Session, insumo_id) -> List[schemas.ConsumoProducto]:
-    db_consumos = db.scalars(select(ConsumoProducto).where(ConsumoProducto.insumo_quimico_id == insumo_id)).all()
-    if not db_consumos:
-        raise exceptions.ProductoNoConsumido()
+    db_consumos = db.scalars(select(ConsumoProducto).where(ConsumoProducto.insumo_quimico_id == insumo_id, ConsumoProducto.estado == True)).all()
+    #if not db_consumos:
+    #    raise exceptions.ProductoNoConsumido()
     return db_consumos
 
 def consultar_consumo_acumulado(db:Session, insumo_id) -> float:

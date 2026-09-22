@@ -23,8 +23,6 @@ export function DeleteConsumoProductoModal({ show, onHide, onDeleted }: DeleteCo
         setValidated(false);
     };
 
-    //const handleHide = () => { setConsumoId(""); setValidated(false); onHide(); };
-
     return (
         <Modal show={show} onHide={onHide}>
             <Modal.Header closeButton>
