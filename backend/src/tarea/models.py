@@ -40,8 +40,3 @@ class Tarea(ModeloBase):
 
     # Para TareaOcurrencia
     ultima_generacion: Mapped[date | None] = mapped_column(Date, nullable=True)
-
-    # ElementoLimpieza
-    # elementos_limpieza: Mapped[list["ElementoLimpieza"]] = relationship(
-    #     secondary="tarea_elemento_limpieza", back_populates="tareas"
-    # )

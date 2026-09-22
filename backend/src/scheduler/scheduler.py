@@ -22,7 +22,7 @@ def job_generar_ocurrencias():
 def iniciar_scheduler():
     scheduler.add_job(
         job_generar_ocurrencias,
-        trigger=CronTrigger(hour=7, minute=0), # todos los días a las 07:00
+        trigger=CronTrigger(hour=17, minute=51), # todos los días a las 07:00
         id="generar_ocurrencias",
         replace_existing=True,
         misfire_grace_time=3600,
