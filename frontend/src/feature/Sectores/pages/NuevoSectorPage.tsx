@@ -4,6 +4,7 @@ import { mutate } from "swr";
 import { PageHeader } from "../../../components/PageHeader";
 import { SectorForm } from "../components/SectorForm";
 import { api } from "../../../libs/axios";
+import { getErrorMessage } from "../../../libs/errors";
 import type { NewSector } from "../types";
 
 export function NuevoSectorPage(){
@@ -14,13 +15,8 @@ export function NuevoSectorPage(){
             await api.post("/sectores/", datos);
             await mutate("/sectores/");
             navigate("/sectores");
-        } catch (error: any){   // Se modifico esto para poder mostrar el mensaje que tenemos en exceptions
-            if(error.response && error.response.data && error.response.data.detail){
-                alert(error.response.data.detail);
-            } else {
-                alert("No se pudo crear el sector.");       // Esto se puede cambiar porque se ve como la alerta de google que esta fea
-            }
-
+        } catch (error: any){
+            alert(getErrorMessage(error, "No se pudo crear el sector."));
             console.log(error)
         }
     };

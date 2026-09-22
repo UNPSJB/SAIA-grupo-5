@@ -22,7 +22,7 @@ class PlanLimpieza(ModeloBase):
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     nombre: Mapped[str] = mapped_column(String(60), nullable=False)
-    descripcion: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    descripcion: Mapped[str | None] = mapped_column(String(500), nullable=True)
     activo: Mapped[bool] = mapped_column(Boolean, default=True)
 
     sectores: Mapped[list["Sector"]] = relationship(

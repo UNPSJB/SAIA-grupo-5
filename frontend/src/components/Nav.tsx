@@ -43,6 +43,10 @@ export function Nav() {
                         <i className="bi bi-virus2 me-2"></i>
                         Superficies
                     </BSNav.Link>
+                    <BSNav.Link as={NavLink} to="/planes-limpieza">
+                        <i className="bi bi-clipboard-check me-2"></i>
+                        Planes de Limpieza
+                    </BSNav.Link>
                     <BSNav.Link as={NavLink} to="/personal">
                         <i className="bi bi-people me-2"></i>
                         Personal

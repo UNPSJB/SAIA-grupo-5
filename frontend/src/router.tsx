@@ -23,6 +23,10 @@ import { SuperficiesPage } from './feature/Superficies/pages/ListPage.tsx';
 import { NuevaSuperficiePage } from './feature/Superficies/pages/NuevoSuperficiePage.tsx';
 import { EditarSuperficiePage } from './feature/Superficies/pages/EditarSuperficiePage.tsx';
 
+import { PlanesLimpiezaPage } from './feature/PlanesLimpieza/pages/ListPage.tsx';
+import { NuevoPlanLimpiezaPage } from './feature/PlanesLimpieza/pages/NuevoPlanLimpiezaPage.tsx';
+import { EditarPlanLimpiezaPage } from './feature/PlanesLimpieza/pages/EditarPlanLimpiezaPage.tsx';
+
 import App from './App.tsx'
 
 const router = createBrowserRouter([
@@ -69,6 +73,14 @@ const router = createBrowserRouter([
           { index: true, element: <SuperficiesPage /> },
           { path: 'new', element: <NuevaSuperficiePage /> },
           { path: ':id/edit', element: <EditarSuperficiePage /> },
+        ],
+      },
+      {
+        path: 'planes-limpieza',
+        children: [
+          { index: true, element: <PlanesLimpiezaPage /> },
+          { path: 'new', element: <NuevoPlanLimpiezaPage /> },
+          { path: ':id/edit', element: <EditarPlanLimpiezaPage /> },
         ],
       },
       { path: '*', element: <Page404 /> },

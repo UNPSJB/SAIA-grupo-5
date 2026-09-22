@@ -4,6 +4,7 @@ import { mutate } from "swr";
 import { PageHeader } from "../../../components/PageHeader";
 import { SuperficieForm } from "../components/SuperficieForm";
 import { api } from "../../../libs/axios";
+import { getErrorMessage } from "../../../libs/errors";
 import type { NewSuperficie } from "../types";
 
 export function NuevaSuperficiePage(){
@@ -14,13 +15,8 @@ export function NuevaSuperficiePage(){
             await api.post("/superficies/", datos);
             await mutate("/superficies/");
             navigate("/superficies");
-        } catch (error: any){   // Se modifico esto para poder mostrar el mensaje que tenemos en exceptions
-            if(error.response && error.response.data && error.response.data.detail){
-                alert(error.response.data.detail);
-            } else {
-                alert("No se pudo crear la superficie.");
-            }
-
+        } catch (error: any){
+            alert(getErrorMessage(error, "No se pudo crear la superficie."));
             console.log(error)
         }
     };

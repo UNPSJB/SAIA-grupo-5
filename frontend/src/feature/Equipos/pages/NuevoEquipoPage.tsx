@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { PageHeader } from "../../../components/PageHeader";
 import { EquipoForm } from "../components/EquipoForm";
 import { api } from "../../../libs/axios";
+import { getErrorMessage } from "../../../libs/errors";
 import type { NewEquipo } from "../types";
 
 export function NuevoEquipoPage(){
@@ -12,13 +13,8 @@ export function NuevoEquipoPage(){
         try{
             await api.post("/equipos", datos);
             navigate("/equipos");
-        } catch (error){
-            if(error.response && error.response.data && error.response.data.detail){
-                alert(error.response.data.detail);
-            } else {
-                alert("No se pudo crear el equipo.");       // Esto se puede cambiar porque se ve como la alerta de google que esta fea
-            }
-
+        } catch (error: any){
+            alert(getErrorMessage(error, "No se pudo crear el equipo."));
             console.log(error)
         }
     };
