@@ -9,3 +9,8 @@ class Frecuencia(int, enum.Enum):
     SEMANAL = 7
     QUINCENAL = 15
     MENSUAL = 30
+
+class Prioridad(str, enum.Enum):
+    ALTA = "alta"
+    MEDIA = "media"
+    BAJA = "baja"

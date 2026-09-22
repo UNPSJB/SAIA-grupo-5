@@ -1,6 +1,6 @@
 import logging
 from typing import List
-from sqlalchemy import select, update, delete
+from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from src.tarea.models import Tarea
@@ -55,11 +55,9 @@ def modificar_tarea(db: Session, tarea_id: int, tarea: schemas.TareaUpdate) -> s
     return db_tarea
 
 
-# TODO: cuando se realice la relación con elemento_limpieza, debería 
-# realizarse baja lógica para no perder el historial de consumo de un elemento_limpieza
 def eliminar_tarea(db: Session, tarea_id: int) -> schemas.TareaDelete:
     db_tarea = leer_tarea(db, tarea_id)
-    db.expunge(db_tarea)  # hard delete
-    db.execute(delete(Tarea).where(Tarea.id == tarea_id))
+    db_tarea.activo = False
     db.commit()
+    db.refresh(db_tarea)
     return db_tarea

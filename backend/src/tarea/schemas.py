@@ -1,13 +1,14 @@
 from pydantic import BaseModel, ConfigDict, Field
 from typing import Annotated
-from src.tarea.constants import Frecuencia
+from src.tarea.constants import Frecuencia, Prioridad
 
 class TareaBase(BaseModel):
     nombre: Annotated[str, Field(min_length=1, max_length=80)]
-    descripcion: Annotated[str | None, Field(max_length=255)] = None
+    descripcion: Annotated[str | None, Field(max_length=500)] = None
     frecuencia: Frecuencia
+    prioridad: Prioridad
     foto_obligatoria: bool = False
-    accion_correctiva: Annotated[str | None, Field(max_length=255)] = None
+    accion_correctiva: Annotated[str | None, Field(max_length=500)] = None
     plan_limpieza_id: int
 
 class TareaCreate(TareaBase):
@@ -18,6 +19,7 @@ class TareaUpdate(TareaBase):
 
 class Tarea(TareaBase):
     id: int
+    activo: bool
 
     model_config = ConfigDict(from_attributes=True)
 

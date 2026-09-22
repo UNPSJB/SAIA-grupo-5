@@ -79,7 +79,7 @@ def corresponde_generar(tarea: Tarea, hoy: date) -> bool:
 
 def generar_ocurrencias_pendientes(db: Session) -> list[TareaOcurrencia]:
     hoy = date.today()
-    tareas = db.scalars(select(Tarea)).all()
+    tareas = db.scalars(select(Tarea).where(Tarea.activo == True)).all()
 
     generadas = []
     for tarea in tareas:

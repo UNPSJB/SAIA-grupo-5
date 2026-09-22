@@ -27,6 +27,8 @@ import { PlanesLimpiezaPage } from './feature/PlanesLimpieza/pages/ListPage.tsx'
 import { NuevoPlanLimpiezaPage } from './feature/PlanesLimpieza/pages/NuevoPlanLimpiezaPage.tsx';
 import { EditarPlanLimpiezaPage } from './feature/PlanesLimpieza/pages/EditarPlanLimpiezaPage.tsx';
 
+import { TareasPage } from './feature/Tareas/pages/ListPage.tsx';
+
 import App from './App.tsx'
 
 const router = createBrowserRouter([
@@ -83,6 +85,7 @@ const router = createBrowserRouter([
           { path: ':id/edit', element: <EditarPlanLimpiezaPage /> },
         ],
       },
+      { path: 'tareas', element: <TareasPage /> },
       { path: '*', element: <Page404 /> },
     ],
   },
