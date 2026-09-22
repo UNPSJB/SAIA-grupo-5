@@ -1,7 +1,7 @@
 from datetime import date
 from src.models import ModeloBase
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import String, Date, Enum
+from sqlalchemy import String, Date, Enum, Boolean
 from src.tareas_ocurrencia.constants import EstadoTareaOcurrencia
 
 
@@ -26,8 +26,11 @@ class TareaOcurrencia(ModeloBase):
 
     # Snapshot: copia de los datos de Tarea/PlanLimpieza al momento de generar
     tarea_nombre_snap: Mapped[str] = mapped_column(String(80), nullable=False)
-    tarea_descripcion_snap: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    tarea_descripcion_snap: Mapped[str | None] = mapped_column(String(500), nullable=True)
     frecuencia_snap: Mapped[str] = mapped_column(String(20), nullable=False)
+    prioridad_snap: Mapped[str] = mapped_column(String(10), nullable=False)
+    foto_obligatoria_snap: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    accion_correctiva_snap: Mapped[str | None] = mapped_column(String(500), nullable=True)
     plan_nombre_snap: Mapped[str] = mapped_column(String(60), nullable=False)
 
     fecha: Mapped[date] = mapped_column(Date, nullable=False)

@@ -12,7 +12,7 @@ from scripts import (
     seed_superficies,
     seed_tareas,
     seed_equipos,
-    seed_tareas_ocurrencia,
+   # seed_tareas_ocurrencia, para probar generador automatico
 )
 
 ORDEN = [
@@ -23,7 +23,7 @@ ORDEN = [
     seed_superficies,        # requiere seed_sectores y seed_planes_limpieza
     seed_tareas,             # requiere seed_planes_limpieza
     seed_equipos,            # requiere seed_planes_limpieza y seed_sectores
-    seed_tareas_ocurrencia,  # requiere seed_tareas
+    # seed_tareas_ocurrencia,  # requiere seed_tareas
 ]
 
 

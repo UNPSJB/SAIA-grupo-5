@@ -6,8 +6,11 @@ from src.tareas_ocurrencia.constants import EstadoTareaOcurrencia
 class TareaOcurrenciaCreate(BaseModel):
     operario_id: int | None = None
     tarea_nombre_snap: Annotated[str, Field(min_length=1, max_length=80)]
-    tarea_descripcion_snap: Annotated[str | None, Field(max_length=255)] = None
+    tarea_descripcion_snap: Annotated[str | None, Field(max_length=500)] = None
     frecuencia_snap: Annotated[str, Field(min_length=1, max_length=20)]
+    prioridad_snap: Annotated[str, Field(min_length=1, max_length=10)]
+    foto_obligatoria_snap: bool = False
+    accion_correctiva_snap: Annotated[str | None, Field(max_length=500)] = None
     plan_nombre_snap: Annotated[str, Field(min_length=1, max_length=60)]
     fecha: date
     fecha_completado: date | None = None
@@ -19,6 +22,9 @@ class TareaOcurrencia(BaseModel):
     tarea_nombre_snap: str
     tarea_descripcion_snap: str | None
     frecuencia_snap: str
+    prioridad_snap: str
+    foto_obligatoria_snap: bool
+    accion_correctiva_snap: str | None
     plan_nombre_snap: str
     fecha: date
     fecha_completado: date | None
