@@ -15,6 +15,8 @@ import { ListPage as PersonalListPage } from './feature/Personal/pages/ListPage.
 import { EditarPersonaPage } from './feature/Personal/pages/EditarPersonaPage.tsx'
 import { NuevaPersonaPage } from './feature/Personal/pages/NuevaPersonaPage.tsx'
 
+import { ElementosLimpiezaPage } from './feature/ElementosLimpieza/pages/ListPage.tsx';
+
 import App from './App.tsx'
 
 const router = createBrowserRouter([
@@ -45,6 +47,12 @@ const router = createBrowserRouter([
           { index: true, element: <PersonalListPage /> },
           { path: 'new', element: <NuevaPersonaPage /> },
           { path: ':id/edit', element: <EditarPersonaPage /> },
+        ],
+      },
+      {
+        path: 'elementos-limpieza',
+        children: [
+            { index: true, element: <ElementosLimpiezaPage /> },
         ],
       },
       { path: '*', element: <Page404 /> },

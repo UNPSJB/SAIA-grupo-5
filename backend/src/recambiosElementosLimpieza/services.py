@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src.recambiosElementosLimpieza.models import RecambioElementoLimpieza
-from src.recambiosElementosLimpieza import schemas
+from src.recambiosElementosLimpieza import schemas, exceptions
 from src.elementosLimpieza.models import ElementoLimpieza
 from src.elementosLimpieza import exceptions as elemento_exceptions
 
@@ -21,9 +21,14 @@ def crear_recambio(db: Session, elemento_id: int, recambio: schemas.RecambioElem
     if elemento is None:
         raise elemento_exceptions.ElementoLimpiezaNoEncontrado()
 
+    fecha_recambio = recambio.fecha or date.today()
+
+    if fecha_recambio > date.today():
+        raise exceptions.FechaRecambioInvalida()
+
     _recambio = RecambioElementoLimpieza(
         elemento_id=elemento_id,
-        fecha=recambio.fecha or date.today(),
+        fecha=fecha_recambio,
         observacion=recambio.observacion
     )
 
@@ -64,6 +69,6 @@ def leer_recambio(db: Session, recambio_id: int) -> schemas.RecambioElementoLimp
     )
 
     if db_recambio is None:
-        raise Exception("Recambio no encontrado")
+        raise exceptions.RecambioElementoLimpiezaNoEncontrado()
 
     return db_recambio
