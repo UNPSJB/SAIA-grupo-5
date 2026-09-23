@@ -51,17 +51,6 @@ export function ElementosLimpiezaPage() {
         );
     }, []);
 
-    const eliminarElemento = async (elemento: ElementoLimpieza) => {
-        const confirmar = window.confirm(
-            `¿Desea dar de baja el elemento ${elemento.codigo} - ${elemento.nombre}?`
-        );
-
-        if (!confirmar) return;
-
-        await api.delete(`/elementos-limpieza/${elemento.id}`);
-        mutate("/elementos-limpieza");
-    };
-
     if (isLoading) return (
         <>
             <PageHeader title="Elementos de Limpieza" />
@@ -182,7 +171,6 @@ export function ElementosLimpiezaPage() {
                         <Button
                             variant="outline-danger"
                             size="sm"
-                            onClick={() => eliminarElemento(row)}
                         >
                             <i className="bi bi-trash3 me-1"></i>
                             Eliminar
