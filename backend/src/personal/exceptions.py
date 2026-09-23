@@ -1,6 +1,6 @@
 from fastapi import HTTPException, status
 from src.personal.constants import ErrorCode
-from src.exceptions import NotFound
+from src.exceptions import NotFound, BadRequest
 
 
 class PersonaNoEncontrada(NotFound):
@@ -13,3 +13,23 @@ class PersonaDadaDeBaja(HTTPException):
             status_code=status.HTTP_409_CONFLICT,
             detail="No se pueden editar las capacidades de una persona dada de baja.",
         )
+
+
+class UsernameExistente(BadRequest):
+    DETAIL = ErrorCode.USERNAME_EXISTENTE
+
+
+class DniExistente(BadRequest):
+    DETAIL = ErrorCode.DNI_EXISTENTE
+
+
+class MailExistente(BadRequest):
+    DETAIL = ErrorCode.MAIL_EXISTENTE
+
+
+class DebeTenerCapacidad(BadRequest):
+    DETAIL = ErrorCode.DEBE_TENER_CAPACIDAD
+
+
+class UltimoAdministrador(BadRequest):
+    DETAIL = ErrorCode.ULTIMO_ADMINISTRADOR

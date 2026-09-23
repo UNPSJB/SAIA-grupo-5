@@ -44,3 +44,5 @@ uvicorn==0.52.1
 watchfiles==1.2.0
 websockets==17.0.1
 Faker==40.38.0
+PyJWT==2.14.0
+pwdlib[argon2]==0.3.1
