@@ -13,6 +13,8 @@ export type ElementoLimpieza = {
     material: string | null
     ubicacion: string | null
     frecuencia_recambio: number | null
+    fecha_alta: string
+    dias_restantes: number | null
     estado: boolean
 }
 

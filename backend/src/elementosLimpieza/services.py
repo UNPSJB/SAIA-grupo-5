@@ -1,9 +1,11 @@
 import logging
+from datetime import date, timedelta
 from typing import List
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 from src.elementosLimpieza.models import ElementoLimpieza, TipoElementoLimpieza
 from src.elementosLimpieza import schemas, exceptions
+from src.recambiosElementosLimpieza.models import RecambioElementoLimpieza
 
 logger = logging.getLogger(__name__)
 
@@ -97,6 +99,23 @@ def eliminar_tipo_elemento_limpieza(db: Session, tipo_id: int) -> schemas.TipoEl
 
 
 """ Services para elemento limpieza """
+
+def calcular_dias_restantes(db: Session, elemento: ElementoLimpieza) -> int | None:
+    if elemento.frecuencia_recambio is None:
+        return None
+
+    ultimo_recambio = db.scalar(
+        select(RecambioElementoLimpieza)
+        .where(RecambioElementoLimpieza.elemento_id == elemento.id)
+        .order_by(RecambioElementoLimpieza.fecha.desc())
+    )
+
+    fecha_base = ultimo_recambio.fecha if ultimo_recambio else elemento.fecha_alta
+    fecha_recambio = fecha_base + timedelta(days=elemento.frecuencia_recambio)
+
+    return (fecha_recambio - date.today()).days
+
+
 def crear_elemento_limpieza(db: Session, elemento: schemas.ElementoLimpiezaCreate) -> schemas.ElementoLimpieza:
     tipo = db.scalar(
         select(TipoElementoLimpieza)
@@ -133,7 +152,16 @@ def crear_elemento_limpieza(db: Session, elemento: schemas.ElementoLimpiezaCreat
     return _elemento
 
 def listar_elementos_limpieza(db: Session) -> List[schemas.ElementoLimpieza]:
-    return db.scalars(select(ElementoLimpieza)).all()
+    elementos = db.scalars(select(ElementoLimpieza)).all()
+
+    resultado = []
+
+    for elemento in elementos:
+        elemento_schema = schemas.ElementoLimpieza.model_validate(elemento)
+        elemento_schema.dias_restantes = calcular_dias_restantes(db, elemento)
+        resultado.append(elemento_schema)
+
+    return resultado
 
 def leer_elemento_limpieza(db: Session, elemento_id: int) -> schemas.ElementoLimpieza:
     db_elemento = db.scalar(select(ElementoLimpieza).where(ElementoLimpieza.id == elemento_id))
@@ -175,3 +203,4 @@ def eliminar_elemento_limpieza(db: Session, elemento_id: int) -> schemas.Element
     db.refresh(db_elemento)
 
     return db_elemento
+

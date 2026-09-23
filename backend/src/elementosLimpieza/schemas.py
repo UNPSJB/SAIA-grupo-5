@@ -1,3 +1,4 @@
+from datetime import date
 from pydantic import BaseModel, ConfigDict, Field
 from typing import Annotated
 
@@ -44,6 +45,8 @@ class ElementoLimpiezaUpdate(BaseModel):
 class ElementoLimpieza(ElementoLimpiezaBase):
     id: int
     codigo: str
+    fecha_alta: date
+    dias_restantes: int | None = None
     estado: bool
 
     model_config = ConfigDict(from_attributes=True)

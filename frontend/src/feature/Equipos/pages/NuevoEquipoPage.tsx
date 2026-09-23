@@ -11,7 +11,7 @@ export function NuevoEquipoPage(){
         try{
             await api.post("/equipos", datos);
             navigate("/equipos");
-        } catch (error){
+        } catch (error: any){
             if(error.response && error.response.data && error.response.data.detail){
                 alert(error.response.data.detail);
             } else {

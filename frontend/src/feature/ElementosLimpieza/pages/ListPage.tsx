@@ -105,18 +105,39 @@ export function ElementosLimpiezaPage() {
             grow: 2,
         },
         {
-            name: "Frecuencia recambio",
-            selector: row => row.frecuencia_recambio ?? 0,
+            name: "Dias para Recambio",
             sortable: true,
             center: true,
-            minWidth: "200px",
-            cell: row => (
-                <span>
-                    {row.frecuencia_recambio
-                        ? `${row.frecuencia_recambio} días`
-                        : "Sin definir"}
-                </span>
-            ),
+            minWidth: "180px",
+            selector: row => row.dias_restantes ?? 999999,
+            cell: row => {
+                if (row.dias_restantes === null) {
+                    return <span>Sin definir</span>;
+                }
+
+                if (row.dias_restantes < 0) {
+                    return (
+                        <div
+                            style={{
+                                padding: "4px 12px",
+                                borderRadius: "16px",
+                                background: "#fef3c7",
+                                color: "#92400e",
+                                fontWeight: 700,
+                                whiteSpace: "nowrap",
+                            }}
+                        >
+                            Vencido
+                        </div>
+                    );
+                }
+
+                if (row.dias_restantes === 0) {
+                    return <span>Recambio hoy</span>;
+                }
+
+                return <span>{row.dias_restantes} días</span>;
+            },
         },
         {
             name: "Estado",

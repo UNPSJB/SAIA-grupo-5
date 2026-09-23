@@ -1,3 +1,4 @@
+from datetime import date
 from sqlalchemy import String, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.models import ModeloBase
@@ -13,6 +14,7 @@ class ElementoLimpieza(ModeloBase):
     material: Mapped[str | None] = mapped_column(String(100))
     ubicacion: Mapped[str | None] = mapped_column(String(100))
     frecuencia_recambio: Mapped[int | None] = mapped_column()
+    fecha_alta: Mapped[date] = mapped_column(default=date.today, nullable=False)
     estado: Mapped[bool] = mapped_column(default=True)
 
     tipo: Mapped["TipoElementoLimpieza"] = relationship(back_populates="elementos")
