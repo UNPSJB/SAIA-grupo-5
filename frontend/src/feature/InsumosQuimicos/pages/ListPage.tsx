@@ -34,7 +34,7 @@ export function ListPage() {
         return (
             <Form.Control
                 type="text"
-                placeholder="Buscar insumo quimico..."
+                placeholder="Buscar insumo químico..."
                 className=" mr-sm-2"
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
             />
@@ -43,7 +43,7 @@ export function ListPage() {
 
     if (isLoading) return (
         <>
-            <PageHeader title="Listado de Insumos Quimicos" />
+            <PageHeader title="Listado de Insumos Químicos" />
             <Spinner animation="border" role="status">
                 <span className="visually-hidden">Cargando...</span>
             </Spinner>
@@ -51,10 +51,10 @@ export function ListPage() {
     )
     if (!insumosQuimicos || error) return (
         <Container>
-            <PageHeader title="Listado de Insumos Quimicos" />
+            <PageHeader title="Listado de Insumos Químicos" />
             <Row className="justify-content-center">
                 <Col md={6}>
-                    <Alert variant="danger">Ocurrió un error al cargar Insumos Quimicos</Alert>
+                    <Alert variant="danger">Ocurrió un error al cargar Insumos Químicos</Alert>
                 </Col>
             </Row>
         </Container>
@@ -67,10 +67,9 @@ export function ListPage() {
             sortable: true,
             center: true,
             minWidth: '200px',
-            grow: 2,
         },
         {
-            name: 'Tipo de Quimico',
+            name: 'Tipo de Químico',
             selector: row => row.tipo.nombre,
             sortable: true,
             center: true,
@@ -147,8 +146,17 @@ export function ListPage() {
         {
             name: "Acciones",
             center: true,
+            grow: 1.25,
+            minWidth: '280px',
             cell: (row) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <Button
+                        variant="outline-info"
+                        size="sm"
+                        onClick={() => navigate (`/insumos-quimicos/${row.id}`)}
+                    >
+                        <i className="bi bi-eye me-1"></i>Ver
+                    </Button>
                     <Button
                         variant="outline-primary"
                         size="sm"
@@ -174,7 +182,7 @@ export function ListPage() {
         <Container>
             <Row className="p-2 align-items-center" >
                 <Col>
-                    <PageHeader title="Listado de Insumos Quimicos" />
+                    <PageHeader title="Listado de Insumos Químicos" />
                 </Col>
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
@@ -186,7 +194,7 @@ export function ListPage() {
                         onClick={() => navigate("/insumos-quimicos/new")}
                         style={{ whiteSpace: "nowrap" }}
                     >
-                        + Nuevo Insumo Quimico
+                        + Nuevo Insumo Químico
                     </Button>
                 </Col>
             </Row>

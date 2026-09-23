@@ -7,8 +7,8 @@ import type { TipoQuimico } from '../../TiposQuimicos/types';
 
 interface InsumoQuimicoFormProps {
     textoBoton: string;
-    onSubmit: (datos: { nombre: string; unidad_medida: UnidadMedida, tipo_quimico_id: number }) => void;
-    valoresIniciales?: { nombre: string; unidad_medida: UnidadMedida, tipo_quimico_id: number };
+    onSubmit: (datos: { nombre: string, unidad_medida: UnidadMedida, tipo_quimico_id: number }) => void;
+    valoresIniciales?: { nombre: string, unidad_medida: UnidadMedida, tipo_quimico_id: number };
 }
 
 
@@ -43,12 +43,12 @@ export function InsumoQuimicoForm({ textoBoton, onSubmit, valoresIniciales }: In
         <Form onSubmit={handleSubmit(onSubmitHookForm)} className="p-4 border rounded bg-white shadow-sm mt-3" noValidate>
         
             <Form.Group className="mb-3 text-start" controlId="formNombre">
-                <Form.Label className="p-1 fw-bold">Nombre del Insumo</Form.Label>
+                <Form.Label className="p-1 fw-bold">Nombre del Insumo Químico</Form.Label>
                 <Form.Control
                     type="text"
                     placeholder="Ingrese el nombre"
                     {...register("nombre", {
-                    required: "El nombre del insumo es obligatorio.",
+                    required: "El nombre del insumo químico es obligatorio.",
                     minLength: {
                         value: 3,
                         message: "El nombre debe tener al menos 3 caracteres."
@@ -87,15 +87,15 @@ export function InsumoQuimicoForm({ textoBoton, onSubmit, valoresIniciales }: In
             </Form.Group>
 
             <Form.Group className="mb-3 text-start" controlId="formTipoQuimicoID">
-                <Form.Label className="p-1 fw-bold">Tipo de Quimico</Form.Label>
+                <Form.Label className="p-1 fw-bold">Tipo de Químico</Form.Label>
                 <Form.Select
                     {...register("tipo_quimico_id", {
-                    required: "El tipo de quimico es obligatorio."
+                    required: "El tipo de químico es obligatorio."
                     })}
                     isInvalid={!!errors.tipo_quimico_id}
                 >
-                    <option value="" disabled> Seleccione un tipo de quimico</option>
-                    {isLoading && <option disabled> Cargando tipos de quimicos...</option>}
+                    <option value="" disabled> Seleccione un tipo de químico</option>
+                    {isLoading && <option disabled> Cargando tipos de químicos...</option>}
                     {tiposQuimicos?.map((tipo) => (
                         <option key={tipo.id} value={tipo.id}>
                             {tipo.nombre}

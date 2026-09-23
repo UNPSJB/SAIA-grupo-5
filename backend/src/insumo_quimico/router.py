@@ -24,9 +24,6 @@ def read_insumos_quimicos(db: Session = Depends(get_db)):
 def read_insumo_quimico(insumo_quimico_id: int, db: Session = Depends(get_db)):
     return services.leer_insumo_quimico(db, insumo_quimico_id)
 
-@router.delete("/{insumo_quimico_id}", response_model=schemas.InsumoQuimicoDelete)
-def delete_insumo_quimico(insumo_quimico_id: int, db: Session = Depends(get_db)):
-    return services.eliminar_insumo_quimico(db, insumo_quimico_id)
 
 @router.put("/{insumo_quimico_id}", response_model=schemas.InsumoQuimicoUpdate)
 def update_insumo_quimico(insumo_quimico_id: int, insumo_quimico: schemas.InsumoQuimicoUpdate, db: Session = Depends(get_db)):

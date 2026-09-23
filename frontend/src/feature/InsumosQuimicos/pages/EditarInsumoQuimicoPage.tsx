@@ -19,10 +19,10 @@ export function EditarInsumoQuimicoPage(){
             await api.put(`/insumos-quimicos/${id}`, datos);
             await mutate("/insumos-quimicos/");
             await mutate(`/insumos-quimicos/${id}`);     // Se agrego esto ya que habia un bug en el editar
-            mostrarAlertaExito("El insumo quimico se edito correctamente.");
+            mostrarAlertaExito("El insumo químico se edito correctamente.");
             navigate("/insumos-quimicos");
         } catch (error: any){
-            let mensaje = "No se pudo editar el insumo quimico.";        // Si falla el servidor por alguna razon, creamos este mensaje predeterminado
+            let mensaje = "No se pudo editar el insumo químico.";        // Si falla el servidor por alguna razon, creamos este mensaje predeterminado
             if (error.response?.data?.detail){      // Se le pregunta a Axios si el error tiene una respuesta del backend
                 if (Array.isArray(error.response.data.detail)) {        // Puede pasar que FastAPI mande el detail como un arreglo
                     mensaje = error.response.data.detail[0].msg;        // Si es un arreglo metemos en mensaje eel primer error de la lista y solamente nos quedamos con el mensaje en si por eso usamos al final .msg
@@ -37,7 +37,7 @@ export function EditarInsumoQuimicoPage(){
 
     if (isLoading) return (
         <>
-            <PageHeader title="Editar Insumo Quimico" />
+            <PageHeader title="Editar Insumo Químico" />
             <Spinner animation="border" role="status">
                 <span className="visually-hidden">Cargando...</span>
             </Spinner>
@@ -45,10 +45,10 @@ export function EditarInsumoQuimicoPage(){
     )
     if (!insumoQuimico) return (
         <Container>
-            <PageHeader title="Insumo quimico no encontrado" />
+            <PageHeader title="Insumo químico no encontrado" />
             <Row className="justify-content-center">
                 <Col md={6}>
-                    <Alert variant="danger">El insumo quimico ingresado no existe</Alert>
+                    <Alert variant="danger">El insumo químico ingresado no existe</Alert>
                 </Col>
             </Row>
         </Container>
@@ -56,10 +56,10 @@ export function EditarInsumoQuimicoPage(){
 
     if (error) return (
         <Container>
-            <PageHeader title="Editar Insumo Quimico" />
+            <PageHeader title="Editar Insumo Químico" />
             <Row className="justify-content-center">
                 <Col md={6}>
-                    <Alert variant="danger">Ocurrió un error al cargar el Insumo Quimico</Alert>
+                    <Alert variant="danger">Ocurrió un error al cargar el Insumo Químico</Alert>
                 </Col>
             </Row>
         </Container>
@@ -68,10 +68,10 @@ export function EditarInsumoQuimicoPage(){
 
     return(
         <>
-            <PageHeader title="Editar Insumo Quimico"/>
+            <PageHeader title="Editar Insumo Químico"/>
 
             <Container>
-                <InsumoQuimicoForm textoBoton="Editar Insumo Quimico"
+                <InsumoQuimicoForm textoBoton="Editar Insumo Químico"
                     onSubmit={actualizarInsumoQuimico}
                     valoresIniciales={{ nombre: insumoQuimico.nombre, 
                     unidad_medida: insumoQuimico.unidad_medida, 

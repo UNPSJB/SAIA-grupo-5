@@ -18,6 +18,12 @@ import { NuevaPersonaPage } from './feature/Personal/pages/NuevaPersonaPage.tsx'
 import { ListPage as InsumoQuimicoListPage } from './feature/InsumosQuimicos/pages/ListPage.tsx'
 import { NuevoInsumoQuimicoPage } from './feature/InsumosQuimicos/pages/NuevoInsumoQuimicoPage.tsx'
 import { EditarInsumoQuimicoPage } from './feature/InsumosQuimicos/pages/EditarInsumoQuimicoPage.tsx'
+import { VerInsumoQuimicoPage } from './feature/InsumosQuimicos/pages/VerInsumoQuimicoPage.tsx'
+
+import { ListPage as TipoQuimicoListPage } from './feature/TiposQuimicos/pages/ListPage.tsx'
+import { NuevoTipoQuimicoPage } from './feature/TiposQuimicos/pages/NuevoTipoQuimicoPage.tsx'
+import { EditarTipoQuimicoPage } from './feature/TiposQuimicos/pages/EditarTipoQuimicoPage.tsx'
+import { VerTipoQuimicoPage } from './feature/TiposQuimicos/pages/VerTipoQuimicoPage.tsx'
 
 import App from './App.tsx'
 
@@ -57,7 +63,17 @@ const router = createBrowserRouter([
         children: [
           {index: true, element: <InsumoQuimicoListPage />},
           {path: 'new', element: <NuevoInsumoQuimicoPage />},
-          {path: ':id/edit', element: <EditarInsumoQuimicoPage />}
+          {path: ':id/edit', element: <EditarInsumoQuimicoPage />},
+          {path: ':id', element: <VerInsumoQuimicoPage />},
+        ],
+      },
+      {
+        path: 'tipos-quimicos',
+        children: [
+          {index: true, element: <TipoQuimicoListPage />},
+          {path: 'new', element: <NuevoTipoQuimicoPage />},
+          {path: ':id/edit', element: <EditarTipoQuimicoPage />},
+          {path: ':id', element: <VerTipoQuimicoPage />},
         ],
       },
       { path: '*', element: <Page404 /> },

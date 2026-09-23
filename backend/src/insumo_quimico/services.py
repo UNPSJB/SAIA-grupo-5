@@ -33,12 +33,6 @@ def leer_insumo_quimico(db: Session, insumo_quimico_id: int) -> schemas.InsumoQu
         raise exceptions.InsumoQuimicoNoEncontrado()
     return db_insumo_quimico
 
-def eliminar_insumo_quimico(db: Session, insumo_quimico_id: int) -> schemas.InsumoQuimicoDelete:
-    db_insumo_quimico = leer_insumo_quimico(db, insumo_quimico_id)
-    db_insumo_quimico.activo = False
-    db.commit()
-    db.refresh(db_insumo_quimico)
-    return db_insumo_quimico
 
 def modificar_insumo_quimico(db: Session, insumo_quimico_id: int, insumo_quimico: schemas.InsumoQuimicoUpdate) -> schemas.InsumoQuimico:  # Permite modificar el insumo pero si o si se tienen que enviar todos los campos
     insumo_quimico_existente = db.scalars(select(InsumoQuimico)

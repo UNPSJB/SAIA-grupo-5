@@ -17,11 +17,11 @@ export function DeleteInsumoQuimicoModal({ insumoQuimico, onHide, onDeleted }: D
 
         try {
             await api.patch<InsumoQuimico>(`/insumos-quimicos/${insumoQuimico.id}/estado`);
-            mostrarAlertaExito(`El insumo quimico '${insumoQuimico.nombre}' se dio de ${estabaActivo ? 'baja' : 'alta'} correctamente.`);
+            mostrarAlertaExito(`El insumo químico '${insumoQuimico.nombre}' se dio de ${estabaActivo ? 'baja' : 'alta'} correctamente.`);
             onDeleted();
             onHide();
         } catch (error: any){
-            mostrarAlertaError(`No se pudo ${estabaActivo ? 'dar de baja' : 'dar de alta'} el insumo quimico '${insumoQuimico.nombre}'.`);
+            mostrarAlertaError(`No se pudo ${estabaActivo ? 'dar de baja' : 'dar de alta'} el insumo químico '${insumoQuimico.nombre}'.`);
             console.log(error);
         }
     };
@@ -31,10 +31,10 @@ export function DeleteInsumoQuimicoModal({ insumoQuimico, onHide, onDeleted }: D
     return (
         <Modal show={insumoQuimico !== null} onHide={onHide}>
             <Modal.Header closeButton>
-                <Modal.Title>{estaActivo ? 'Dar de baja' : 'Dar de alta'} insumo quimico</Modal.Title>
+                <Modal.Title>{estaActivo ? 'Dar de baja' : 'Dar de alta'} insumo químico</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                ¿Estás seguro que querés {estaActivo ? 'dar de baja' : 'dar de alta'} el insumo quimico <strong>{insumoQuimico?.nombre}</strong>?
+                ¿Estás seguro que querés {estaActivo ? 'dar de baja' : 'dar de alta'} el insumo químico <strong>{insumoQuimico?.nombre}</strong>?
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="secondary" onClick={onHide}>Cancelar</Button>
