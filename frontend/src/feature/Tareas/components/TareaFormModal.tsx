@@ -49,6 +49,7 @@ export function TareaFormModal({ show, onHide, planId, planNombre, tarea, onSave
             prioridad: tarea.prioridad,
             foto_obligatoria: tarea.foto_obligatoria,
             accion_correctiva: tarea.accion_correctiva,
+            procedimiento: tarea.procedimiento,
           } : undefined}
         />
       </Modal.Body>

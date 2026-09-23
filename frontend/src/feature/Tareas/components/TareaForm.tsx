@@ -1,4 +1,4 @@
-import { Button, Col, Form, Row } from 'react-bootstrap';
+import { Button, Col, Form, InputGroup, Row } from 'react-bootstrap';
 import { useState } from 'react';
 import { Frecuencia, FRECUENCIA_LABELS, Prioridad, PRIORIDAD_LABELS } from '../types';
 import type { TareaFormData } from '../types';
@@ -20,6 +20,23 @@ export function TareaForm({ textoBoton, planNombre, onSubmit, onCancel, valoresI
   const [prioridad, setPrioridad] = useState<Prioridad>(valoresIniciales?.prioridad ?? Prioridad.MEDIA);
   const [fotoObligatoria, setFotoObligatoria] = useState(valoresIniciales?.foto_obligatoria ?? false);
   const [accionCorrectiva, setAccionCorrectiva] = useState(valoresIniciales?.accion_correctiva || "");
+  const [procedimiento, setProcedimiento] = useState<string[]>(valoresIniciales?.procedimiento ?? []);
+  const [pasoNuevo, setPasoNuevo] = useState("");
+
+  const agregarPaso = () => {
+    const texto = pasoNuevo.trim();
+    if (!texto) return;
+    setProcedimiento((prev) => [...prev, texto]);
+    setPasoNuevo("");
+  };
+
+  const editarPaso = (indice: number, texto: string) => {
+    setProcedimiento((prev) => prev.map((paso, i) => (i === indice ? texto : paso)));
+  };
+
+  const eliminarPaso = (indice: number) => {
+    setProcedimiento((prev) => prev.filter((_, i) => i !== indice));
+  };
 
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -32,6 +49,7 @@ export function TareaForm({ textoBoton, planNombre, onSubmit, onCancel, valoresI
       prioridad,
       foto_obligatoria: fotoObligatoria,
       accion_correctiva: accionCorrectiva.trim() ? accionCorrectiva.trim() : null,
+      procedimiento: procedimiento.length > 0 ? procedimiento : null,
     });
   };
 
@@ -126,6 +144,42 @@ export function TareaForm({ textoBoton, planNombre, onSubmit, onCancel, valoresI
           </Form.Group>
         </Col>
       </Row>
+
+      <Form.Group className="mb-3 text-start" controlId="formTareaProcedimiento">
+        <Form.Label className="p-1 fw-bold">Procedimiento</Form.Label>
+
+        <InputGroup className="mb-2">
+          <Form.Control
+            type="text"
+            placeholder="Escribí un paso y agregalo"
+            value={pasoNuevo}
+            onChange={(e) => setPasoNuevo(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                agregarPaso();
+              }
+            }}
+          />
+          <Button variant="outline-primary" type="button" onClick={agregarPaso}>
+            <i className="bi bi-plus-lg me-1"></i>Agregar paso
+          </Button>
+        </InputGroup>
+
+        {procedimiento.map((paso, indice) => (
+          <InputGroup className="mb-2" key={indice}>
+            <InputGroup.Text>{indice + 1}.</InputGroup.Text>
+            <Form.Control
+              type="text"
+              value={paso}
+              onChange={(e) => editarPaso(indice, e.target.value)}
+            />
+            <Button variant="outline-danger" type="button" onClick={() => eliminarPaso(indice)}>
+              <i className="bi bi-trash3"></i>
+            </Button>
+          </InputGroup>
+        ))}
+      </Form.Group>
 
       <Button variant="secondary" type="button" onClick={onCancel}>
         <i className="bi bi-x-circle me-1"></i>Cancelar

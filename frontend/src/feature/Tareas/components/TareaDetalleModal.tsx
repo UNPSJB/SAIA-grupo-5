@@ -19,6 +19,18 @@ export function TareaDetalleModal({ tarea, onHide, onEditar, onEliminar }: Tarea
                 {tarea && (
                     <>
                         <p>{tarea.descripcion || "Sin descripción."}</p>
+
+                        {tarea.procedimiento && tarea.procedimiento.length > 0 && (
+                            <>
+                                <h6 className="fw-bold">Procedimiento</h6>
+                                <ol>
+                                    {tarea.procedimiento.map((paso, indice) => (
+                                        <li key={indice}>{paso}</li>
+                                    ))}
+                                </ol>
+                            </>
+                        )}
+
                         <dl className="row mb-0">
                             <dt className="col-sm-4">Frecuencia</dt>
                             <dd className="col-sm-8">{FRECUENCIA_LABELS[tarea.frecuencia]}</dd>

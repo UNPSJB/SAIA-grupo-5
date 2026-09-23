@@ -64,13 +64,6 @@ export function PlanesLimpiezaPage() {
 
     const columns: TableColumn<PlanLimpieza>[] = [
         {
-            name: "ID",
-            selector: row => row.id,
-            sortable: true,
-            center: true,
-            maxWidth: '80px',
-        },
-        {
             name: "Nombre",
             selector: row => row.nombre,
             sortable: true,
@@ -124,6 +117,19 @@ export function PlanesLimpiezaPage() {
                     variant="outline-primary"
                     size="sm"
                     onClick={() => setPlanEquipos(row)}
+                >
+                    <i className="bi bi-eye me-1"></i>Ver
+                </Button>
+            ),
+        },
+        {
+            name: "Tareas",
+            center: true,
+            cell: row => (
+                <Button
+                    variant="outline-primary"
+                    size="sm"
+                    onClick={() => navigate(`/tareas?plan_id=${row.id}`)}
                 >
                     <i className="bi bi-eye me-1"></i>Ver
                 </Button>

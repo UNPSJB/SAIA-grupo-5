@@ -1,11 +1,13 @@
 import logging
 from typing import List
 from sqlalchemy import select, update
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from src.sector.models import Sector
 from src.sector import schemas, exceptions
 from src.equipos.models import Equipo
 from src.equipos import schemas as equipos_schemas
+from src.superficies.models import Superficie
+from src.superficies import schemas as superficies_schemas
 
 # Creamos un logger para este módulo específico. Más info.: https://docs.python.org/3/library/logging.html
 logger = logging.getLogger(__name__)
@@ -37,6 +39,15 @@ def leer_sector(db: Session, sector_id: int) -> schemas.Sector:
 def listar_equipos_por_sector(db: Session, sector_id: int) -> List[equipos_schemas.Equipo]:
     leer_sector(db, sector_id)
     return db.scalars(select(Equipo).where(Equipo.sector_id == sector_id)).all()
+
+def listar_superficies_por_sector(db: Session, sector_id: int) -> List[superficies_schemas.Superficie]:
+    leer_sector(db, sector_id)
+    return db.scalars(
+        select(Superficie)
+        .join(Superficie.sectores)
+        .where(Sector.id == sector_id)
+        .options(selectinload(Superficie.sectores), selectinload(Superficie.planes))
+    ).all()
 
 def eliminar_sector(db: Session, sector_id: int) -> schemas.SectorDelete:
     db_sector = leer_sector(db, sector_id)

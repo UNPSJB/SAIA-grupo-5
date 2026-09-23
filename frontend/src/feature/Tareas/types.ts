@@ -42,6 +42,7 @@ export type Tarea = {
     prioridad: Prioridad
     foto_obligatoria: boolean
     accion_correctiva: string | null
+    procedimiento: string[] | null // Lista de pasos consecutivos en orden
     plan_limpieza_id: number
     activo: boolean
 }
@@ -54,6 +55,7 @@ export type TareaFormData = {
     prioridad: Prioridad
     foto_obligatoria: boolean
     accion_correctiva: string | null
+    procedimiento: string[] | null
 }
 
 export type NewTarea = TareaFormData & {

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Alert, Badge, Button, Card, Col, Container, Form, Row, Spinner, Tab, Tabs } from "react-bootstrap";
+import { useSearchParams } from "react-router-dom";
 import { mutate } from "swr";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
@@ -19,7 +20,9 @@ const FRECUENCIA_TABS: { key: Frecuencia; label: string; emptyMessage: string }[
 ];
 
 export function TareasPage() {
-    const [planId, setPlanId] = useState("");
+    const [searchParams] = useSearchParams();
+    // Permite llegar con un plan ya seleccionado (ej. desde "Ver tareas" en Planes de Limpieza)
+    const [planId, setPlanId] = useState(searchParams.get("plan_id") ?? "");
     const { data: planes, error: errorPlanes, isLoading: isLoadingPlanes } = useApi<PlanLimpieza[]>("/planes-limpieza/");
     const tareasKey = planId ? `/tareas/?plan_id=${planId}` : null;
     const { data: tareas, error: errorTareas, isLoading: isLoadingTareas } = useApi<Tarea[]>(tareasKey);

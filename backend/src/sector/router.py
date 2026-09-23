@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from src.database import get_db
 from src.sector import schemas, services
 from src.equipos import schemas as equipos_schemas
+from src.superficies import schemas as superficies_schemas
 
 # Creamos un logger para este módulo específico. Más info.: https://docs.python.org/3/library/logging.html
 logger = logging.getLogger(__name__)
@@ -28,6 +29,10 @@ def read_sector(sector_id: int, db: Session = Depends(get_db)):
 @router.get("/{sector_id}/equipos", response_model=list[equipos_schemas.Equipo])
 def read_equipos_de_sector(sector_id: int, db: Session = Depends(get_db)):
     return services.listar_equipos_por_sector(db, sector_id)
+
+@router.get("/{sector_id}/superficies", response_model=list[superficies_schemas.Superficie])
+def read_superficies_de_sector(sector_id: int, db: Session = Depends(get_db)):
+    return services.listar_superficies_por_sector(db, sector_id)
 
 @router.delete("/{sector_id}", response_model=schemas.SectorDelete)
 def delete_sector(sector_id: int, db: Session = Depends(get_db)):

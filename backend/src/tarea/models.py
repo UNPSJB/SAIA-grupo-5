@@ -1,8 +1,10 @@
+import json
 from datetime import date
 from typing import TYPE_CHECKING
 from src.models import ModeloBase
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, ForeignKey, Integer, CheckConstraint, Date, Boolean, Enum
+from sqlalchemy.types import TypeDecorator, Text
 from src.tarea.constants import Frecuencia, Prioridad
 
 if TYPE_CHECKING:
@@ -12,6 +14,21 @@ val_frecuencias = ", ".join(str(f.value) for f in Frecuencia)
 
 def _valores_prioridad(enum_cls):
     return [elemento.value for elemento in enum_cls]
+
+# guarda una lista de strings serializada como JSON
+class ListaJSON(TypeDecorator):
+    impl = Text
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return None
+        return json.dumps(value)
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return None
+        return json.loads(value)
 
 
 class Tarea(ModeloBase):
@@ -34,6 +51,9 @@ class Tarea(ModeloBase):
     )
     foto_obligatoria: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     accion_correctiva: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    
+    # Lista de pasos consecutivos 
+    procedimiento: Mapped[list[str] | None] = mapped_column(ListaJSON(), nullable=True)
     plan_limpieza_id: Mapped[int] = mapped_column(ForeignKey("planes_limpieza.id"), nullable=False)
     plan_limpieza: Mapped["PlanLimpieza"] = relationship(back_populates="tareas")
     activo: Mapped[bool] = mapped_column(Boolean, default=True)

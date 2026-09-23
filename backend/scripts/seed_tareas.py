@@ -37,6 +37,16 @@ TAREAS_POR_PLAN = {
             ),
             "foto_obligatoria": False,
             "accion_correctiva": None,
+            "procedimiento": [
+                "Retirar todos los utensilios y llevarlos a la zona de lavado.",
+                "Recoger residuos sólidos por barrido o aspirado y recolectar los mismos en bolsas de residuos.",
+                "Retirar las rejillas y colocarlas en recipientes para su limpieza.",
+                "Aplicar detergente y refregar con cepillos donde sea necesario.",
+                "Enjuagar con agua hasta quitar todo residuo de detergente.",
+                "Aplicar solución desinfectante y dejar actuar 15 minutos, como mínimo.",
+                "Enjuagar cuando es requerido.",
+                "Retirar el exceso de agua hacia el desagüe.",
+            ],
         },
         {
             "nombre": "Limpiar paredes, revestimientos y aberturas",
@@ -48,6 +58,12 @@ TAREAS_POR_PLAN = {
             ),
             "foto_obligatoria": False,
             "accion_correctiva": None,
+            "procedimiento": [
+                "Aplicar agua con detergente, esponja, cepillo o similar.",
+                "Enjuagar con agua hasta quitar todo residuo de detergente.",
+                "Aplicar solución desinfectante.",
+                "Verificar el estado correcto de la limpieza y completar el registro de limpieza.",
+            ],
         },
         {
             "nombre": "Limpiar techos, luces y estructuras aéreas",
@@ -59,6 +75,10 @@ TAREAS_POR_PLAN = {
             ),
             "foto_obligatoria": False,
             "accion_correctiva": "Repetir la limpieza si se detecta acumulación de residuos o condensación",
+            "procedimiento": [
+                "Aplicar agua con desinfectante, comenzando por el techo y siguiendo con las luces.",
+                "Verificar el estado correcto de la limpieza y completar el registro de limpieza.",
+            ],
         },
         {
             "nombre": "Limpiar mesadas y útiles de trabajo",
@@ -70,6 +90,13 @@ TAREAS_POR_PLAN = {
             ),
             "foto_obligatoria": True,
             "accion_correctiva": "Repetir el lavado y la desinfección antes de reanudar la manipulación de alimentos",
+            "procedimiento": [
+                "Lavar la superficie.",
+                "Enjuagar.",
+                "Desinfectar.",
+                "Enjuagar nuevamente.",
+                "Secar.",
+            ],
         },
         {
             "nombre": "Limpiar estanterías y armarios",
@@ -78,6 +105,11 @@ TAREAS_POR_PLAN = {
             "descripcion": "Retirar mercadería estibada y repasar estanterías y armarios con trapo húmedo.",
             "foto_obligatoria": False,
             "accion_correctiva": None,
+            "procedimiento": [
+                "Retirar de las estanterías la mercadería estibada.",
+                "Repasar estanterías, estantes o racks con trapo húmedo.",
+                "Verificar el estado correcto de la limpieza y completar el registro de limpieza.",
+            ],
         },
         {
             "nombre": "Limpiar piletas de lavado y desinfección de vegetales y huevos",
@@ -89,6 +121,12 @@ TAREAS_POR_PLAN = {
             ),
             "foto_obligatoria": True,
             "accion_correctiva": None,
+            "procedimiento": [
+                "Retirar residuos sólidos.",
+                "Aplicar agua y detergente con esponja, cepillo o similar.",
+                "Enjuagar con abundante agua.",
+                "Aplicar agua con desinfectante.",
+            ],
         },
         {
             "nombre": "Limpiar equipos de elaboración (amasadora)",
@@ -100,6 +138,14 @@ TAREAS_POR_PLAN = {
             ),
             "foto_obligatoria": True,
             "accion_correctiva": "Repetir el desarmado y la desinfección de las partes antes de continuar la producción",
+            "procedimiento": [
+                "Desarmar y quitar las paletas y el recipiente de amasado.",
+                "Lavar cada parte.",
+                "Enjuagar.",
+                "Desinfectar.",
+                "Enjuagar nuevamente.",
+                "Secar cada parte antes de rearmar el equipo.",
+            ],
         },
         {
             "nombre": "Completar y verificar planilla de registro de limpieza preoperacional",
@@ -127,6 +173,14 @@ TAREAS_POR_PLAN = {
             ),
             "foto_obligatoria": True,
             "accion_correctiva": "Repetir el procedimiento completo y verificar antes de continuar",
+            "procedimiento": [
+                "Desconectar la energía eléctrica.",
+                "Retirar residuos de fiambre del equipo, utilizando trapo o similar.",
+                "Desarmar todas las partes del equipo.",
+                "Aplicar agua y detergente en todas las partes, con esponja, cepillo o similar.",
+                "Enjuagar con abundante agua.",
+                "Aplicar agua con desinfectante.",
+            ],
         },
         {
             "nombre": "Limpieza intermedia al cambiar de producto",
@@ -139,6 +193,11 @@ TAREAS_POR_PLAN = {
             ),
             "foto_obligatoria": False,
             "accion_correctiva": None,
+            "procedimiento": [
+                "Detener el uso del equipo.",
+                "Retirar los residuos sólidos del producto anterior.",
+                "Verificar que no queden restos antes de continuar con el nuevo producto.",
+            ],
         },
         {
             "nombre": "Verificar desconexión de energía eléctrica antes de la limpieza",
@@ -200,6 +259,13 @@ TAREAS_POR_PLAN = {
             ),
             "foto_obligatoria": False,
             "accion_correctiva": None,
+            "procedimiento": [
+                "Retirar residuos sólidos, utilizando trapo o similar.",
+                "Aplicar agua y detergente con esponja, cepillo o similar al interior y exterior del equipo.",
+                "Enjuagar con agua mediante trapo o similar.",
+                "Aplicar agua con desinfectante.",
+                "Verificar el estado correcto de la limpieza y completar el registro de limpieza.",
+            ],
         },
         {
             "nombre": "Limpieza profunda semanal de heladeras",
@@ -212,6 +278,13 @@ TAREAS_POR_PLAN = {
             ),
             "foto_obligatoria": False,
             "accion_correctiva": None,
+            "procedimiento": [
+                "Retirar y desarmar las partes internas del equipo.",
+                "Aplicar agua y detergente a todas las partes con esponja, cepillo o similar.",
+                "Enjuagar con agua mediante trapo o similar.",
+                "Aplicar agua con desinfectante.",
+                "Verificar el estado correcto de la limpieza y completar el registro de limpieza.",
+            ],
         },
         {
             "nombre": "Limpieza superficial de cámaras",
@@ -223,6 +296,12 @@ TAREAS_POR_PLAN = {
             ),
             "foto_obligatoria": False,
             "accion_correctiva": None,
+            "procedimiento": [
+                "Retirar residuos sólidos de piso, estanterías, racks y pallets.",
+                "Aplicar agua y detergente con esponja, cepillo o similar.",
+                "Enjuagar con agua mediante trapo o similar.",
+                "Verificar el estado correcto de la limpieza y completar el registro de limpieza.",
+            ],
         },
         {
             "nombre": "Limpieza profunda semanal de cámaras",
@@ -235,6 +314,13 @@ TAREAS_POR_PLAN = {
             ),
             "foto_obligatoria": False,
             "accion_correctiva": "Verificar que la cámara alcance nuevamente la temperatura adecuada antes de reingresar la mercadería",
+            "procedimiento": [
+                "Reubicar los productos estibados en estanterías, racks, pallets y cajones.",
+                "Retirar residuos sólidos de piso, estanterías, racks y pallets.",
+                "Aplicar agua y detergente en techo, luces, paredes, cortinas, estanterías, pallets, racks y piso con esponja, cepillo o similar.",
+                "Enjuagar con abundante agua.",
+                "Aplicar agua con desinfectante.",
+            ],
         },
         {
             "nombre": "Limpieza semanal de freezers",
@@ -246,6 +332,13 @@ TAREAS_POR_PLAN = {
             ),
             "foto_obligatoria": False,
             "accion_correctiva": None,
+            "procedimiento": [
+                "Reubicar los productos estibados y descongelar el equipo.",
+                "Aplicar agua y detergente a todas las partes con esponja, cepillo o similar.",
+                "Enjuagar con agua mediante trapo o similar.",
+                "Aplicar agua con desinfectante.",
+                "Verificar el estado correcto de la limpieza y completar el registro de limpieza.",
+            ],
         },
         {
             "nombre": "Verificar temperatura de heladeras y freezers",
@@ -283,6 +376,11 @@ TAREAS_POR_PLAN = {
             ),
             "foto_obligatoria": False,
             "accion_correctiva": None,
+            "procedimiento": [
+                "Retirar de las estanterías, racks, estantes la mercadería estibada.",
+                "Repasar tubos, ductos, caños con trapo húmedo.",
+                "Verificar el estado correcto de la limpieza y completar el registro de limpieza.",
+            ],
         },
         {
             "nombre": "Retirar mercadería estibada antes de la limpieza de ductos",
@@ -352,6 +450,13 @@ TAREAS_POR_PLAN = {
             ),
             "foto_obligatoria": False,
             "accion_correctiva": None,
+            "procedimiento": [
+                "Retirar las bolsas de residuos de los recipientes para su eliminación.",
+                "Aplicar agua con detergente, utilizando esponja, cepillo o similar.",
+                "Enjuagar con abundante agua.",
+                "Aplicar agua y desinfectante.",
+                "Verificar el estado correcto de la limpieza y completar el registro de limpieza.",
+            ],
         },
         {
             "nombre": "Retirar y cerrar correctamente las bolsas de residuos",
@@ -418,6 +523,11 @@ TAREAS_POR_PLAN = {
             "descripcion": "Retirar la mercadería estibada y repasar con un trapo húmedo.",
             "foto_obligatoria": False,
             "accion_correctiva": None,
+            "procedimiento": [
+                "Retirar de las estanterías la mercadería estibada.",
+                "Repasar estanterías, estantes o racks con trapo húmedo.",
+                "Verificar el estado correcto de la limpieza y completar el registro de limpieza.",
+            ],
         },
         {
             "nombre": "Limpiar pisos del salón de ventas",
@@ -484,6 +594,11 @@ TAREAS_POR_PLAN = {
             "descripcion": "Aplicar agua y detergente con esponja o cepillo, enjuagar con abundante agua.",
             "foto_obligatoria": True,
             "accion_correctiva": None,
+            "procedimiento": [
+                "Aplicar agua y detergente, con esponja, cepillo o similar.",
+                "Enjuagar con abundante agua.",
+                "Verificar el estado correcto de la limpieza y completar el registro de limpieza.",
+            ],
         },
         {
             "nombre": "Desinfectar útiles luego del lavado",
@@ -553,6 +668,13 @@ TAREAS_POR_PLAN = {
             ),
             "foto_obligatoria": False,
             "accion_correctiva": None,
+            "procedimiento": [
+                "Aplicar agua y detergente con trapo, esponja o similar.",
+                "Enjuagar con agua.",
+                "Aplicar desinfectante.",
+                "Enjuagar.",
+                "Verificar el estado correcto de limpieza y completar el registro de limpieza.",
+            ],
         },
         {
             "nombre": "Desinfectar plato de balanza luego de pesar producto crudo",
@@ -621,6 +743,12 @@ TAREAS_POR_PLAN = {
             ),
             "foto_obligatoria": True,
             "accion_correctiva": None,
+            "procedimiento": [
+                "Retirar residuos sólidos, utilizando trapo o similar.",
+                "Aplicar agua y detergente con esponja, cepillo o similar.",
+                "Enjuagar con abundante agua.",
+                "Aplicar agua con desinfectante.",
+            ],
         },
         {
             "nombre": "Retirar elementos apoyados sobre la mesada antes de limpiar",
@@ -689,6 +817,12 @@ TAREAS_POR_PLAN = {
             ),
             "foto_obligatoria": False,
             "accion_correctiva": None,
+            "procedimiento": [
+                "Retirar residuos sólidos.",
+                "Aplicar agua y detergente con esponja, cepillo o similar.",
+                "Enjuagar con abundante agua.",
+                "Aplicar agua con desinfectante.",
+            ],
         },
         {
             "nombre": "Retirar residuos sólidos antes del lavado",
@@ -758,6 +892,14 @@ TAREAS_POR_PLAN = {
             ),
             "foto_obligatoria": True,
             "accion_correctiva": None,
+            "procedimiento": [
+                "Retirar residuos sólidos del equipo, utilizando trapo o similar.",
+                "Desarmar todas las partes del equipo (rejillas, hornallas, etcétera).",
+                "Aplicar agua y detergente en todas las partes, con esponja, cepillo o similar.",
+                "Enjuagar con abundante agua.",
+                "Aplicar agua con desinfectante.",
+                "Verificar el estado correcto de la limpieza y completar el registro de limpieza.",
+            ],
         },
         {
             "nombre": "Desarmar y limpiar rejillas y hornallas",
@@ -824,6 +966,13 @@ TAREAS_POR_PLAN = {
             "descripcion": "Retirar residuos, retirar partes del equipo, aplicar detergente y enjuagar.",
             "foto_obligatoria": False,
             "accion_correctiva": None,
+            "procedimiento": [
+                "Retirar residuos sólidos del equipo, utilizando trapo o similar.",
+                "Retirar todas las partes del equipo (rejillas, hornallas, etcétera).",
+                "Aplicar agua y detergente en todas las partes, con esponja, cepillo o similar.",
+                "Enjuagar con abundante agua.",
+                "Verificar el estado correcto de la limpieza y completar el registro de limpieza.",
+            ],
         },
         {
             "nombre": "Retirar residuos sólidos del horno con trapo",
@@ -893,6 +1042,14 @@ TAREAS_POR_PLAN = {
             ),
             "foto_obligatoria": False,
             "accion_correctiva": "Verificar temperatura del equipo antes de proceder a la limpieza para evitar siniestros laborales",
+            "procedimiento": [
+                "Vaciar el fritador colocando el aceite en recipiente adecuado para su eliminación.",
+                "Desarmar todas las partes posibles del equipo.",
+                "Aplicar agua caliente y detergente en todas las partes, con esponja, cepillo o similar.",
+                "Enjuagar con abundante agua.",
+                "Secar completamente el equipo.",
+                "Verificar el estado correcto de la limpieza y completar el registro de limpieza.",
+            ],
         },
         {
             "nombre": "Verificar temperatura del fritador antes de la limpieza",
@@ -962,6 +1119,12 @@ TAREAS_POR_PLAN = {
             ),
             "foto_obligatoria": False,
             "accion_correctiva": None,
+            "procedimiento": [
+                "Aplicar agua caliente y detergente o desengrasante con esponja, cepillo o similar.",
+                "Enjuagar con abundante agua.",
+                "Secar completamente el equipo.",
+                "Verificar el estado correcto de la limpieza y del filtro (si existiere en extractor) y completar el registro de limpieza.",
+            ],
         },
         {
             "nombre": "Aplicar desengrasante y enjuagar completamente",
@@ -1030,6 +1193,13 @@ TAREAS_POR_PLAN = {
             ),
             "foto_obligatoria": True,
             "accion_correctiva": None,
+            "procedimiento": [
+                "Retirar residuos sólidos, utilizando trapo o similar.",
+                "Aplicar agua y detergente con esponja, cepillo o similar.",
+                "Enjuagar con abundante agua.",
+                "Aplicar agua con desinfectante.",
+                "Verificar el estado correcto de la limpieza y completar el registro de limpieza.",
+            ],
         },
         {
             "nombre": "Limpiar piletas de lavado",
@@ -1040,6 +1210,13 @@ TAREAS_POR_PLAN = {
             ),
             "foto_obligatoria": False,
             "accion_correctiva": None,
+            "procedimiento": [
+                "Retirar residuos sólidos.",
+                "Aplicar agua y detergente con esponja, cepillo o similar.",
+                "Enjuagar con abundante agua.",
+                "Aplicar agua con desinfectante.",
+                "Verificar el estado correcto de la limpieza y completar el registro de limpieza.",
+            ],
         },
         {
             "nombre": "Limpiar útiles",
@@ -1048,6 +1225,11 @@ TAREAS_POR_PLAN = {
             "descripcion": "Aplicar agua y detergente con esponja o cepillo, enjuagar con abundante agua.",
             "foto_obligatoria": True,
             "accion_correctiva": None,
+            "procedimiento": [
+                "Aplicar agua y detergente, con esponja, cepillo o similar.",
+                "Enjuagar con abundante agua.",
+                "Verificar el estado correcto de la limpieza y completar el registro de limpieza.",
+            ],
         },
         {
             "nombre": "Desinfectar mesada luego de cada cambio de producto",
@@ -1109,6 +1291,7 @@ def generar_tareas(db) -> list[Tarea]:
                     prioridad=datos["prioridad"],
                     foto_obligatoria=datos["foto_obligatoria"],
                     accion_correctiva=datos["accion_correctiva"],
+                    procedimiento=datos.get("procedimiento"),
                     plan_limpieza_id=plan.id,
                 )
             )

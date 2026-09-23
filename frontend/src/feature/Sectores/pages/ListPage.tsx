@@ -10,6 +10,7 @@ import { useApi } from '../../../hooks/useApi';
 
 import { DeleteSectorModal } from '../components/DeleteSectorModal';
 import { EquiposDeSectorModal } from '../components/EquiposDeSectorModal';
+import { SuperficiesDeSectorModal } from '../components/SuperficiesDeSectorModal';
 import type { Sector } from '../types';
 
 
@@ -19,6 +20,7 @@ export function ListPage() {
     const { data: sectores, error, isLoading } = useApi<Sector[]>("/sectores/")
     const [sectorToDelete, setSectorToDelete] = useState<Sector | null>(null);
     const [sectorEquipos, setSectorEquipos] = useState<Sector | null>(null);
+    const [sectorSuperficies, setSectorSuperficies] = useState<Sector | null>(null);
 
     const filteredSectores = useMemo(() => {
         if (!Array.isArray(sectores)) return [];     // Se agrego una validacion para preguntar si sectores es un array
@@ -113,6 +115,20 @@ export function ListPage() {
             )
         },
         {
+            name: "Superficies",
+            center: true,
+            minWidth: "160px",
+            cell: (row) => (
+                <Button
+                    variant="outline-primary"
+                    size="sm"
+                    onClick={() => setSectorSuperficies(row)}
+                >
+                    <i className="bi bi-eye me-1"></i>Ver superficies
+                </Button>
+            )
+        },
+        {
             name: "Acciones",
             center: true,
             minWidth: "220px",
@@ -168,6 +184,10 @@ export function ListPage() {
             <EquiposDeSectorModal
                 sector={sectorEquipos}
                 onHide={() => setSectorEquipos(null)}
+            />
+            <SuperficiesDeSectorModal
+                sector={sectorSuperficies}
+                onHide={() => setSectorSuperficies(null)}
             />
         </Container>
     );
