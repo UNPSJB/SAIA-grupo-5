@@ -24,10 +24,10 @@ def read_tipos_quimicos(db: Session = Depends(get_db)):
 def read_tipo_quimico(tipo_quimico_id: int, db: Session = Depends(get_db)):
     return services.leer_tipo_quimico(db, tipo_quimico_id)
 
-@router.delete("/{tipo_quimico_id}", response_model=schemas.TipoQuimicoDelete)
-def delete_tipo_quimico(tipo_quimico_id: int, db: Session = Depends(get_db)):
-    return services.eliminar_tipo_quimico(db, tipo_quimico_id)
-
 @router.put("/{tipo_quimico_id}", response_model=schemas.TipoQuimico)
 def update_tipo_quimico(tipo_quimico_id: int, tipo_quimico: schemas.TipoQuimicoUpdate, db: Session = Depends(get_db)):
     return services.modificar_tipo_quimico(db, tipo_quimico_id, tipo_quimico)
+
+@router.patch("/{tipo_quimico_id}/estado", response_model=schemas.TipoQuimico)
+def cambiar_estado_tipo_quimico(tipo_quimico_id: int, db: Session = Depends(get_db)):
+    return services.cambiar_estado_tipo_quimico(db, tipo_quimico_id)

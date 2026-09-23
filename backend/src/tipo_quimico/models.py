@@ -12,6 +12,7 @@ class TipoQuimico(ModeloBase):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
 
     nombre: Mapped[str] = mapped_column(String(30), unique=True, index=True, nullable=True)
+    descripcion: Mapped[str] = mapped_column(String(400))
     activo: Mapped[bool] = mapped_column(Boolean, default=True)
 
     insumos_quimicos: Mapped[List["InsumoQuimico"]] = relationship("InsumoQuimico", back_populates="tipo")

@@ -32,16 +32,24 @@ def leer_tipo_quimico(db: Session, tipo_quimico_id: int) -> schemas.TipoQuimico:
         raise exceptions.TipoQuimicoNoEncontrado()
     return db_tipo_quimico
 
-def eliminar_tipo_quimico(db: Session, tipo_quimico_id: int) -> schemas.TipoQuimicoDelete:
+
+def modificar_tipo_quimico(db: Session, tipo_quimico_id: int, tipo_quimico: schemas.TipoQuimicoUpdate) -> schemas.TipoQuimico:  # Permite modificar el insumo pero si o si se tienen que enviar todos los campos
     db_tipo_quimico = leer_tipo_quimico(db, tipo_quimico_id)
-    db_tipo_quimico.activo = False
+
+    tipo_quimico_actualizado = tipo_quimico.model_dump(exclude_unset=True)
+    for key, value in tipo_quimico_actualizado.items():
+        setattr(db_tipo_quimico, key, value)
+    
     db.commit()
     db.refresh(db_tipo_quimico)
     return db_tipo_quimico
 
-def modificar_tipo_quimico(db: Session, tipo_quimico_id: int, tipo_quimico: schemas.TipoQuimicoUpdate) -> schemas.TipoQuimico:  # Permite modificar el insumo pero si o si se tienen que enviar todos los campos
+def cambiar_estado_tipo_quimico(db: Session, tipo_quimico_id: int) -> schemas.TipoQuimico:
     db_tipo_quimico = leer_tipo_quimico(db, tipo_quimico_id)
-    db.execute(update(TipoQuimico).where(TipoQuimico.id == tipo_quimico_id).values(**tipo_quimico.model_dump()))
+    if db_tipo_quimico is None:
+        raise exceptions.TipoQuimicoNoEncontrado()
+    
+    db_tipo_quimico.activo = not db_tipo_quimico.activo
     db.commit()
     db.refresh(db_tipo_quimico)
     return db_tipo_quimico
