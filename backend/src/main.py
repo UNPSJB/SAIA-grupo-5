@@ -1,45 +1,17 @@
-from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from sqlalchemy import inspect, text
-from src.database import engine
-from src.models import ModeloBase
-
-# Importamos la configuración validada por Pydantic
-from src.config import settings
-
-# Importamos configuracion de logger
+from src.settings import ROOT_PATH
 from src.logger import setup_logging
+from src.lifespan import db_creation_lifespan
 
-# Importamos los routers desde nuestros modulos
+# Routers
+from src.auth.router import router as auth_router
 from src.personal.router import router as personal_router
 from src.insumos.router import router as insumos_router
 from src.equipos.router import router as equipos_router
 from src.consumo_producto.router import router as consumos_router
 from fastapi.middleware.cors import CORSMiddleware
 
-ENV = settings.ENV.upper()
-ROOT_PATH = getattr(settings, f"ROOT_PATH_{ENV}", "")
-
 setup_logging()
-
-@asynccontextmanager
-async def db_creation_lifespan(app: FastAPI):
-    ModeloBase.metadata.create_all(bind=engine)
-    inspector = inspect(engine)
-    tablas = inspector.get_table_names()
-
-    if "personal" in tablas and not any(
-        column["name"] == "activo" for column in inspector.get_columns("personal")
-    ):
-        with engine.begin() as connection:
-            connection.execute(text("ALTER TABLE personal ADD COLUMN activo BOOLEAN NOT NULL DEFAULT 1"))
-
-    if "insumos" in tablas and not any(
-        column["name"] == "activo" for column in inspector.get_columns("insumos")
-    ):
-        with engine.begin() as connection:
-            connection.execute(text("ALTER TABLE insumos ADD COLUMN activo BOOLEAN NOT NULL DEFAULT 1"))
-    yield
 
 
 app = FastAPI(root_path=ROOT_PATH, lifespan=db_creation_lifespan)
@@ -59,8 +31,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-# asociamos los routers a nuestra app
+# Asociamos los routers a nuestra app
+app.include_router(auth_router)
 app.include_router(personal_router)
 app.include_router(insumos_router)
 app.include_router(equipos_router)
