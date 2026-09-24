@@ -67,6 +67,15 @@ export function Nav() {
                             Personal
                         </BSNav.Link>
                     )}
+                    <BSNav.Link as={NavLink} to="/insumos-quimicos">
+                        <i className="bi bi-droplet me-2"></i>
+                        Insumos Quimicos
+                    </BSNav.Link>
+
+                    <BSNav.Link as={NavLink} to="/tipos-quimicos">
+                        <i className="bi bi-flask me-2"></i>
+                        Tipos de Quimicos
+                    </BSNav.Link>
                 </BSNav>
 
                 <hr className="mt-auto" />
