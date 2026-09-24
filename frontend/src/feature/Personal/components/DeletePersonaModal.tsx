@@ -11,10 +11,18 @@ interface DeletePersonaModalProps {
 export function DeletePersonaModal({ persona, onHide, onDeleted }: DeletePersonaModalProps) {
   const handleDelete = async () => {
     if (!persona) return
-    await api.delete(`/personal/${persona.id}`)
-    onDeleted()
-    onHide()
+    try {
+      await api.delete(`/personal/${persona.id}`)
+      onDeleted()
+      onHide()
+    } catch (err: any) {
+      const detail = err.response?.data?.detail || 'No se pudo dar de baja la persona.'
+      alert(detail)
+      console.log(err)
+    }
   }
+
+  const personaNombreCompleto = persona ? `${persona.nombre} ${persona.apellido || ''}`.trim() : ''
 
   return (
     <Modal show={persona !== null} onHide={onHide}>
@@ -22,7 +30,7 @@ export function DeletePersonaModal({ persona, onHide, onDeleted }: DeletePersona
         <Modal.Title>Eliminar persona</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        ¿Estás seguro que querés eliminar a <strong>{persona?.nombre}</strong>?
+        ¿Estás seguro que querés eliminar a <strong>{personaNombreCompleto}</strong>?
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={onHide}>Cancelar</Button>

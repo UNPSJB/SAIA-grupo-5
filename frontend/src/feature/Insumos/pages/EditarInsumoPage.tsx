@@ -55,6 +55,17 @@ export function EditarInsumoPage(){
         </Container>
     )
 
+    if (!insumo.activo) return (
+        <Container>
+            <PageHeader title="Editar Insumo" />
+            <Row className="justify-content-center">
+                <Col md={6}>
+                    <Alert variant="warning">No se puede editar un insumo dado de baja.</Alert>
+                </Col>
+            </Row>
+        </Container>
+    )
+
 
     return(
         <>

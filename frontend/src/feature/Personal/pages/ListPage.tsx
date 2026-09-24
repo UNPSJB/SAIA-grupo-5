@@ -9,6 +9,7 @@ import { PageHeader } from '../../../components/PageHeader'
 import { useApi } from '../../../hooks/useApi'
 import { api } from '../../../libs/axios'
 import { Capacidades } from '../../Capacidades/types'
+import { DeletePersonaModal } from '../components/DeletePersonaModal'
 import type { Persona } from '../types'
 
 const capacidadLabels: Record<string, string> = {
@@ -20,6 +21,7 @@ export function ListPage() {
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const { data: personal, error, isLoading } = useApi<Persona[]>('/personal/')
+  const [personaToDelete, setPersonaToDelete] = useState<Persona | null>(null)
 
   const filteredPersonal = useMemo(() => {
     if (!Array.isArray(personal)) return []
@@ -188,14 +190,23 @@ export function ListPage() {
           >
             <i className="bi bi-pencil me-1"></i>Editar
           </Button>
-          <Button
-            variant={row.activo ? 'outline-danger' : 'outline-success'}
-            size="sm"
-            onClick={() => cambiarEstado(row)}
-          >
-            <i className={`bi ${row.activo ? 'bi-person-dash' : 'bi-person-check'} me-1`}></i>
-            {row.activo ? 'Dar de baja' : 'Dar de Alta'}
-          </Button>
+          {row.activo ? (
+            <Button
+              variant="outline-danger"
+              size="sm"
+              onClick={() => setPersonaToDelete(row)}
+            >
+              <i className="bi bi-trash3 me-1"></i>Eliminar
+            </Button>
+          ) : (
+            <Button
+              variant="outline-success"
+              size="sm"
+              onClick={() => cambiarEstado(row)}
+            >
+              <i className="bi bi-person-check me-1"></i>Dar de Alta
+            </Button>
+          )}
         </div>
       ),
     },
@@ -222,6 +233,11 @@ export function ListPage() {
         </Col>
       </Row>
       <AppTable columns={columns} data={filteredPersonal} />
+      <DeletePersonaModal
+        persona={personaToDelete}
+        onHide={() => setPersonaToDelete(null)}
+        onDeleted={() => mutate('/personal/')}
+      />
     </Container>
   )
 }

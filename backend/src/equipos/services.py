@@ -31,6 +31,8 @@ def leer_equipo(db: Session, equipo_id: int) -> schemas.Equipo:
 def modificar_equipo(
         db: Session, equipo_id: int, equipo: schemas.EquipoUpdate) -> Equipo:
     db_equipo = leer_equipo(db, equipo_id)
+    if not db_equipo.estado:
+        raise exceptions.EquipoDadoDeBaja()
     db.execute(
         update(Equipo)
         .where(Equipo.id == equipo_id)
