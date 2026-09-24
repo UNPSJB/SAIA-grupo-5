@@ -7,20 +7,20 @@ import { type TableColumn } from 'react-data-table-component';
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
 import { useApi } from '../../../hooks/useApi';
+import { useAuth } from '../../../hooks/useAuth';
 
 import { DeleteInsumoModal } from '../components/DeleteInsumoModal';
 import type { Insumo } from '../types';
 
-
 export function ListPage() {
-    const navigate = useNavigate();     // Esto se usa para cambiar de pagina cuando cree el insumo
+    const navigate = useNavigate();
+    const { currentUser } = useAuth();
     const [search, setSearch] = useState('');
-    const { data: insumos, error, isLoading } = useApi<Insumo[]>("/insumos/")    
+    const { data: insumos, error, isLoading } = useApi<Insumo[]>("/insumos/");
     const [insumoToDelete, setInsumoToDelete] = useState<Insumo | null>(null);
 
-    // useMemo infiere que retorna un array de tipo Insumo[]
     const filteredInsumos = useMemo(() => {
-        if (!Array.isArray(insumos)) return [];     // Se agrego una validacion para preguntar si insumos es un array
+        if (!Array.isArray(insumos)) return [];
         return (insumos ?? []).filter((insumo) => {
             return (
                 insumo.nombre.toLowerCase().includes(search.toLowerCase()) ||
@@ -34,11 +34,11 @@ export function ListPage() {
             <Form.Control
                 type="text"
                 placeholder="Buscar insumo..."
-                className=" mr-sm-2"
+                className="mr-sm-2"
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
             />
         );
-    }, [search]);
+    }, []);
 
     if (isLoading) return (
         <>
@@ -47,7 +47,8 @@ export function ListPage() {
                 <span className="visually-hidden">Loading...</span>
             </Spinner>
         </>
-    )
+    );
+
     if (!insumos || error) return (
         <Container>
             <PageHeader title="Listado de Insumos" />
@@ -57,9 +58,9 @@ export function ListPage() {
                 </Col>
             </Row>
         </Container>
-    )
+    );
 
-    const columns: TableColumn<Insumo>[] = [
+    const baseColumns: TableColumn<Insumo>[] = [
         {
             name: "ID",
             selector: row => row.id,
@@ -93,7 +94,7 @@ export function ListPage() {
                             alignItems: 'center',
                             justifyContent: 'center',
                             whiteSpace: 'nowrap',
-                        }}      // Se modifico para poder poner las unidades de medida con los nombres completos y que se vean bien
+                        }}
                     >
                         {row.unidad_medida}
                     </div>
@@ -125,51 +126,59 @@ export function ListPage() {
                 </div>
             )
         },
-        {
-            name: "Acciones",
-            center: true,
-            cell: (row) => (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <Button
-                        variant="outline-primary"
-                        size="sm"
-                        onClick={() => navigate(`/insumos/${row.id}/edit`)}
-                    >
-                        <i className="bi bi-pencil me-1"></i>Editar
-                    </Button>
-                    {(row.activo &&
-                        <Button
-                            variant="outline-danger"
-                            size="sm"
-                            onClick={() => setInsumoToDelete(row)}
-                        >
-                            <i className="bi bi-trash3 me-1"></i>Eliminar
-                        </Button>
-                    )}
-                </div>
-            )
-        },
     ];
+
+    const columns: TableColumn<Insumo>[] = currentUser?.administrar
+        ? [
+            ...baseColumns,
+            {
+                name: "Acciones",
+                center: true,
+                cell: (row) => (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <Button
+                            variant="outline-primary"
+                            size="sm"
+                            onClick={() => navigate(`/insumos/${row.id}/edit`)}
+                        >
+                            <i className="bi bi-pencil me-1"></i>Editar
+                        </Button>
+                        {row.activo && (
+                            <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={() => setInsumoToDelete(row)}
+                            >
+                                <i className="bi bi-trash3 me-1"></i>Eliminar
+                            </Button>
+                        )}
+                    </div>
+                )
+            }
+        ]
+        : baseColumns;
 
     return (
         <Container>
-            <Row className="p-2 align-items-center" >
+            <Row className="p-2 align-items-center">
                 <Col>
                     <PageHeader title="Listado de Insumos" />
                 </Col>
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
                 </Col>
-                <Col xs="auto" className="d-flex justify-content-end">
-                    <Button
-                        variant="primary"
-                        size='sm'
-                        onClick={() => navigate("/insumos/new")}
-                        style={{ whiteSpace: "nowrap" }}
-                    >
-                        + Nuevo Insumo
-                    </Button>
-                </Col>
+                {currentUser?.administrar && (
+                    <Col xs="auto" className="d-flex justify-content-end">
+                        <Button
+                            variant="primary"
+                            size='sm'
+                            onClick={() => navigate("/insumos/new")}
+                            style={{ whiteSpace: "nowrap" }}
+                        >
+                            + Nuevo Insumo
+                        </Button>
+                    </Col>
+                )}
             </Row>
             <AppTable columns={columns} data={filteredInsumos} />
             <DeleteInsumoModal

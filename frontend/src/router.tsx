@@ -7,9 +7,9 @@ import { ListPage as InsumosListPage } from './feature/Insumos/pages/ListPage.ts
 import { NuevoInsumoPage } from './feature/Insumos/pages/NuevoInsumoPage.tsx'
 import { EditarInsumoPage } from './feature/Insumos/pages/EditarInsumoPage.tsx'
 
-import { EquiposPage } from './feature/Equipos/pages/ListPage.tsx';
-import { EditarEquipoPage } from './feature/Equipos/pages/EditarEquipoPage.tsx';
-import { NuevoEquipoPage } from './feature/Equipos/pages/NuevoEquipoPage.tsx';
+import { EquiposPage } from './feature/Equipos/pages/ListPage.tsx'
+import { EditarEquipoPage } from './feature/Equipos/pages/EditarEquipoPage.tsx'
+import { NuevoEquipoPage } from './feature/Equipos/pages/NuevoEquipoPage.tsx'
 
 import { ListPage as PersonalListPage } from './feature/Personal/pages/ListPage.tsx'
 import { EditarPersonaPage } from './feature/Personal/pages/EditarPersonaPage.tsx'
@@ -25,57 +25,97 @@ import { NuevoTipoQuimicoPage } from './feature/TiposQuimicos/pages/NuevoTipoQui
 import { EditarTipoQuimicoPage } from './feature/TiposQuimicos/pages/EditarTipoQuimicoPage.tsx'
 import { VerTipoQuimicoPage } from './feature/TiposQuimicos/pages/VerTipoQuimicoPage.tsx'
 
+import { Login, NoAutorizado } from './feature/auth'
+import AuthLayout from './layouts/AuthLayout.tsx'
+import { ProtectedRoute } from './components/ProtectedRoute.tsx'
+
 import App from './App.tsx'
 
 
 const router = createBrowserRouter([
   {
-    path: '/',
-    element: <App />,
+    path: '/iniciar-sesion',
+    element: <Login />,
+  },
+  {
+    path: '/no-autorizado',
+    element: <NoAutorizado />,
+  },
+  {
+    element: <AuthLayout />,
     children: [
-      { index: true, element: <HomePage /> },
-      { 
-        path: "equipos", 
-        children: [
-          { index: true, element: <EquiposPage /> },
-          { path: "new", element: <NuevoEquipoPage /> },
-          { path: ":id/edit", element: <EditarEquipoPage /> },
-        ],
-      },
       {
-        path: 'insumos',
+        path: '/',
+        element: <App />,
         children: [
-          { index: true, element: <InsumosListPage /> },
-          { path: 'new', element: <NuevoInsumoPage /> },
-          { path: ':id/edit', element: <EditarInsumoPage /> },
+          { index: true, element: <HomePage /> },
+          {
+            path: 'equipos',
+            children: [
+              { index: true, element: <EquiposPage /> },
+              {
+                element: <ProtectedRoute requireAdmin />,
+                children: [
+                  { path: 'new', element: <NuevoEquipoPage /> },
+                  { path: ':id/edit', element: <EditarEquipoPage /> },
+                ],
+              },
+            ],
+          },
+          {
+            path: 'insumos',
+            children: [
+              { index: true, element: <InsumosListPage /> },
+              {
+                element: <ProtectedRoute requireAdmin />,
+                children: [
+                  { path: 'new', element: <NuevoInsumoPage /> },
+                  { path: ':id/edit', element: <EditarInsumoPage /> },
+                ],
+              },
+            ],
+          },
+          {
+            path: 'personal',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <PersonalListPage /> },
+              { path: 'new', element: <NuevaPersonaPage /> },
+              { path: ':id/edit', element: <EditarPersonaPage /> },
+            ],
+          },
+          {
+            path: 'insumos-quimicos',
+            children: [
+              {index: true, element: <InsumoQuimicoListPage />},
+              {path: ':id', element: <VerInsumoQuimicoPage />},
+              {
+                element: <ProtectedRoute requireAdmin />,
+                children: [
+                  {path: 'new', element: <NuevoInsumoQuimicoPage />},
+                  {path: ':id/edit', element: <EditarInsumoQuimicoPage />},
+                ],
+              },
+            ],
+          },
+          {
+            path: 'tipos-quimicos',
+            children: [
+              {index: true, element: <TipoQuimicoListPage />},
+              {path: ':id', element: <VerTipoQuimicoPage />},
+              {
+                element: <ProtectedRoute requireAdmin />,
+                children: [
+                  {path: 'new', element: <NuevoTipoQuimicoPage />},
+                  {path: ':id/edit', element: <EditarTipoQuimicoPage />},
+                ],
+              },
+            ],
+          },
+          { path: '*', element: <Page404 /> },
         ],
       },
-      {
-        path: 'personal',
-        children: [
-          { index: true, element: <PersonalListPage /> },
-          { path: 'new', element: <NuevaPersonaPage /> },
-          { path: ':id/edit', element: <EditarPersonaPage /> },
-        ],
-      },
-      {
-        path: 'insumos-quimicos',
-        children: [
-          {index: true, element: <InsumoQuimicoListPage />},
-          {path: 'new', element: <NuevoInsumoQuimicoPage />},
-          {path: ':id/edit', element: <EditarInsumoQuimicoPage />},
-          {path: ':id', element: <VerInsumoQuimicoPage />},
-        ],
-      },
-      {
-        path: 'tipos-quimicos',
-        children: [
-          {index: true, element: <TipoQuimicoListPage />},
-          {path: 'new', element: <NuevoTipoQuimicoPage />},
-          {path: ':id/edit', element: <EditarTipoQuimicoPage />},
-          {path: ':id', element: <VerTipoQuimicoPage />},
-        ],
-      },
+      
       { path: '*', element: <Page404 /> },
     ],
   },

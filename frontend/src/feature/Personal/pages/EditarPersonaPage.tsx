@@ -5,11 +5,13 @@ import { PageHeader } from '../../../components/PageHeader'
 import { PersonaForm } from '../components/PersonaForm'
 import { api } from '../../../libs/axios'
 import { useApi } from '../../../hooks/useApi'
+import { useAuth } from '../../../hooks/useAuth'
 import type { NewPersona, Persona } from '../types'
 
 export function EditarPersonaPage() {
   const navigate = useNavigate()
   const { id } = useParams()
+  const { currentUser, refreshCurrentUser } = useAuth()
 
   const { data: persona, isLoading, error } = useApi<Persona>(`/personal/${id}`)
 
@@ -17,18 +19,27 @@ export function EditarPersonaPage() {
     try {
       const { data: actualizada } = await api.put<Persona>(`/personal/${id}`, datos)
       await mutate(`/personal/${id}`, actualizada, false)
+
+      // Si te editaste a vos mismo (ej. te sacaste el permiso de administrar),
+      // el estado de currentUser queda desactualizado y el resto de la app
+      // sigue pensando que tenés los permisos viejos hasta que se refresque.
+      if (currentUser && actualizada.id === currentUser.id) {
+        await refreshCurrentUser()
+      }
+
       await mutate('/personal/')
       navigate('/personal')
-    } catch (error) {
-      alert('No se pudo editar la persona.')
-      console.log(error)
+    } catch (err: any) {
+      const detail = err.response?.data?.detail || 'No se pudo editar la persona.'
+      alert(detail)
+      console.log(err)
     }
   }
 
   if (isLoading) {
     return (
       <>
-        <PageHeader title="Editar capacidades" />
+        <PageHeader title="Editar personal" />
         <Spinner animation="border" role="status">
           <span className="visually-hidden">Loading...</span>
         </Spinner>
@@ -52,7 +63,7 @@ export function EditarPersonaPage() {
   if (error) {
     return (
       <Container>
-        <PageHeader title="Editar capacidades" />
+        <PageHeader title="Editar personal" />
         <Row className="justify-content-center">
           <Col md={6}>
             <Alert variant="danger">Ocurrió un error al cargar la persona</Alert>
@@ -64,14 +75,19 @@ export function EditarPersonaPage() {
 
   return (
     <>
-      <PageHeader title="Editar capacidades" />
+      <PageHeader title="Editar personal" />
       <Container>
         <PersonaForm
           key={`${persona.id}-${persona.operar}-${persona.administrar}-${persona.nombre}`}
-          textoBoton="Guardar capacidades"
+          textoBoton="Guardar cambios"
+          isEditing={true}
           onSubmit={actualizarPersona}
           valoresIniciales={{
             nombre: persona.nombre,
+            apellido: persona.apellido,
+            dni: persona.dni,
+            mail: persona.mail,
+            username: persona.username,
             operar: persona.operar,
             administrar: persona.administrar,
           }}

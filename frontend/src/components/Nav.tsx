@@ -1,29 +1,53 @@
-import { Nav as BSNav } from "react-bootstrap";
+import { Nav as BSNav, Button, Badge } from "react-bootstrap";
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../hooks";
 
 export function Nav() {
+    const { currentUser, logout } = useAuth();
+
     return (
-        <div className="d-flex
-            flex-column
-            flex-shrink-0
-            p-3
-            min-vh-100
-            text-white"
-            style={{ minWidth: 220, backgroundColor: "#0a0091"}}
+        <div
+            className="d-flex flex-column flex-shrink-0 p-3 min-vh-100 text-white"
+            style={{ minWidth: 230, backgroundColor: "#0a0091" }}
         >
-            <div className="sticky-top" style={{ top: 0 }}>
-                <span className="text-white fs-4">
-                    SAIA-5
-                </span>
+            <div className="sticky-top d-flex flex-column" style={{ top: 0, minHeight: "calc(100vh - 2rem)" }}>
+                <div className="d-flex align-items-center justify-content-between">
+                    <span className="text-white fs-4 fw-bold">SAIA-5</span>
+                </div>
+
+                {currentUser && (
+                    <div className="mt-2 mb-2 p-2 rounded" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
+                        <div className="small text-truncate fw-semibold">
+                            <i className="bi bi-person-circle me-1"></i>
+                            {currentUser.nombre} {currentUser.apellido || ''}
+                        </div>
+                        <div className="d-flex gap-1 mt-1 flex-wrap">
+                            {currentUser.administrar && (
+                                <Badge bg="info" className="text-dark" style={{ fontSize: "0.7rem" }}>
+                                    Admin
+                                </Badge>
+                            )}
+                            {currentUser.operar && (
+                                <Badge bg="secondary" style={{ fontSize: "0.7rem" }}>
+                                    Operario
+                                </Badge>
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 <hr />
+
                 <BSNav
                     className="nav nav-pills flex-column mb-auto"
-                    style={{
-                        "--bs-nav-link-color": "#adb5bd",
-                        "--bs-nav-link-hover-color": "#fff"
-                    } as React.CSSProperties}
+                    style={
+                        {
+                            "--bs-nav-link-color": "#adb5bd",
+                            "--bs-nav-link-hover-color": "#fff",
+                        } as React.CSSProperties
+                    }
                 >
-                    <BSNav.Link as={NavLink} to="/" end> 
+                    <BSNav.Link as={NavLink} to="/" end>
                         <i className="bi bi-house-door me-2"></i>
                         Home
                     </BSNav.Link>
@@ -35,11 +59,29 @@ export function Nav() {
                         <i className="bi bi-tools me-2"></i>
                         Equipos
                     </BSNav.Link>
-                    <BSNav.Link as={NavLink} to="/personal">
-                        <i className="bi bi-people me-2"></i>
-                        Personal
-                    </BSNav.Link>
+
+                    {/* Módulo de Personal solo visible para usuarios con permiso de administrar */}
+                    {currentUser?.administrar && (
+                        <BSNav.Link as={NavLink} to="/personal">
+                            <i className="bi bi-people me-2"></i>
+                            Personal
+                        </BSNav.Link>
+                    )}
                 </BSNav>
+
+                <hr className="mt-auto" />
+
+                <div>
+                    <Button
+                        variant="outline-light"
+                        size="sm"
+                        className="w-100 d-flex align-items-center justify-content-center"
+                        onClick={logout}
+                    >
+                        <i className="bi bi-box-arrow-right me-2"></i>
+                        Cerrar sesión
+                    </Button>
+                </div>
             </div>
         </div>
     );
