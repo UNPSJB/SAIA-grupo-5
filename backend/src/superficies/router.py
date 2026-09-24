@@ -1,12 +1,13 @@
 import logging
-from fastapi import APIRouter, Depends
+from fastapi import Depends
 from sqlalchemy.orm import Session
 from src.database import get_db
 from src.superficies import schemas, services
+from src.auth.router_base import PermissionedRouter
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/superficies", tags=["superficies"])
+router = PermissionedRouter(prefix="/superficies", tags=["superficies"])
 
 
 # Rutas para Superficies

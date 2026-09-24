@@ -1,13 +1,15 @@
 import logging
-from fastapi import APIRouter, Depends
+from fastapi import Depends
 from sqlalchemy.orm import Session
 from src.database import get_db
 from src.tareas_ocurrencia import schemas, services
+from src.auth.router_base import PermissionedRouter
+from src.auth.dependencies import get_current_persona
 
 # Creamos un logger para este módulo específico. Más info.: https://docs.python.org/3/library/logging.html
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/tareas-ocurrencia", tags=["tareas-ocurrencia"])
+router = PermissionedRouter(prefix="/tareas-ocurrencia", tags=["tareas-ocurrencia"])
 
 
 # Rutas para TareaOcurrencia
@@ -37,7 +39,15 @@ def read_tareas_ocurrencia_pendientes(db: Session = Depends(get_db)):
 def read_tarea_ocurrencia(ocurrencia_id: int, db: Session = Depends(get_db)):
     return services.leer_tarea_ocurrencia(db, ocurrencia_id)
 
-@router.put("/{ocurrencia_id}/completar", response_model=schemas.TareaOcurrencia)
+
+# Excepción a la regla por default: completar un checklist es algo que
+# cualquier persona logueada puede hacer (no solo quien administra), no
+# tiene sentido pedir permiso de admin para marcar tu propia tarea como hecha.
+@router.put(
+    "/{ocurrencia_id}/completar",
+    response_model=schemas.TareaOcurrencia,
+    dependencies=[Depends(get_current_persona)],
+)
 def completar_tarea_ocurrencia(
     ocurrencia_id: int, datos: schemas.TareaOcurrenciaCompletar, db: Session = Depends(get_db)
 ):

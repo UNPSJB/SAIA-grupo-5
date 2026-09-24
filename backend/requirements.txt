@@ -46,3 +46,5 @@ websockets==17.0.1
 Faker==40.38.0
 APScheduler==3.11.3
 tzlocal==5.4.4
+PyJWT==2.14.0
+pwdlib[argon2]==0.3.1

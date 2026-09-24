@@ -7,6 +7,7 @@ import { type TableColumn } from 'react-data-table-component';
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
 import { useApi } from '../../../hooks/useApi';
+import { useAuth } from '../../../hooks/useAuth';
 
 import { DeleteSectorModal } from '../components/DeleteSectorModal';
 import { EquiposDeSectorModal } from '../components/EquiposDeSectorModal';
@@ -16,6 +17,7 @@ import type { Sector } from '../types';
 
 export function ListPage() {
     const navigate = useNavigate();     // Esto se usa para cambiar de pagina cuando cree el sector
+    const { currentUser } = useAuth();
     const [search, setSearch] = useState('');
     const { data: sectores, error, isLoading } = useApi<Sector[]>("/sectores/")
     const [sectorToDelete, setSectorToDelete] = useState<Sector | null>(null);
@@ -59,7 +61,7 @@ export function ListPage() {
         </Container>
     )
 
-    const columns: TableColumn<Sector>[] = [
+    const baseColumns: TableColumn<Sector>[] = [
         {
             name: "ID",
             selector: row => row.id,
@@ -128,32 +130,38 @@ export function ListPage() {
                 </div>
             )
         },
-        {
-            name: "Acciones",
-            center: true,
-            minWidth: "220px",
-            cell: (row) => (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <Button
-                        variant="outline-primary"
-                        size="sm"
-                        onClick={() => navigate(`/sectores/${row.id}/edit`)}
-                    >
-                        <i className="bi bi-pencil me-1"></i>Editar
-                    </Button>
-                    {(row.activo &&
-                        <Button
-                            variant="outline-danger"
-                            size="sm"
-                            onClick={() => setSectorToDelete(row)}
-                        >
-                            <i className="bi bi-trash3 me-1"></i>Eliminar
-                        </Button>
-                    )}
-                </div>
-            )
-        },
     ];
+
+    const columns: TableColumn<Sector>[] = currentUser?.administrar
+        ? [
+            ...baseColumns,
+            {
+                name: "Acciones",
+                center: true,
+                minWidth: "220px",
+                cell: (row) => (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <Button
+                            variant="outline-primary"
+                            size="sm"
+                            onClick={() => navigate(`/sectores/${row.id}/edit`)}
+                        >
+                            <i className="bi bi-pencil me-1"></i>Editar
+                        </Button>
+                        {(row.activo &&
+                            <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={() => setSectorToDelete(row)}
+                            >
+                                <i className="bi bi-trash3 me-1"></i>Eliminar
+                            </Button>
+                        )}
+                    </div>
+                )
+            }
+        ]
+        : baseColumns;
 
     return (
         <Container>
@@ -164,16 +172,18 @@ export function ListPage() {
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
                 </Col>
-                <Col xs="auto" className="d-flex justify-content-end">
-                    <Button
-                        variant="primary"
-                        size='sm'
-                        onClick={() => navigate("/sectores/new")}
-                        style={{ whiteSpace: "nowrap" }}
-                    >
-                        + Nuevo Sector
-                    </Button>
-                </Col>
+                {currentUser?.administrar && (
+                    <Col xs="auto" className="d-flex justify-content-end">
+                        <Button
+                            variant="primary"
+                            size='sm'
+                            onClick={() => navigate("/sectores/new")}
+                            style={{ whiteSpace: "nowrap" }}
+                        >
+                            + Nuevo Sector
+                        </Button>
+                    </Col>
+                )}
             </Row>
             <AppTable columns={columns} data={filteredSectores} />
             <DeleteSectorModal

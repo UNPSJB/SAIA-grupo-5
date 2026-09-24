@@ -1,9 +1,12 @@
 # scripts/seed_tareas_ocurrencia.py
 """
 Pobla la base de datos con ocurrencias de tareas de prueba, tomando como
-base (snapshot) las tareas ya existentes. No hay FK real hacia Tarea
-(diseño memento: ver src/tareas_ocurrencia/models.py).
+base (snapshot) las tareas ya existentes. No hay FK real hacia Tarea ni
+hacia Persona (diseño memento: ver src/tareas_ocurrencia/models.py),
+pero operario_id se completa con ids reales de personal con capacidad
+operar (si no hay ninguno cargado, queda en None).
 Requiere haber corrido antes: python -m scripts.seed_tareas
+                               python -m scripts.seed_personal (opcional)
 Uso: python -m scripts.seed_tareas_ocurrencia
 """
 from datetime import date, timedelta
@@ -11,20 +14,22 @@ from datetime import date, timedelta
 from faker import Faker
 from sqlalchemy import select
 
-import src.all_models 
+import src.all_models
 from src.database import SessionLocal
 from src.tarea.models import Tarea
+from src.personal.models import Persona
 from src.tareas_ocurrencia.models import TareaOcurrencia
 from src.tareas_ocurrencia.constants import EstadoTareaOcurrencia
 
 fake = Faker("es_AR")
 Faker.seed(42)
 
-OPERARIOS_ID = [1, 2, 3, 4, 5]  # Operario todavía no existe como modelo, ver models.py
-
 
 def generar_ocurrencias(db) -> list[TareaOcurrencia]:
     tareas = db.scalars(select(Tarea)).all()
+    # operario_id no tiene FK real (diseño memento), pero ahora sí existe
+    # Persona con capacidad operar: usamos esos ids en vez de un placeholder.
+    operarios_id = [p.id for p in db.scalars(select(Persona).where(Persona.operar == True)).all()]
     hoy = date.today()
 
     ocurrencias = []
@@ -33,7 +38,7 @@ def generar_ocurrencias(db) -> list[TareaOcurrencia]:
         fecha_pasada = hoy - timedelta(days=tarea.frecuencia)
         ocurrencias.append(
             TareaOcurrencia(
-                operario_id=fake.random_element(elements=OPERARIOS_ID),
+                operario_id=fake.random_element(elements=operarios_id) if operarios_id else None,
                 tarea_nombre_snap=tarea.nombre,
                 tarea_descripcion_snap=tarea.descripcion,
                 frecuencia_snap=str(tarea.frecuencia),

@@ -7,6 +7,7 @@ import { type TableColumn } from 'react-data-table-component';
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
 import { useApi } from '../../../hooks/useApi';
+import { useAuth } from '../../../hooks/useAuth';
 
 import { DeleteSuperficieModal } from '../components/DeleteSuperficieModal';
 import { VerSectoresModal } from '../components/VerSectoresModal';
@@ -14,6 +15,7 @@ import type { Superficie } from "../types";
 
 export function SuperficiesPage() {
     const navigate = useNavigate();
+    const { currentUser } = useAuth();
     const [search, setSearch] = useState('');
     const { data: superficies, error, isLoading } = useApi<Superficie[]>("/superficies/")
     const [superficieToDelete, setSuperficieToDelete] = useState<Superficie | null>(null);
@@ -59,7 +61,7 @@ export function SuperficiesPage() {
         </Container>
     )
 
-    const columns: TableColumn<Superficie>[] = [
+    const baseColumns: TableColumn<Superficie>[] = [
         {
             name: "Nombre",
             selector: row => row.nombre,
@@ -113,32 +115,38 @@ export function SuperficiesPage() {
                 </div>
             )
         },
-        {
-            name: "Acciones",
-            center: true,
-            minWidth: "220px",
-            cell: (row) => (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <Button
-                        variant="outline-primary"
-                        size="sm"
-                        onClick={() => navigate(`/superficies/${row.id}/edit`)}
-                    >
-                        <i className="bi bi-pencil me-1"></i>Editar
-                    </Button>
-                    {row.activo && (
-                        <Button
-                            variant="outline-danger"
-                            size="sm"
-                            onClick={() => setSuperficieToDelete(row)}
-                        >
-                            <i className="bi bi-trash3 me-1"></i>Eliminar
-                        </Button>
-                    )}
-                </div>
-            )
-        },
     ];
+
+    const columns: TableColumn<Superficie>[] = currentUser?.administrar
+        ? [
+            ...baseColumns,
+            {
+                name: "Acciones",
+                center: true,
+                minWidth: "220px",
+                cell: (row) => (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <Button
+                            variant="outline-primary"
+                            size="sm"
+                            onClick={() => navigate(`/superficies/${row.id}/edit`)}
+                        >
+                            <i className="bi bi-pencil me-1"></i>Editar
+                        </Button>
+                        {row.activo && (
+                            <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={() => setSuperficieToDelete(row)}
+                            >
+                                <i className="bi bi-trash3 me-1"></i>Eliminar
+                            </Button>
+                        )}
+                    </div>
+                )
+            }
+        ]
+        : baseColumns;
 
     return (
         <Container>
@@ -149,16 +157,18 @@ export function SuperficiesPage() {
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
                 </Col>
-                <Col xs="auto" className="d-flex justify-content-end">
-                    <Button
-                        variant="primary"
-                        size='sm'
-                        onClick={() => navigate("/superficies/new")}
-                        style={{ whiteSpace: "nowrap" }}
-                    >
-                        + Nueva Superficie
-                    </Button>
-                </Col>
+                {currentUser?.administrar && (
+                    <Col xs="auto" className="d-flex justify-content-end">
+                        <Button
+                            variant="primary"
+                            size='sm'
+                            onClick={() => navigate("/superficies/new")}
+                            style={{ whiteSpace: "nowrap" }}
+                        >
+                            + Nueva Superficie
+                        </Button>
+                    </Col>
+                )}
             </Row>
             <AppTable columns={columns} data={filteredSuperficies} />
             <DeleteSuperficieModal

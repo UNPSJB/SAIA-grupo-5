@@ -7,9 +7,9 @@ import { ListPage as InsumosListPage } from './feature/Insumos/pages/ListPage.ts
 import { NuevoInsumoPage } from './feature/Insumos/pages/NuevoInsumoPage.tsx'
 import { EditarInsumoPage } from './feature/Insumos/pages/EditarInsumoPage.tsx'
 
-import { EquiposPage } from './feature/Equipos/pages/ListPage.tsx';
-import { EditarEquipoPage } from './feature/Equipos/pages/EditarEquipoPage.tsx';
-import { NuevoEquipoPage } from './feature/Equipos/pages/NuevoEquipoPage.tsx';
+import { EquiposPage } from './feature/Equipos/pages/ListPage.tsx'
+import { EditarEquipoPage } from './feature/Equipos/pages/EditarEquipoPage.tsx'
+import { NuevoEquipoPage } from './feature/Equipos/pages/NuevoEquipoPage.tsx'
 
 import { ListPage as SectoresPage } from './feature/Sectores/pages/ListPage.tsx';
 import { EditarSectorPage } from './feature/Sectores/pages/EditarSectorPage.tsx';
@@ -29,64 +29,96 @@ import { EditarPlanLimpiezaPage } from './feature/PlanesLimpieza/pages/EditarPla
 
 import { TareasPage } from './feature/Tareas/pages/ListPage.tsx';
 
+import { Login, NoAutorizado } from './feature/auth'
+import AuthLayout from './layouts/AuthLayout.tsx'
+import { ProtectedRoute } from './components/ProtectedRoute.tsx'
 import App from './App.tsx'
 
+// Todas las páginas reales cuelgan de un único árbol: AuthLayout (gate de
+// autenticación) -> App (Nav + layout) -> children. Antes había ramas
+// duplicadas colgando directo de AuthLayout sin pasar por App, así que esas
+// páginas (Sectores, Superficies, Planes de Limpieza, Tareas, y una copia
+// vieja de Equipos/Personal) se veían sin el sidebar.
 const router = createBrowserRouter([
   {
-    path: '/',
-    element: <App />,
+    path: '/iniciar-sesion',
+    element: <Login />,
+  },
+  {
+    path: '/no-autorizado',
+    element: <NoAutorizado />,
+  },
+  {
+    element: <AuthLayout />,
     children: [
-      { index: true, element: <HomePage /> },
-      { 
-        path: "equipos", 
-        children: [
-          { index: true, element: <EquiposPage /> },
-          { path: "new", element: <NuevoEquipoPage /> },
-          { path: ":id/edit", element: <EditarEquipoPage /> },
-        ],
-      },
-      { 
-        path: "sectores", 
-        children: [
-          { index: true, element: <SectoresPage /> },
-          { path: "new", element: <NuevoSectorPage /> },
-          { path: ":id/edit", element: <EditarSectorPage /> },
-        ],
-      },
       {
-        path: 'insumos',
+        path: '/',
+        element: <App />,
         children: [
-          { index: true, element: <InsumosListPage /> },
-          { path: 'new', element: <NuevoInsumoPage /> },
-          { path: ':id/edit', element: <EditarInsumoPage /> },
+          { index: true, element: <HomePage /> },
+          {
+            path: 'equipos',
+            children: [
+              { index: true, element: <EquiposPage /> },
+              {
+                element: <ProtectedRoute requireAdmin />,
+                children: [
+                  { path: 'new', element: <NuevoEquipoPage /> },
+                  { path: ':id/edit', element: <EditarEquipoPage /> },
+                ],
+              },
+            ],
+          },
+          {
+            path: 'sectores',
+            children: [
+              { index: true, element: <SectoresPage /> },
+              { path: 'new', element: <NuevoSectorPage /> },
+              { path: ':id/edit', element: <EditarSectorPage /> },
+            ],
+          },
+          {
+            path: 'insumos',
+            children: [
+              { index: true, element: <InsumosListPage /> },
+              {
+                element: <ProtectedRoute requireAdmin />,
+                children: [
+                  { path: 'new', element: <NuevoInsumoPage /> },
+                  { path: ':id/edit', element: <EditarInsumoPage /> },
+                ],
+              },
+            ],
+          },
+          {
+            path: 'personal',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <PersonalListPage /> },
+              { path: 'new', element: <NuevaPersonaPage /> },
+              { path: ':id/edit', element: <EditarPersonaPage /> },
+            ],
+          },
+          {
+            path: 'superficies',
+            children: [
+              { index: true, element: <SuperficiesPage /> },
+              { path: 'new', element: <NuevaSuperficiePage /> },
+              { path: ':id/edit', element: <EditarSuperficiePage /> },
+            ],
+          },
+          {
+            path: 'planes-limpieza',
+            children: [
+              { index: true, element: <PlanesLimpiezaPage /> },
+              { path: 'new', element: <NuevoPlanLimpiezaPage /> },
+              { path: ':id/edit', element: <EditarPlanLimpiezaPage /> },
+            ],
+          },
+          { path: 'tareas', element: <TareasPage /> },
+          { path: '*', element: <Page404 /> },
         ],
       },
-      {
-        path: 'personal',
-        children: [
-          { index: true, element: <PersonalListPage /> },
-          { path: 'new', element: <NuevaPersonaPage /> },
-          { path: ':id/edit', element: <EditarPersonaPage /> },
-        ],
-      },
-      {
-        path: 'superficies',
-        children: [
-          { index: true, element: <SuperficiesPage /> },
-          { path: 'new', element: <NuevaSuperficiePage /> },
-          { path: ':id/edit', element: <EditarSuperficiePage /> },
-        ],
-      },
-      {
-        path: 'planes-limpieza',
-        children: [
-          { index: true, element: <PlanesLimpiezaPage /> },
-          { path: 'new', element: <NuevoPlanLimpiezaPage /> },
-          { path: ':id/edit', element: <EditarPlanLimpiezaPage /> },
-        ],
-      },
-      { path: 'tareas', element: <TareasPage /> },
-      { path: '*', element: <Page404 /> },
     ],
   },
 ])

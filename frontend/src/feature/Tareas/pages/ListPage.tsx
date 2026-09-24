@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { mutate } from "swr";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
+import { useAuth } from "../../../hooks/useAuth";
 import type { PlanLimpieza } from "../../PlanesLimpieza/types";
 import { DeleteTareaModal } from "../components/DeleteTareaModal";
 import { TareaDetalleModal } from "../components/TareaDetalleModal";
@@ -22,6 +23,7 @@ const FRECUENCIA_TABS: { key: Frecuencia; label: string; emptyMessage: string }[
 ];
 
 export function TareasPage() {
+    const { currentUser } = useAuth();
     const [searchParams] = useSearchParams();
     // Permite llegar con un plan (y opcionalmente una relación) ya elegidos,
     // ej. desde las columnas "Ver" de Planes de Limpieza.
@@ -129,15 +131,17 @@ export function TareasPage() {
                     </Dropdown.Menu>
                 </Dropdown>
 
-                <Button
-                    variant="primary"
-                    size="sm"
-                    className="ms-2 flex-shrink-0"
-                    disabled={!planId}
-                    onClick={() => setFormularioTarea({ tarea: null })}
-                >
-                    + Agregar tarea
-                </Button>
+                {currentUser?.administrar && (
+                    <Button
+                        variant="primary"
+                        size="sm"
+                        className="ms-2 flex-shrink-0"
+                        disabled={!planId}
+                        onClick={() => setFormularioTarea({ tarea: null })}
+                    >
+                        + Agregar tarea
+                    </Button>
+                )}
             </div>
 
             {planId && !isLoadingTareas && !errorTareas && (

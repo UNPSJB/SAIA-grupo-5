@@ -1,4 +1,5 @@
 import { Badge, Button, Modal } from "react-bootstrap";
+import { useAuth } from "../../../hooks/useAuth";
 import { FRECUENCIA_LABELS, getRelacionNombre, getRelacionTipoLabel, PRIORIDAD_LABELS, PRIORIDAD_VARIANTS } from "../types";
 import type { Tarea } from "../types";
 
@@ -10,6 +11,8 @@ interface TareaDetalleModalProps {
 }
 
 export function TareaDetalleModal({ tarea, onHide, onEditar, onEliminar }: TareaDetalleModalProps) {
+    const { currentUser } = useAuth();
+
     return (
         <Modal show={tarea !== null} onHide={onHide} size="lg">
             <Modal.Header closeButton>
@@ -59,14 +62,16 @@ export function TareaDetalleModal({ tarea, onHide, onEditar, onEliminar }: Tarea
                     </>
                 )}
             </Modal.Body>
-            <Modal.Footer>
-                <Button variant="outline-danger" onClick={onEliminar}>
-                    <i className="bi bi-trash3 me-1"></i>Eliminar tarea
-                </Button>
-                <Button variant="outline-primary" onClick={onEditar}>
-                    <i className="bi bi-pencil me-1"></i>Editar tarea
-                </Button>
-            </Modal.Footer>
+            {currentUser?.administrar && (
+                <Modal.Footer>
+                    <Button variant="outline-danger" onClick={onEliminar}>
+                        <i className="bi bi-trash3 me-1"></i>Eliminar tarea
+                    </Button>
+                    <Button variant="outline-primary" onClick={onEditar}>
+                        <i className="bi bi-pencil me-1"></i>Editar tarea
+                    </Button>
+                </Modal.Footer>
+            )}
         </Modal>
     );
 }

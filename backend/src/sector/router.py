@@ -1,15 +1,16 @@
 import logging
-from fastapi import APIRouter, Depends
+from fastapi import Depends
 from sqlalchemy.orm import Session
 from src.database import get_db
 from src.sector import schemas, services
 from src.equipos import schemas as equipos_schemas
 from src.superficies import schemas as superficies_schemas
+from src.auth.router_base import PermissionedRouter
 
 # Creamos un logger para este módulo específico. Más info.: https://docs.python.org/3/library/logging.html
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/sectores", tags=["sectores"])
+router = PermissionedRouter(prefix="/sectores", tags=["sectores"])
 
 
 # Rutas para Sectores

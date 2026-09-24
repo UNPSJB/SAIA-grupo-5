@@ -7,6 +7,7 @@ import { type TableColumn } from 'react-data-table-component';
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
 import { useApi } from '../../../hooks/useApi';
+import { useAuth } from '../../../hooks/useAuth';
 
 import { DeletePlanLimpiezaModal } from '../components/DeletePlanLimpiezaModal';
 import { VerDescripcionModal } from '../components/VerDescripcionModal';
@@ -14,6 +15,7 @@ import type { PlanLimpieza } from "../types";
 
 export function PlanesLimpiezaPage() {
     const navigate = useNavigate();
+    const { currentUser } = useAuth();
     const [search, setSearch] = useState('');
     const { data: planes, error, isLoading } = useApi<PlanLimpieza[]>("/planes-limpieza/")
     const [planToDelete, setPlanToDelete] = useState<PlanLimpieza | null>(null);
@@ -26,7 +28,7 @@ export function PlanesLimpiezaPage() {
         </div>
     );
 
-    const columns = useMemo<TableColumn<PlanLimpieza>[]>(() => [
+    const baseColumns = useMemo<TableColumn<PlanLimpieza>[]>(() => [
         {
             id: "nombre",
             name: "Nombre",
@@ -127,34 +129,40 @@ export function PlanesLimpiezaPage() {
                 </div>
             )
         },
-        {
-            id: "acciones",
-            name: "Acciones",
-            center: true,
-            minWidth: "220px",
-            cell: (row) => (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <Button
-                        variant="outline-primary"
-                        size="sm"
-                        onClick={() => navigate(`/planes-limpieza/${row.id}/edit`)}
-                    >
-                        <i className="bi bi-pencil me-1"></i>Editar
-                    </Button>
-                    {row.activo && (
-                        <Button
-                            variant="outline-danger"
-                            size="sm"
-                            onClick={() => setPlanToDelete(row)}
-                        >
-                            <i className="bi bi-trash3 me-1"></i>Eliminar
-                        </Button>
-                    )}
-                </div>
-            )
-        },
         // eslint-disable-next-line react-hooks/exhaustive-deps -- navigate y los setState son referencias estables
     ], []);
+
+    const columns: TableColumn<PlanLimpieza>[] = currentUser?.administrar
+        ? [
+            ...baseColumns,
+            {
+                id: "acciones",
+                name: "Acciones",
+                center: true,
+                minWidth: "220px",
+                cell: (row) => (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <Button
+                            variant="outline-primary"
+                            size="sm"
+                            onClick={() => navigate(`/planes-limpieza/${row.id}/edit`)}
+                        >
+                            <i className="bi bi-pencil me-1"></i>Editar
+                        </Button>
+                        {row.activo && (
+                            <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={() => setPlanToDelete(row)}
+                            >
+                                <i className="bi bi-trash3 me-1"></i>Eliminar
+                            </Button>
+                        )}
+                    </div>
+                )
+            }
+        ]
+        : baseColumns;
 
     const filteredPlanes = useMemo(() => {
         if (!Array.isArray(planes)) return [];
@@ -202,16 +210,18 @@ export function PlanesLimpiezaPage() {
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
                 </Col>
-                <Col xs="auto" className="d-flex justify-content-end">
-                    <Button
-                        variant="primary"
-                        size='sm'
-                        onClick={() => navigate("/planes-limpieza/new")}
-                        style={{ whiteSpace: "nowrap" }}
-                    >
-                        + Nuevo Plan de Limpieza
-                    </Button>
-                </Col>
+                {currentUser?.administrar && (
+                    <Col xs="auto" className="d-flex justify-content-end">
+                        <Button
+                            variant="primary"
+                            size='sm'
+                            onClick={() => navigate("/planes-limpieza/new")}
+                            style={{ whiteSpace: "nowrap" }}
+                        >
+                            + Nuevo Plan de Limpieza
+                        </Button>
+                    </Col>
+                )}
             </Row>
             <AppTable columns={columns} data={filteredPlanes} />
             <DeletePlanLimpiezaModal
