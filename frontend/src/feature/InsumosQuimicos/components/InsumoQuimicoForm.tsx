@@ -7,8 +7,8 @@ import type { TipoQuimico } from '../../TiposQuimicos/types';
 
 interface InsumoQuimicoFormProps {
     textoBoton: string;
-    onSubmit: (datos: { nombre: string, unidad_medida: UnidadMedida, tipo_quimico_id: number }) => void;
-    valoresIniciales?: { nombre: string, unidad_medida: UnidadMedida, tipo_quimico_id: number };
+    onSubmit: (datos: { nombre: string, unidad_medida: UnidadMedida, tipo_quimico_id: number, dilucion: string }) => void;
+    valoresIniciales?: { nombre: string, unidad_medida: UnidadMedida, tipo_quimico_id: number, dilucion: string };
 }
 
 
@@ -16,6 +16,7 @@ interface InsumoQuimicoFormData {
     nombre: string;
     unidad_medida: UnidadMedida | "";
     tipo_quimico_id: number | "";
+    dilucion: string;
 }
 
 export function InsumoQuimicoForm({ textoBoton, onSubmit, valoresIniciales }: InsumoQuimicoFormProps) {
@@ -27,6 +28,7 @@ export function InsumoQuimicoForm({ textoBoton, onSubmit, valoresIniciales }: In
             nombre: valoresIniciales?.nombre || "",
             unidad_medida: valoresIniciales?.unidad_medida || "",
             tipo_quimico_id: valoresIniciales?.tipo_quimico_id || "",
+            dilucion: valoresIniciales?.dilucion || "",
         },
     });
 
@@ -35,6 +37,7 @@ export function InsumoQuimicoForm({ textoBoton, onSubmit, valoresIniciales }: In
             nombre: data.nombre.trim(),
             unidad_medida: data.unidad_medida as UnidadMedida,
             tipo_quimico_id: Number(data.tipo_quimico_id),
+            dilucion: data.dilucion.trim(),
         });
     };
 
@@ -96,12 +99,36 @@ export function InsumoQuimicoForm({ textoBoton, onSubmit, valoresIniciales }: In
                 >
                     <option value="" disabled> Seleccione un tipo de químico</option>
                     {isLoading && <option disabled> Cargando tipos de químicos...</option>}
-                    {tiposQuimicos?.map((tipo) => (
+                    {tiposQuimicos?.filter(tipo => tipo.activo).map((tipo) => (
                         <option key={tipo.id} value={tipo.id}>
                             {tipo.nombre}
                         </option>
                     ))}
                 </Form.Select>
+            </Form.Group>
+
+            <Form.Group className="mb-3 text-start" controlId="formDilucion">
+                <Form.Label className="p-1 fw-bold">Dilucion</Form.Label>
+                <Form.Control
+                    type="text"
+                    placeholder="Ej: 1:10, Puro."
+                    {...register("dilucion", {
+                    required: "La dilucion es obligatoria.",
+                    minLength: {
+                        value: 1,
+                        message: "La dilucion debe tener al menos 1 caracter."
+                    },
+                    maxLength: {
+                        value: 30,
+                        message: "La dilucion no puede superar los 30 caracteres."
+                    },
+                    validate: (value) => value.trim() !== "" || "La dilucion no puede ser solo espacios en blanco."
+                    })}
+                    isInvalid={!!errors.dilucion}
+                />
+                <Form.Control.Feedback type="invalid">
+                    {errors.dilucion?.message}
+                </Form.Control.Feedback>
             </Form.Group>
 
             <Button variant="secondary" type="button" onClick={() => navigate('/insumos-quimicos')}>

@@ -6,3 +6,6 @@ class TipoQuimicoNoEncontrado(NotFound):
 
 class TipoQuimicoDuplicado(BadRequest):
     DETAIL = ErrorCode.TIPO_QUIMICO_DUPLICADO
+
+class TipoQuimicoUtilizado(BadRequest):
+    DETAIL = ErrorCode.TIPO_QUIMICO_UTILIZADO

@@ -19,10 +19,13 @@ export function DeleteTipoQuimicoModal({ tipoQuimico, onHide, onDeleted }: Delet
             await api.patch<TipoQuimico>(`/tipos-quimicos/${tipoQuimico.id}/estado`);
             mostrarAlertaExito(`El tipo químico '${tipoQuimico.nombre}' se dio de ${estabaActivo ? 'baja' : 'alta'} correctamente.`);
             onDeleted();
-            onHide();
         } catch (error: any){
-            mostrarAlertaError(`No se pudo ${estabaActivo ? 'dar de baja' : 'dar de alta'} el tipo químico '${tipoQuimico.nombre}'.`);
+            const mensajeBackend = error.response?.data?.detail;
+            const mensajeFinal = mensajeBackend || `No se pudo ${estabaActivo ? 'dar de baja' : 'dar de alta'} el tipo químico '${tipoQuimico.nombre}'.`;
+            mostrarAlertaError(mensajeFinal);
             console.log(error);
+        } finally {
+            onHide();
         }
     };
 

@@ -63,6 +63,11 @@ export function VerInsumoQuimicoPage() {
                                 <Col sm={8} className="fs-5">{insumoQuimico.unidad_medida}</Col>
                             </Row>
 
+                            <Row className="mb-3 border-bottom pb-3 align-items-center">
+                                <Col sm={4} className="fw-bold text-secondary">Dilucion</Col>
+                                <Col sm={8} className="fs-5">{insumoQuimico.dilucion}</Col>
+                            </Row>
+
                             <Row className="mb-2 align-items-center">
                                 <Col sm={4} className="fw-bold text-secondary">Estado Actual</Col>
                                 <Col sm={8}>

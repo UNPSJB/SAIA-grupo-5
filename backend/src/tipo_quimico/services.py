@@ -4,6 +4,7 @@ from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 from src.tipo_quimico.models import TipoQuimico
 from src.tipo_quimico import schemas, exceptions
+from src.insumo_quimico.models import InsumoQuimico
 
 # Creamos un logger para este módulo específico. Más info.: https://docs.python.org/3/library/logging.html
 logger = logging.getLogger(__name__)
@@ -48,6 +49,13 @@ def cambiar_estado_tipo_quimico(db: Session, tipo_quimico_id: int) -> schemas.Ti
     db_tipo_quimico = leer_tipo_quimico(db, tipo_quimico_id)
     if db_tipo_quimico is None:
         raise exceptions.TipoQuimicoNoEncontrado()
+    
+    if db_tipo_quimico.activo:
+        insumo_asociado = db.scalars(select(InsumoQuimico)
+                            .where(InsumoQuimico.tipo_quimico_id == db_tipo_quimico.id, 
+                            InsumoQuimico.activo == True)).first()
+        if insumo_asociado:
+            raise exceptions.TipoQuimicoUtilizado()
     
     db_tipo_quimico.activo = not db_tipo_quimico.activo
     db.commit()

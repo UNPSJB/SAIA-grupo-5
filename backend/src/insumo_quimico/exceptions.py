@@ -6,3 +6,6 @@ class InsumoQuimicoNoEncontrado(NotFound):
 
 class InsumoQuimicoDuplicado(BadRequest):
     DETAIL = ErrorCode.INSUMO_QUIMICO_DUPLICADO
+
+class TipoQuimicoNoEncontradoOInactivo(BadRequest):
+    DETAIL = ErrorCode.TIPO_QUIMICO_NO_ENCONTRADO_O_INACTIVO

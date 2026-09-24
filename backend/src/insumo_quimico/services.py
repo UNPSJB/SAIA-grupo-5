@@ -4,6 +4,7 @@ from sqlalchemy import select, update
 from sqlalchemy.orm import Session, joinedload
 from src.insumo_quimico.models import InsumoQuimico
 from src.insumo_quimico import exceptions, schemas
+from src.tipo_quimico.models import TipoQuimico
 # Creamos un logger para este módulo específico. Más info.: https://docs.python.org/3/library/logging.html
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,9 @@ def crear_insumo_quimico(db: Session, insumo_quimico: schemas.InsumoQuimicoCreat
     if insumo_quimico_existente:
         raise exceptions.InsumoQuimicoDuplicado()
 
+    tipo_quimico = db.scalars(select(TipoQuimico).where(TipoQuimico.id == insumo_quimico.tipo_quimico_id)).first()
+    if not tipo_quimico or not tipo_quimico.activo:
+        raise exceptions.TipoQuimicoNoEncontradoOInactivo()
 
     _insumo_quimico = InsumoQuimico(**insumo_quimico.model_dump())
     db.add(_insumo_quimico)
