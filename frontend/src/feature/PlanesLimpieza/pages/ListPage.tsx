@@ -60,7 +60,7 @@ export function PlanesLimpiezaPage() {
                     size="sm"
                     onClick={() => navigate(`/tareas?plan_id=${row.id}`)}
                 >
-                    <i className="bi bi-eye me-1"></i>Ver
+                    <i className="bi bi-box-arrow-up-right"></i> Ver
                 </Button>
             ),
         },
@@ -73,7 +73,7 @@ export function PlanesLimpiezaPage() {
                     size="sm"
                     onClick={() => navigate(`/tareas?plan_id=${row.id}&relacion=sector`)}
                 >
-                    <i className="bi bi-eye me-1"></i>Ver
+                    <i className="bi bi-box-arrow-up-right"></i> Ver
                 </Button>
             ),
         },
@@ -86,7 +86,7 @@ export function PlanesLimpiezaPage() {
                     size="sm"
                     onClick={() => navigate(`/tareas?plan_id=${row.id}&relacion=superficie`)}
                 >
-                    <i className="bi bi-eye me-1"></i>Ver
+                    <i className="bi bi-box-arrow-up-right"></i> Ver
                 </Button>
             ),
         },
@@ -99,7 +99,7 @@ export function PlanesLimpiezaPage() {
                     size="sm"
                     onClick={() => navigate(`/tareas?plan_id=${row.id}&relacion=equipo`)}
                 >
-                    <i className="bi bi-eye me-1"></i>Ver
+                    <i className="bi bi-box-arrow-up-right"></i> Ver
                 </Button>
             ),
         },
