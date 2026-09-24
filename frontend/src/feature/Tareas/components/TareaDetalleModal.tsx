@@ -1,5 +1,5 @@
 import { Badge, Button, Modal } from "react-bootstrap";
-import { FRECUENCIA_LABELS, PRIORIDAD_LABELS, PRIORIDAD_VARIANTS } from "../types";
+import { FRECUENCIA_LABELS, getRelacionNombre, getRelacionTipoLabel, PRIORIDAD_LABELS, PRIORIDAD_VARIANTS } from "../types";
 import type { Tarea } from "../types";
 
 interface TareaDetalleModalProps {
@@ -31,7 +31,10 @@ export function TareaDetalleModal({ tarea, onHide, onEditar, onEliminar }: Tarea
                             </>
                         )}
 
-                        <dl className="row mb-0">
+                        <dl className="row mb-0 align-items-center">
+                            <dt className="col-sm-4">{getRelacionTipoLabel(tarea)}</dt>
+                            <dd className="col-sm-8">{getRelacionNombre(tarea)}</dd>
+
                             <dt className="col-sm-4">Frecuencia</dt>
                             <dd className="col-sm-8">{FRECUENCIA_LABELS[tarea.frecuencia]}</dd>
 

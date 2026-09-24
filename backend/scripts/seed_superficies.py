@@ -2,8 +2,7 @@
 """
 Pobla la base de datos con Superficies basadas en la Tabla 1 (superficies de
 contacto directo/indirecto por sector) de la guía práctica de POES.
-Requiere haber corrido antes: python -m scripts.seed_planes_limpieza
-                               python -m scripts.seed_sectores
+Requiere haber corrido antes: python -m scripts.seed_sectores
 Uso: python -m scripts.seed_superficies
 """
 from sqlalchemy import select
@@ -12,113 +11,39 @@ import src.all_models  # noqa: F401
 from src.database import SessionLocal
 from src.superficies.models import Superficie
 from src.sector.models import Sector
-from src.plan_limpieza.models import PlanLimpieza
 
-# (nombre, tipo_contacto, sector, plan de limpieza o None si no tiene uno asignado)
+# (nombre, tipo_contacto, sector)
 SUPERFICIES = [
-    (
-        "Paredes, techo, piso y zócalos - Elaboración",
-        "indirecto",
-        "Elaboración",
-        "Limpieza de instalaciones - Elaboración",
-    ),
-    (
-        "Mesadas y útiles de trabajo - Elaboración",
-        "directo",
-        "Elaboración",
-        "Limpieza de instalaciones - Elaboración",
-    ),
-    (
-        "Estanterías y armarios - Elaboración",
-        "indirecto",
-        "Elaboración",
-        None,
-    ),
-    (
-        "Paredes, techo, piso y zócalos - Depósito",
-        "indirecto",
-        "Depósito",
-        None,
-    ),
-    (
-        "Estanterías, racks y pallets - Depósito",
-        "indirecto",
-        "Depósito",
-        None,
-    ),
-    (
-        "Paredes, techo y piso de cámaras - Equipos de frío",
-        "indirecto",
-        "Equipos de frío",
-        "Limpieza de equipos de frío",
-    ),
-    (
-        "Paredes, techo, piso y zócalos - Gabinetes higiénicos y vestuarios",
-        "indirecto",
-        "Gabinetes higiénicos y vestuarios",
-        None,
-    ),
-    (
-        "Caños, tubos y ductos de ventilación - Depósito",
-        "indirecto",
-        "Depósito",
-        "Limpieza de ductos y tuberías",
-    ),
-    (
-        "Estanterías, estantes y racks - Salón de ventas",
-        "indirecto",
-        "Salón de ventas",
-        "Limpieza Salón de ventas",
-    ),
-    (
-        "Útiles - Fiambrería",
-        "directo",
-        "Fiambrería",
-        "Limpieza Fiambrería - Útiles",
-    ),
-    (
-        "Mesadas de trabajo - Fiambrería",
-        "directo",
-        "Fiambrería",
-        "Limpieza Fiambrería - Mesadas de trabajo",
-    ),
-    (
-        "Piletas de lavado - Fiambrería",
-        "directo",
-        "Fiambrería",
-        "Limpieza Fiambrería - Piletas de lavado",
-    ),
-    (
-        "Mesadas de trabajo - Rotisería",
-        "directo",
-        "Rotisería",
-        "Limpieza Rotisería - Mesadas y piletas",
-    ),
-    (
-        "Piletas de lavado - Rotisería",
-        "directo",
-        "Rotisería",
-        "Limpieza Rotisería - Mesadas y piletas",
-    ),
+    ("Paredes, techo, piso y zócalos - Elaboración", "indirecto", "Elaboración"),
+    ("Mesadas y útiles de trabajo - Elaboración", "directo", "Elaboración"),
+    ("Estanterías y armarios - Elaboración", "indirecto", "Elaboración"),
+    ("Paredes, techo, piso y zócalos - Depósito", "indirecto", "Depósito"),
+    ("Estanterías, racks y pallets - Depósito", "indirecto", "Depósito"),
+    ("Paredes, techo y piso de cámaras - Equipos de frío", "indirecto", "Equipos de frío"),
+    ("Paredes, techo, piso y zócalos - Gabinetes higiénicos y vestuarios", "indirecto", "Gabinetes higiénicos y vestuarios"),
+    ("Caños, tubos y ductos de ventilación - Depósito", "indirecto", "Depósito"),
+    ("Estanterías, estantes y racks - Salón de ventas", "indirecto", "Salón de ventas"),
+    ("Útiles - Fiambrería", "directo", "Fiambrería"),
+    ("Mesadas de trabajo - Fiambrería", "directo", "Fiambrería"),
+    ("Piletas de lavado - Fiambrería", "directo", "Fiambrería"),
+    ("Mesadas de trabajo - Rotisería", "directo", "Rotisería"),
+    ("Piletas de lavado - Rotisería", "directo", "Rotisería"),
 ]
 
 
 def generar_superficies(db) -> list[Superficie]:
     sectores = {s.nombre: s for s in db.scalars(select(Sector)).all()}
-    planes = {p.nombre: p for p in db.scalars(select(PlanLimpieza)).all()}
     if not sectores:
         return []
 
     superficies = []
-    for nombre, tipo_contacto, nombre_sector, nombre_plan in SUPERFICIES:
+    for nombre, tipo_contacto, nombre_sector in SUPERFICIES:
         sector = sectores.get(nombre_sector)
-        plan = planes.get(nombre_plan) if nombre_plan else None
         superficies.append(
             Superficie(
                 nombre=nombre,
                 tipo_contacto=tipo_contacto,
                 sectores=[sector] if sector else [],
-                planes=[plan] if plan else [],
             )
         )
     return superficies

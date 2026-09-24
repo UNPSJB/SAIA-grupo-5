@@ -6,6 +6,8 @@ from src.database import get_db
 from src.plan_limpieza import schemas, services
 from src.tareas_ocurrencia import schemas as ocurrencia_schemas
 from src.tareas_ocurrencia.services import obtener_checklist
+from src.tarea import schemas as tarea_schemas
+from src.tarea import services as tarea_services
 
 # Creamos un logger para este módulo específico. Más info.: https://docs.python.org/3/library/logging.html
 logger = logging.getLogger(__name__)
@@ -19,11 +21,9 @@ router = APIRouter(prefix="/planes-limpieza", tags=["planes-limpieza"])
 def create_plan_limpieza(plan: schemas.PlanLimpiezaCreate, db: Session = Depends(get_db)):
     return services.crear_plan_limpieza(db, plan)
 
-# Para listar planes de limpieza asociados a un sector
-# GET /planes-limpieza/?sector_id=3
 @router.get("/", response_model=list[schemas.PlanLimpieza])
-def read_planes_limpieza(sector_id: int | None = Query(None), db: Session = Depends(get_db)):
-    return services.listar_planes_limpieza(db, sector_id)
+def read_planes_limpieza(db: Session = Depends(get_db)):
+    return services.listar_planes_limpieza(db)
 
 @router.get("/{plan_limpieza_id}", response_model=schemas.PlanLimpieza)
 def read_plan_limpieza(plan_limpieza_id: int, db: Session = Depends(get_db)):
@@ -40,3 +40,18 @@ def update_plan_limpieza(plan_limpieza_id: int, plan: schemas.PlanLimpiezaUpdate
 @router.get("/{plan_limpieza_id}/checklist", response_model=list[ocurrencia_schemas.TareaOcurrencia])
 def read_checklist(plan_limpieza_id: int, fecha: date | None = Query(None), db: Session = Depends(get_db)):
     return obtener_checklist(db, plan_limpieza_id, fecha)
+
+@router.get("/{plan_limpieza_id}/tareas/sectores", response_model=list[tarea_schemas.Tarea])
+def read_tareas_de_sectores(plan_limpieza_id: int, db: Session = Depends(get_db)):
+    services.leer_plan_limpieza(db, plan_limpieza_id)
+    return tarea_services.listar_tareas_de_sector_por_plan(db, plan_limpieza_id)
+
+@router.get("/{plan_limpieza_id}/tareas/superficies", response_model=list[tarea_schemas.Tarea])
+def read_tareas_de_superficies(plan_limpieza_id: int, db: Session = Depends(get_db)):
+    services.leer_plan_limpieza(db, plan_limpieza_id)
+    return tarea_services.listar_tareas_de_superficie_por_plan(db, plan_limpieza_id)
+
+@router.get("/{plan_limpieza_id}/tareas/equipos", response_model=list[tarea_schemas.Tarea])
+def read_tareas_de_equipos(plan_limpieza_id: int, db: Session = Depends(get_db)):
+    services.leer_plan_limpieza(db, plan_limpieza_id)
+    return tarea_services.listar_tareas_de_equipo_por_plan(db, plan_limpieza_id)

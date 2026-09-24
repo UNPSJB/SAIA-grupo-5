@@ -19,5 +19,3 @@ class Insumo(ModeloBase):
         nullable=False,
     )
     activo: Mapped[bool] = mapped_column(Boolean, default=True)
-
-

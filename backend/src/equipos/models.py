@@ -6,7 +6,7 @@ from sqlalchemy import ForeignKey
 
 if TYPE_CHECKING:
     from src.sector.models import Sector
-    from src.plan_limpieza.models import PlanLimpieza
+    from src.tarea.models import Tarea
 
 
 class Equipo(ModeloBase):
@@ -17,13 +17,11 @@ class Equipo(ModeloBase):
     categoria: Mapped[str] = mapped_column(String(100))
     ubicacion: Mapped[str] = mapped_column(String(100))
     estado: Mapped[bool] = mapped_column(default=True)
-    sector_id: Mapped[int | None] = mapped_column(ForeignKey("sectores.id"), nullable=True)
-    sector: Mapped["Sector | None"] = relationship(back_populates="equipos")
-    plan_limpieza_id: Mapped[int | None] = mapped_column(ForeignKey("planes_limpieza.id"), nullable=True)
-    plan_limpieza: Mapped["PlanLimpieza | None"] = relationship(back_populates="equipos")
+    sector_id: Mapped[int] = mapped_column(ForeignKey("sectores.id"), nullable=False)
+    sector: Mapped["Sector"] = relationship(back_populates="equipos")
+    tareas: Mapped[list["Tarea"]] = relationship(back_populates="equipo")
 
     """ # Implementaciones abiertas a cambios futuros
 
     (DISCUTIR COMO RELACIONAR EL EQUIPO CON EL PLAN DE CALIBRACION)
     (DISCUTIR UN CAMPO ESTADO PARA BAJA LOGICA DEPENDIENDO SI QUEREMOS UN HISTORICO CON CALIBRACION) """
-

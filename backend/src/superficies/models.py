@@ -5,20 +5,13 @@ from sqlalchemy import String, Boolean, Table, Column, ForeignKey
 
 if TYPE_CHECKING:
     from src.sector.models import Sector
-    from src.plan_limpieza.models import PlanLimpieza
+    from src.tarea.models import Tarea
 
 sector_superficie = Table(
     "sector_superficie",
     ModeloBase.metadata,
     Column("sector_id", ForeignKey("sectores.id"), primary_key=True),
     Column("superficie_id", ForeignKey("superficies.id"), primary_key=True),
-)
-
-superficie_plan_limpieza = Table(
-    "superficie_plan_limpieza",
-    ModeloBase.metadata,
-    Column("superficie_id", ForeignKey("superficies.id"), primary_key=True),
-    Column("plan_limpieza_id", ForeignKey("planes_limpieza.id"), primary_key=True),
 )
 
 
@@ -34,6 +27,4 @@ class Superficie(ModeloBase):
     sectores: Mapped[list["Sector"]] = relationship(
         secondary=sector_superficie, back_populates="superficies"
     )
-    planes: Mapped[list["PlanLimpieza"]] = relationship(
-        secondary=superficie_plan_limpieza, back_populates="superficies"
-    )
+    tareas: Mapped[list["Tarea"]] = relationship(back_populates="superficie")

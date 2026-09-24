@@ -17,7 +17,7 @@ def create_tarea(tarea: schemas.TareaCreate, db: Session = Depends(get_db)):
     return services.crear_tarea(db, tarea)
 
 @router.get("/", response_model=list[schemas.Tarea])
-def read_tareas(plan_id: int | None = Query(None),db: Session = Depends(get_db)):
+def read_tareas(plan_id: int | None = Query(None), db: Session = Depends(get_db)):
     return services.listar_tareas(db, plan_id)
 
 @router.get("/{tarea_id}", response_model=schemas.Tarea)

@@ -1,7 +1,17 @@
-import { Button, Col, Form, InputGroup, Row } from 'react-bootstrap';
-import { useState } from 'react';
+import { Alert, Button, Col, Form, InputGroup, Row } from 'react-bootstrap';
+import { useEffect, useState } from 'react';
+import { useApi } from '../../../hooks/useApi';
+import type { Sector } from '../../Sectores/types';
+import type { Superficie } from '../../Superficies/types';
+import type { Equipo } from '../../Equipos/types';
 import { Frecuencia, FRECUENCIA_LABELS, Prioridad, PRIORIDAD_LABELS } from '../types';
-import type { TareaFormData } from '../types';
+import type { RelacionTipo, TareaFormData } from '../types';
+
+const RELACION_LABELS: Record<RelacionTipo, string> = {
+  sector: "Sector",
+  superficie: "Superficie",
+  equipo: "Equipo",
+};
 
 interface TareaFormProps {
   textoBoton: string;
@@ -22,6 +32,27 @@ export function TareaForm({ textoBoton, planNombre, onSubmit, onCancel, valoresI
   const [accionCorrectiva, setAccionCorrectiva] = useState(valoresIniciales?.accion_correctiva || "");
   const [procedimiento, setProcedimiento] = useState<string[]>(valoresIniciales?.procedimiento ?? []);
   const [pasoNuevo, setPasoNuevo] = useState("");
+  const [relacionTipo, setRelacionTipo] = useState<RelacionTipo>(valoresIniciales?.relacion_tipo ?? "sector");
+  const [relacionId, setRelacionId] = useState(valoresIniciales?.relacion_id ? String(valoresIniciales.relacion_id) : "");
+
+  const { data: sectores, isLoading: isLoadingSectores } = useApi<Sector[]>(
+    relacionTipo === "sector" ? "/sectores/" : null
+  );
+  const { data: superficies, isLoading: isLoadingSuperficies } = useApi<Superficie[]>(
+    relacionTipo === "superficie" ? "/superficies/" : null
+  );
+  const { data: equipos, isLoading: isLoadingEquipos } = useApi<Equipo[]>(
+    relacionTipo === "equipo" ? "/equipos" : null
+  );
+  const opciones = relacionTipo === "sector" ? sectores : relacionTipo === "superficie" ? superficies : equipos;
+  const cargandoOpciones = relacionTipo === "sector" ? isLoadingSectores : relacionTipo === "superficie" ? isLoadingSuperficies : isLoadingEquipos;
+
+  // Al cambiar el tipo de relación se pierde la entidad elegida del tipo anterior.
+  useEffect(() => {
+    setRelacionId(valoresIniciales?.relacion_tipo === relacionTipo && valoresIniciales?.relacion_id
+      ? String(valoresIniciales.relacion_id)
+      : "");
+  }, [relacionTipo]);
 
   const agregarPaso = () => {
     const texto = pasoNuevo.trim();
@@ -41,7 +72,7 @@ export function TareaForm({ textoBoton, planNombre, onSubmit, onCancel, valoresI
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setValidated(true);
-    if (!nombre.trim()) return;
+    if (!nombre.trim() || !relacionId) return;
     onSubmit({
       nombre: nombre.trim(),
       descripcion: descripcion.trim() ? descripcion.trim() : null,
@@ -50,6 +81,8 @@ export function TareaForm({ textoBoton, planNombre, onSubmit, onCancel, valoresI
       foto_obligatoria: fotoObligatoria,
       accion_correctiva: accionCorrectiva.trim() ? accionCorrectiva.trim() : null,
       procedimiento: procedimiento.length > 0 ? procedimiento : null,
+      relacion_tipo: relacionTipo,
+      relacion_id: Number(relacionId),
     });
   };
 
@@ -59,6 +92,47 @@ export function TareaForm({ textoBoton, planNombre, onSubmit, onCancel, valoresI
         <Form.Label className="p-1 fw-bold">Plan de Limpieza</Form.Label>
         <Form.Control plaintext readOnly value={planNombre} />
       </Form.Group>
+
+      <Row>
+        <Col md={6}>
+          <Form.Group className="mb-3 text-start" controlId="formTareaRelacionTipo">
+            <Form.Label className="p-1 fw-bold">Aplica a *</Form.Label>
+            <Form.Select
+              value={relacionTipo}
+              onChange={(e) => setRelacionTipo(e.target.value as RelacionTipo)}
+            >
+              {(Object.entries(RELACION_LABELS) as [RelacionTipo, string][]).map(([tipo, label]) => (
+                <option key={tipo} value={tipo}>{label}</option>
+              ))}
+            </Form.Select>
+          </Form.Group>
+        </Col>
+        <Col md={6}>
+          <Form.Group className="mb-3 text-start" controlId="formTareaRelacionId">
+            <Form.Label className="p-1 fw-bold">{RELACION_LABELS[relacionTipo]} *</Form.Label>
+            <Form.Select
+              required
+              value={relacionId}
+              onChange={(e) => setRelacionId(e.target.value)}
+              disabled={cargandoOpciones}
+              isInvalid={validated && !relacionId}
+            >
+              <option value="">Seleccione {RELACION_LABELS[relacionTipo].toLowerCase()}</option>
+              {(opciones ?? []).map((opcion) => (
+                <option key={opcion.id} value={opcion.id}>{opcion.nombre}</option>
+              ))}
+            </Form.Select>
+            <Form.Control.Feedback type="invalid">
+              Seleccioná {RELACION_LABELS[relacionTipo].toLowerCase()}.
+            </Form.Control.Feedback>
+          </Form.Group>
+        </Col>
+      </Row>
+      {relacionTipo && (opciones ?? []).length === 0 && !cargandoOpciones && (
+        <Alert variant="warning" className="py-2">
+          No hay {RELACION_LABELS[relacionTipo].toLowerCase()}s cargados todavía.
+        </Alert>
+      )}
 
       <Form.Group className="mb-3 text-start" controlId="formTareaNombre">
         <Form.Label className="p-1 fw-bold">Nombre de la Tarea *</Form.Label>

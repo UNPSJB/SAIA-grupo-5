@@ -21,7 +21,7 @@ def crear_equipo(db: Session, equipo: schemas.EquipoCreate) -> schemas.Equipo:
 
 def listar_equipos(db:Session) -> List[schemas.Equipo]:
     return db.scalars(
-        select(Equipo).options(joinedload(Equipo.sector), joinedload(Equipo.plan_limpieza))
+        select(Equipo).options(joinedload(Equipo.sector))
     ).all()
 
 def leer_equipo(db: Session, equipo_id: int) -> schemas.Equipo:
@@ -48,7 +48,6 @@ def modificar_equipo(
 
 def eliminar_equipo(db: Session, equipo_id: int) -> schemas.Equipo:
     db_equipo = leer_equipo(db, equipo_id)
-    #AGREGAR PLAN LIMPIEZA SI HAY UNA RESTRICCION
     db.execute(
         update(Equipo)
         .where(Equipo.id == db_equipo.id)

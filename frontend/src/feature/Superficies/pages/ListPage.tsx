@@ -10,7 +10,6 @@ import { useApi } from '../../../hooks/useApi';
 
 import { DeleteSuperficieModal } from '../components/DeleteSuperficieModal';
 import { VerSectoresModal } from '../components/VerSectoresModal';
-import { VerPlanesLimpiezaModal } from '../components/VerPlanesLimpiezaModal';
 import type { Superficie } from "../types";
 
 export function SuperficiesPage() {
@@ -19,7 +18,6 @@ export function SuperficiesPage() {
     const { data: superficies, error, isLoading } = useApi<Superficie[]>("/superficies/")
     const [superficieToDelete, setSuperficieToDelete] = useState<Superficie | null>(null);
     const [superficieSectores, setSuperficieSectores] = useState<Superficie | null>(null);
-    const [superficiePlanes, setSuperficiePlanes] = useState<Superficie | null>(null);
 
     const filteredSuperficies = useMemo(() => {
         if (!Array.isArray(superficies)) return [];
@@ -87,19 +85,6 @@ export function SuperficiesPage() {
                     onClick={() => setSuperficieSectores(row)}
                 >
                     <i className="bi bi-eye me-1"></i>Ver sectores
-                </Button>
-            ),
-        },
-        {
-            name: "Planes de Limpieza",
-            center: true,
-            cell: row => (
-                <Button
-                    variant="outline-primary"
-                    size="sm"
-                    onClick={() => setSuperficiePlanes(row)}
-                >
-                    <i className="bi bi-eye me-1"></i>Ver planes
                 </Button>
             ),
         },
@@ -184,10 +169,6 @@ export function SuperficiesPage() {
             <VerSectoresModal
                 superficie={superficieSectores}
                 onHide={() => setSuperficieSectores(null)}
-            />
-            <VerPlanesLimpiezaModal
-                superficie={superficiePlanes}
-                onHide={() => setSuperficiePlanes(null)}
             />
         </Container>
     );

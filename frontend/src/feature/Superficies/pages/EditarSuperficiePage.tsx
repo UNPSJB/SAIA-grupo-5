@@ -67,7 +67,6 @@ export function EditarSuperficiePage(){
                         nombre: superficie.nombre,
                         tipo_contacto: superficie.tipo_contacto,
                         sector_ids: superficie.sectores.map(s => s.id),
-                        plan_limpieza_ids: superficie.planes.map(p => p.id),
                     }}/>
             </Container>
         </>

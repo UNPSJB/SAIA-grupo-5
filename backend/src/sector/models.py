@@ -5,8 +5,8 @@ from sqlalchemy import String, Boolean
 
 if TYPE_CHECKING:
     from src.equipos.models import Equipo
-    from src.plan_limpieza.models import PlanLimpieza
     from src.superficies.models import Superficie
+    from src.tarea.models import Tarea
 
 class Sector(ModeloBase):
     __tablename__ = "sectores"
@@ -14,11 +14,8 @@ class Sector(ModeloBase):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     nombre: Mapped[str] = mapped_column(String(40), index=True, nullable=False, unique=True)
     equipos: Mapped[list["Equipo"]] = relationship(back_populates="sector")
-    planes: Mapped[list["PlanLimpieza"]] = relationship(
-        secondary="sector_plan_limpieza", back_populates="sectores"
-    )
     superficies: Mapped[list["Superficie"]] = relationship(
         secondary="sector_superficie", back_populates="sectores"
     )
+    tareas: Mapped[list["Tarea"]] = relationship(back_populates="sector")
     activo: Mapped[bool] = mapped_column(Boolean, default=True)
-    

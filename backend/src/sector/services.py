@@ -46,7 +46,7 @@ def listar_superficies_por_sector(db: Session, sector_id: int) -> List[superfici
         select(Superficie)
         .join(Superficie.sectores)
         .where(Sector.id == sector_id)
-        .options(selectinload(Superficie.sectores), selectinload(Superficie.planes))
+        .options(selectinload(Superficie.sectores))
     ).all()
 
 def eliminar_sector(db: Session, sector_id: int) -> schemas.SectorDelete:

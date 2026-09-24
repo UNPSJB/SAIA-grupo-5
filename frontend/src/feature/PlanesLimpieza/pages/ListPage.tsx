@@ -10,9 +10,6 @@ import { useApi } from '../../../hooks/useApi';
 
 import { DeletePlanLimpiezaModal } from '../components/DeletePlanLimpiezaModal';
 import { VerDescripcionModal } from '../components/VerDescripcionModal';
-import { VerSectoresModal } from '../components/VerSectoresModal';
-import { VerSuperficiesModal } from '../components/VerSuperficiesModal';
-import { VerEquiposModal } from '../components/VerEquiposModal';
 import type { PlanLimpieza } from "../types";
 
 export function PlanesLimpiezaPage() {
@@ -21,9 +18,143 @@ export function PlanesLimpiezaPage() {
     const { data: planes, error, isLoading } = useApi<PlanLimpieza[]>("/planes-limpieza/")
     const [planToDelete, setPlanToDelete] = useState<PlanLimpieza | null>(null);
     const [planDescripcion, setPlanDescripcion] = useState<PlanLimpieza | null>(null);
-    const [planSectores, setPlanSectores] = useState<PlanLimpieza | null>(null);
-    const [planSuperficies, setPlanSuperficies] = useState<PlanLimpieza | null>(null);
-    const [planEquipos, setPlanEquipos] = useState<PlanLimpieza | null>(null);
+
+    const encabezadoTareas = (label: string) => (
+        <div className="text-center lh-sm">
+            <div className="fw-bold">Tareas</div>
+            <div>{label}</div>
+        </div>
+    );
+
+    const columns = useMemo<TableColumn<PlanLimpieza>[]>(() => [
+        {
+            id: "nombre",
+            name: "Nombre",
+            selector: row => row.nombre,
+            sortable: true,
+            minWidth: '220px',
+            grow: 3,
+        },
+        {
+            id: "descripcion",
+            name: "Descripción",
+            center: true,
+            cell: row => (
+                <Button
+                    variant="outline-primary"
+                    size="sm"
+                    onClick={() => setPlanDescripcion(row)}
+                >
+                    <i className="bi bi-eye me-1"></i>Ver
+                </Button>
+            ),
+        },
+        {
+            name: encabezadoTareas("Todas"),
+            center: true,
+            cell: row => (
+                <Button
+                    variant="outline-primary"
+                    size="sm"
+                    onClick={() => navigate(`/tareas?plan_id=${row.id}`)}
+                >
+                    <i className="bi bi-eye me-1"></i>Ver
+                </Button>
+            ),
+        },
+        {
+            name: encabezadoTareas("Sector"),
+            center: true,
+            cell: row => (
+                <Button
+                    variant="outline-primary"
+                    size="sm"
+                    onClick={() => navigate(`/tareas?plan_id=${row.id}&relacion=sector`)}
+                >
+                    <i className="bi bi-eye me-1"></i>Ver
+                </Button>
+            ),
+        },
+        {
+            name: encabezadoTareas("Superficies"),
+            center: true,
+            cell: row => (
+                <Button
+                    variant="outline-primary"
+                    size="sm"
+                    onClick={() => navigate(`/tareas?plan_id=${row.id}&relacion=superficie`)}
+                >
+                    <i className="bi bi-eye me-1"></i>Ver
+                </Button>
+            ),
+        },
+        {
+            name: encabezadoTareas("Equipo"),
+            center: true,
+            cell: row => (
+                <Button
+                    variant="outline-primary"
+                    size="sm"
+                    onClick={() => navigate(`/tareas?plan_id=${row.id}&relacion=equipo`)}
+                >
+                    <i className="bi bi-eye me-1"></i>Ver
+                </Button>
+            ),
+        },
+        {
+            id: "estado",
+            name: 'Estado',
+            selector: row => row.activo ? 'Activo' : 'Inactivo',
+            sortable: true,
+            center: true,
+            cell: row => (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div
+                        style={{
+                            padding: '4px 12px',
+                            borderRadius: '16px',
+                            background: row.activo ? '#dcfce7' : '#fee2e2',
+                            color: row.activo ? '#166534' : '#991b1b',
+                            fontWeight: 700,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            whiteSpace: 'nowrap',
+                        }}
+                    >
+                        {row.activo ? 'Activo' : 'Inactivo'}
+                    </div>
+                </div>
+            )
+        },
+        {
+            id: "acciones",
+            name: "Acciones",
+            center: true,
+            minWidth: "220px",
+            cell: (row) => (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <Button
+                        variant="outline-primary"
+                        size="sm"
+                        onClick={() => navigate(`/planes-limpieza/${row.id}/edit`)}
+                    >
+                        <i className="bi bi-pencil me-1"></i>Editar
+                    </Button>
+                    {row.activo && (
+                        <Button
+                            variant="outline-danger"
+                            size="sm"
+                            onClick={() => setPlanToDelete(row)}
+                        >
+                            <i className="bi bi-trash3 me-1"></i>Eliminar
+                        </Button>
+                    )}
+                </div>
+            )
+        },
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- navigate y los setState son referencias estables
+    ], []);
 
     const filteredPlanes = useMemo(() => {
         if (!Array.isArray(planes)) return [];
@@ -62,131 +193,6 @@ export function PlanesLimpiezaPage() {
         </Container>
     )
 
-    const columns: TableColumn<PlanLimpieza>[] = [
-        {
-            name: "Nombre",
-            selector: row => row.nombre,
-            sortable: true,
-            minWidth: '220px',
-            grow: 3,
-        },
-        {
-            name: "Descripción",
-            center: true,
-            cell: row => (
-                <Button
-                    variant="outline-primary"
-                    size="sm"
-                    onClick={() => setPlanDescripcion(row)}
-                >
-                    <i className="bi bi-eye me-1"></i>Ver
-                </Button>
-            ),
-        },
-        {
-            name: "Superficies",
-            center: true,
-            cell: row => (
-                <Button
-                    variant="outline-primary"
-                    size="sm"
-                    onClick={() => setPlanSuperficies(row)}
-                >
-                    <i className="bi bi-eye me-1"></i>Ver
-                </Button>
-            ),
-        },
-        {
-            name: "Sectores",
-            center: true,
-            cell: row => (
-                <Button
-                    variant="outline-primary"
-                    size="sm"
-                    onClick={() => setPlanSectores(row)}
-                >
-                    <i className="bi bi-eye me-1"></i>Ver
-                </Button>
-            ),
-        },
-        {
-            name: "Equipos",
-            center: true,
-            cell: row => (
-                <Button
-                    variant="outline-primary"
-                    size="sm"
-                    onClick={() => setPlanEquipos(row)}
-                >
-                    <i className="bi bi-eye me-1"></i>Ver
-                </Button>
-            ),
-        },
-        {
-            name: "Tareas",
-            center: true,
-            cell: row => (
-                <Button
-                    variant="outline-primary"
-                    size="sm"
-                    onClick={() => navigate(`/tareas?plan_id=${row.id}`)}
-                >
-                    <i className="bi bi-eye me-1"></i>Ver
-                </Button>
-            ),
-        },
-        {
-            name: 'Estado',
-            selector: row => row.activo ? 'Activo' : 'Inactivo',
-            sortable: true,
-            center: true,
-            cell: row => (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div
-                        style={{
-                            padding: '4px 12px',
-                            borderRadius: '16px',
-                            background: row.activo ? '#dcfce7' : '#fee2e2',
-                            color: row.activo ? '#166534' : '#991b1b',
-                            fontWeight: 700,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            whiteSpace: 'nowrap',
-                        }}
-                    >
-                        {row.activo ? 'Activo' : 'Inactivo'}
-                    </div>
-                </div>
-            )
-        },
-        {
-            name: "Acciones",
-            center: true,
-            minWidth: "220px",
-            cell: (row) => (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <Button
-                        variant="outline-primary"
-                        size="sm"
-                        onClick={() => navigate(`/planes-limpieza/${row.id}/edit`)}
-                    >
-                        <i className="bi bi-pencil me-1"></i>Editar
-                    </Button>
-                    {row.activo && (
-                        <Button
-                            variant="outline-danger"
-                            size="sm"
-                            onClick={() => setPlanToDelete(row)}
-                        >
-                            <i className="bi bi-trash3 me-1"></i>Eliminar
-                        </Button>
-                    )}
-                </div>
-            )
-        },
-    ];
-
     return (
         <Container>
             <Row className="p-2 align-items-center">
@@ -216,18 +222,6 @@ export function PlanesLimpiezaPage() {
             <VerDescripcionModal
                 plan={planDescripcion}
                 onHide={() => setPlanDescripcion(null)}
-            />
-            <VerSectoresModal
-                plan={planSectores}
-                onHide={() => setPlanSectores(null)}
-            />
-            <VerSuperficiesModal
-                plan={planSuperficies}
-                onHide={() => setPlanSuperficies(null)}
-            />
-            <VerEquiposModal
-                plan={planEquipos}
-                onHide={() => setPlanEquipos(null)}
             />
         </Container>
     );

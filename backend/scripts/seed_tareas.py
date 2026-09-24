@@ -17,12 +17,36 @@ Requiere haber corrido antes: python -m scripts.seed_planes_limpieza
 Uso: python -m scripts.seed_tareas
 """
 from sqlalchemy import select
- 
+
 import src.all_models
 from src.database import SessionLocal
 from src.plan_limpieza.models import PlanLimpieza
+from src.sector.models import Sector
+from src.superficies.models import Superficie
+from src.equipos.models import Equipo
 from src.tarea.models import Tarea
 from src.tarea.constants import Frecuencia, Prioridad
+
+# plan -> sector al que pertenece (mismo criterio que scripts/seed_sectores.py
+# usaba antes para vincular sectores con planes). Se usa acá solo para
+# desambiguar equipos con nombre repetido en distintos sectores (ej. "Horno").
+SECTOR_DEL_PLAN = {
+    "Limpieza de instalaciones - Elaboración": "Elaboración",
+    "Limpieza cortadora de fiambre": "Fiambrería",
+    "Limpieza de equipos de frío": "Equipos de frío",
+    "Limpieza de ductos y tuberías": "Depósito",
+    "Gestión de recipientes de residuos": "Depósito",
+    "Limpieza Salón de ventas": "Salón de ventas",
+    "Limpieza Fiambrería - Útiles": "Fiambrería",
+    "Limpieza Fiambrería - Balanzas": "Fiambrería",
+    "Limpieza Fiambrería - Mesadas de trabajo": "Fiambrería",
+    "Limpieza Fiambrería - Piletas de lavado": "Fiambrería",
+    "Limpieza Rotisería - Cocina": "Rotisería",
+    "Limpieza Rotisería - Horno": "Rotisería",
+    "Limpieza Rotisería - Fritador": "Rotisería",
+    "Limpieza Rotisería - Campana y extractor": "Rotisería",
+    "Limpieza Rotisería - Mesadas y piletas": "Rotisería",
+}
  
 TAREAS_POR_PLAN = {
     "Limpieza de instalaciones - Elaboración": [
@@ -1273,16 +1297,199 @@ TAREAS_POR_PLAN = {
         },
     ],
 }
- 
- 
+
+
+# Cada tarea es de un solo sector, superficie o equipo (exclusividad a nivel
+# de base). Criterio de asignación: si el nombre de la tarea corresponde a una
+# superficie/equipo ya sembrado (seed_superficies.py / seed_equipos.py), se usa
+# ese; si la tarea es administrativa (planillas, notificaciones) o abarca más
+# de una superficie/equipo del plan, se usa el sector al que pertenece el plan.
+# (tipo, nombre) -> tipo es "sector" | "superficie" | "equipo"
+RELACIONES = {
+    "Limpieza de instalaciones - Elaboración": {
+        "Limpiar pisos, zócalos, desagües y rejillas": ("superficie", "Paredes, techo, piso y zócalos - Elaboración"),
+        "Limpiar paredes, revestimientos y aberturas": ("superficie", "Paredes, techo, piso y zócalos - Elaboración"),
+        "Limpiar techos, luces y estructuras aéreas": ("superficie", "Paredes, techo, piso y zócalos - Elaboración"),
+        "Limpiar mesadas y útiles de trabajo": ("superficie", "Mesadas y útiles de trabajo - Elaboración"),
+        "Limpiar estanterías y armarios": ("superficie", "Estanterías y armarios - Elaboración"),
+        "Limpiar piletas de lavado y desinfección de vegetales y huevos": ("sector", "Elaboración"),
+        "Limpiar equipos de elaboración (amasadora)": ("equipo", "Amasadora"),
+        "Completar y verificar planilla de registro de limpieza preoperacional": ("sector", "Elaboración"),
+    },
+    "Limpieza cortadora de fiambre": {
+        "Limpieza diaria de cortadora": ("equipo", "Cortadora de fiambre"),
+        "Limpieza intermedia al cambiar de producto": ("equipo", "Cortadora de fiambre"),
+        "Verificar desconexión de energía eléctrica antes de la limpieza": ("equipo", "Cortadora de fiambre"),
+        "Desarmar y limpiar partes desmontables": ("equipo", "Cortadora de fiambre"),
+        "Aplicar y verificar acción del desinfectante": ("equipo", "Cortadora de fiambre"),
+        "Limpieza semanal profunda de la base y soportes": ("equipo", "Cortadora de fiambre"),
+        "Verificar filo y estado de la cuchilla": ("equipo", "Cortadora de fiambre"),
+        "Completar registro de limpieza y desinfección": ("equipo", "Cortadora de fiambre"),
+    },
+    "Limpieza de equipos de frío": {
+        "Limpieza diaria de heladeras y vitrinas": ("equipo", "Heladera/vitrina exhibidora"),
+        "Limpieza profunda semanal de heladeras": ("equipo", "Heladera/vitrina exhibidora"),
+        "Limpieza superficial de cámaras": ("equipo", "Cámara"),
+        "Limpieza profunda semanal de cámaras": ("equipo", "Cámara"),
+        "Limpieza semanal de freezers": ("equipo", "Freezer"),
+        "Verificar temperatura de heladeras y freezers": ("sector", "Equipos de frío"),
+        "Limpiar burletes y desagües de cámaras": ("equipo", "Cámara"),
+        "Completar planilla de control de temperatura y limpieza": ("sector", "Equipos de frío"),
+    },
+    "Limpieza de ductos y tuberías": {
+        "Limpiar caños, tubos, ductos de ventilación": ("superficie", "Caños, tubos y ductos de ventilación - Depósito"),
+        "Retirar mercadería estibada antes de la limpieza de ductos": ("superficie", "Caños, tubos y ductos de ventilación - Depósito"),
+        "Repasar rejillas de ventilación con trapo húmedo": ("superficie", "Caños, tubos y ductos de ventilación - Depósito"),
+        "Verificar ausencia de acumulación de polvo en ductos": ("superficie", "Caños, tubos y ductos de ventilación - Depósito"),
+        "Limpieza mensual de estructuras aéreas del depósito": ("sector", "Depósito"),
+        "Verificar funcionamiento de extractores de aire": ("superficie", "Caños, tubos y ductos de ventilación - Depósito"),
+        "Completar registro de limpieza de instalaciones del depósito": ("sector", "Depósito"),
+        "Inspeccionar ausencia de plagas en ductos y aberturas": ("superficie", "Caños, tubos y ductos de ventilación - Depósito"),
+    },
+    "Gestión de recipientes de residuos": {
+        "Limpiar recipientes de residuos": ("equipo", "Recipientes de residuos"),
+        "Retirar y cerrar correctamente las bolsas de residuos": ("equipo", "Recipientes de residuos"),
+        "Trasladar y estibar residuos en el depósito de residuos": ("sector", "Depósito"),
+        "Lavar y desinfectar guantes utilizados en el manejo de residuos": ("equipo", "Recipientes de residuos"),
+        "Verificar cierre correcto de recipientes de residuos": ("equipo", "Recipientes de residuos"),
+        "Limpieza semanal profunda de recipientes de residuos": ("equipo", "Recipientes de residuos"),
+        "Verificar ausencia de derrames o malos olores en el depósito de residuos": ("sector", "Depósito"),
+        "Completar registro de gestión de residuos": ("sector", "Depósito"),
+    },
+    "Limpieza Salón de ventas": {
+        "Limpiar estanterías, estantes, racks": ("superficie", "Estanterías, estantes y racks - Salón de ventas"),
+        "Limpiar pisos del salón de ventas": ("sector", "Salón de ventas"),
+        "Limpiar vidrieras y mostradores": ("sector", "Salón de ventas"),
+        "Limpiar cestos de residuos del salón": ("sector", "Salón de ventas"),
+        "Repasar cajas registradoras y mostradores de atención al público": ("sector", "Salón de ventas"),
+        "Limpieza mensual de techos y luminarias del salón": ("sector", "Salón de ventas"),
+        "Limpiar puertas y aberturas de acceso al salón": ("sector", "Salón de ventas"),
+        "Completar registro de limpieza del salón de ventas": ("sector", "Salón de ventas"),
+    },
+    "Limpieza Fiambrería - Útiles": {
+        "Limpiar útiles": ("superficie", "Útiles - Fiambrería"),
+        "Desinfectar útiles luego del lavado": ("superficie", "Útiles - Fiambrería"),
+        "Secar útiles antes de guardarlos": ("superficie", "Útiles - Fiambrería"),
+        "Verificar ausencia de residuos en útiles antes de su uso": ("superficie", "Útiles - Fiambrería"),
+        "Almacenar útiles limpios en lugar identificado y protegido": ("superficie", "Útiles - Fiambrería"),
+        "Limpieza semanal profunda de útiles (cuchillos, tablas, ganchos)": ("superficie", "Útiles - Fiambrería"),
+        "Verificar estado de conservación de tablas y utensilios": ("superficie", "Útiles - Fiambrería"),
+        "Completar registro de limpieza de útiles": ("sector", "Fiambrería"),
+    },
+    "Limpieza Fiambrería - Balanzas": {
+        "Limpiar balanzas": ("equipo", "Balanza"),
+        "Desinfectar plato de balanza luego de pesar producto crudo": ("equipo", "Balanza"),
+        "Verificar calibración de la balanza": ("equipo", "Balanza"),
+        "Limpiar base y estructura externa de la balanza": ("equipo", "Balanza"),
+        "Retirar residuos de papel y etiquetas adheridas": ("equipo", "Balanza"),
+        "Verificar ausencia de humedad en el sistema electrónico": ("equipo", "Balanza"),
+        "Completar registro de limpieza de balanzas": ("sector", "Fiambrería"),
+        "Notificar desperfectos de la balanza al encargado": ("equipo", "Balanza"),
+    },
+    "Limpieza Fiambrería - Mesadas de trabajo": {
+        "Limpiar mesadas de trabajo": ("superficie", "Mesadas de trabajo - Fiambrería"),
+        "Retirar elementos apoyados sobre la mesada antes de limpiar": ("superficie", "Mesadas de trabajo - Fiambrería"),
+        "Desinfectar mesada luego de cada cambio de producto": ("superficie", "Mesadas de trabajo - Fiambrería"),
+        "Verificar ausencia de residuos antes de reanudar el trabajo": ("superficie", "Mesadas de trabajo - Fiambrería"),
+        "Limpieza semanal profunda de bordes y uniones de la mesada": ("superficie", "Mesadas de trabajo - Fiambrería"),
+        "Verificar estado de la superficie (grietas, deterioro)": ("superficie", "Mesadas de trabajo - Fiambrería"),
+        "Completar registro de limpieza de mesadas": ("sector", "Fiambrería"),
+        "Notificar daños en la superficie de la mesada al encargado": ("superficie", "Mesadas de trabajo - Fiambrería"),
+    },
+    "Limpieza Fiambrería - Piletas de lavado": {
+        "Limpiar piletas de lavado": ("superficie", "Piletas de lavado - Fiambrería"),
+        "Retirar residuos sólidos antes del lavado": ("superficie", "Piletas de lavado - Fiambrería"),
+        "Desinfectar pileta luego del lavado de utensilios": ("superficie", "Piletas de lavado - Fiambrería"),
+        "Verificar buen funcionamiento del desagüe": ("superficie", "Piletas de lavado - Fiambrería"),
+        "Limpiar grifería y accesorios de la pileta": ("superficie", "Piletas de lavado - Fiambrería"),
+        "Verificar disponibilidad de jabón y elementos de higiene de manos": ("superficie", "Piletas de lavado - Fiambrería"),
+        "Completar registro de limpieza de piletas": ("sector", "Fiambrería"),
+        "Reportar obstrucciones en el desagüe al encargado": ("superficie", "Piletas de lavado - Fiambrería"),
+    },
+    "Limpieza Rotisería - Cocina": {
+        "Limpiar cocina": ("equipo", "Cocina"),
+        "Desarmar y limpiar rejillas y hornallas": ("equipo", "Cocina"),
+        "Verificar cierre correcto de llaves de gas al finalizar la limpieza": ("equipo", "Cocina"),
+        "Limpiar perillas y panel de control de la cocina": ("equipo", "Cocina"),
+        "Verificar ausencia de residuos grasos acumulados": ("equipo", "Cocina"),
+        "Limpieza profunda mensual de la cocina": ("equipo", "Cocina"),
+        "Completar registro de limpieza de la cocina": ("sector", "Rotisería"),
+        "Verificar funcionamiento correcto de los quemadores": ("equipo", "Cocina"),
+    },
+    "Limpieza Rotisería - Horno": {
+        "Limpiar horno": ("equipo", "Horno"),
+        "Retirar residuos sólidos del horno con trapo": ("equipo", "Horno"),
+        "Retirar y lavar rejillas del horno": ("equipo", "Horno"),
+        "Enjuagar y secar completamente el horno": ("equipo", "Horno"),
+        "Verificar estado de la puerta y burletes del horno": ("equipo", "Horno"),
+        "Verificar temperatura de funcionamiento del horno": ("equipo", "Horno"),
+        "Completar registro de limpieza del horno": ("sector", "Rotisería"),
+        "Notificar desperfectos del horno al encargado": ("equipo", "Horno"),
+    },
+    "Limpieza Rotisería - Fritador": {
+        "Limpiar fritador": ("equipo", "Fritador"),
+        "Verificar temperatura del fritador antes de la limpieza": ("equipo", "Fritador"),
+        "Eliminar aceite usado en recipiente adecuado": ("equipo", "Fritador"),
+        "Desarmar y lavar partes desmontables del fritador": ("equipo", "Fritador"),
+        "Secar completamente antes de volver a cargar aceite": ("equipo", "Fritador"),
+        "Verificar estado del aceite antes de cada uso": ("equipo", "Fritador"),
+        "Completar registro de limpieza del fritador": ("sector", "Rotisería"),
+        "Notificar humo u olores anormales durante el uso": ("equipo", "Fritador"),
+    },
+    "Limpieza Rotisería - Campana y extractor": {
+        "Limpiar campana y extractor": ("equipo", "Campana y extractor"),
+        "Aplicar desengrasante y enjuagar completamente": ("equipo", "Campana y extractor"),
+        "Secar campana y extractor luego de la limpieza": ("equipo", "Campana y extractor"),
+        "Verificar y limpiar el filtro del extractor": ("equipo", "Campana y extractor"),
+        "Verificar tiraje correcto del extractor": ("equipo", "Campana y extractor"),
+        "Limpieza profunda mensual de ductos de extracción": ("equipo", "Campana y extractor"),
+        "Completar registro de limpieza de campana y extractor": ("sector", "Rotisería"),
+        "Notificar acumulación excesiva de grasa en el filtro": ("equipo", "Campana y extractor"),
+    },
+    "Limpieza Rotisería - Mesadas y piletas": {
+        "Limpiar mesadas de trabajo": ("superficie", "Mesadas de trabajo - Rotisería"),
+        "Limpiar piletas de lavado": ("superficie", "Piletas de lavado - Rotisería"),
+        "Limpiar útiles": ("sector", "Rotisería"),
+        "Desinfectar mesada luego de cada cambio de producto": ("superficie", "Mesadas de trabajo - Rotisería"),
+        "Retirar residuos sólidos antes del lavado de piletas": ("superficie", "Piletas de lavado - Rotisería"),
+        "Verificar disponibilidad de jabón y elementos de higiene de manos": ("superficie", "Piletas de lavado - Rotisería"),
+        "Limpieza semanal profunda de mesadas y piletas": ("sector", "Rotisería"),
+        "Completar registro de limpieza de mesadas, piletas y útiles": ("sector", "Rotisería"),
+    },
+}
+
+
 def generar_tareas(db) -> list[Tarea]:
     planes = {p.nombre: p for p in db.scalars(select(PlanLimpieza)).all()}
+    sectores = {s.nombre: s for s in db.scalars(select(Sector)).all()}
+    superficies = {s.nombre: s for s in db.scalars(select(Superficie)).all()}
+    equipos = {}
+    for e in db.scalars(select(Equipo)).all():
+        # "Horno" existe una vez por sector (Elaboración y Rotisería): se
+        # desambigua con el sector del equipo.
+        equipos[(e.nombre, e.sector_id)] = e
+
     tareas = []
     for nombre_plan, lista_tareas in TAREAS_POR_PLAN.items():
         plan = planes.get(nombre_plan)
         if not plan:
             continue
+        relaciones_plan = RELACIONES.get(nombre_plan, {})
         for datos in lista_tareas:
+            tipo, nombre_entidad = relaciones_plan[datos["nombre"]]
+            sector_id = superficie_id = equipo_id = None
+            if tipo == "sector":
+                sector_id = sectores[nombre_entidad].id
+            elif tipo == "superficie":
+                superficie_id = superficies[nombre_entidad].id
+            elif tipo == "equipo":
+                sector_del_plan = sectores[SECTOR_DEL_PLAN[nombre_plan]]
+                equipo = equipos.get((nombre_entidad, sector_del_plan.id))
+                if equipo is None:
+                    # fallback: único equipo con ese nombre en toda la base
+                    equipo = next(e for (n, _), e in equipos.items() if n == nombre_entidad)
+                equipo_id = equipo.id
+
             tareas.append(
                 Tarea(
                     nombre=datos["nombre"],
@@ -1293,6 +1500,9 @@ def generar_tareas(db) -> list[Tarea]:
                     accion_correctiva=datos["accion_correctiva"],
                     procedimiento=datos.get("procedimiento"),
                     plan_limpieza_id=plan.id,
+                    sector_id=sector_id,
+                    superficie_id=superficie_id,
+                    equipo_id=equipo_id,
                 )
             )
     return tareas

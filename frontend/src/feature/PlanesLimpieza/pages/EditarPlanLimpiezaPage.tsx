@@ -66,8 +66,6 @@ export function EditarPlanLimpiezaPage(){
                     valoresIniciales={{
                         nombre: plan.nombre,
                         descripcion: plan.descripcion,
-                        sector_ids: plan.sectores.map(s => s.id),
-                        superficie_ids: plan.superficies.map(s => s.id),
                     }}/>
             </Container>
         </>
