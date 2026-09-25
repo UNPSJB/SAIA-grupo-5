@@ -29,6 +29,7 @@ import { NuevoPlanLimpiezaPage } from './feature/PlanesLimpieza/pages/NuevoPlanL
 import { EditarPlanLimpiezaPage } from './feature/PlanesLimpieza/pages/EditarPlanLimpiezaPage.tsx';
 
 import { TareasPage } from './feature/Tareas/pages/ListPage.tsx';
+import { HistorialPage } from './feature/Historial/pages/ListPage.tsx';
 import { ListPage as InsumoQuimicoListPage } from './feature/InsumosQuimicos/pages/ListPage.tsx'
 import { NuevoInsumoQuimicoPage } from './feature/InsumosQuimicos/pages/NuevoInsumoQuimicoPage.tsx'
 import { EditarInsumoQuimicoPage } from './feature/InsumosQuimicos/pages/EditarInsumoQuimicoPage.tsx'
@@ -151,6 +152,13 @@ const router = createBrowserRouter([
             ],
           },
           { path: 'tareas', element: <TareasPage /> },
+          {
+            path: 'historial',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <HistorialPage /> },
+            ],
+          },
           { path: '*', element: <Page404 /> },
           {
             path: 'checklist', element: <ChecklistListPage />
