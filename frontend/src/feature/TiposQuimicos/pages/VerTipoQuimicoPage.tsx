@@ -96,7 +96,7 @@ export function VerTipoQuimicoPage() {
                                 disabled={!tipoQuimico.activo}
                                 onClick={() => navigate(`/tipos-quimicos/${tipoQuimico.id}/edit`)}
                             >
-                                <i className="bi bi-pencil me-1"></i>Editar Tipo Químicob   
+                                <i className="bi bi-pencil me-1"></i>Editar Tipo Químico  
                             </Button>
                         </Card.Footer>
                     </Card>
