@@ -15,10 +15,22 @@ import { ListPage as PersonalListPage } from './feature/Personal/pages/ListPage.
 import { EditarPersonaPage } from './feature/Personal/pages/EditarPersonaPage.tsx'
 import { NuevaPersonaPage } from './feature/Personal/pages/NuevaPersonaPage.tsx'
 
+import { ListPage as InsumoQuimicoListPage } from './feature/InsumosQuimicos/pages/ListPage.tsx'
+import { NuevoInsumoQuimicoPage } from './feature/InsumosQuimicos/pages/NuevoInsumoQuimicoPage.tsx'
+import { EditarInsumoQuimicoPage } from './feature/InsumosQuimicos/pages/EditarInsumoQuimicoPage.tsx'
+import { VerInsumoQuimicoPage } from './feature/InsumosQuimicos/pages/VerInsumoQuimicoPage.tsx'
+
+import { ListPage as TipoQuimicoListPage } from './feature/TiposQuimicos/pages/ListPage.tsx'
+import { NuevoTipoQuimicoPage } from './feature/TiposQuimicos/pages/NuevoTipoQuimicoPage.tsx'
+import { EditarTipoQuimicoPage } from './feature/TiposQuimicos/pages/EditarTipoQuimicoPage.tsx'
+import { VerTipoQuimicoPage } from './feature/TiposQuimicos/pages/VerTipoQuimicoPage.tsx'
+
 import { Login, NoAutorizado } from './feature/auth'
 import AuthLayout from './layouts/AuthLayout.tsx'
 import { ProtectedRoute } from './components/ProtectedRoute.tsx'
+
 import App from './App.tsx'
+
 
 const router = createBrowserRouter([
   {
@@ -72,9 +84,39 @@ const router = createBrowserRouter([
               { path: ':id/edit', element: <EditarPersonaPage /> },
             ],
           },
+          {
+            path: 'insumos-quimicos',
+            children: [
+              {index: true, element: <InsumoQuimicoListPage />},
+              {path: ':id', element: <VerInsumoQuimicoPage />},
+              {
+                element: <ProtectedRoute requireAdmin />,
+                children: [
+                  {path: 'new', element: <NuevoInsumoQuimicoPage />},
+                  {path: ':id/edit', element: <EditarInsumoQuimicoPage />},
+                ],
+              },
+            ],
+          },
+          {
+            path: 'tipos-quimicos',
+            children: [
+              {index: true, element: <TipoQuimicoListPage />},
+              {path: ':id', element: <VerTipoQuimicoPage />},
+              {
+                element: <ProtectedRoute requireAdmin />,
+                children: [
+                  {path: 'new', element: <NuevoTipoQuimicoPage />},
+                  {path: ':id/edit', element: <EditarTipoQuimicoPage />},
+                ],
+              },
+            ],
+          },
           { path: '*', element: <Page404 /> },
         ],
       },
+      
+      { path: '*', element: <Page404 /> },
     ],
   },
 ])
