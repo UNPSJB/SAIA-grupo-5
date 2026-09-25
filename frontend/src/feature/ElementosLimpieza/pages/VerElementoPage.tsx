@@ -4,12 +4,14 @@ import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 import type { ElementoLimpieza } from "../types";
 import type { TipoElementoLimpieza } from "../../TiposElementoLimpieza/types";
+import type { RecambioElementoLimpieza } from "../../RecambiosElementosLimpieza/types";
 
 export function VerElementoPage() {
     const navigate = useNavigate();
     const { id } = useParams();
 
     const { data: elementoLimpieza, isLoading, error } = useApi<ElementoLimpieza>(`/elementos-limpieza/${id}`);
+    const { data: recambios } = useApi<RecambioElementoLimpieza[]>(`/recambios-elementos-limpieza/elemento/${id}`);
     const { data: tipos } = useApi<TipoElementoLimpieza[]>("/elementos-limpieza/tipos");
 
     const nombreTipo = tipos?.find(tipo => tipo.id === elementoLimpieza?.tipo_id)?.nombre ?? "-";
@@ -137,6 +139,49 @@ export function VerElementoPage() {
                                 <i className="bi bi-pencil me-1"></i>Editar Elemento
                             </Button>
                         </Card.Footer>
+                    </Card>
+
+                    <Card className="shadow-sm border-0 rounded-3 mt-4">
+                        <Card.Header className="bg-white border-bottom p-4 d-flex justify-content-between align-items-center">
+                            <h5 className="mb-0 fw-bold text-primary">
+                                <i className="bi bi-clock-history me-2"></i>
+                                Historial de Recambios
+                            </h5>
+
+                            {elementoLimpieza.estado && (
+                                <Button
+                                    variant="success"
+                                    size="sm"
+                                    onClick={() => navigate(`/recambios-elementos-limpieza/new/${elementoLimpieza.id}`)}
+                                >
+                                    <i className="bi bi-arrow-repeat me-1 "></i>
+                                    Registrar Recambio
+                                </Button>
+                            )}
+                        </Card.Header>
+
+                        <Card.Body className="p-4">
+                            {!recambios || recambios.length === 0 ? (
+                                <p className="text-muted mb-0">
+                                    Este elemento todavía no tiene recambios registrados.
+                                </p>
+                            ) : (
+                                recambios.map((recambio) => (
+                                    <Row
+                                        key={recambio.id}
+                                        className="mb-3 border-bottom pb-3 align-items-center"
+                                    >
+                                        <Col sm={3} className="fw-bold text-secondary">
+                                            {recambio.fecha}
+                                        </Col>
+
+                                        <Col sm={9}>
+                                            {recambio.observacion ?? "-"}
+                                        </Col>
+                                    </Row>
+                                ))
+                            )}
+                        </Card.Body>
                     </Card>
                 </Col>
             </Row>

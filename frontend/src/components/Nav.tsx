@@ -43,6 +43,14 @@ export function Nav() {
                         <i className="bi bi-people me-2"></i>
                         Personal
                     </BSNav.Link>
+                    <BSNav.Link as={NavLink} to="/tipos-elementos-limpieza">
+                        <i className="bi bi-tags me-2"></i>
+                        Tipos Elementos Limpieza
+                    </BSNav.Link>
+                    <BSNav.Link as={NavLink} to="/recambios-elementos-limpieza">
+                        <i className="bi bi-clock-history me-2"></i>
+                        Recambios Elementos
+                    </BSNav.Link>
                 </BSNav>
             </div>
         </div>

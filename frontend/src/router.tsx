@@ -20,6 +20,14 @@ import { NuevoElementoPage } from "./feature/ElementosLimpieza/pages/NuevoElemen
 import { VerElementoPage } from './feature/ElementosLimpieza/pages/VerElementoPage.tsx'
 import { EditarElementoPage } from './feature/ElementosLimpieza/pages/EditarElementoPage.tsx'
 
+import { TiposElementoLimpiezaPage } from './feature/TiposElementoLimpieza/pages/ListPage.tsx'
+import { NuevoTipoElementoPage } from './feature/TiposElementoLimpieza/pages/NuevoTipoElementoPage.tsx'
+import { EditarTipoElementoPage } from './feature/TiposElementoLimpieza/pages/EditarTipoElementoPage.tsx'
+
+import { RecambiosElementoLimpiezaPage } from './feature/RecambiosElementosLimpieza/pages/ListPage.tsx'
+import { NuevoRecambioElementoLimpiezaPage } from './feature/RecambiosElementosLimpieza/pages/NuevoRecambioElementoLimpiezaPage.tsx'
+import { VerRecambioElementoLimpiezaPage } from './feature/RecambiosElementosLimpieza/pages/VerRecambioElementoLimpiezaPage.tsx'
+
 import App from './App.tsx'
 
 const router = createBrowserRouter([
@@ -59,6 +67,23 @@ const router = createBrowserRouter([
             { path: 'new', element: <NuevoElementoPage/>},
             { path: ':id/edit', element: <EditarElementoPage/>},
             { path: ':id', element: <VerElementoPage/>},
+        ],
+      },
+      {
+        path: "tipos-elementos-limpieza",
+        children: [
+            { index: true, element: <TiposElementoLimpiezaPage /> },
+            { path: "new", element: <NuevoTipoElementoPage /> },
+            { path: ":id/edit", element: <EditarTipoElementoPage /> },
+        ],
+      },
+      {
+        path: "recambios-elementos-limpieza",
+        children: [
+            { index: true, element: <RecambiosElementoLimpiezaPage /> },
+            { path: "new", element: <NuevoRecambioElementoLimpiezaPage /> },
+            { path: "new/:elementoId", element: <NuevoRecambioElementoLimpiezaPage /> },
+            { path: ":id", element: <VerRecambioElementoLimpiezaPage /> },
         ],
       },
       { path: '*', element: <Page404 /> },

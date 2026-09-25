@@ -169,38 +169,47 @@ export function ElementosLimpiezaPage() {
         {
             name: "Acciones",
             center: true,
-            minWidth: "320px",
+            minWidth: "180px",
             cell: row => (
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
                     <Button
                         variant="outline-secondary"
                         size="sm"
+                        title="Ver detalle"
                         onClick={() => navigate(`/elementos-limpieza/${row.id}`)}
                     >
-                        <i className="bi bi-eye me-1"></i>
-                        Ver detalle
+                        <i className="bi bi-eye"></i>
                     </Button>
 
                     {row.estado && (
-                        <Button
-                            variant="outline-primary"
-                            size="sm"
-                            onClick={() => navigate(`/elementos-limpieza/${row.id}/edit`)}
-                        >
-                            <i className="bi bi-pencil me-1"></i>
-                            Editar
-                        </Button>
-                    )}
-                    
-                    {row.estado && (
-                        <Button
-                            variant="outline-danger"
-                            size="sm"
-                            onClick={() => setElementoToDelete(row)}
-                        >
-                            <i className="bi bi-trash3 me-1"></i>
-                            Eliminar
-                        </Button>
+                        <>
+                            <Button
+                                variant="outline-primary"
+                                size="sm"
+                                title="Editar"
+                                onClick={() => navigate(`/elementos-limpieza/${row.id}/edit`)}
+                            >
+                                <i className="bi bi-pencil"></i>
+                            </Button>
+
+                            <Button
+                                variant="outline-success"
+                                size="sm"
+                                title="Registrar recambio"
+                                onClick={() => navigate(`/recambios-elementos-limpieza/new/${row.id}`)}
+                            >
+                                <i className="bi bi-arrow-repeat"></i>
+                            </Button>
+
+                            <Button
+                                variant="outline-danger"
+                                size="sm"
+                                title="Dar de baja"
+                                onClick={() => setElementoToDelete(row)}
+                            >
+                                <i className="bi bi-trash3"></i>
+                            </Button>
+                        </>
                     )}
                 </div>
             ),
