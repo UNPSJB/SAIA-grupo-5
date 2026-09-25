@@ -5,6 +5,7 @@ from src.database import engine, SessionLocal
 from src.models import ModeloBase
 from src.personal.models import Persona
 from src.auth.utils import get_password_hash
+from src.scheduler.scheduler import scheduler, iniciar_scheduler
 
 
 @asynccontextmanager
@@ -47,4 +48,6 @@ async def db_creation_lifespan(app: FastAPI):
             db.add(nuevo_admin)
             db.commit()
 
+    iniciar_scheduler()
     yield
+    scheduler.shutdown()

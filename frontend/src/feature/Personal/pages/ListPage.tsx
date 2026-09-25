@@ -7,6 +7,7 @@ import { mutate } from 'swr'
 import { AppTable } from '../../../components/AppTable'
 import { PageHeader } from '../../../components/PageHeader'
 import { useApi } from '../../../hooks/useApi'
+import { useAuth } from '../../../hooks/useAuth'
 import { api } from '../../../libs/axios'
 import { Capacidades } from '../../Capacidades/types'
 import type { Persona } from '../types'
@@ -18,6 +19,7 @@ const capacidadLabels: Record<string, string> = {
 
 export function ListPage() {
   const navigate = useNavigate()
+  const { currentUser } = useAuth()
   const [search, setSearch] = useState('')
   const { data: personal, error, isLoading } = useApi<Persona[]>('/personal/')
 
@@ -84,7 +86,7 @@ export function ListPage() {
     )
   }
 
-  const columns: TableColumn<Persona>[] = [
+  const baseColumns: TableColumn<Persona>[] = [
     {
       name: 'ID',
       selector: (row) => row.id,
@@ -174,32 +176,38 @@ export function ListPage() {
         </div>
       ),
     },
-    {
-      name: 'Acciones',
-      center: true,
-      minWidth: '220px',
-      cell: (row) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Button
-            variant="outline-primary"
-            size="sm"
-            disabled={!row.activo}
-            onClick={() => navigate(`/personal/${row.id}/edit`)}
-          >
-            <i className="bi bi-pencil me-1"></i>Editar
-          </Button>
-          <Button
-            variant={row.activo ? 'outline-danger' : 'outline-success'}
-            size="sm"
-            onClick={() => cambiarEstado(row)}
-          >
-            <i className={`bi ${row.activo ? 'bi-person-dash' : 'bi-person-check'} me-1`}></i>
-            {row.activo ? 'Dar de baja' : 'Dar de Alta'}
-          </Button>
-        </div>
-      ),
-    },
   ]
+
+  const columns: TableColumn<Persona>[] = currentUser?.administrar
+    ? [
+        ...baseColumns,
+        {
+          name: 'Acciones',
+          center: true,
+          minWidth: '220px',
+          cell: (row) => (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Button
+                variant="outline-primary"
+                size="sm"
+                disabled={!row.activo}
+                onClick={() => navigate(`/personal/${row.id}/edit`)}
+              >
+                <i className="bi bi-pencil me-1"></i>Editar
+              </Button>
+              <Button
+                variant={row.activo ? 'outline-danger' : 'outline-success'}
+                size="sm"
+                onClick={() => cambiarEstado(row)}
+              >
+                <i className={`bi ${row.activo ? 'bi-person-dash' : 'bi-person-check'} me-1`}></i>
+                {row.activo ? 'Dar de baja' : 'Dar de Alta'}
+              </Button>
+            </div>
+          ),
+        },
+      ]
+    : baseColumns
 
   return (
     <Container>
@@ -210,16 +218,18 @@ export function ListPage() {
         <Col xs="auto" className="align-self-center">
           {subHeaderComponentMemo}
         </Col>
-        <Col xs="auto" className="d-flex justify-content-end">
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => navigate('/personal/new')}
-            style={{ whiteSpace: 'nowrap' }}
-          >
-            + Nuevo Personal
-          </Button>
-        </Col>
+        {currentUser?.administrar && (
+          <Col xs="auto" className="d-flex justify-content-end">
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => navigate('/personal/new')}
+              style={{ whiteSpace: 'nowrap' }}
+            >
+              + Nuevo Personal
+            </Button>
+          </Col>
+        )}
       </Row>
       <AppTable columns={columns} data={filteredPersonal} />
     </Container>

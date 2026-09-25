@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { PageHeader } from "../../../components/PageHeader";
 import { PersonaForm } from "../components/PersonaForm";
 import { api } from "../../../libs/axios";
+import { getErrorMessage } from "../../../libs/errors";
 import type { NewPersona } from "../types";
 
 export function NuevaPersonaPage(){
@@ -15,11 +16,7 @@ export function NuevaPersonaPage(){
             await mutate('/personal/')
             navigate("/personal");
         } catch (error: any){
-            if(error.response && error.response.data && error.response.data.detail){
-                alert(error.response.data.detail);
-            } else {
-                alert("No se pudo registrar el personal.");
-            }
+            alert(getErrorMessage(error, "No se pudo registrar el personal."));
             console.log(error)
         }
     };
