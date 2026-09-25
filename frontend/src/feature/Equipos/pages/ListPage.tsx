@@ -9,7 +9,7 @@ import { PageHeader } from '../../../components/PageHeader';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
 
-import { DeleteEquipoModal } from '../components/DeleteEquipoModal'; 
+import { DeleteEquipoModal } from '../components/DeleteEquipoModal';
 import type { Equipo } from "../types";
 
 export function EquiposPage() {
@@ -18,7 +18,7 @@ export function EquiposPage() {
     const [search, setSearch] = useState('');
     const { data: equipos, error, isLoading } = useApi<Equipo[]>("/equipos");
     const [equipoToDelete, setEquipoToDelete] = useState<Equipo | null>(null);
-    
+
     const filteredInsumos = useMemo(() => {
         if (!Array.isArray(equipos)) return [];
         return (equipos ?? []).filter((equipo) => {
@@ -29,7 +29,7 @@ export function EquiposPage() {
             );
         });
     }, [search, equipos]);
-    
+
     const subHeaderComponentMemo = useMemo(() => {
         return (
             <Form.Control
@@ -63,17 +63,9 @@ export function EquiposPage() {
 
     const baseColumns: TableColumn<Equipo>[] = [
         {
-            name: "ID",
-            selector: row => row.id,
-            sortable: true,
-            center: true,
-            maxWidth: "60px",
-        },
-        {
             name: "Nombre",
             selector: row => row.nombre,
             sortable: true,
-            center: true,
             grow: 2,
         },
         {
@@ -84,8 +76,8 @@ export function EquiposPage() {
             grow: 2,
         },
         {
-            name: "Ubicación",
-            selector: row => row.ubicacion,
+            name: "Sector",
+            selector: row => row.sector.nombre,
             sortable: true,
             center: true,
             grow: 2,
@@ -96,7 +88,7 @@ export function EquiposPage() {
             sortable: true,
             center: true,
             cell: row => (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10}}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div
                         style={{
                             padding: '4px 12px',
@@ -152,7 +144,7 @@ export function EquiposPage() {
 
     return (
         <Container>
-            <Row className="p-2 align-items-center">
+            <Row className="p-2">
                 <Col>
                     <PageHeader title="Listado de Equipos" />
                 </Col>

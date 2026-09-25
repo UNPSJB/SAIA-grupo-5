@@ -1,60 +1,60 @@
 # scripts/seed_equipos.py
 """
-Pobla la base de datos con equipos de prueba.
+Pobla la base de datos con los equipos de ejemplo de la guía práctica de
+POES (fiambrería/elaboración), cada uno con su sector real.
+Requiere haber corrido antes: python -m scripts.seed_sectores
 Uso: python -m scripts.seed_equipos
 """
-from faker import Faker
+from sqlalchemy import select
 
+import src.all_models
 from src.database import SessionLocal
 from src.equipos.models import Equipo
+from src.sector.models import Sector
 
-fake = Faker("es_AR")
-Faker.seed(42)
-
-CANTIDAD_EQUIPOS = 16
-
+# (nombre, categoria, sector)
 EQUIPOS = [
-    ("Heladera exhibidora", "Refrigeración"),
-    ("Freezer horizontal", "Refrigeración"),
-    ("Horno pastelero", "Cocción"),
-    ("Horno de barro", "Cocción"),
-    ("Balanza digital", "Medición"),
-    ("Termómetro de cocina", "Medición"),
-    ("Amasadora", "Elaboración"),
-    ("Batidora industrial", "Elaboración"),
-    ("Selladora de bolsas", "Envasado"),
-    ("Fermentador", "Elaboración"),
-    ("Olla cervecera", "Elaboración"),
-    ("Cámara de fermentación", "Elaboración"),
-    ("Cámara frigorífica", "Refrigeración"),
-    ("Mesa de acero inoxidable", "Elaboración"),
-    ("Rebanadora de pan", "Elaboración"),
-    ("Sobadora", "Elaboración"),
-    ("Lavamanos industrial", "Higiene"),
-    ("Dispensador de alcohol en gel", "Higiene"),
-    ("Carro transportador", "Transporte"),
-    ("Balanza de piso", "Medición"),
+    ("Amasadora", "Elaboración", "Elaboración"),
+    ("Horno", "Cocción", "Elaboración"),
+    # La cortadora de fiambre pertenece a la sección de Fiambrería, no a Elaboración
+    # (corrección respecto de la carga inicial).
+    ("Cortadora de fiambre", "Elaboración", "Fiambrería"),
+    ("Heladera/vitrina exhibidora", "Refrigeración", "Equipos de frío"),
+    ("Freezer", "Refrigeración", "Equipos de frío"),
+    ("Cámara", "Refrigeración", "Equipos de frío"),
+    ("Recipientes de residuos", "Higiene", "Depósito"),
+    ("Balanza", "Medición", "Fiambrería"),
+    ("Cocina", "Cocción", "Rotisería"),
+    ("Horno", "Cocción", "Rotisería"),
+    ("Fritador", "Cocción", "Rotisería"),
+    ("Campana y extractor", "Ventilación", "Rotisería"),
 ]
-UBICACIONES = ["Cocina", "Obrador", "Depósito", "Salón de venta", "Zona de fermentación"]
 
 
-def generar_equipos(cantidad: int) -> list[Equipo]:
-    cantidad = min(cantidad, len(EQUIPOS))
-    elegidos = fake.random_elements(elements=EQUIPOS, length=cantidad, unique=True)
+def generar_equipos(db) -> list[Equipo]:
+    sectores = {s.nombre: s for s in db.scalars(select(Sector)).all()}
+    if not sectores:
+        return []
+
     return [
         Equipo(
             nombre=nombre,
             categoria=categoria,
-            ubicacion=fake.random_element(elements=UBICACIONES),
+            ubicacion=nombre_sector,
+            sector_id=sectores[nombre_sector].id,
         )
-        for nombre, categoria in elegidos
+        for nombre, categoria, nombre_sector in EQUIPOS
+        if nombre_sector in sectores
     ]
 
 
 def main():
     db = SessionLocal()
     try:
-        equipos = generar_equipos(CANTIDAD_EQUIPOS)
+        equipos = generar_equipos(db)
+        if not equipos:
+            print("No hay sectores cargados. Correr antes scripts.seed_sectores.")
+            return
 
         db.add_all(equipos)
         db.commit()

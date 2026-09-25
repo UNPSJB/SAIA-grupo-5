@@ -24,7 +24,7 @@ def crear_insumo(db: Session, insumo: schemas.InsumoCreate) -> schemas.Insumo:
     return _insumo
 
 def listar_insumos(db: Session) -> List[schemas.Insumo]:
-    return db.scalars(select(Insumo)).all()
+    return db.scalars(select(Insumo).where(Insumo.tipo_herencia == "general")).all()
 
 def leer_insumo(db: Session, insumo_id: int) -> schemas.Insumo:
     db_insumo = db.scalar(select(Insumo).where(Insumo.id == insumo_id))
