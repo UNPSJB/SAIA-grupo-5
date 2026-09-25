@@ -163,16 +163,27 @@ def listar_elementos_limpieza(db: Session) -> List[schemas.ElementoLimpieza]:
 
     return resultado
 
-def leer_elemento_limpieza(db: Session, elemento_id: int) -> schemas.ElementoLimpieza:
-    db_elemento = db.scalar(select(ElementoLimpieza).where(ElementoLimpieza.id == elemento_id))
+def leer_elemento_limpieza_modelo(db: Session, elemento_id: int) -> ElementoLimpieza:
+    db_elemento = db.get(ElementoLimpieza, elemento_id)
 
     if db_elemento is None:
         raise exceptions.ElementoLimpiezaNoEncontrado()
 
     return db_elemento
 
+def leer_elemento_limpieza(db: Session, elemento_id: int) -> schemas.ElementoLimpieza:
+    db_elemento = db.scalar(select(ElementoLimpieza).where(ElementoLimpieza.id == elemento_id))
+
+    if db_elemento is None:
+        raise exceptions.ElementoLimpiezaNoEncontrado()
+
+    elemento_schema = schemas.ElementoLimpieza.model_validate(db_elemento)
+    elemento_schema.dias_restantes = calcular_dias_restantes(db, db_elemento)
+
+    return elemento_schema
+
 def modificar_elemento_limpieza(db: Session, elemento_id: int, elemento: schemas.ElementoLimpiezaUpdate) -> ElementoLimpieza:
-    db_elemento = leer_elemento_limpieza(db, elemento_id)
+    db_elemento = leer_elemento_limpieza_modelo(db, elemento_id)
 
     db.execute(
         update(ElementoLimpieza)
@@ -191,7 +202,7 @@ def modificar_elemento_limpieza(db: Session, elemento_id: int, elemento: schemas
     return db_elemento
 
 def eliminar_elemento_limpieza(db: Session, elemento_id: int) -> schemas.ElementoLimpieza:
-    db_elemento = leer_elemento_limpieza(db, elemento_id)
+    db_elemento = leer_elemento_limpieza_modelo(db, elemento_id)
 
     db.execute(
         update(ElementoLimpieza)

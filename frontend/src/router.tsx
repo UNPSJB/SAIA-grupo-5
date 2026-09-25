@@ -16,6 +16,9 @@ import { EditarPersonaPage } from './feature/Personal/pages/EditarPersonaPage.ts
 import { NuevaPersonaPage } from './feature/Personal/pages/NuevaPersonaPage.tsx'
 
 import { ElementosLimpiezaPage } from './feature/ElementosLimpieza/pages/ListPage.tsx';
+import { NuevoElementoPage } from "./feature/ElementosLimpieza/pages/NuevoElementoPage";
+import { VerElementoPage } from './feature/ElementosLimpieza/pages/VerElementoPage.tsx'
+import { EditarElementoPage } from './feature/ElementosLimpieza/pages/EditarElementoPage.tsx'
 
 import App from './App.tsx'
 
@@ -53,6 +56,9 @@ const router = createBrowserRouter([
         path: 'elementos-limpieza',
         children: [
             { index: true, element: <ElementosLimpiezaPage /> },
+            { path: 'new', element: <NuevoElementoPage/>},
+            { path: ':id/edit', element: <EditarElementoPage/>},
+            { path: ':id', element: <VerElementoPage/>},
         ],
       },
       { path: '*', element: <Page404 /> },

@@ -1,10 +1,3 @@
-export type TipoElementoLimpieza = {
-    id: number
-    nombre: string
-    prefijo: string
-    estado: boolean
-}
-
 export type ElementoLimpieza = {
     id: number
     codigo: string
@@ -24,9 +17,4 @@ export type NewElementoLimpieza = {
     material?: string | null
     ubicacion?: string | null
     frecuencia_recambio?: number | null
-}
-
-export type NewTipoElementoLimpieza = {
-    nombre: string
-    prefijo: string
 }

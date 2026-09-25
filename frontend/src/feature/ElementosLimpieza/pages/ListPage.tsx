@@ -7,14 +7,16 @@ import { type TableColumn } from "react-data-table-component";
 import { AppTable } from "../../../components/AppTable";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
-import { api } from "../../../libs/axios";
 
-import type { ElementoLimpieza, TipoElementoLimpieza } from "../types";
-
+import { DeleteElementoLimpiezaModal } from "../components/DeleteElementoLimpiezaModal";
+import type { ElementoLimpieza } from "../types";
+import type { TipoElementoLimpieza } from "../../TiposElementoLimpieza/types";
 
 export function ElementosLimpiezaPage() {
     const navigate = useNavigate();
     const [search, setSearch] = useState("");
+    const [elementoToDelete, setElementoToDelete] = useState<ElementoLimpieza | null>(null);
+
     const { data: elementos, error, isLoading } = useApi<ElementoLimpieza[]>("/elementos-limpieza");
     const { data: tipos } = useApi<TipoElementoLimpieza[]>("/elementos-limpieza/tipos");
 
@@ -179,19 +181,22 @@ export function ElementosLimpiezaPage() {
                         Ver detalle
                     </Button>
 
-                    <Button
-                        variant="outline-primary"
-                        size="sm"
-                        onClick={() => navigate(`/elementos-limpieza/${row.id}/edit`)}
-                    >
-                        <i className="bi bi-pencil me-1"></i>
-                        Editar
-                    </Button>
-
+                    {row.estado && (
+                        <Button
+                            variant="outline-primary"
+                            size="sm"
+                            onClick={() => navigate(`/elementos-limpieza/${row.id}/edit`)}
+                        >
+                            <i className="bi bi-pencil me-1"></i>
+                            Editar
+                        </Button>
+                    )}
+                    
                     {row.estado && (
                         <Button
                             variant="outline-danger"
                             size="sm"
+                            onClick={() => setElementoToDelete(row)}
                         >
                             <i className="bi bi-trash3 me-1"></i>
                             Eliminar
@@ -228,6 +233,12 @@ export function ElementosLimpiezaPage() {
             <AppTable
                 columns={columns}
                 data={filteredElementos}
+            />
+
+            <DeleteElementoLimpiezaModal
+                elementoLimpieza={elementoToDelete}
+                onHide={() => setElementoToDelete(null)}
+                onDeleted={() => mutate("/elementos-limpieza")}
             />
         </Container>
     );
