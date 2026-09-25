@@ -19,6 +19,7 @@ import { ListPage as PersonalListPage } from './feature/Personal/pages/ListPage.
 import { EditarPersonaPage } from './feature/Personal/pages/EditarPersonaPage.tsx'
 import { NuevaPersonaPage } from './feature/Personal/pages/NuevaPersonaPage.tsx'
 
+import { ListPage as ChecklistListPage } from './feature/Checklist/pages/ListPage.tsx'
 import { SuperficiesPage } from './feature/Superficies/pages/ListPage.tsx';
 import { NuevaSuperficiePage } from './feature/Superficies/pages/NuevoSuperficiePage.tsx';
 import { EditarSuperficiePage } from './feature/Superficies/pages/EditarSuperficiePage.tsx';
@@ -159,8 +160,13 @@ const router = createBrowserRouter([
             ],
           },
           { path: '*', element: <Page404 /> },
+          {
+            path: 'checklist', element: <ChecklistListPage />
+          }
         ],
       },
+      { path: '*', element: <Page404 /> },
+
     ],
   },
 ])
