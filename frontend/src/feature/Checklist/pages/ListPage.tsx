@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { mutate } from 'swr';
-import { Alert, Button, Col, Container, Form, Row, Spinner } from 'react-bootstrap';
+import { Alert, Button, ButtonGroup, Col, Container, Dropdown, Form, Row, Spinner } from 'react-bootstrap';
 import { type TableColumn } from 'react-data-table-component';
 
 import { AppTable } from '../../../components/AppTable';
@@ -26,7 +26,13 @@ function fechaHoy(): string {  // Esta cuenta tira la fecha real, toISOString a 
 export function ListPage() {
     const [search, setSearch] = useState('');
     const { data: tareas, error, isLoading } = useApi<TareaOcurrencia[]>("/tareas-ocurrencia/")
+    const [filtroPlan, setFiltroPlan] = useState('');
 
+    const planesDisponibles = useMemo(() => {
+        if (!Array.isArray(tareas)) return [];
+        const planesUnicos = new Set(tareas.map(t => t.plan_nombre_snap));
+        return Array.from(planesUnicos);
+    }, [tareas]);
     //Cada 30 segundos el checklist se actualiza solo
     useEffect(() => {
         const intervalo = setInterval(() => mutate("/tareas-ocurrencia/"), 30000);
@@ -38,25 +44,60 @@ export function ListPage() {
         if (!Array.isArray(tareas)) return [];
         const hoy = fechaHoy();
         return tareas.filter((tarea) => {
-            return (
-                tarea.fecha === hoy && (
-                    tarea.tarea_nombre_snap.toLowerCase().includes(search.toLowerCase()) ||
-                    tarea.plan_nombre_snap.toLowerCase().includes(search.toLowerCase())
-                )
-            );
-        });
-    }, [search, tareas]);
+            const coincideFecha = tarea.fecha === hoy;
+            const coincideBusqueda = 
+                tarea.tarea_nombre_snap.toLowerCase().includes(search.toLowerCase()) ||
+                tarea.plan_nombre_snap.toLowerCase().includes(search.toLowerCase());
+            
+            const coincidePlan = filtroPlan === '' || tarea.plan_nombre_snap === filtroPlan;
 
+            return coincideFecha && coincideBusqueda && coincidePlan;
+        });
+    }, [search, tareas, filtroPlan]); 
     const subHeaderComponentMemo = useMemo(() => {
         return (
-            <Form.Control
-                type="text"
-                placeholder="Buscar tarea..."
-                className=" mr-sm-2"
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
-            />
+            <div className="d-flex gap-2 w-100">
+                <Dropdown as={ButtonGroup} className="w-50" style={{ minWidth: 0 }}>
+                    <Button 
+                        variant="outline-secondary" 
+                        onClick={() => setFiltroPlan('')}
+                        className="text-truncate text-start"
+                    >
+                        {filtroPlan ? filtroPlan : 'Filtrar por plan'}
+                    </Button>
+                    <Dropdown.Toggle split variant="outline-secondary" id="dropdown-filtro-planes" />
+                    
+                    <Dropdown.Menu>
+                        <Dropdown.Item 
+                            active={filtroPlan === ''} 
+                            onClick={() => setFiltroPlan('')}
+                        >
+                            Todos los planes
+                        </Dropdown.Item>
+                        <Dropdown.Divider />
+                        {planesDisponibles.map(plan => (
+                            <Dropdown.Item 
+                                key={plan} 
+                                active={filtroPlan === plan} 
+                                onClick={() => setFiltroPlan(plan)}
+                            >
+                                {plan}
+                            </Dropdown.Item>
+                        ))}
+                    </Dropdown.Menu>
+                </Dropdown>
+
+                <Form.Control
+                    type="text"
+                    placeholder="Buscar tarea..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-50"
+
+                />
+            </div>
         );
-    }, [search]);
+    }, [search, planesDisponibles, filtroPlan]);
 
     const completarTarea = async (tarea: TareaOcurrencia) => {
         try {
@@ -168,6 +209,7 @@ export function ListPage() {
                 </div>
             )
         },
+        
         {
             name: "Acciones",
             center: true,

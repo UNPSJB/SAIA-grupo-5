@@ -156,49 +156,49 @@ export function Nav() {
                         "--bs-nav-link-hover-color": "#fff"
                     } as React.CSSProperties}
                 >
-                    <BSNav.Link as={NavLink} to="/" end>
-                        <i className="bi bi-house-door me-2"></i>
+                    <BSNav.Link as={NavLink} to="/" end onClick={() => setMostrarMenu(false)}>
+                        <i className="bi bi-house-door me-2" ></i>
                         Home
                     </BSNav.Link>
-                    <BSNav.Link as={NavLink} to="/insumos">
+                    <BSNav.Link as={NavLink} to="/insumos" onClick={() => setMostrarMenu(false)}>
                         <i className="bi bi-box-seam me-2"></i>
                         Insumos
                     </BSNav.Link>
-                    <BSNav.Link as={NavLink} to="/insumos-quimicos">
+                    <BSNav.Link as={NavLink} to="/insumos-quimicos" onClick={() => setMostrarMenu(false)}>
                         <i className="bi bi-droplet me-2"></i>
                         Insumos Quimicos
                     </BSNav.Link>
 
-                    <BSNav.Link as={NavLink} to="/tipos-quimicos">
+                    <BSNav.Link as={NavLink} to="/tipos-quimicos" onClick={() => setMostrarMenu(false)}>
                         <i className="bi bi-flask me-2"></i>
                         Tipos de Quimicos
                     </BSNav.Link>
-                    <BSNav.Link as={NavLink} to="/equipos">
+                    <BSNav.Link as={NavLink} to="/equipos" onClick={() => setMostrarMenu(false)}>
                         <i className="bi bi-tools me-2"></i>
                         Equipos
                     </BSNav.Link>
-                    <BSNav.Link as={NavLink} to="/sectores">
+                    <BSNav.Link as={NavLink} to="/sectores" onClick={() => setMostrarMenu(false)}>
                         <i className="bi bi-geo-alt me-2"></i>
                         Sectores
                     </BSNav.Link>
-                    <BSNav.Link as={NavLink} to="/checklist">
+                    <BSNav.Link as={NavLink} to="/checklist" onClick={() => setMostrarMenu(false)}>
                         <i className="bi bi-check2-square me-2"></i>
                         Checklist
                     </BSNav.Link>
-                    <BSNav.Link as={NavLink} to="/superficies">
+                    <BSNav.Link as={NavLink} to="/superficies" onClick={() => setMostrarMenu(false)}>
                         <i className="bi bi-virus2 me-2"></i>
                         Superficies
                     </BSNav.Link>
-                    <BSNav.Link as={NavLink} to="/planes-limpieza">
+                    <BSNav.Link as={NavLink} to="/planes-limpieza" onClick={() => setMostrarMenu(false)}>
                         <i className="bi bi-clipboard-check me-2"></i>
                         Planes de Limpieza
                     </BSNav.Link>
-                    <BSNav.Link as={NavLink} to="/tareas">
+                    <BSNav.Link as={NavLink} to="/tareas" onClick={() => setMostrarMenu(false)}>
                         <i className="bi bi-list-check me-2"></i>
                         Tareas
                     </BSNav.Link>
                     {currentUser?.administrar && (
-                        <BSNav.Link as={NavLink} to="/personal">
+                        <BSNav.Link as={NavLink} to="/personal" onClick={() => setMostrarMenu(false)}>
                             <i className="bi bi-people me-2"></i>
                             Personal
                         </BSNav.Link>
