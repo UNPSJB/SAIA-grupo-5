@@ -28,10 +28,20 @@ import { NuevoPlanLimpiezaPage } from './feature/PlanesLimpieza/pages/NuevoPlanL
 import { EditarPlanLimpiezaPage } from './feature/PlanesLimpieza/pages/EditarPlanLimpiezaPage.tsx';
 
 import { TareasPage } from './feature/Tareas/pages/ListPage.tsx';
+import { ListPage as InsumoQuimicoListPage } from './feature/InsumosQuimicos/pages/ListPage.tsx'
+import { NuevoInsumoQuimicoPage } from './feature/InsumosQuimicos/pages/NuevoInsumoQuimicoPage.tsx'
+import { EditarInsumoQuimicoPage } from './feature/InsumosQuimicos/pages/EditarInsumoQuimicoPage.tsx'
+import { VerInsumoQuimicoPage } from './feature/InsumosQuimicos/pages/VerInsumoQuimicoPage.tsx'
+
+import { ListPage as TipoQuimicoListPage } from './feature/TiposQuimicos/pages/ListPage.tsx'
+import { NuevoTipoQuimicoPage } from './feature/TiposQuimicos/pages/NuevoTipoQuimicoPage.tsx'
+import { EditarTipoQuimicoPage } from './feature/TiposQuimicos/pages/EditarTipoQuimicoPage.tsx'
+import { VerTipoQuimicoPage } from './feature/TiposQuimicos/pages/VerTipoQuimicoPage.tsx'
 
 import { Login, NoAutorizado } from './feature/auth'
 import AuthLayout from './layouts/AuthLayout.tsx'
 import { ProtectedRoute } from './components/ProtectedRoute.tsx'
+
 import App from './App.tsx'
 
 
@@ -82,6 +92,34 @@ const router = createBrowserRouter([
                 children: [
                   { path: 'new', element: <NuevoInsumoPage /> },
                   { path: ':id/edit', element: <EditarInsumoPage /> },
+                ],
+              },
+            ],
+          },
+          {
+            path: 'insumos-quimicos',
+            children: [
+              { index: true, element: <InsumoQuimicoListPage /> },
+              { path: ':id', element: <VerInsumoQuimicoPage /> },
+              {
+                element: <ProtectedRoute requireAdmin />,
+                children: [
+                  { path: 'new', element: <NuevoInsumoQuimicoPage /> },
+                  { path: ':id/edit', element: <EditarInsumoQuimicoPage /> },
+                ],
+              },
+            ],
+          },
+          {
+            path: 'tipos-quimicos',
+            children: [
+              { index: true, element: <TipoQuimicoListPage /> },
+              { path: ':id', element: <VerTipoQuimicoPage /> },
+              {
+                element: <ProtectedRoute requireAdmin />,
+                children: [
+                  { path: 'new', element: <NuevoTipoQuimicoPage /> },
+                  { path: ':id/edit', element: <EditarTipoQuimicoPage /> },
                 ],
               },
             ],

@@ -31,6 +31,9 @@ from src.plan_limpieza.router import router as plan_limpieza_router
 from src.tarea.router import router as tarea_router
 from src.tareas_ocurrencia.router import router as tareas_ocurrencia_router
 from src.superficies.router import router as superficies_router
+from src.insumo_quimico.router import router as insumo_quimico_router
+from src.tipo_quimico.router import router as tipo_quimico_router
+
 from fastapi.middleware.cors import CORSMiddleware
 
 setup_logging()
@@ -64,3 +67,5 @@ app.include_router(tarea_router)
 app.include_router(tareas_ocurrencia_router)
 app.include_router(superficies_router)
 
+app.include_router(insumo_quimico_router)
+app.include_router(tipo_quimico_router)
