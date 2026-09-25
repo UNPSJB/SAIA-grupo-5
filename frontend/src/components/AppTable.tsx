@@ -1,4 +1,4 @@
-import DataTable, { type ColumnGroup, type TableColumn } from 'react-data-table-component';
+import DataTable, { type ColumnGroup, type ConditionalStyles, type TableColumn } from 'react-data-table-component';
 
 const customStyles = {
     headCells: {
@@ -13,15 +13,17 @@ interface AppTableProps<T> {
     data: T[];
     columnGroups?: ColumnGroup[];
     onColumnGroupOrderChange?: (nextGroups: ColumnGroup[], nextColumns: TableColumn<T>[]) => void;
+    conditionalRowStyles?: ConditionalStyles<T>[];
 }
 
-export function AppTable<T>({ columns, data, columnGroups, onColumnGroupOrderChange }: AppTableProps<T>) {
+export function AppTable<T>({ columns, data, columnGroups, onColumnGroupOrderChange, conditionalRowStyles }: AppTableProps<T>) {
     return (
         <DataTable
             columns={columns}
             data={data}
             columnGroups={columnGroups}
             onColumnGroupOrderChange={onColumnGroupOrderChange}
+            conditionalRowStyles={conditionalRowStyles}
             pagination
             noDataComponent={<div className="p-4 text-muted">No se encontraron resultados.</div>}
             paginationComponentOptions={{
