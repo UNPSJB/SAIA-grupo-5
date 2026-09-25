@@ -55,10 +55,20 @@ export function Nav() {
                         <i className="bi bi-box-seam me-2"></i>
                         Insumos
                     </BSNav.Link>
+                    <BSNav.Link as={NavLink} to="/insumos-quimicos">
+                        <i className="bi bi-droplet me-2"></i>
+                        Insumos Quimicos
+                    </BSNav.Link>
+
+                    <BSNav.Link as={NavLink} to="/tipos-quimicos">
+                        <i className="bi bi-flask me-2"></i>
+                        Tipos de Quimicos
+                    </BSNav.Link>
                     <BSNav.Link as={NavLink} to="/equipos">
                         <i className="bi bi-tools me-2"></i>
                         Equipos
                     </BSNav.Link>
+
                     <BSNav.Link as={NavLink} to="/consumos_productos" end>
                         <i className="bi bi-droplet-half me-2"></i>
                         Consumo de Insumo 
@@ -68,6 +78,24 @@ export function Nav() {
                         Consulta de Consumo
                     </BSNav.Link>
                     {/* Módulo de Personal solo visible para usuarios con permiso de administrar */}
+
+                    <BSNav.Link as={NavLink} to="/sectores">
+                        <i className="bi bi-geo-alt me-2"></i>
+                        Sectores
+                    </BSNav.Link>
+                    <BSNav.Link as={NavLink} to="/superficies">
+                        <i className="bi bi-virus2 me-2"></i>
+                        Superficies
+                    </BSNav.Link>
+                    <BSNav.Link as={NavLink} to="/planes-limpieza">
+                        <i className="bi bi-clipboard-check me-2"></i>
+                        Planes de Limpieza
+                    </BSNav.Link>
+                    <BSNav.Link as={NavLink} to="/tareas">
+                        <i className="bi bi-list-check me-2"></i>
+                        Tareas
+                    </BSNav.Link>
+
                     {currentUser?.administrar && (
                         <BSNav.Link as={NavLink} to="/personal">
                             <i className="bi bi-people me-2"></i>
