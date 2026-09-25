@@ -153,19 +153,10 @@ const router = createBrowserRouter([
           { path: 'tareas', element: <TareasPage /> },
           { path: '*', element: <Page404 /> },
           {
-            path: 'checklist', element: <ChecklistListPage /> 
+            path: 'checklist', element: <ChecklistListPage />
           }
         ],
       },
-      {
-        path: 'personal',
-        children: [
-          { index: true, element: <PersonalListPage /> },
-          { path: 'new', element: <NuevaPersonaPage /> },
-          { path: ':id/edit', element: <EditarPersonaPage /> },
-        ],
-      },
-,
       { path: '*', element: <Page404 /> },
 
     ],
