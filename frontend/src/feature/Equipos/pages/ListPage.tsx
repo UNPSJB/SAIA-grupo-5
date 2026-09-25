@@ -1,4 +1,4 @@
-import { useState, useMemo} from "react";
+import { useState, useMemo } from "react";
 import { mutate } from 'swr';
 import { Alert, Button, Col, Container, Form, Row, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
@@ -7,16 +7,18 @@ import { type TableColumn } from 'react-data-table-component';
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
 import { useApi } from '../../../hooks/useApi';
+import { useAuth } from '../../../hooks/useAuth';
 
- import { DeleteEquipoModal } from '../components/DeleteEquipoModal'; 
+import { DeleteEquipoModal } from '../components/DeleteEquipoModal';
 import type { Equipo } from "../types";
 
 export function EquiposPage() {
     const navigate = useNavigate();
+    const { currentUser } = useAuth();
     const [search, setSearch] = useState('');
-    const { data: equipos, error, isLoading } = useApi<Equipo[]>("/equipos")
+    const { data: equipos, error, isLoading } = useApi<Equipo[]>("/equipos");
     const [equipoToDelete, setEquipoToDelete] = useState<Equipo | null>(null);
-    
+
     const filteredInsumos = useMemo(() => {
         if (!Array.isArray(equipos)) return [];
         return (equipos ?? []).filter((equipo) => {
@@ -27,17 +29,17 @@ export function EquiposPage() {
             );
         });
     }, [search, equipos]);
-    
+
     const subHeaderComponentMemo = useMemo(() => {
         return (
             <Form.Control
                 type="text"
                 placeholder="Buscar equipo..."
-                className=" mr-sm-2"
+                className="mr-sm-2"
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
             />
         );
-    }, [search]);
+    }, []);
 
     if (isLoading) return (
         <>
@@ -46,7 +48,8 @@ export function EquiposPage() {
                 <span className="visually-hidden">Loading...</span>
             </Spinner>
         </>
-    )
+    );
+
     if (!equipos || error) return (
         <Container>
             <PageHeader title="Listado de Equipos" />
@@ -56,21 +59,13 @@ export function EquiposPage() {
                 </Col>
             </Row>
         </Container>
-    )
+    );
 
-    const columns: TableColumn<Equipo>[] = [
-        {
-            name: "ID",
-            selector: row => row.id,
-            sortable: true,
-            center: true,
-            maxWidth: "60px",
-        },
+    const baseColumns: TableColumn<Equipo>[] = [
         {
             name: "Nombre",
             selector: row => row.nombre,
             sortable: true,
-            center: true,
             grow: 2,
         },
         {
@@ -81,8 +76,8 @@ export function EquiposPage() {
             grow: 2,
         },
         {
-            name: "Ubicación",
-            selector: row => row.ubicacion,
+            name: "Sector",
+            selector: row => row.sector.nombre,
             sortable: true,
             center: true,
             grow: 2,
@@ -93,7 +88,7 @@ export function EquiposPage() {
             sortable: true,
             center: true,
             cell: row => (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10}}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div
                         style={{
                             padding: '4px 12px',
@@ -112,53 +107,61 @@ export function EquiposPage() {
                 </div>
             )
         },
-        {
-            name: "Acciones",
-            center: true,
-            minWidth: "220px",
-            cell: (row) => (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <Button
-                        variant="outline-primary"
-                        size="sm"
-                        onClick={() => navigate(`/equipos/${row.id}/edit`)}
-                    >
-                        <i className="bi bi-pencil me-1"></i>Editar
-                    </Button>
-
-                    {row.estado && (
-                    <Button
-                        variant="outline-danger"
-                        size="sm"
-                        onClick={() => setEquipoToDelete(row)}
-                    >
-                        <i className="bi bi-trash3 me-1"></i>Eliminar
-                    </Button>
-                    )}
-                </div>
-            )
-        },
     ];
+
+    const columns: TableColumn<Equipo>[] = currentUser?.administrar
+        ? [
+            ...baseColumns,
+            {
+                name: "Acciones",
+                center: true,
+                minWidth: "220px",
+                cell: (row) => (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <Button
+                            variant="outline-primary"
+                            size="sm"
+                            onClick={() => navigate(`/equipos/${row.id}/edit`)}
+                        >
+                            <i className="bi bi-pencil me-1"></i>Editar
+                        </Button>
+
+                        {row.estado && (
+                            <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={() => setEquipoToDelete(row)}
+                            >
+                                <i className="bi bi-trash3 me-1"></i>Eliminar
+                            </Button>
+                        )}
+                    </div>
+                )
+            }
+        ]
+        : baseColumns;
 
     return (
         <Container>
-            <Row className="p-2" align-items-center>
+            <Row className="p-2">
                 <Col>
                     <PageHeader title="Listado de Equipos" />
                 </Col>
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
                 </Col>
-                <Col xs="auto" className="d-flex justify-content-end">
-                    <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => navigate("/equipos/new")}     
-                        style={{whiteSpace: "nowrap"}}               
-                    >
-                        + Nuevo Equipo
-                    </Button>
-                </Col>
+                {currentUser?.administrar && (
+                    <Col xs="auto" className="d-flex justify-content-end">
+                        <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => navigate("/equipos/new")}     
+                            style={{whiteSpace: "nowrap"}}               
+                        >
+                            + Nuevo Equipo
+                        </Button>
+                    </Col>
+                )}
             </Row>
             <AppTable columns={columns} data={filteredInsumos} />
             <DeleteEquipoModal
@@ -166,7 +169,6 @@ export function EquiposPage() {
                 onHide={() => setEquipoToDelete(null)}
                 onDeleted={() => mutate("/equipos")}
             />
-            
         </Container>
     );
 }

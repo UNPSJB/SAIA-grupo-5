@@ -1,28 +1,37 @@
-import { Button, Form } from 'react-bootstrap';
+import { Alert, Button, Form } from 'react-bootstrap';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import type { Sector } from '../../Sectores/types';
+import { useApi } from '../../../hooks/useApi';
 
-interface EquipoFormProps{
+interface EquipoFormProps {
   textoBoton: string;
-  onSubmit: (datos: {nombre: string; categoria: string; ubicacion: string}) => void;
-  valoresIniciales? : {nombre: string; categoria: string; ubicacion: string}
+  onSubmit: (datos: { nombre: string; categoria: string; ubicacion: string; sector_id: number }) => void;
+  valoresIniciales?: { nombre: string; categoria: string; ubicacion: string; sector_id?: number }
 }
 
-export function EquipoForm({ textoBoton, onSubmit, valoresIniciales}: EquipoFormProps) {
+export function EquipoForm({ textoBoton, onSubmit, valoresIniciales }: EquipoFormProps) {
   const [validated, setValidated] = useState(false);
   const navigate = useNavigate();
+  const { data: sectores, error, isLoading } = useApi<Sector[]>("/sectores/")
 
   // Usamos useState y definimos que los valores pueden ser vacios por si se crea un nuevo equipo o que tengan un valor anterior para mostrarlos en caso de editar el insumo
   const [nombre, setNombre] = useState(valoresIniciales?.nombre || "");
   const [categoria, setCategoria] = useState(valoresIniciales?.categoria || "");
   const [ubicacion, setUbicacion] = useState(valoresIniciales?.ubicacion || "");
+  const [sector, setSector] = useState(valoresIniciales?.sector_id?.toString() || "");
 
   // El handleSubmit se usa para que no actualice la pagina al apretar el boton y envia a la pagina que lo utilice los datos
-  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {  
+  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setValidated(true);
-    if (!nombre.trim()) return;
-    onSubmit({nombre: nombre.trim(), categoria, ubicacion});
+    if (!nombre.trim() || !sector) return;
+    onSubmit({
+      nombre: nombre.trim(),
+      categoria,
+      ubicacion,
+      sector_id: Number(sector),
+    });
   }
 
   return (
@@ -48,7 +57,7 @@ export function EquipoForm({ textoBoton, onSubmit, valoresIniciales}: EquipoForm
             required
             type="text"
             placeholder="Ingrese la categoria"
-            value={categoria} onChange={(e) => setCategoria(e.target.value)}/>
+            value={categoria} onChange={(e) => setCategoria(e.target.value)} />
         </Form.Group>
 
         <Form.Group className="mb-3 text-start" controlId="formUbicacion">
@@ -57,17 +66,43 @@ export function EquipoForm({ textoBoton, onSubmit, valoresIniciales}: EquipoForm
             required
             type="text"
             placeholder="Ingrese la ubicacion"
-            value={ubicacion} onChange={(e) => setUbicacion(e.target.value)}/>
+            value={ubicacion} onChange={(e) => setUbicacion(e.target.value)} />
         </Form.Group>
-        
+
+        <Form.Group className="mb-3 text-start" controlId="formSector">
+          <Form.Label className="p-1 fw-bold">Sector *</Form.Label>
+          <Form.Select
+            required
+            value={sector}
+            onChange={(e) => setSector(e.target.value)}
+            disabled={isLoading}
+            isInvalid={validated && !sector}
+          >
+            <option value="">Seleccione un sector</option>
+            {(sectores ?? []).map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.nombre}
+              </option>
+            ))}
+          </Form.Select>
+          <Form.Control.Feedback type="invalid">
+            El sector del equipo es obligatorio.
+          </Form.Control.Feedback>
+          {error && (
+            <Alert variant="danger" className="mt-2 mb-0 py-2">
+              No se pudieron cargar los sectores.
+            </Alert>
+          )}
+        </Form.Group>
+
         <Button variant="secondary" type="button"
           onClick={() => navigate('/equipos')}>
-            <i className="bi bi-x-circle me-1"></i>Cancelar
+          <i className="bi bi-x-circle me-1"></i>Cancelar
         </Button>
         <Button className="ms-2" variant="primary" type="submit">
           <i className="bi bi-floppy me-1"></i> {textoBoton}
         </Button>
-        
+
       </Form>
     </div>
   );
