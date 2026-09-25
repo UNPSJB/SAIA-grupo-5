@@ -32,3 +32,7 @@ def delete_tarea(tarea_id: int, db: Session = Depends(get_db)):
 @router.put("/{tarea_id}", response_model=schemas.Tarea)
 def update_tarea(tarea_id: int, tarea: schemas.TareaUpdate, db: Session = Depends(get_db)):
     return services.modificar_tarea(db, tarea_id, tarea)
+
+@router.put("/{tarea_id}/estado", response_model=schemas.Tarea)
+def change_tarea_status(tarea_id: int, db: Session = Depends(get_db)):
+    return services.cambiar_estado_tarea(db, tarea_id)

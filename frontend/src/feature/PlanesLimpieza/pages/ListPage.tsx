@@ -8,6 +8,7 @@ import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
+import { api } from '../../../libs/axios';
 
 import { DeletePlanLimpiezaModal } from '../components/DeletePlanLimpiezaModal';
 import { VerDescripcionModal } from '../components/VerDescripcionModal';
@@ -20,6 +21,17 @@ export function PlanesLimpiezaPage() {
     const { data: planes, error, isLoading } = useApi<PlanLimpieza[]>("/planes-limpieza/")
     const [planToDelete, setPlanToDelete] = useState<PlanLimpieza | null>(null);
     const [planDescripcion, setPlanDescripcion] = useState<PlanLimpieza | null>(null);
+
+    const cambiarEstado = async (plan: PlanLimpieza) => {
+        try {
+            await api.put(`/planes-limpieza/${plan.id}/estado`);
+            await mutate("/planes-limpieza/");
+        } catch (err: any) {
+            const detail = err.response?.data?.detail || `No se pudo ${plan.activo ? 'dar de baja' : 'dar de alta'} el plan de limpieza.`;
+            alert(detail);
+            console.log(err);
+        }
+    };
 
     const encabezadoTareas = (label: string) => (
         <div className="text-center lh-sm">
@@ -145,17 +157,26 @@ export function PlanesLimpiezaPage() {
                         <Button
                             variant="outline-primary"
                             size="sm"
+                            disabled={!row.activo}
                             onClick={() => navigate(`/planes-limpieza/${row.id}/edit`)}
                         >
                             <i className="bi bi-pencil me-1"></i>Editar
                         </Button>
-                        {row.activo && (
+                        {row.activo ? (
                             <Button
                                 variant="outline-danger"
                                 size="sm"
                                 onClick={() => setPlanToDelete(row)}
                             >
                                 <i className="bi bi-trash3 me-1"></i>Eliminar
+                            </Button>
+                        ) : (
+                            <Button
+                                variant="outline-success"
+                                size="sm"
+                                onClick={() => cambiarEstado(row)}
+                            >
+                                <i className="bi bi-person-check me-1"></i>Dar de alta
                             </Button>
                         )}
                     </div>

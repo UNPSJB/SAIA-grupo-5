@@ -5,6 +5,7 @@ import { mutate } from "swr";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 import { useAuth } from "../../../hooks/useAuth";
+import { api } from "../../../libs/axios";
 import type { PlanLimpieza } from "../../PlanesLimpieza/types";
 import { DeleteTareaModal } from "../components/DeleteTareaModal";
 import { TareaDetalleModal } from "../components/TareaDetalleModal";
@@ -50,13 +51,22 @@ export function TareasPage() {
 
     const tareasPorFrecuencia = useMemo(() => {
         const agrupadas: Record<number, Tarea[]> = {};
-        (tareas ?? [])
-            .filter((tarea) => tarea.activo)
-            .forEach((tarea) => {
-                (agrupadas[tarea.frecuencia] ??= []).push(tarea);
-            });
+        (tareas ?? []).forEach((tarea) => {
+            (agrupadas[tarea.frecuencia] ??= []).push(tarea);
+        });
         return agrupadas;
     }, [tareas]);
+
+    const cambiarEstado = async (tarea: Tarea) => {
+        try {
+            await api.put(`/tareas/${tarea.id}/estado`);
+            if (tareasKey) await mutate(tareasKey);
+        } catch (err: any) {
+            const detail = err.response?.data?.detail || `No se pudo ${tarea.activo ? 'dar de baja' : 'dar de alta'} la tarea.`;
+            alert(detail);
+            console.log(err);
+        }
+    };
 
     return (
         <Container>
@@ -73,11 +83,13 @@ export function TareasPage() {
                     disabled={isLoadingPlanes}
                 >
                     <option value="">Seleccioná un plan de limpieza...</option>
-                    {(planes ?? []).map((plan) => (
-                        <option key={plan.id} value={plan.id}>
-                            {plan.nombre}
-                        </option>
-                    ))}
+                    {(planes ?? [])
+                        .filter((plan) => plan && plan.activo === true)
+                        .map((plan) => (
+                            <option key={plan.id} value={plan.id}>
+                                {plan.nombre}
+                            </option>
+                        ))}
                 </Form.Select>
                 {errorPlanes && (
                     <Alert variant="danger" className="mt-2 mb-0 py-2">
@@ -169,9 +181,14 @@ export function TareasPage() {
                                                         </Card.Body>
                                                         <Card.Footer className="bg-transparent border-top-0 py-2 d-flex justify-content-between align-items-center">
                                                             <small className="text-muted">{getRelacionTipoLabel(tarea)}</small>
-                                                            <Badge bg={PRIORIDAD_VARIANTS[tarea.prioridad]}>
-                                                                {PRIORIDAD_LABELS[tarea.prioridad]}
-                                                            </Badge>
+                                                            <div className="d-flex gap-2">
+                                                                {!tarea.activo && (
+                                                                    <Badge bg="danger">Inactiva</Badge>
+                                                                )}
+                                                                <Badge bg={PRIORIDAD_VARIANTS[tarea.prioridad]}>
+                                                                    {PRIORIDAD_LABELS[tarea.prioridad]}
+                                                                </Badge>
+                                                            </div>
                                                         </Card.Footer>
                                                     </Card>
                                                 </Col>
@@ -196,6 +213,10 @@ export function TareasPage() {
                 }}
                 onEliminar={() => {
                     setTareaToDelete(tareaSeleccionada);
+                    setTareaSeleccionada(null);
+                }}
+                onCambiarEstado={() => {
+                    if (tareaSeleccionada) cambiarEstado(tareaSeleccionada);
                     setTareaSeleccionada(null);
                 }}
             />

@@ -37,7 +37,7 @@ def modificar_plan_limpieza(db: Session, plan_id: int, plan: schemas.PlanLimpiez
 def eliminar_plan_limpieza(db: Session, plan_id: int) -> schemas.PlanLimpiezaDelete:
     db_plan = leer_plan_limpieza(db, plan_id)
     try:
-        if db_plan.tareas:
+        if any(tarea.activo for tarea in db_plan.tareas):
             raise exceptions.PlanLimpiezaEnUso()
         db_plan.activo = False
         db.commit()
@@ -45,4 +45,11 @@ def eliminar_plan_limpieza(db: Session, plan_id: int) -> schemas.PlanLimpiezaDel
     except IntegrityError:
         db.rollback()
         raise exceptions.PlanLimpiezaEnUso()
+    return db_plan
+
+def cambiar_estado_plan_limpieza(db: Session, plan_id: int) -> schemas.PlanLimpieza:
+    db_plan = leer_plan_limpieza(db, plan_id)
+    db_plan.activo = not db_plan.activo
+    db.commit()
+    db.refresh(db_plan)
     return db_plan

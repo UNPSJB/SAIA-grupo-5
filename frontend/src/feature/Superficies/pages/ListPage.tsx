@@ -8,6 +8,7 @@ import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
+import { api } from '../../../libs/axios';
 
 import { DeleteSuperficieModal } from '../components/DeleteSuperficieModal';
 import { VerSectoresModal } from '../components/VerSectoresModal';
@@ -41,6 +42,17 @@ export function SuperficiesPage() {
             />
         );
     }, [search]);
+
+    const cambiarEstado = async (superficie: Superficie) => {
+        try {
+            await api.put(`/superficies/${superficie.id}/estado`);
+            await mutate("/superficies/");
+        } catch (err: any) {
+            const detail = err.response?.data?.detail || `No se pudo ${superficie.activo ? 'dar de baja' : 'dar de alta'} la superficie.`;
+            alert(detail);
+            console.log(err);
+        }
+    };
 
     if (isLoading) return (
         <>
@@ -129,17 +141,26 @@ export function SuperficiesPage() {
                         <Button
                             variant="outline-primary"
                             size="sm"
+                            disabled={!row.activo}
                             onClick={() => navigate(`/superficies/${row.id}/edit`)}
                         >
                             <i className="bi bi-pencil me-1"></i>Editar
                         </Button>
-                        {row.activo && (
+                        {row.activo ? (
                             <Button
                                 variant="outline-danger"
                                 size="sm"
                                 onClick={() => setSuperficieToDelete(row)}
                             >
                                 <i className="bi bi-trash3 me-1"></i>Eliminar
+                            </Button>
+                        ) : (
+                            <Button
+                                variant="outline-success"
+                                size="sm"
+                                onClick={() => cambiarEstado(row)}
+                            >
+                                <i className="bi bi-person-check me-1"></i>Dar de alta
                             </Button>
                         )}
                     </div>

@@ -92,3 +92,10 @@ def eliminar_tarea(db: Session, tarea_id: int) -> schemas.TareaDelete:
     db.commit()
     db.refresh(db_tarea)
     return db_tarea
+
+def cambiar_estado_tarea(db: Session, tarea_id: int) -> schemas.Tarea:
+    db_tarea = leer_tarea(db, tarea_id)
+    db_tarea.activo = not db_tarea.activo
+    db.commit()
+    db.refresh(db_tarea)
+    return db_tarea

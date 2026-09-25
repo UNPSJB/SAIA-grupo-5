@@ -53,6 +53,13 @@ def eliminar_superficie(db: Session, superficie_id: int) -> schemas.SuperficieDe
     db.refresh(db_superficie)
     return db_superficie
 
+def cambiar_estado_superficie(db: Session, superficie_id: int) -> schemas.Superficie:
+    db_superficie = leer_superficie(db, superficie_id)
+    db_superficie.activo = not db_superficie.activo
+    db.commit()
+    db.refresh(db_superficie)
+    return db_superficie
+
 def modificar_superficie(db: Session, superficie_id: int, superficie: schemas.SuperficieUpdate) -> schemas.Superficie:
     db_superficie = leer_superficie(db, superficie_id)
     db_superficie.nombre = superficie.nombre

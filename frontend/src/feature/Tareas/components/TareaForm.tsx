@@ -69,10 +69,13 @@ export function TareaForm({ textoBoton, planNombre, onSubmit, onCancel, valoresI
     setProcedimiento((prev) => prev.filter((_, i) => i !== indice));
   };
 
+  const PROCEDIMIENTO_MINIMO = 2;
+  const procedimientoValido = procedimiento.length >= PROCEDIMIENTO_MINIMO;
+
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setValidated(true);
-    if (!nombre.trim() || !relacionId) return;
+    if (!nombre.trim() || !relacionId || !procedimientoValido) return;
     onSubmit({
       nombre: nombre.trim(),
       descripcion: descripcion.trim() ? descripcion.trim() : null,
@@ -80,7 +83,7 @@ export function TareaForm({ textoBoton, planNombre, onSubmit, onCancel, valoresI
       prioridad,
       foto_obligatoria: fotoObligatoria,
       accion_correctiva: accionCorrectiva.trim() ? accionCorrectiva.trim() : null,
-      procedimiento: procedimiento.length > 0 ? procedimiento : null,
+      procedimiento,
       relacion_tipo: relacionTipo,
       relacion_id: Number(relacionId),
     });
@@ -220,7 +223,10 @@ export function TareaForm({ textoBoton, planNombre, onSubmit, onCancel, valoresI
       </Row>
 
       <Form.Group className="mb-3 text-start" controlId="formTareaProcedimiento">
-        <Form.Label className="p-1 fw-bold">Procedimiento</Form.Label>
+        <Form.Label className="p-1 fw-bold">Procedimiento *</Form.Label>
+        <Form.Text className="d-block mb-2 text-muted">
+          Ingresá al menos {PROCEDIMIENTO_MINIMO} pasos.
+        </Form.Text>
 
         <InputGroup className="mb-2">
           <Form.Control
@@ -253,6 +259,12 @@ export function TareaForm({ textoBoton, planNombre, onSubmit, onCancel, valoresI
             </Button>
           </InputGroup>
         ))}
+
+        {validated && !procedimientoValido && (
+          <div className="text-danger small mt-1">
+            El procedimiento debe tener al menos {PROCEDIMIENTO_MINIMO} pasos (tiene {procedimiento.length}).
+          </div>
+        )}
       </Form.Group>
 
       <Button variant="secondary" type="button" onClick={onCancel}>

@@ -42,3 +42,7 @@ def delete_sector(sector_id: int, db: Session = Depends(get_db)):
 @router.put("/{sector_id}", response_model=schemas.Sector)
 def update_sector(sector_id: int, sector: schemas.SectorUpdate, db: Session = Depends(get_db)):
     return services.modificar_sector(db, sector_id, sector)
+
+@router.put("/{sector_id}/estado", response_model=schemas.Sector)
+def change_sector_status(sector_id: int, db: Session = Depends(get_db)):
+    return services.cambiar_estado_sector(db, sector_id)

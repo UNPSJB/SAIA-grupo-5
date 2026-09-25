@@ -8,9 +8,10 @@ interface TareaDetalleModalProps {
     onHide: () => void;
     onEditar: () => void;
     onEliminar: () => void;
+    onCambiarEstado: () => void;
 }
 
-export function TareaDetalleModal({ tarea, onHide, onEditar, onEliminar }: TareaDetalleModalProps) {
+export function TareaDetalleModal({ tarea, onHide, onEditar, onEliminar, onCambiarEstado }: TareaDetalleModalProps) {
     const { currentUser } = useAuth();
 
     return (
@@ -64,9 +65,15 @@ export function TareaDetalleModal({ tarea, onHide, onEditar, onEliminar }: Tarea
             </Modal.Body>
             {currentUser?.administrar && (
                 <Modal.Footer>
-                    <Button variant="outline-danger" onClick={onEliminar}>
-                        <i className="bi bi-trash3 me-1"></i>Eliminar tarea
-                    </Button>
+                    {tarea?.activo ? (
+                        <Button variant="outline-danger" onClick={onEliminar}>
+                            <i className="bi bi-trash3 me-1"></i>Eliminar tarea
+                        </Button>
+                    ) : (
+                        <Button variant="outline-success" onClick={onCambiarEstado}>
+                            <i className="bi bi-person-check me-1"></i>Dar de alta
+                        </Button>
+                    )}
                     <Button variant="outline-primary" onClick={onEditar}>
                         <i className="bi bi-pencil me-1"></i>Editar tarea
                     </Button>

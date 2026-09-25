@@ -56,6 +56,13 @@ def eliminar_sector(db: Session, sector_id: int) -> schemas.SectorDelete:
     db.refresh(db_sector)
     return db_sector
 
+def cambiar_estado_sector(db: Session, sector_id: int) -> schemas.Sector:
+    db_sector = leer_sector(db, sector_id)
+    db_sector.activo = not db_sector.activo
+    db.commit()
+    db.refresh(db_sector)
+    return db_sector
+
 def modificar_sector(db: Session, sector_id: int, sector: schemas.SectorUpdate) -> schemas.Sector:  
     db_sector = leer_sector(db, sector_id)
     db.execute(update(Sector).where(Sector.id == sector_id).values(**sector.model_dump()))

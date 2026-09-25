@@ -8,6 +8,7 @@ import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
+import { api } from '../../../libs/axios';
 
 import { DeleteSectorModal } from '../components/DeleteSectorModal';
 import { EquiposDeSectorModal } from '../components/EquiposDeSectorModal';
@@ -41,6 +42,17 @@ export function ListPage() {
             />
         );
     }, [search]);
+
+    const cambiarEstado = async (sector: Sector) => {
+        try {
+            await api.put(`/sectores/${sector.id}/estado`);
+            await mutate("/sectores/");
+        } catch (err: any) {
+            const detail = err.response?.data?.detail || `No se pudo ${sector.activo ? 'dar de baja' : 'dar de alta'} el sector.`;
+            alert(detail);
+            console.log(err);
+        }
+    };
 
     if (isLoading) return (
         <>
@@ -144,17 +156,26 @@ export function ListPage() {
                         <Button
                             variant="outline-primary"
                             size="sm"
+                            disabled={!row.activo}
                             onClick={() => navigate(`/sectores/${row.id}/edit`)}
                         >
                             <i className="bi bi-pencil me-1"></i>Editar
                         </Button>
-                        {(row.activo &&
+                        {row.activo ? (
                             <Button
                                 variant="outline-danger"
                                 size="sm"
                                 onClick={() => setSectorToDelete(row)}
                             >
                                 <i className="bi bi-trash3 me-1"></i>Eliminar
+                            </Button>
+                        ) : (
+                            <Button
+                                variant="outline-success"
+                                size="sm"
+                                onClick={() => cambiarEstado(row)}
+                            >
+                                <i className="bi bi-person-check me-1"></i>Dar de alta
                             </Button>
                         )}
                     </div>

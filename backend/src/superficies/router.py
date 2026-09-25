@@ -31,3 +31,7 @@ def delete_superficie(superficie_id: int, db: Session = Depends(get_db)):
 @router.put("/{superficie_id}", response_model=schemas.Superficie)
 def update_superficie(superficie_id: int, superficie: schemas.SuperficieUpdate, db: Session = Depends(get_db)):
     return services.modificar_superficie(db, superficie_id, superficie)
+
+@router.put("/{superficie_id}/estado", response_model=schemas.Superficie)
+def change_superficie_status(superficie_id: int, db: Session = Depends(get_db)):
+    return services.cambiar_estado_superficie(db, superficie_id)

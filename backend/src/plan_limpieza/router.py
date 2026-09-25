@@ -38,6 +38,10 @@ def delete_plan_limpieza(plan_limpieza_id: int, db: Session = Depends(get_db)):
 def update_plan_limpieza(plan_limpieza_id: int, plan: schemas.PlanLimpiezaUpdate, db: Session = Depends(get_db)):
     return services.modificar_plan_limpieza(db, plan_limpieza_id, plan)
 
+@router.put("/{plan_limpieza_id}/estado", response_model=schemas.PlanLimpieza)
+def change_plan_limpieza_status(plan_limpieza_id: int, db: Session = Depends(get_db)):
+    return services.cambiar_estado_plan_limpieza(db, plan_limpieza_id)
+
 @router.get("/{plan_limpieza_id}/checklist", response_model=list[ocurrencia_schemas.TareaOcurrencia])
 def read_checklist(plan_limpieza_id: int, fecha: date | None = Query(None), db: Session = Depends(get_db)):
     return obtener_checklist(db, plan_limpieza_id, fecha)
