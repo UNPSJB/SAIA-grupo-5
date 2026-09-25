@@ -34,11 +34,7 @@ import AuthLayout from './layouts/AuthLayout.tsx'
 import { ProtectedRoute } from './components/ProtectedRoute.tsx'
 import App from './App.tsx'
 
-// Todas las páginas reales cuelgan de un único árbol: AuthLayout (gate de
-// autenticación) -> App (Nav + layout) -> children. Antes había ramas
-// duplicadas colgando directo de AuthLayout sin pasar por App, así que esas
-// páginas (Sectores, Superficies, Planes de Limpieza, Tareas, y una copia
-// vieja de Equipos/Personal) se veían sin el sidebar.
+
 const router = createBrowserRouter([
   {
     path: '/iniciar-sesion',
