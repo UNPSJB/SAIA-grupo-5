@@ -19,10 +19,13 @@ export function DeleteInsumoQuimicoModal({ insumoQuimico, onHide, onDeleted }: D
             await api.patch<InsumoQuimico>(`/insumos-quimicos/${insumoQuimico.id}/estado`);
             mostrarAlertaExito(`El insumo químico '${insumoQuimico.nombre}' se dio de ${estabaActivo ? 'baja' : 'alta'} correctamente.`);
             onDeleted();
-            onHide();
         } catch (error: any){
-            mostrarAlertaError(`No se pudo ${estabaActivo ? 'dar de baja' : 'dar de alta'} el insumo químico '${insumoQuimico.nombre}'.`);
+            const mensajeBackend = error.response?.data?.detail;
+            const mensajeFinal = mensajeBackend || `No se pudo ${estabaActivo ? 'dar de baja' : 'dar de alta'} el insumo químico '${insumoQuimico.nombre}'.`;
+            mostrarAlertaError(mensajeFinal);
             console.log(error);
+        } finally{
+            onHide();
         }
     };
 

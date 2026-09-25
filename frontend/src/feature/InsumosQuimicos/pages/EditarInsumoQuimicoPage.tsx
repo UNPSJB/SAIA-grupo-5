@@ -75,7 +75,8 @@ export function EditarInsumoQuimicoPage(){
                     onSubmit={actualizarInsumoQuimico}
                     valoresIniciales={{ nombre: insumoQuimico.nombre, 
                     unidad_medida: insumoQuimico.unidad_medida, 
-                    tipo_quimico_id: insumoQuimico.tipo?.id || insumoQuimico.tipo_quimico_id}}/>
+                    tipo_quimico_id: insumoQuimico.tipo?.id || insumoQuimico.tipo_quimico_id,
+                    dilucion: insumoQuimico.dilucion}}/>
             </Container>
         </>
     )

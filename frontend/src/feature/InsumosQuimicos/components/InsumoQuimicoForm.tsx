@@ -46,7 +46,7 @@ export function InsumoQuimicoForm({ textoBoton, onSubmit, valoresIniciales }: In
         <Form onSubmit={handleSubmit(onSubmitHookForm)} className="p-4 border rounded bg-white shadow-sm mt-3" noValidate>
         
             <Form.Group className="mb-3 text-start" controlId="formNombre">
-                <Form.Label className="p-1 fw-bold">Nombre del Insumo Químico</Form.Label>
+                <Form.Label className="p-1 fw-bold">Nombre del Insumo Químico *</Form.Label>
                 <Form.Control
                     type="text"
                     placeholder="Ingrese el nombre"
@@ -69,8 +69,26 @@ export function InsumoQuimicoForm({ textoBoton, onSubmit, valoresIniciales }: In
                 </Form.Control.Feedback>
             </Form.Group>
 
+            <Form.Group className="mb-3 text-start" controlId="formTipoQuimicoID">
+                <Form.Label className="p-1 fw-bold">Tipo de Químico *</Form.Label>
+                <Form.Select
+                    {...register("tipo_quimico_id", {
+                    required: "El tipo de químico es obligatorio."
+                    })}
+                    isInvalid={!!errors.tipo_quimico_id}
+                >
+                    <option value="" disabled> Seleccione un tipo de químico</option>
+                    {isLoading && <option disabled> Cargando tipos de químicos...</option>}
+                    {tiposQuimicos?.filter(tipo => tipo.activo).map((tipo) => (
+                        <option key={tipo.id} value={tipo.id}>
+                            {tipo.nombre}
+                        </option>
+                    ))}
+                </Form.Select>
+            </Form.Group>
+
             <Form.Group className="mb-3 text-start" controlId="formUnidadMedida">
-                <Form.Label className="p-1 fw-bold">Unidad de medida</Form.Label>
+                <Form.Label className="p-1 fw-bold">Unidad de medida *</Form.Label>
                 <Form.Select
                     {...register("unidad_medida", {
                     required: "La unidad de medida es obligatoria."
@@ -89,26 +107,8 @@ export function InsumoQuimicoForm({ textoBoton, onSubmit, valoresIniciales }: In
                 </Form.Control.Feedback>
             </Form.Group>
 
-            <Form.Group className="mb-3 text-start" controlId="formTipoQuimicoID">
-                <Form.Label className="p-1 fw-bold">Tipo de Químico</Form.Label>
-                <Form.Select
-                    {...register("tipo_quimico_id", {
-                    required: "El tipo de químico es obligatorio."
-                    })}
-                    isInvalid={!!errors.tipo_quimico_id}
-                >
-                    <option value="" disabled> Seleccione un tipo de químico</option>
-                    {isLoading && <option disabled> Cargando tipos de químicos...</option>}
-                    {tiposQuimicos?.filter(tipo => tipo.activo).map((tipo) => (
-                        <option key={tipo.id} value={tipo.id}>
-                            {tipo.nombre}
-                        </option>
-                    ))}
-                </Form.Select>
-            </Form.Group>
-
             <Form.Group className="mb-3 text-start" controlId="formDilucion">
-                <Form.Label className="p-1 fw-bold">Dilucion</Form.Label>
+                <Form.Label className="p-1 fw-bold">Dilucion *</Form.Label>
                 <Form.Control
                     type="text"
                     placeholder="Ej: 1:10, Puro."

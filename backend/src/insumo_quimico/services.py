@@ -63,6 +63,12 @@ def cambiar_estado_insumo_quimico(db: Session, insumo_quimico_id: int) -> schema
     db_insumo_quimico = leer_insumo_quimico(db, insumo_quimico_id)
     if db_insumo_quimico is None:
         raise exceptions.InsumoQuimicoNoEncontrado()
+
+    if not db_insumo_quimico.activo:
+        tipo_quimico = db.scalars(select(TipoQuimico)
+                        .where(TipoQuimico.id == db_insumo_quimico.tipo_quimico_id)).first()
+        if not tipo_quimico or not tipo_quimico.activo:
+            raise exceptions.TipoQuimicoNoEncontradoOInactivo()
     
     db_insumo_quimico.activo = not db_insumo_quimico.activo
     db.commit()

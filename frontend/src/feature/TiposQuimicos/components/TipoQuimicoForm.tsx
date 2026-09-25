@@ -36,7 +36,7 @@ export function TipoQuimicoForm({ textoBoton, onSubmit, valoresIniciales }: Tipo
         <Form onSubmit={handleSubmit(onSubmitHookForm)} className="p-4 border rounded bg-white shadow-sm mt-3" noValidate>
         
             <Form.Group className="mb-3 text-start" controlId="formNombre">
-                <Form.Label className="p-1 fw-bold">Nombre del Tipo de Químico</Form.Label>
+                <Form.Label className="p-1 fw-bold">Nombre del Tipo de Químico *</Form.Label>
                 <Form.Control
                     type="text"
                     placeholder="Ingrese el nombre"

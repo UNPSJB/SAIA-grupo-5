@@ -7,6 +7,7 @@ import { type TableColumn } from 'react-data-table-component';
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
 import { useApi } from '../../../hooks/useApi';
+import { useAuth } from '../../../hooks/useAuth';
 
 import { DeleteTipoQuimicoModal } from '../components/DeleteTipoQuimicoModal'; 
 import type { TipoQuimico } from '../types';
@@ -14,6 +15,7 @@ import type { TipoQuimico } from '../types';
 
 export function ListPage() {
     const navigate = useNavigate();     // Esto se usa para cambiar de pagina cuando cree el insumo
+    const { currentUser } = useAuth();
     const [search, setSearch] = useState('');
     const { data: tiposQuimicos, error, isLoading } = useApi<TipoQuimico[]>("/tipos-quimicos/")    
     const [tipoQuimicoToDelete, setTipoQuimicoToDelete] = useState<TipoQuimico | null>(null);
@@ -103,22 +105,27 @@ export function ListPage() {
                     >
                         <i className="bi bi-eye me-1"></i>Ver
                     </Button>
-                    <Button
-                        variant="outline-primary"
-                        size="sm"
-                        disabled={!row.activo}      // Si no esta activo se muestra en gris y no se puede editar
-                        onClick={() => navigate(`/tipos-quimicos/${row.id}/edit`)}
-                    >
-                        <i className="bi bi-pencil me-1"></i>Editar
-                    </Button>
-                    <Button
-                        variant={row.activo ? 'outline-danger' : 'outline-success'}
-                        size="sm"
-                        onClick={() => setTipoQuimicoToDelete(row)}
-                    >
-                        <i className={`bi ${row.activo ? 'bi-dash-circle' : 'bi-check-circle'} me-1`}></i>
-                        {row.activo ? 'Dar de baja' : 'Dar de alta'}
-                    </Button>
+
+                    {currentUser?.administrar && (
+                        <>
+                            <Button
+                                variant="outline-primary"
+                                size="sm"
+                                disabled={!row.activo}      // Si no esta activo se muestra en gris y no se puede editar
+                                onClick={() => navigate(`/tipos-quimicos/${row.id}/edit`)}
+                            >
+                                <i className="bi bi-pencil me-1"></i>Editar
+                            </Button>
+                            <Button
+                                variant={row.activo ? 'outline-danger' : 'outline-success'}
+                                size="sm"
+                                onClick={() => setTipoQuimicoToDelete(row)}
+                            >
+                                <i className={`bi ${row.activo ? 'bi-dash-circle' : 'bi-check-circle'} me-1`}></i>
+                                {row.activo ? 'Dar de baja' : 'Dar de alta'}
+                            </Button>
+                        </>  
+                    )}
                 </div>
             )
         },
@@ -133,16 +140,19 @@ export function ListPage() {
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
                 </Col>
-                <Col xs="auto" className="d-flex justify-content-end">
-                    <Button
-                        variant="primary"
-                        size='sm'
-                        onClick={() => navigate("/tipos-quimicos/new")}
-                        style={{ whiteSpace: "nowrap" }}
-                    >
-                        + Nuevo Tipo Químico
-                    </Button>
-                </Col>
+                {currentUser?.administrar &&(
+                    <Col xs="auto" className="d-flex justify-content-end">
+                        <Button
+                            variant="primary"
+                            size='sm'
+                            onClick={() => navigate("/tipos-quimicos/new")}
+                            style={{ whiteSpace: "nowrap" }}
+                        >
+                            + Nuevo Tipo Químico
+                        </Button>
+                    </Col>
+                )}
+
             </Row>
             <AppTable columns={columns} data={filteredTiposQuimicos} />
             <DeleteTipoQuimicoModal
