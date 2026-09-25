@@ -38,6 +38,11 @@ def listar_tareas_ocurrencia_completadas(db: Session) -> List[schemas.TareaOcurr
         select(TareaOcurrencia).where(TareaOcurrencia.estado == EstadoTareaOcurrencia.COMPLETADA)
     ).all()
 
+def listar_historial(db: Session, fecha_desde: date, fecha_hasta: date) -> List[schemas.TareaOcurrencia]:
+    return db.scalars(
+        select(TareaOcurrencia).where(TareaOcurrencia.fecha.between(fecha_desde, fecha_hasta))
+    ).all()
+
 def leer_tarea_ocurrencia(db: Session, ocurrencia_id: int) -> schemas.TareaOcurrencia:
     db_ocurrencia = db.scalar(select(TareaOcurrencia).where(TareaOcurrencia.id == ocurrencia_id))
     if db_ocurrencia is None:
