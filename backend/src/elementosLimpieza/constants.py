@@ -1,3 +1,7 @@
+# Cantidad de días de antelación con la que un elemento próximo a vencer
+DIAS_ALERTA_RECAMBIO = 3
+
+
 class ErrorCode:
     ELEMENTO_NO_ENCONTRADO = "Elemento de limpieza no encontrado"
     TIPO_ELEMENTO_NO_ENCONTRADO = "Tipo de elemento de limpieza no encontrado"
