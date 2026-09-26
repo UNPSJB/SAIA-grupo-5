@@ -33,3 +33,10 @@ export type InsumoResumen = {
     id: number
     nombre: string
 }
+
+export type ConsumoAcumuladoProducto = {
+    insumo_quimico_id: number
+    nombre: string
+    unidad_medida: string
+    acumulado: number
+}

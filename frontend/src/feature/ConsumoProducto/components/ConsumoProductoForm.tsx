@@ -69,7 +69,7 @@ export function ConsumoProductoForm({ textoBoton, onSubmit, valoresIniciales, so
                       <option value="">
                           Seleccione un insumo
                       </option>
-                      {insumos?.map((insumo) => (
+                      {insumos?.filter((insumo) => insumo.activo).map((insumo) => (
                         <option key={insumo.id} value={insumo.id}>
                             {insumo.nombre}
                         </option>

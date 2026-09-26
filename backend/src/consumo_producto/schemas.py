@@ -38,3 +38,8 @@ class ConsumoProducto(ConsumoProductoBase):
 class ConsumoProductoDelete(ConsumoProductoBase):
     id: int
 
+class ConsumoAcumuladoProducto(BaseModel):
+    insumo_quimico_id: int
+    nombre: str
+    unidad_medida: UnidadMedida
+    acumulado: float

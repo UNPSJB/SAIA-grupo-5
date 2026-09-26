@@ -19,23 +19,19 @@ router = PermissionedRouter(prefix="/consumos-productos", tags=["consumos-produc
 def create_consumo_producto(consumo: schemas.ConsumoProductoCreate, db: Session = Depends(get_db)):
     return services.crear_consumo_producto(db, consumo)
 
-@router.get("/{consumo_id}", response_model=schemas.ConsumoProducto)
-def read_consumo_producto(consumo_id: int, db: Session = Depends(get_db)):
-    return services.leer_consumo_producto(db, consumo_id)
-
 @router.put("/{consumo_id}", response_model=schemas.ConsumoProducto)
 def update_consumo_producto(consumo_id: int, consumo: schemas.ConsumoProductoUpdate, db: Session = Depends(get_db)):
     return services.modificar_consumo_producto(db, consumo_id, consumo)
-
-@router.get("/", response_model=list[schemas.ConsumoProducto])
-def read_consumos_productos(db: Session = Depends(get_db)):
-    return services.listar_consumos_productos(db)
 
 @router.patch("/{consumo_id}/estado", response_model=schemas.ConsumoProducto)
 def cambiar_estado_consumo_producto(consumo_id: int, db: Session = Depends(get_db)):
     return services.cambiar_estado_consumo_producto(db, consumo_id)
 
 # Rutas para Consumos_acumulados
+
+@router.get("/", response_model=list[schemas.ConsumoProducto])
+def read_consumos_productos(db: Session = Depends(get_db)):
+    return services.listar_consumos_productos(db)
 
 # Listar consumos por insumo
 @router.get("/insumo/{insumo_id}", response_model=list[schemas.ConsumoProducto])
@@ -47,10 +43,16 @@ def read_consumos_por_producto(insumo_id:int, db: Session = Depends(get_db)):
 def read_consumo_acumulado(insumo_id:int, fecha_desde: date | None = None, fecha_hasta: date | None = None, db: Session = Depends(get_db)):
     return services.consultar_consumo_acumulado(db, insumo_id, fecha_desde, fecha_hasta,)
 
+# Consumo acumulado de cada producto
+@router.get("/acumulado", response_model=list[schemas.ConsumoAcumuladoProducto])
+def read_consumo_acumulado_productos(fecha_desde: date | None = None, fecha_hasta: date | None = None, db: Session = Depends(get_db)):
+    return services.listar_consumos_acumulados(db, fecha_desde, fecha_hasta,)
+
 # Listar consumos por tarea
 @router.get("/tarea/{tarea_id}", response_model=list[schemas.ConsumoProducto])
 def read_consumos_por_tarea(tarea_id:int, db: Session = Depends(get_db)):
     return services.listar_consumos_por_tarea(db, tarea_id)
 
-
-
+@router.get("/{consumo_id}", response_model=schemas.ConsumoProducto)
+def read_consumo_producto(consumo_id: int, db: Session = Depends(get_db)):
+    return services.leer_consumo_producto(db, consumo_id)

@@ -7,6 +7,7 @@ from src.consumo_producto import schemas, exceptions
 from datetime import date
 from src.tareas_ocurrencia.models import TareaOcurrencia
 from src.tareas_ocurrencia.constants import EstadoTareaOcurrencia
+from src.insumo_quimico.models import InsumoQuimico
 
 logger = logging.getLogger(__name__)
 
@@ -82,3 +83,26 @@ def consultar_consumo_acumulado(db:Session, insumo_id, fecha_desde: date | None 
     
     return db_consumo_acumulado or 0.0
 
+def listar_consumos_acumulados(db:Session, fecha_desde: date | None = None, fecha_hasta: date | None = None,) -> List[schemas.ConsumoAcumuladoProducto]:
+    condiciones = [TareaOcurrencia.estado == EstadoTareaOcurrencia.COMPLETADA,]
+
+    if fecha_desde is not None:
+        condiciones.append(TareaOcurrencia.fecha >= fecha_desde)
+    
+    if fecha_hasta is not None:
+        condiciones.append(TareaOcurrencia.fecha <= fecha_hasta)
+
+    db_consumos = db.execute(
+            select(
+                ConsumoProducto.insumo_quimico_id, InsumoQuimico.nombre, InsumoQuimico.unidad_medida,
+                func.sum(ConsumoProducto.cantidad_aproximada).label("acumulado"),
+            )
+            .join( InsumoQuimico, InsumoQuimico.id == ConsumoProducto.insumo_quimico_id
+            )
+            .join( TareaOcurrencia, TareaOcurrencia.tarea_id_origen == ConsumoProducto.tarea_id
+            )
+            .where(*condiciones)
+            .group_by(ConsumoProducto.insumo_quimico_id, InsumoQuimico.nombre, InsumoQuimico.unidad_medida,)
+        ).all()
+    
+    return db_consumos
