@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field
 from typing import Annotated
-from datetime import date
+from datetime import date, datetime
 from src.tareas_ocurrencia.constants import EstadoTareaOcurrencia
 
 class TareaOcurrenciaCreate(BaseModel):
@@ -26,11 +26,27 @@ class TareaOcurrencia(BaseModel):
     foto_obligatoria_snap: bool
     accion_correctiva_snap: str | None
     plan_nombre_snap: str
+    
     fecha: date
-    fecha_completado: date | None
+    fecha_completado: datetime | None
+    
+    foto_evidencia: str | None = None
+    
+    fue_editada: bool
+    fecha_edicion: datetime | None
+
+    insumo_quimico_id: int | None = None
+    cantidad_consumida: float | None = None
+
+    observacion: str | None = None
+    
     estado: EstadoTareaOcurrencia
 
     model_config = ConfigDict(from_attributes=True)
 
 class TareaOcurrenciaCompletar(BaseModel):
     operario_id: int
+    foto_evidencia: str | None = None
+    insumo_quimico_id: int | None = None
+    cantidad_consumida: float | None = None
+    observacion: str | None = None

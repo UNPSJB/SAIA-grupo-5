@@ -8,3 +8,4 @@ class TareaOcurrenciaNoEncontrada(NotFound):
 
 class TareaOcurrenciaDatosInvalidos(BadRequest):
     DETAIL = ErrorCode.TAREA_OCURRENCIA_DATOS_INVALIDOS
+
