@@ -106,7 +106,7 @@ export function CompletarTareaModal({ tarea, onHide, onCompleted }: CompletarTar
                 </Modal.Header>
                 <Modal.Body>
                     <p><strong>Tarea:</strong> {tarea?.tarea_nombre_snap}</p>
-
+                    <hr />
                     <Form.Group className="mb-3 text-start">
                         <Form.Label className="p-1 fw-bold">
                             Foto de Evidencia {tarea?.foto_obligatoria_snap ? '*' : '(Opcional)'}
@@ -121,7 +121,7 @@ export function CompletarTareaModal({ tarea, onHide, onCompleted }: CompletarTar
                             {fotoError}
                         </Form.Control.Feedback>
                     </Form.Group>
-                    
+                    <hr />
                     <Form.Group className="mb-3 text-start" controlId="formObservacion">
                 <Form.Label className="p-1 fw-bold">Observacion (Opcional)</Form.Label>
                 <Form.Control
