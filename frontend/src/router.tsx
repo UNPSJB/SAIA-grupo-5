@@ -19,12 +19,6 @@ import { ListPage as PersonalListPage } from './feature/Personal/pages/ListPage.
 import { EditarPersonaPage } from './feature/Personal/pages/EditarPersonaPage.tsx'
 import { NuevaPersonaPage } from './feature/Personal/pages/NuevaPersonaPage.tsx'
 
-<<<<<<< HEAD
-import { ListPage as ConsumoProductoListPage } from './feature/ConsumoProducto/pages/ListPage.tsx'
-import { EditarConsumoProductoPage } from './feature/ConsumoProducto/pages/EditarConsumoProductoPage.tsx'
-import { NuevoConsumoProductoPage } from './feature/ConsumoProducto/pages/NuevoConsumoProductoPage.tsx'
-import { ConsumoAcumuladoPage } from './feature/ConsumoProducto/pages/ConsumoAcumuladoPage.tsx'
-=======
 import { SuperficiesPage } from './feature/Superficies/pages/ListPage.tsx';
 import { NuevaSuperficiePage } from './feature/Superficies/pages/NuevoSuperficiePage.tsx';
 import { EditarSuperficiePage } from './feature/Superficies/pages/EditarSuperficiePage.tsx';
@@ -43,7 +37,11 @@ import { ListPage as TipoQuimicoListPage } from './feature/TiposQuimicos/pages/L
 import { NuevoTipoQuimicoPage } from './feature/TiposQuimicos/pages/NuevoTipoQuimicoPage.tsx'
 import { EditarTipoQuimicoPage } from './feature/TiposQuimicos/pages/EditarTipoQuimicoPage.tsx'
 import { VerTipoQuimicoPage } from './feature/TiposQuimicos/pages/VerTipoQuimicoPage.tsx'
->>>>>>> dev
+
+import { ListPage as ConsumoProductoListPage } from './feature/ConsumoProducto/pages/ListPage.tsx'
+import { EditarConsumoProductoPage } from './feature/ConsumoProducto/pages/EditarConsumoProductoPage.tsx'
+import { NuevoConsumoProductoPage } from './feature/ConsumoProducto/pages/NuevoConsumoProductoPage.tsx'
+import { ConsumoAcumuladoPage } from './feature/ConsumoProducto/pages/ConsumoAcumuladoPage.tsx'
 
 import { Login, NoAutorizado } from './feature/auth'
 import AuthLayout from './layouts/AuthLayout.tsx'
@@ -141,12 +139,13 @@ const router = createBrowserRouter([
             ],
           },
           {
-            path: 'consumos_productos',
+            path: 'consumos-productos',
             element: <ProtectedRoute requireAdmin />,
             children: [
               { index: true, element: <ConsumoProductoListPage /> },
               { path: 'new', element: <NuevoConsumoProductoPage /> },
               { path: ':id/edit', element: <EditarConsumoProductoPage /> },
+              { path: 'tarea/:id', element: <ConsumoProductoListPage /> },
               { path: 'consulta', element: <ConsumoAcumuladoPage /> },
             ],
           },

@@ -12,6 +12,9 @@ from src.plan_limpieza.models import PlanLimpieza
 from src.tarea.models import Tarea
 from src.tareas_ocurrencia.models import TareaOcurrencia
 from src.superficies.models import Superficie
+from src.insumo_quimico.models import InsumoQuimico
+from src.tipo_quimico.models import TipoQuimico
+from src.consumo_producto.models import ConsumoProducto
 
 # Importamos la configuración validada por Pydantic
 from src.config import settings

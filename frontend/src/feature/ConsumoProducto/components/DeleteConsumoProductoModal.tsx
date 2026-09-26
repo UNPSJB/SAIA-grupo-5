@@ -1,53 +1,51 @@
-import { Button, Modal, Form } from "react-bootstrap";
+import { Button, Modal, Form, Alert } from "react-bootstrap";
 import { api } from "../../../libs/axios";
 import { useState } from "react";
+import type { ConsumoProducto } from "../types";
+import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
 
 interface DeleteConsumoProductoModalProps {
-    show: boolean;
+    consumoProducto: ConsumoProducto | null;
     onHide: () => void;
     onDeleted: () => void;
 }
 
-export function DeleteConsumoProductoModal({ show, onHide, onDeleted }: DeleteConsumoProductoModalProps) {
-    const [consumo_id, setConsumoId] = useState("");
-    const [validated, setValidated] = useState(false);
+export function DeleteConsumoProductoModal({ consumoProducto, onHide, onDeleted }: DeleteConsumoProductoModalProps) {
+    const handleCambiarEstado = async () => {
+        if (!consumoProducto) return;
 
-    const handleDelete = async () => {
-        setValidated(true);
-        if (!consumo_id.trim()) return;
+        const estabaActivo = consumoProducto.estado;
 
-        await api.delete(`/consumos_productos/${consumo_id}`);
-        onDeleted();
-        onHide();
-        setConsumoId("");
-        setValidated(false);
+        try {
+            await api.patch<ConsumoProducto>(`/consumos-productos/${consumoProducto.id}/estado`);
+            mostrarAlertaExito(`El consumo de '${consumoProducto.insumo.nombre}' se dio de ${estabaActivo ? 'baja' : 'alta'} correctamente.`);
+            onDeleted();
+        } catch (error: any){
+            const mensajeBackend = error.response?.data?.detail;
+            const mensajeFinal = mensajeBackend || `No se pudo ${estabaActivo ? 'dar de baja' : 'dar de alta'} el consumo de '${consumoProducto.insumo.nombre}'.`;
+            mostrarAlertaError(mensajeFinal);
+            console.log(error);
+        } finally{
+            onHide();
+        }
     };
 
+    const estaActivo = consumoProducto?.estado ?? true;
+
     return (
-        <Modal show={show} onHide={onHide}>
+        <Modal show={consumoProducto !== null} onHide={onHide}>
             <Modal.Header closeButton>
-                <Modal.Title>Eliminar consumo registrado</Modal.Title>
+                <Modal.Title>{estaActivo ? 'Dar de baja' : 'Dar de alta'} consumo</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <Form.Group className="mb-3 text-start" controlId="formConsumoId">
-                    <Form.Label className="p-1 fw-bold"> Consumo </Form.Label>
-                    <Form.Control
-                        required
-                        type="number"
-                        placeholder="Ingrese el ID del consumo"
-                        value={consumo_id} onChange={(e) => setConsumoId(e.target.value)}
-                        isInvalid={validated && !consumo_id.trim()}
-                    />
-                    <Form.Control.Feedback type="invalid">
-                        El ID del consumo es obligatorio.
-                    </Form.Control.Feedback>
-                </Form.Group>
+                ¿Estás seguro que querés {estaActivo ? 'dar de baja' : 'dar de alta'} el consumo <strong>{consumoProducto?.insumo.nombre}</strong>?
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="secondary" onClick={onHide}>Cancelar</Button>
-                <Button variant="danger" onClick={handleDelete}>Eliminar</Button>
+                <Button variant={estaActivo ? "danger" : "success"} onClick={handleCambiarEstado}>
+                    {estaActivo ? 'Dar de baja' : 'Dar de alta'}
+                </Button>
             </Modal.Footer>
         </Modal>
     );
 }
-

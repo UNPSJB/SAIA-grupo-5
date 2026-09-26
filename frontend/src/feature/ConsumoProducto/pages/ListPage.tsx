@@ -1,7 +1,7 @@
 import { useState, useMemo} from "react";
 import { mutate } from 'swr';
 import { Alert, Button, Col, Container, Form, Row, Spinner } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { type TableColumn } from 'react-data-table-component';
 
 import { AppTable } from '../../../components/AppTable';
@@ -9,22 +9,21 @@ import { PageHeader } from '../../../components/PageHeader';
 import { useApi } from '../../../hooks/useApi';
 
 import { DeleteConsumoProductoModal } from '../components/DeleteConsumoProductoModal'; 
-import { EditarConsumoProductoModal } from '../components/EditarConsumoProductoModal'; 
 import type { ConsumoProducto } from "../types";
 
 export function ListPage() {
     const navigate = useNavigate();
+    const { id } = useParams();
     const [search, setSearch] = useState('');
-    const { data: consumos, error, isLoading } = useApi<ConsumoProducto[]>("/consumos_productos")
-    const [consumoProductoToDelete, setConsumoProductoToDelete] = useState(false);
-    const [mostrarModalEditar, setMostrarModalEditar] = useState(false);
+    const { data: consumos, error, isLoading } = useApi<ConsumoProducto[]>(`/consumos-productos/tarea/${id}`)
+    const [consumoProductoToDelete, setConsumoProductoToDelete] = useState<ConsumoProducto | null>(null);
     
     const filteredConsumos = useMemo(() => {
         if (!Array.isArray(consumos)) return [];
         return (consumos ?? []).filter((consumo) => {
             return (
-                consumo.tarea_id.toString().includes(search) ||
-                consumo.insumo.nombre.toLowerCase().includes(search.toLowerCase())
+                consumo.insumo.nombre.toLowerCase().includes(search.toLowerCase()) ||
+                consumo.cantidad_aproximada.toString().includes(search)
             );
         });
     }, [search, consumos]);
@@ -42,7 +41,7 @@ export function ListPage() {
     
     if (isLoading) return (
         <>
-            <PageHeader title="Listado de Consumos de Insumos Químicos" />
+            <PageHeader title="Insumos químicos utilizados en la tarea" />
             <Spinner animation="border" role="status">
                 <span className="visually-hidden">Loading...</span>
             </Spinner>
@@ -50,7 +49,7 @@ export function ListPage() {
     )
     if (!consumos || error) return (
         <Container>
-            <PageHeader title="Listado de Consumos de Insumos Químicos" />
+            <PageHeader title="Insumos químicos utilizados en la tarea" />
             <Row className="justify-content-center">
                 <Col md={6}>
                     <Alert variant="danger">Ocurrió un error al cargar los Consumos</Alert>
@@ -58,30 +57,8 @@ export function ListPage() {
             </Row>
         </Container>
     )
-    
 
     const columns: TableColumn<ConsumoProducto>[] = [
-        {
-            name: "ID",
-            selector: row => row.id,
-            sortable: true,
-            center: true,
-            maxWidth: "60px",
-        },
-        {
-            name: "Fecha",
-            //selector: row => row.tarea.fecha,
-            sortable: true,
-            center: true,
-            grow: 1,
-        },
-        {
-            name: "Tarea",
-            selector: row => row.tarea_id,
-            sortable: true,
-            center: true,
-            grow: 2,
-        },
         {
             name: "Insumo Químico",
             selector: row => row.insumo.nombre,
@@ -152,18 +129,20 @@ export function ListPage() {
             cell: (row) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <Button
-                        variant="outline-success"
-                        size="sm"
-                        onClick={() => navigate("/consumos_productos/new")}
-                    >
-                        <i class="bi bi-plus-circle"></i> Registrar consumo
-                    </Button>
-                    <Button
                         variant="outline-primary"
                         size="sm"
-                        onClick={() => navigate(`/consumos_productos/${row.id}/edit`)}
+                        disabled={!row.estado}      // Si no esta activo se muestra en gris y no se puede editar
+                        onClick={() => navigate(`/consumos-productos/${row.id}/edit`)}
                     >
                         <i className="bi bi-pencil me-1"></i>Editar
+                    </Button>
+                    <Button
+                        variant={row.estado ? 'outline-danger' : 'outline-success'}
+                        size="sm"
+                        onClick={() => setConsumoProductoToDelete(row)}
+                    >
+                        <i className={`bi ${row.estado ? 'bi-dash-circle' : 'bi-check-circle'} me-1`}></i>
+                        {row.estado ? 'Dar de baja' : 'Dar de alta'}
                     </Button>
                 </div>
             )
@@ -172,9 +151,9 @@ export function ListPage() {
 
     return (
         <Container>
-            <Row className="p-2" align-items-center>
+            <Row className="p-2 align-items-center">
                 <Col>
-                    <PageHeader title="Listado de Consumos de Insumos Químicos" />
+                    <PageHeader title="Insumos químicos utilizados en la tarea" />
                 </Col>
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
@@ -182,35 +161,29 @@ export function ListPage() {
                 <Col xs="auto" className="d-flex justify-content-end">
                     <Button
                         variant="primary"
-                        size="sm"
-                        style={{whiteSpace: "nowrap"}}  
-                        onClick={() => setMostrarModalEditar(true)}              
+                        size='sm'
+                        onClick={() => navigate(`/consumos-productos/new?tareaId=${id}`)}
+                        style={{ whiteSpace: "nowrap" }}
                     >
-                        <i className="bi bi-pencil me-1"></i> Modificar Consumo
-                    </Button>
-                </Col>
-                <Col xs="auto" className="d-flex justify-content-end">
-                    <Button
-                        variant="danger"
-                        size="sm"
-                        onClick={() => setConsumoProductoToDelete(true)}    
-                        style={{whiteSpace: "nowrap"}}               
-                    >
-                        <i className="bi bi-trash3 me-1"></i> Eliminar Consumo
+                        + Nuevo Insumo
                     </Button>
                 </Col>
             </Row>
             <AppTable columns={columns} data={filteredConsumos} />
-            <EditarConsumoProductoModal
-                show={mostrarModalEditar}
-                onHide={() => setMostrarModalEditar(false)}
-            />
+            <Row>
+                <Col xs="auto">
+                    <Button variant="secondary" size="sm" className="px-3" 
+                        onClick={() => navigate('/tareas')}
+                    >
+                        <i className="bi bi-arrow-left"></i> Volver
+                    </Button>
+                </Col>
+            </Row>
             <DeleteConsumoProductoModal
-                show={consumoProductoToDelete}
-                onHide={() => setConsumoProductoToDelete(false)}
-                onDeleted={() => mutate("/consumos_productos")}
+                consumoProducto={consumoProductoToDelete}
+                onHide={() => setConsumoProductoToDelete(null)}
+                onDeleted={() => mutate(`/consumos-productos/tarea/${id}`)}
             />
-            
         </Container>
     );
     

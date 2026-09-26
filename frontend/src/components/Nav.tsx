@@ -68,17 +68,6 @@ export function Nav() {
                         <i className="bi bi-tools me-2"></i>
                         Equipos
                     </BSNav.Link>
-
-                    <BSNav.Link as={NavLink} to="/consumos_productos" end>
-                        <i className="bi bi-droplet-half me-2"></i>
-                        Consumo de Insumo 
-                    </BSNav.Link>
-                    <BSNav.Link as={NavLink} to="/consumos_productos/consulta">
-                        <i className="bi bi-droplet-half me-2"></i>
-                        Consulta de Consumo
-                    </BSNav.Link>
-                    {/* Módulo de Personal solo visible para usuarios con permiso de administrar */}
-
                     <BSNav.Link as={NavLink} to="/sectores">
                         <i className="bi bi-geo-alt me-2"></i>
                         Sectores
@@ -96,11 +85,18 @@ export function Nav() {
                         Tareas
                     </BSNav.Link>
 
+                    {/* Módulo de Personal y consumoProducto solo visible para usuarios con permiso de administrar */}
                     {currentUser?.administrar && (
-                        <BSNav.Link as={NavLink} to="/personal">
-                            <i className="bi bi-people me-2"></i>
-                            Personal
-                        </BSNav.Link>
+                        <>
+                            <BSNav.Link as={NavLink} to="/personal">
+                                <i className="bi bi-people me-2"></i>
+                                Personal
+                            </BSNav.Link>
+                            <BSNav.Link as={NavLink} to="/consumos-productos/consulta">
+                                <i className="bi bi-droplet-half me-2"></i>
+                                Consulta de Consumo
+                            </BSNav.Link>
+                        </>
                     )}
 
                 </BSNav>
