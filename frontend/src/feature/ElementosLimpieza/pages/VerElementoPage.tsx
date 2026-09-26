@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Container, Spinner, Alert, Row, Col, Card, Button } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { PageHeader } from "../../../components/PageHeader";
@@ -5,10 +6,12 @@ import { useApi } from "../../../hooks/useApi";
 import type { ElementoLimpieza } from "../types";
 import type { TipoElementoLimpieza } from "../../TiposElementoLimpieza/types";
 import type { RecambioElementoLimpieza } from "../../RecambiosElementosLimpieza/types";
+import { HistorialRecambiosModal } from "../../RecambiosElementosLimpieza/components/HistorialRecambioModal";
 
 export function VerElementoPage() {
     const navigate = useNavigate();
     const { id } = useParams();
+    const [mostrarHistorial, setMostrarHistorial] = useState(false);
 
     const { data: elementoLimpieza, isLoading, error } = useApi<ElementoLimpieza>(`/elementos-limpieza/${id}`);
     const { data: recambios } = useApi<RecambioElementoLimpieza[]>(`/recambios-elementos-limpieza/elemento/${id}`);
@@ -54,7 +57,7 @@ export function VerElementoPage() {
                         </Card.Header>
 
                         <Card.Body className="p-4">
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
+                            <Row className="mb-3 border-bottom pb-3 align-items-center ">
                                 <Col sm={4} className="fw-bold text-secondary">Código</Col>
                                 <Col sm={8} className="fs-5">{elementoLimpieza.codigo}</Col>
                             </Row>
@@ -97,7 +100,9 @@ export function VerElementoPage() {
                                             ? "Vencido"
                                             : elementoLimpieza.dias_restantes === 0
                                                 ? "Recambio hoy"
-                                                : `${elementoLimpieza.dias_restantes} días`}
+                                                : elementoLimpieza.dias_restantes === 1
+                                                    ? `${elementoLimpieza.dias_restantes} dia`
+                                                    : `${elementoLimpieza.dias_restantes} días`}
                                 </Col>
                             </Row>
 
@@ -128,63 +133,46 @@ export function VerElementoPage() {
                                 variant="outline-secondary"
                                 onClick={() => navigate("/elementos-limpieza")}
                             >
-                                <i className="bi bi-arrow-left me-1"></i>Volver a la lista
+                                <i className="bi bi-arrow-left me-1"></i>
+                                Volver a la lista
                             </Button>
+
+                            <Button
+                                variant="outline-primary"
+                                onClick={() => setMostrarHistorial(true)}
+                            >
+                                <i className="bi bi-clock-history me-1"></i>
+                                Historial de Recambios
+                            </Button>
+
+                            {elementoLimpieza.estado && (
+                                <Button
+                                    variant="success"
+                                    onClick={() => navigate(`/recambios-elementos-limpieza/new/${elementoLimpieza.id}`)}
+                                >
+                                    <i className="bi bi-arrow-repeat me-1"></i>
+                                    Registrar Recambio
+                                </Button>
+                            )}
 
                             <Button
                                 variant="primary"
                                 disabled={!elementoLimpieza.estado}
                                 onClick={() => navigate(`/elementos-limpieza/${elementoLimpieza.id}/edit`)}
                             >
-                                <i className="bi bi-pencil me-1"></i>Editar Elemento
+                                <i className="bi bi-pencil me-1"></i>
+                                Editar Elemento
                             </Button>
                         </Card.Footer>
                     </Card>
 
-                    <Card className="shadow-sm border-0 rounded-3 mt-4">
-                        <Card.Header className="bg-white border-bottom p-4 d-flex justify-content-between align-items-center">
-                            <h5 className="mb-0 fw-bold text-primary">
-                                <i className="bi bi-clock-history me-2"></i>
-                                Historial de Recambios
-                            </h5>
-
-                            {elementoLimpieza.estado && (
-                                <Button
-                                    variant="success"
-                                    size="sm"
-                                    onClick={() => navigate(`/recambios-elementos-limpieza/new/${elementoLimpieza.id}`)}
-                                >
-                                    <i className="bi bi-arrow-repeat me-1 "></i>
-                                    Registrar Recambio
-                                </Button>
-                            )}
-                        </Card.Header>
-
-                        <Card.Body className="p-4">
-                            {!recambios || recambios.length === 0 ? (
-                                <p className="text-muted mb-0">
-                                    Este elemento todavía no tiene recambios registrados.
-                                </p>
-                            ) : (
-                                recambios.map((recambio) => (
-                                    <Row
-                                        key={recambio.id}
-                                        className="mb-3 border-bottom pb-3 align-items-center"
-                                    >
-                                        <Col sm={3} className="fw-bold text-secondary">
-                                            {recambio.fecha}
-                                        </Col>
-
-                                        <Col sm={9}>
-                                            {recambio.observacion ?? "-"}
-                                        </Col>
-                                    </Row>
-                                ))
-                            )}
-                        </Card.Body>
-                    </Card>
                 </Col>
             </Row>
+            <HistorialRecambiosModal
+                show={mostrarHistorial}
+                onHide={() => setMostrarHistorial(false)}
+                recambios={recambios ?? []}
+            />
         </Container>
     );
 }

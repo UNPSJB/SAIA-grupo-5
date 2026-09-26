@@ -39,7 +39,8 @@ export function ElementosLimpiezaPage() {
                 (elemento.material ?? "").toLowerCase().includes(busqueda) ||
                 (elemento.ubicacion ?? "").toLowerCase().includes(busqueda)
             );
-        });
+        })
+        .sort((a, b) => a.codigo.localeCompare(b.codigo));;
     }, [search, elementos, tipos]);
 
     const subHeaderComponentMemo = useMemo(() => {
@@ -136,6 +137,10 @@ export function ElementosLimpiezaPage() {
 
                 if (row.dias_restantes === 0) {
                     return <span>Recambio hoy</span>;
+                }
+                
+                if (row.dias_restantes === 1) {
+                    return <span>{row.dias_restantes} dia</span>;
                 }
 
                 return <span>{row.dias_restantes} días</span>;
