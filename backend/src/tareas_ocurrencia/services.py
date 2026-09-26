@@ -51,6 +51,9 @@ def completar_tarea_ocurrencia(
 
     es_edicion = db_ocurrencia.estado == EstadoTareaOcurrencia.COMPLETADA
 
+    if es_edicion and db_ocurrencia.operario_id != datos.operario_id:
+        raise exceptions.TareaOcurrenciaCompletadaPorOtro()
+
     db_ocurrencia.operario_id = datos.operario_id
     db_ocurrencia.estado = EstadoTareaOcurrencia.COMPLETADA
     db_ocurrencia.foto_evidencia = datos.foto_evidencia
