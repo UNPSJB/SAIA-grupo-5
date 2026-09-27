@@ -121,6 +121,7 @@ export function EquiposPage() {
                         <Button
                             variant="outline-primary"
                             size="sm"
+                            disabled={!row.estado}
                             onClick={() => navigate(`/equipos/${row.id}/edit`)}
                         >
                             <i className="bi bi-pencil me-1"></i>Editar

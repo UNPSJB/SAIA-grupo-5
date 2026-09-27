@@ -139,6 +139,7 @@ export function ListPage() {
                         <Button
                             variant="outline-primary"
                             size="sm"
+                            disabled={!row.activo}
                             onClick={() => navigate(`/insumos/${row.id}/edit`)}
                         >
                             <i className="bi bi-pencil me-1"></i>Editar

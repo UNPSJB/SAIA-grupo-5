@@ -73,6 +73,19 @@ export function EditarPersonaPage() {
     )
   }
 
+  if (!persona.activo) {
+    return (
+      <Container>
+        <PageHeader title="Editar personal" />
+        <Row className="justify-content-center">
+          <Col md={6}>
+            <Alert variant="warning">No se puede editar una persona dada de baja.</Alert>
+          </Col>
+        </Row>
+      </Container>
+    )
+  }
+
   return (
     <>
       <PageHeader title="Editar personal" />

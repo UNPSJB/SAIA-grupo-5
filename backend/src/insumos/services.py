@@ -41,6 +41,8 @@ def eliminar_insumo(db: Session, insumo_id: int) -> schemas.InsumoDelete:
 
 def modificar_insumo(db: Session, insumo_id: int, insumo: schemas.InsumoUpdate) -> schemas.Insumo:  # Permite modificar el insumo pero si o si se tienen que enviar todos los campos
     db_insumo = leer_insumo(db, insumo_id)
+    if not db_insumo.activo:
+        raise exceptions.InsumoDadoDeBaja()
     db.execute(update(Insumo).where(Insumo.id == insumo_id).values(**insumo.model_dump()))
     db.commit()
     db.refresh(db_insumo)
