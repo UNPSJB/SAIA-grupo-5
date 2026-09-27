@@ -113,6 +113,12 @@ export function Nav() {
                             Personal
                         </BSNav.Link>
                     )}
+                    {currentUser?.administrar && (
+                        <BSNav.Link as={NavLink} to="/historial">
+                            <i className="bi bi-clock-history me-2"></i>
+                            Historial
+                        </BSNav.Link>
+                    )}
                 </BSNav>
 
                 <hr className="mt-auto" />
