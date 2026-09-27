@@ -5,7 +5,7 @@ from typing import Annotated
 
 class TipoElementoLimpiezaBase(BaseModel):
     nombre: Annotated[str, Field(min_length=1, max_length=100)]
-    prefijo: Annotated[str, Field(min_length=1, max_length=10)]
+    prefijo: Annotated[str, Field(min_length=1, max_length=4)]
 
 
 class TipoElementoLimpiezaCreate(TipoElementoLimpiezaBase):

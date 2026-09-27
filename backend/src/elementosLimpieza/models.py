@@ -26,7 +26,7 @@ class TipoElementoLimpieza(ModeloBase):
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     nombre: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
-    prefijo: Mapped[str] = mapped_column(String(10), unique=True, nullable=False)
+    prefijo: Mapped[str] = mapped_column(String(4), unique=True, nullable=False)
     estado: Mapped[bool] = mapped_column(default=True)
 
     elementos: Mapped[list["ElementoLimpieza"]] = relationship(back_populates="tipo")

@@ -50,7 +50,7 @@ export function ElementoLimpiezaForm({ textoBoton, onSubmit, valoresIniciales }:
             <Form onSubmit={handleSubmit(onSubmitHookForm)} className="p-4 border rounded bg-white shadow-sm mt-3" noValidate>
 
                 <Form.Group className="mb-3 text-start" controlId="formNombre">
-                    <Form.Label className="p-1 fw-bold">Nombre del Elemento</Form.Label>
+                    <Form.Label className="p-1 fw-bold">Nombre del Elemento *</Form.Label>
                     <Form.Control
                         type="text"
                         placeholder="Ingrese el nombre"
@@ -74,7 +74,7 @@ export function ElementoLimpiezaForm({ textoBoton, onSubmit, valoresIniciales }:
                 </Form.Group>
 
                 <Form.Group className="mb-3 text-start" controlId="formTipo">
-                    <Form.Label className="p-1 fw-bold">Tipo de Elemento</Form.Label>
+                    <Form.Label className="p-1 fw-bold">Tipo de Elemento *</Form.Label>
                     <InputGroup>
                         <Form.Select
                             {...register("tipo_id", {
@@ -106,10 +106,12 @@ export function ElementoLimpiezaForm({ textoBoton, onSubmit, valoresIniciales }:
                 
                 {crearTipo && (
                     <TipoElementoLimpiezaForm
+                        embebido
                         onCreado={(tipoId) => {
                             setValue("tipo_id", tipoId);
                             setCrearTipo(false);
                         }}
+                        onCancelar={() => setCrearTipo(false)}
                     />
                 )}
 

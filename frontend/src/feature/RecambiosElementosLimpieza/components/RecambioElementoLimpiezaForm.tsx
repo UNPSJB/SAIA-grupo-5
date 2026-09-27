@@ -40,7 +40,7 @@ export function RecambioElementoLimpiezaForm({ elementoId, onSubmit }: RecambioE
             <Form onSubmit={handleSubmit(onSubmitHookForm)} className="p-4 border rounded bg-white shadow-sm mt-3" noValidate>
 
                 <Form.Group className="mb-3 text-start" controlId="formElemento">
-                    <Form.Label className="p-1 fw-bold">Elemento de Limpieza</Form.Label>
+                    <Form.Label className="p-1 fw-bold">Elemento de Limpieza *</Form.Label>
 
                     {elementoId ? (
                         <Form.Control
@@ -75,7 +75,14 @@ export function RecambioElementoLimpiezaForm({ elementoId, onSubmit }: RecambioE
                 </Form.Group>
 
                 <Form.Group className="mb-3 text-start" controlId="formFecha">
-                    <Form.Label className="p-1 fw-bold">Fecha del Recambio</Form.Label>
+                    <Form.Label className="p-1 fw-bold mb-0">
+                        Fecha del Recambio
+                    </Form.Label>
+
+                    <Form.Text className="text-muted d-block px-1 mb-2">
+                        Si se deja vacío, se utilizará la fecha actual.
+                    </Form.Text>
+
                     <Form.Control
                         type="date"
                         {...register("fecha")}

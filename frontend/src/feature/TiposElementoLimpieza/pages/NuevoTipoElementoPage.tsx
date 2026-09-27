@@ -13,6 +13,7 @@ export function NuevoTipoElementoPage() {
             <Container>
                 <TipoElementoLimpiezaForm
                     onCreado={() => navigate("/tipos-elementos-limpieza")}
+                    onCancelar={() => navigate("/tipos-elementos-limpieza")}
                 />
             </Container>
         </>
