@@ -16,9 +16,9 @@ export function EditarConsumoProductoPage(){
     const actualizarConsumoProducto = async (datos: NewConsumoProducto) => {
         try{
             await api.put(`/consumos-productos/${id}`, datos);
-            await mutate("/consumos-productos/");
+            await mutate(`/consumos-productos/tarea/${consumo.tarea_id}`);
             await mutate(`/consumos-productos/${id}`);     // Se agrego esto ya que habia un bug en el editar
-            navigate("/consumos-productos");
+            navigate(`/consumos-productos/tarea/${consumo.tarea_id}`);
         } catch (error){
             alert("No se pudo editar el consumo.");       // Esto se puede cambiar porque se ve como la alerta de google que esta fea
             console.log(error)

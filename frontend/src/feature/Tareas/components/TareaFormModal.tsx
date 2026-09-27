@@ -3,6 +3,8 @@ import { api } from '../../../libs/axios';
 import { getErrorMessage } from '../../../libs/errors';
 import { TareaForm } from './TareaForm';
 import type { RelacionTipo, Tarea, TareaFormData } from '../types';
+import { useState } from 'react';
+import { AgregarConsumoModal } from './AgregarConsumoModal';
 
 interface TareaFormModalProps {
   show: boolean;
@@ -23,6 +25,9 @@ function relacionActual(tarea?: Tarea | null): { relacion_tipo: RelacionTipo; re
 export function TareaFormModal({ show, onHide, planId, planNombre, tarea, onSaved }: TareaFormModalProps) {
   const esEdicion = !!tarea;
 
+  const [mostrarAgregarConsumo, setMostrarAgregarConsumo] = useState(false);
+  const [tareaCreadaId, setTareaCreadaId] = useState<number | null>(null);
+
   const guardarTarea = async (datos: TareaFormData) => {
     const { relacion_tipo, relacion_id, ...resto } = datos;
     const payload = {
@@ -35,39 +40,53 @@ export function TareaFormModal({ show, onHide, planId, planNombre, tarea, onSave
     try {
       if (esEdicion) {
         await api.put(`/tareas/${tarea!.id}`, payload);
+        onSaved();
+        onHide();
       } else {
-        await api.post('/tareas', payload);
-      }
-      onSaved();
-      onHide();
+          const response = await api.post('/tareas', payload);
+          setTareaCreadaId(response.data.id);
+          setMostrarAgregarConsumo(true);
+        }
     } catch (error) {
       alert(getErrorMessage(error, esEdicion ? "No se pudo editar la tarea." : "No se pudo crear la tarea."));
     }
   };
 
   return (
-    <Modal show={show} onHide={onHide} size="lg">
-      <Modal.Header closeButton>
-        <Modal.Title>{esEdicion ? "Editar tarea" : "Agregar tarea"}</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <TareaForm
-          textoBoton={esEdicion ? "Editar tarea" : "Agregar tarea"}
-          planNombre={planNombre}
-          onSubmit={guardarTarea}
-          onCancel={onHide}
-          valoresIniciales={tarea ? {
-            nombre: tarea.nombre,
-            descripcion: tarea.descripcion,
-            frecuencia: tarea.frecuencia,
-            prioridad: tarea.prioridad,
-            foto_obligatoria: tarea.foto_obligatoria,
-            accion_correctiva: tarea.accion_correctiva,
-            procedimiento: tarea.procedimiento,
-            ...relacionActual(tarea),
-          } : undefined}
-        />
-      </Modal.Body>
-    </Modal>
+    <>
+      <Modal show={show} onHide={onHide} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>{esEdicion ? "Editar tarea" : "Agregar tarea"}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <TareaForm
+            textoBoton={esEdicion ? "Editar tarea" : "Agregar tarea"}
+            planNombre={planNombre}
+            onSubmit={guardarTarea}
+            onCancel={onHide}
+            valoresIniciales={tarea ? {
+              nombre: tarea.nombre,
+              descripcion: tarea.descripcion,
+              frecuencia: tarea.frecuencia,
+              prioridad: tarea.prioridad,
+              foto_obligatoria: tarea.foto_obligatoria,
+              accion_correctiva: tarea.accion_correctiva,
+              procedimiento: tarea.procedimiento,
+              ...relacionActual(tarea),
+            } : undefined}
+          />
+        </Modal.Body>
+      </Modal>
+      <AgregarConsumoModal
+        show={mostrarAgregarConsumo}
+        onHide={() => setMostrarAgregarConsumo(false)}
+        onAhoraNo={() => {
+          setMostrarAgregarConsumo(false);
+          onSaved();
+          onHide();
+        }}
+        tareaId={tareaCreadaId}
+      />
+    </>
   );
 }

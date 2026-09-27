@@ -92,17 +92,29 @@ export function ConsumoProductoForm({ textoBoton, onSubmit, valoresIniciales, so
                 </Form.Group>
             </Col>
         </Row>
+        <Row>
+          <Col md={12}>
+                <Form.Group className="mb-3 text-start" controlId="formDilucion">
+                    <Form.Label className="p-1 fw-bold">Dilución</Form.Label>
+                    <div className="form-control bg-light">
+                      {insumos?.find(
+                        (insumo) => String(insumo.id) === String(insumo_quimico_id)
+                      )?.dilucion || "Seleccione un insumo"}
+                    </div>
+                </Form.Group>
+            </Col>
+        </Row>
         <Form.Group className="mb-3 text-start" controlId="formCantidadAproximada">
             <Form.Label className="p-1 fw-bold">Cantidad (aproximada)</Form.Label>
             <Form.Control
                 required
-                type="float"
+                type="number"
                 placeholder="Ingrese la cantidad"
                 value={cantidad_aproximada} onChange={(e) => setCantidadAproximada(e.target.value)}
                 isInvalid={validated && !cantidad_aproximada.trim()}
             />
             <Form.Control.Feedback type="invalid">
-                La cantidad es obligatoria.
+                La cantidad es obligatoria y debe ser un numero.
             </Form.Control.Feedback>
         </Form.Group>
 
