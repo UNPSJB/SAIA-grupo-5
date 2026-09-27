@@ -1,5 +1,5 @@
 
-export type EstadoTareaOcurrencia = 'PENDIENTE' | 'COMPLETADA' | 'CANCELADA'; 
+export type EstadoTareaOcurrencia = 'Pendiente' | 'Completada' | 'Cancelada'; 
 
 export interface TareaOcurrencia {
     id: number;

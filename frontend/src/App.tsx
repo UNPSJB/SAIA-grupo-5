@@ -3,7 +3,7 @@ import { Nav } from './components/Nav';
 
 function App() {
   return (
-    <div className="d-flex">
+    <div className="d-flex flex-column flex-lg-row">
       <Nav />
       <div className="text-center pt-4 flex-grow-1">
         <Outlet />

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../../../hooks/useAuth'; 
+import { useEffect } from 'react';
 import { useApi } from '../../../hooks/useApi'; 
 import type { TareaOcurrencia } from '../types';
 import type { InsumoQuimico } from '../../InsumosQuimicos/types';
@@ -21,6 +22,7 @@ interface CompletarTareaFormData {
 
 export function CompletarTareaModal({ tarea, onHide, onCompleted }: CompletarTareaModalProps) {
     const { api, currentUser } = useAuth();
+    const esEdicion = tarea?.estado === 'Completada';
     
     const { data: insumos } = useApi<InsumoQuimico[]>("/insumos-quimicos/");
     const insumosActivos = insumos?.filter(insumo => insumo.activo) || [];        // Sirve para filtrar y mostrar los insumos quimicos que esten activos
@@ -36,6 +38,16 @@ export function CompletarTareaModal({ tarea, onHide, onCompleted }: CompletarTar
             observacion: ""
         }
     });
+
+    useEffect(() => {
+        if (tarea) {
+            reset({
+                insumo_quimico_id: tarea.insumo_quimico_id ? tarea.insumo_quimico_id.toString() : "",
+                cantidad_consumida: tarea.cantidad_consumida ? tarea.cantidad_consumida.toString() : "",
+                observacion: tarea.observacion ? tarea.observacion : ""
+            });
+        }
+    }, [tarea, reset]);
 
     const insumoSeleccionado = watch("insumo_quimico_id");      // El watch sirve para ver el valor constantemente de InsumoSeleccionado, en el caso de que tenga valor se muestra la opcion de cuanta cantidad uso del insumo
 
@@ -60,7 +72,7 @@ export function CompletarTareaModal({ tarea, onHide, onCompleted }: CompletarTar
     const onSubmit = async (data: CompletarTareaFormData) => {
         if (!tarea || !currentUser) return;     // Si se apreta el boton de marcar como realizada sin que haya una tarea o sin que alguien este logeado se cancela todo
 
-        if (tarea.foto_obligatoria_snap && !fotoBase64) {       // Si la foto de evidencia es obligatoria y no subio ninguna se guarda el error
+        if (tarea.foto_obligatoria_snap && !fotoBase64 && !tarea.foto_evidencia) {       // Si la foto de evidencia es obligatoria y no subio ninguna se guarda el error
             setFotoError("La foto de evidencia es obligatoria para esta tarea.");
             return;
         }
@@ -69,8 +81,8 @@ export function CompletarTareaModal({ tarea, onHide, onCompleted }: CompletarTar
 
         try {
             const datos = {
-                operario_id: currentUser.id, // Esto guarda quien hizo la tarea
-                foto_evidencia: fotoBase64,
+                operario_id: currentUser?.id, // Esto guarda quien hizo la tarea
+                foto_evidencia: fotoBase64 ? fotoBase64 : (tarea?.foto_evidencia || null),
                 insumo_quimico_id: data.insumo_quimico_id ? parseInt(data.insumo_quimico_id) : null,
                 cantidad_consumida: data.cantidad_consumida ? parseFloat(data.cantidad_consumida) : null,
                 observacion: data.observacion ? data.observacion.trim() : null
@@ -78,7 +90,7 @@ export function CompletarTareaModal({ tarea, onHide, onCompleted }: CompletarTar
 
             await api.put(`/tareas-ocurrencia/${tarea.id}/completar`, datos);
             
-            mostrarAlertaExito('La tarea se marco como realizada correctamente.');
+            mostrarAlertaExito(esEdicion ? 'La tarea se edito correctamente.': 'La tarea se marco como realizada correctamente.');
             onCompleted();
         } catch (error: any) {
             const mensajeBackend = error.response?.data?.detail;
@@ -102,7 +114,7 @@ export function CompletarTareaModal({ tarea, onHide, onCompleted }: CompletarTar
         <Modal show={!!tarea} onHide={handleClose} >
             <Form onSubmit={handleSubmit(onSubmit)} noValidate>
                 <Modal.Header closeButton>
-                    <Modal.Title>Completar Tarea</Modal.Title>
+                    <Modal.Title>{esEdicion ? "Editar tarea completada" : "Completar Tarea"}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <p><strong>Tarea:</strong> {tarea?.tarea_nombre_snap}</p>
@@ -111,6 +123,7 @@ export function CompletarTareaModal({ tarea, onHide, onCompleted }: CompletarTar
                         <Form.Label className="p-1 fw-bold">
                             Foto de Evidencia {tarea?.foto_obligatoria_snap ? '*' : '(Opcional)'}
                         </Form.Label>
+
                         <Form.Control 
                             type="file" 
                             accept="image/*"        // Obliga a la ventana a mostrar solo imagenes
@@ -120,27 +133,43 @@ export function CompletarTareaModal({ tarea, onHide, onCompleted }: CompletarTar
                         <Form.Control.Feedback type="invalid">
                             {fotoError}
                         </Form.Control.Feedback>
+                        {(fotoBase64 || tarea?.foto_evidencia) && (
+                            <div className="mt-3 text-center">
+                                <p className="small text-muted mb-1">
+                                    {fotoBase64 ? "Foto nueva a subir:" : "Foto actual guardada:"}
+                                </p>
+                                <img
+                                    src={fotoBase64 || tarea?.foto_evidencia || ""} 
+                                    alt="Evidencia de limpieza" 
+                                    style={{ maxHeight: '150px', borderRadius: '8px', objectFit: 'cover' }} 
+                                    className="border shadow-sm"
+                                />
+                            </div>
+                        )}
                     </Form.Group>
-                    <hr />
-                    <Form.Group className="mb-3 text-start" controlId="formObservacion">
-                <Form.Label className="p-1 fw-bold">Observacion (Opcional)</Form.Label>
-                <Form.Control
-                    type="text"
-                    {...register("observacion", {
-                    maxLength: {
-                        value: 500,
-                        message: "La observacion no puede superar los 500 caracteres."
-                    }
-                    })}
-                    isInvalid={!!errors.observacion}
-                />
-                <Form.Control.Feedback type="invalid">
-                    {errors.observacion?.message}
-                </Form.Control.Feedback>
-            </Form.Group>
-                    <hr />
-                    <h5 className="mb-3">Consumo de Quimicos (Opcional)</h5>
 
+                    <hr />
+
+                    <Form.Group className="mb-3 text-start" controlId="formObservacion">
+                        <Form.Label className="p-1 fw-bold">Observacion (Opcional)</Form.Label>
+                        <Form.Control as="textarea"
+                            {...register("observacion", {
+                            maxLength: {
+                                value: 500,
+                                message: "La observacion no puede superar los 500 caracteres."
+                            },
+                            validate: (value) => !value || value.trim() !== "" || "La observacion no puede ser solo espacios en blanco."
+                            })}
+                            isInvalid={!!errors.observacion}
+                        />
+                        <Form.Control.Feedback type="invalid">
+                            {errors.observacion?.message}
+                        </Form.Control.Feedback>
+                </Form.Group>
+
+                    <hr />
+
+                    <h5 className="mb-3">Consumo de Quimicos (Opcional)</h5>
                     <Form.Group className="mb-3 text-start" controlId="formInsumoId">
                         <Form.Label className="p-1 fw-bold">Insumo utilizado</Form.Label>
                         <Form.Select 
@@ -180,8 +209,7 @@ export function CompletarTareaModal({ tarea, onHide, onCompleted }: CompletarTar
                         <i className="bi bi-x-circle me-1"></i>Cancelar
                     </Button>
                     <Button variant="primary" type="submit" disabled={cargando}>
-                        <i className="bi bi-check-circle me-1"></i>
-                        {cargando ? 'Guardando...' : 'Marcar como Realizada'}
+                        <i className="bi bi-floppy me-1"></i> {esEdicion ? "Guardar cambios" : "Marcar realizada"}
                     </Button>
                 </Modal.Footer>
             </Form>

@@ -10,6 +10,7 @@ import { useApi } from '../../../hooks/useApi'
 import { useAuth } from '../../../hooks/useAuth'
 import { api } from '../../../libs/axios'
 import { Capacidades } from '../../Capacidades/types'
+import { DeletePersonaModal } from '../components/DeletePersonaModal'
 import type { Persona } from '../types'
 
 const capacidadLabels: Record<string, string> = {
@@ -22,6 +23,7 @@ export function ListPage() {
   const { currentUser } = useAuth()
   const [search, setSearch] = useState('')
   const { data: personal, error, isLoading } = useApi<Persona[]>('/personal/')
+  const [personaToDelete, setPersonaToDelete] = useState<Persona | null>(null)
 
   const filteredPersonal = useMemo(() => {
     if (!Array.isArray(personal)) return []
@@ -180,33 +182,42 @@ export function ListPage() {
 
   const columns: TableColumn<Persona>[] = currentUser?.administrar
     ? [
-        ...baseColumns,
-        {
-          name: 'Acciones',
-          center: true,
-          minWidth: '220px',
-          cell: (row) => (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      ...baseColumns,
+      {
+        name: 'Acciones',
+        center: true,
+        minWidth: '220px',
+        cell: (row) => (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Button
+              variant="outline-primary"
+              size="sm"
+              disabled={!row.activo}
+              onClick={() => navigate(`/personal/${row.id}/edit`)}
+            >
+              <i className="bi bi-pencil me-1"></i>Editar
+            </Button>
+            {row.activo ? (
               <Button
-                variant="outline-primary"
+                variant="outline-danger"
                 size="sm"
-                disabled={!row.activo}
-                onClick={() => navigate(`/personal/${row.id}/edit`)}
+                onClick={() => setPersonaToDelete(row)}
               >
-                <i className="bi bi-pencil me-1"></i>Editar
+                <i className="bi bi-trash3 me-1"></i>Eliminar
               </Button>
+            ) : (
               <Button
-                variant={row.activo ? 'outline-danger' : 'outline-success'}
+                variant="outline-success"
                 size="sm"
                 onClick={() => cambiarEstado(row)}
               >
-                <i className={`bi ${row.activo ? 'bi-person-dash' : 'bi-person-check'} me-1`}></i>
-                {row.activo ? 'Dar de baja' : 'Dar de Alta'}
+                <i className="bi bi-person-check me-1"></i>Dar de Alta
               </Button>
-            </div>
-          ),
-        },
-      ]
+            )}
+          </div>
+        ),
+      },
+    ]
     : baseColumns
 
   return (
@@ -232,6 +243,11 @@ export function ListPage() {
         )}
       </Row>
       <AppTable columns={columns} data={filteredPersonal} />
+      <DeletePersonaModal
+        persona={personaToDelete}
+        onHide={() => setPersonaToDelete(null)}
+        onDeleted={() => mutate('/personal/')}
+      />
     </Container>
   )
 }

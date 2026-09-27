@@ -28,7 +28,7 @@ class TareaOcurrencia(BaseModel):
     plan_nombre_snap: str
     
     fecha: date
-    fecha_completado: datetime | None
+    fecha_completado: datetime | None = None
     
     foto_evidencia: str | None = None
     
