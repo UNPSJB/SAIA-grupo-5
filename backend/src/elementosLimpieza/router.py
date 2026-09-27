@@ -28,9 +28,9 @@ def read_tipo_elemento_limpieza(tipo_id: int, db: Session = Depends(get_db)):
 def update_tipo_elemento_limpieza(tipo_id: int, tipo: schemas.TipoElementoLimpiezaUpdate, db: Session = Depends(get_db)):
     return services.modificar_tipo_elemento_limpieza(db, tipo_id, tipo)
 
-@router.delete("/tipos/{tipo_id}", response_model=schemas.TipoElementoLimpieza)
-def delete_tipo_elemento_limpieza(tipo_id: int, db: Session = Depends(get_db)):
-    return services.eliminar_tipo_elemento_limpieza(db, tipo_id)
+@router.patch("/tipos/{tipo_id}/estado", response_model=schemas.TipoElementoLimpieza)
+def cambiar_estado_tipo(tipo_id: int, db: Session = Depends(get_db)):
+    return services.cambiar_estado_tipo_elemento_limpieza(db, tipo_id)
 
 
 """ Routers para elemento limpieza """
@@ -54,6 +54,6 @@ def read_elemento_limpieza(elemento_id: int, db: Session = Depends(get_db)):
 def update_elemento_limpieza(elemento_id: int, elemento: schemas.ElementoLimpiezaUpdate, db: Session = Depends(get_db)):
     return services.modificar_elemento_limpieza(db, elemento_id, elemento)
 
-@router.delete("/{elemento_id}", response_model=schemas.ElementoLimpieza)
-def delete_elemento_limpieza(elemento_id: int, db: Session = Depends(get_db)):
-    return services.eliminar_elemento_limpieza(db, elemento_id)
+@router.patch("/{elemento_id}/estado", response_model=schemas.ElementoLimpieza)
+def cambiar_estado_elemento(elemento_id: int, db: Session = Depends(get_db)):
+    return services.cambiar_estado_elemento_limpieza(db, elemento_id)

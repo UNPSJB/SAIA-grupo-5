@@ -73,25 +73,21 @@ def modificar_tipo_elemento_limpieza(db: Session, tipo_id: int, tipo: schemas.Ti
     return db_tipo
 
 
-def eliminar_tipo_elemento_limpieza(db: Session, tipo_id: int) -> schemas.TipoElementoLimpieza:
+def cambiar_estado_tipo_elemento_limpieza(db: Session, tipo_id: int) -> schemas.TipoElementoLimpieza:
     db_tipo = leer_tipo_elemento_limpieza(db, tipo_id)
 
-    elemento_activo = db.scalars(
-        select(ElementoLimpieza.id)
-        .where(
-            ElementoLimpieza.tipo_id == tipo_id,
-            ElementoLimpieza.estado == True
-        )
-    ).first()
+    if db_tipo.estado:
+        elemento_activo = db.scalars(
+            select(ElementoLimpieza.id).where(
+                ElementoLimpieza.tipo_id == tipo_id,
+                ElementoLimpieza.estado == True
+            )
+        ).first()
 
-    if elemento_activo:
-        raise exceptions.TipoElementoLimpiezaEnUso()
+        if elemento_activo:
+            raise exceptions.TipoElementoLimpiezaEnUso()
 
-    db.execute(
-        update(TipoElementoLimpieza)
-        .where(TipoElementoLimpieza.id == tipo_id)
-        .values(estado=False)
-    )
+    db_tipo.estado = not db_tipo.estado
 
     db.commit()
     db.refresh(db_tipo)
@@ -220,14 +216,10 @@ def modificar_elemento_limpieza(db: Session, elemento_id: int, elemento: schemas
 
     return db_elemento
 
-def eliminar_elemento_limpieza(db: Session, elemento_id: int) -> schemas.ElementoLimpieza:
+def cambiar_estado_elemento_limpieza(db: Session, elemento_id: int) -> schemas.ElementoLimpieza:
     db_elemento = leer_elemento_limpieza_modelo(db, elemento_id)
 
-    db.execute(
-        update(ElementoLimpieza)
-        .where(ElementoLimpieza.id == db_elemento.id)
-        .values(estado=False)
-    )
+    db_elemento.estado = not db_elemento.estado
 
     db.commit()
     db.refresh(db_elemento)
