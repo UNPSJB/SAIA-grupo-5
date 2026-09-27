@@ -54,6 +54,11 @@ import { NuevoTipoQuimicoPage } from './feature/TiposQuimicos/pages/NuevoTipoQui
 import { EditarTipoQuimicoPage } from './feature/TiposQuimicos/pages/EditarTipoQuimicoPage.tsx'
 import { VerTipoQuimicoPage } from './feature/TiposQuimicos/pages/VerTipoQuimicoPage.tsx'
 
+import { ListPage as ConsumoProductoListPage } from './feature/ConsumoProducto/pages/ListPage.tsx'
+import { EditarConsumoProductoPage } from './feature/ConsumoProducto/pages/EditarConsumoProductoPage.tsx'
+import { NuevoConsumoProductoPage } from './feature/ConsumoProducto/pages/NuevoConsumoProductoPage.tsx'
+import { ConsumoAcumuladoPage } from './feature/ConsumoProducto/pages/ConsumoAcumuladoPage.tsx'
+
 import { Login, NoAutorizado } from './feature/auth'
 import AuthLayout from './layouts/AuthLayout.tsx'
 import { ProtectedRoute } from './components/ProtectedRoute.tsx'
@@ -147,6 +152,17 @@ const router = createBrowserRouter([
               { index: true, element: <PersonalListPage /> },
               { path: 'new', element: <NuevaPersonaPage /> },
               { path: ':id/edit', element: <EditarPersonaPage /> },
+            ],
+          },
+          {
+            path: 'consumos-productos',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <ConsumoProductoListPage /> },
+              { path: 'new', element: <NuevoConsumoProductoPage /> },
+              { path: ':id/edit', element: <EditarConsumoProductoPage /> },
+              { path: 'tarea/:id', element: <ConsumoProductoListPage /> },
+              { path: 'consulta', element: <ConsumoAcumuladoPage /> },
             ],
           },
           {

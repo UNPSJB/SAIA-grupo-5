@@ -107,11 +107,19 @@ export function Nav() {
                         <i className="bi bi-list-check me-2"></i>
                         Tareas
                     </BSNav.Link>
+
+                    {/* Módulo de Personal y consumoProducto solo visible para usuarios con permiso de administrar */}
                     {currentUser?.administrar && (
-                        <BSNav.Link as={NavLink} to="/personal">
-                            <i className="bi bi-people me-2"></i>
-                            Personal
-                        </BSNav.Link>
+                        <>
+                            <BSNav.Link as={NavLink} to="/personal">
+                                <i className="bi bi-people me-2"></i>
+                                Personal
+                            </BSNav.Link>
+                            <BSNav.Link as={NavLink} to="/consumos-productos/consulta">
+                                <i className="bi bi-droplet-half me-2"></i>
+                                Consulta de Consumo
+                            </BSNav.Link>
+                        </>
                     )}
                     {currentUser?.administrar && (
                         <BSNav.Link as={NavLink} to="/historial">
@@ -119,6 +127,7 @@ export function Nav() {
                             Historial
                         </BSNav.Link>
                     )}
+
                 </BSNav>
 
                 <hr className="mt-auto" />
@@ -231,7 +240,7 @@ export function Nav() {
                             Personal
                         </BSNav.Link>
                     )}
-                 </BSNav>
+                </BSNav>
                 <hr className="mt-auto" />
 
                 <div>

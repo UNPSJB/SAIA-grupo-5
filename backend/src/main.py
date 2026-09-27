@@ -14,6 +14,9 @@ from src.tareas_ocurrencia.models import TareaOcurrencia
 from src.superficies.models import Superficie
 from src.elementosLimpieza.models import ElementoLimpieza, TipoElementoLimpieza
 from src.recambiosElementosLimpieza.models import RecambioElementoLimpieza
+from src.insumo_quimico.models import InsumoQuimico
+from src.tipo_quimico.models import TipoQuimico
+from src.consumo_producto.models import ConsumoProducto
 
 # Importamos la configuración validada por Pydantic
 from src.config import settings
@@ -37,6 +40,8 @@ from src.insumo_quimico.router import router as insumo_quimico_router
 from src.tipo_quimico.router import router as tipo_quimico_router
 from src.elementosLimpieza.router import router as elementos_limpieza_router
 from src.recambiosElementosLimpieza.router import router as recambios_elementos_limpieza_router
+from src.consumo_producto.router import router as consumos_router
+
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -65,6 +70,7 @@ app.include_router(auth_router)
 app.include_router(personal_router)
 app.include_router(insumos_router)
 app.include_router(equipos_router)
+
 app.include_router(sector_router)
 app.include_router(plan_limpieza_router)
 app.include_router(tarea_router)
@@ -74,3 +80,5 @@ app.include_router(insumo_quimico_router)
 app.include_router(tipo_quimico_router)
 app.include_router(elementos_limpieza_router)
 app.include_router(recambios_elementos_limpieza_router)
+app.include_router(consumos_router)
+

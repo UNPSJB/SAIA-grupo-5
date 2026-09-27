@@ -2,6 +2,7 @@ import { Badge, Button, Modal } from "react-bootstrap";
 import { useAuth } from "../../../hooks/useAuth";
 import { FRECUENCIA_LABELS, getRelacionNombre, getRelacionTipoLabel, PRIORIDAD_LABELS, PRIORIDAD_VARIANTS } from "../types";
 import type { Tarea } from "../types";
+import { useNavigate } from "react-router-dom";
 
 interface TareaDetalleModalProps {
     tarea: Tarea | null;
@@ -13,6 +14,7 @@ interface TareaDetalleModalProps {
 
 export function TareaDetalleModal({ tarea, onHide, onEditar, onEliminar, onCambiarEstado }: TareaDetalleModalProps) {
     const { currentUser } = useAuth();
+    const navigate = useNavigate();
 
     return (
         <Modal show={tarea !== null} onHide={onHide} size="lg">
@@ -58,6 +60,15 @@ export function TareaDetalleModal({ tarea, onHide, onEditar, onEliminar, onCambi
                             <dt className="col-sm-4">Elementos de limpieza</dt>
                             <dd className="col-sm-8 text-muted">
                                 Todavía no disponible.
+                            </dd>
+
+                            <dt className="col-sm-4">Insumos químicos</dt>
+                            <dd className="col-sm-8">
+                                <Button variant="outline-primary" size="sm" disabled={!tarea.activo}
+                                    onClick={() => navigate(`/consumos-productos/tarea/${tarea.id}`)}
+                                >
+                                    <i className="bi bi-box-arrow-up-right"></i> Ver y agregar insumos
+                                </Button>
                             </dd>
                         </dl>
                     </>
