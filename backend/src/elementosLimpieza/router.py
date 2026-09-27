@@ -1,13 +1,14 @@
 import logging
-from fastapi import APIRouter, Depends
+from fastapi import Depends
 from sqlalchemy.orm import Session
 from src.database import get_db
 from src.elementosLimpieza import schemas, services
+from src.auth.router_base import PermissionedRouter
 
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/elementos-limpieza", tags=["elementos-limpieza"])
+router = PermissionedRouter(prefix="/elementos-limpieza", tags=["elementos-limpieza"])
 
 
 """ Routers para tipo elemento limpieza """
@@ -40,6 +41,10 @@ def create_elemento_limpieza(elemento: schemas.ElementoLimpiezaCreate, db: Sessi
 @router.get("/", response_model=list[schemas.ElementoLimpieza])
 def read_elementos_limpieza(db: Session = Depends(get_db)):
     return services.listar_elementos_limpieza(db)
+
+@router.get("/alertas", response_model=list[schemas.ElementoLimpieza])
+def read_elementos_proximos_a_vencer(db: Session = Depends(get_db)):
+    return services.listar_elementos_proximos_a_vencer(db)
 
 @router.get("/{elemento_id}", response_model=schemas.ElementoLimpieza)
 def read_elemento_limpieza(elemento_id: int, db: Session = Depends(get_db)):

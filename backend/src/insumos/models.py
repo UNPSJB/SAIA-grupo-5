@@ -20,4 +20,11 @@ class Insumo(ModeloBase):
     )
     activo: Mapped[bool] = mapped_column(Boolean, default=True)
 
+    tipo_herencia: Mapped[str] = mapped_column(String(30))
+
+    __mapper_args__ = {
+        "polymorphic_on" : "tipo_herencia",         # Le dice a SQLAlchemy que la columna tipo_herencia es el discriminador para saber si es un insumo normal o quimico
+        "polymorphic_identity" : "general"      # Sirve para que cuando se cree un insumo normal (no quimico) en el campo de tipo_herencia se guarde "general"
+    }
+
 

@@ -1,13 +1,14 @@
 import logging
-from fastapi import APIRouter, Depends
+from fastapi import Depends
 from sqlalchemy.orm import Session
 from src.database import get_db
 from src.recambiosElementosLimpieza import schemas, services
+from src.auth.router_base import PermissionedRouter
 
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/recambios-elementos-limpieza", tags=["recambios-elementos-limpieza"])
+router = PermissionedRouter(prefix="/recambios-elementos-limpieza", tags=["recambios-elementos-limpieza"])
 
 
 @router.post("/elemento/{elemento_id}", response_model=schemas.RecambioElementoLimpieza)

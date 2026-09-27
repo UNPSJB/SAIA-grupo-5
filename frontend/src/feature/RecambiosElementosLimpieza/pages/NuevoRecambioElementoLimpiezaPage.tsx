@@ -7,6 +7,7 @@ import { RecambioElementoLimpiezaForm } from "../components/RecambioElementoLimp
 import { api } from "../../../libs/axios";
 import type { NewRecambioElementoLimpieza } from "../types";
 import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
+import { getErrorMessage } from "../../../libs/errors";
 
 export function NuevoRecambioElementoLimpiezaPage() {
     const navigate = useNavigate();
@@ -25,17 +26,9 @@ export function NuevoRecambioElementoLimpiezaPage() {
 
             navigate(elementoId ? `/elementos-limpieza/${idElemento}` : "/recambios-elementos-limpieza");
         } catch (error: any) {
-            let mensaje = "No se pudo registrar el recambio.";
-
-            if (error.response?.data?.detail) {
-                if (Array.isArray(error.response.data.detail)) {
-                    mensaje = error.response.data.detail[0].msg;
-                } else {
-                    mensaje = error.response.data.detail;
-                }
-            }
-
-            mostrarAlertaError(mensaje);
+            mostrarAlertaError(
+                getErrorMessage(error, "No se pudo registrar el recambio.")
+            );
             console.log(error);
         }
     };

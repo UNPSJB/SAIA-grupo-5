@@ -1,4 +1,9 @@
+import { useAuth } from "../../hooks/useAuth";
+import { AlertasRecambios } from "./components/AlertasRecambios";
+
 export function HomePage() {
+    const { currentUser } = useAuth();
+
     return (
         <div className="cover-container mx-auto p-5">
             <main className="px-3">
@@ -8,6 +13,8 @@ export function HomePage() {
                     tener valores de referencia y tener en cuenta a
                     la hora de empezar con el proyecto de Desarrollo.
                 </p>
+
+                {currentUser?.administrar && <AlertasRecambios />}
             </main>
         </div>
     )

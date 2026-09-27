@@ -1,0 +1,11 @@
+export type PlanLimpieza = {
+    id: number
+    nombre: string
+    descripcion: string | null
+    activo: boolean
+}
+
+export type NewPlanLimpieza = {
+    nombre: string
+    descripcion: string | null
+}

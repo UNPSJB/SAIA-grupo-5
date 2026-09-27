@@ -5,6 +5,7 @@ from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 from src.elementosLimpieza.models import ElementoLimpieza, TipoElementoLimpieza
 from src.elementosLimpieza import schemas, exceptions
+from src.elementosLimpieza.constants import DIAS_ALERTA_RECAMBIO
 from src.recambiosElementosLimpieza.models import RecambioElementoLimpieza
 
 logger = logging.getLogger(__name__)
@@ -159,6 +160,24 @@ def listar_elementos_limpieza(db: Session) -> List[schemas.ElementoLimpieza]:
     for elemento in elementos:
         elemento_schema = schemas.ElementoLimpieza.model_validate(elemento)
         elemento_schema.dias_restantes = calcular_dias_restantes(db, elemento)
+        resultado.append(elemento_schema)
+
+    return resultado
+
+def listar_elementos_proximos_a_vencer(
+    db: Session, dias_umbral: int = DIAS_ALERTA_RECAMBIO
+) -> List[schemas.ElementoLimpieza]:
+    elementos = db.scalars(select(ElementoLimpieza).where(ElementoLimpieza.estado == True)).all()
+
+    resultado = []
+
+    for elemento in elementos:
+        dias_restantes = calcular_dias_restantes(db, elemento)
+        if dias_restantes is None or dias_restantes > dias_umbral:
+            continue
+
+        elemento_schema = schemas.ElementoLimpieza.model_validate(elemento)
+        elemento_schema.dias_restantes = dias_restantes
         resultado.append(elemento_schema)
 
     return resultado

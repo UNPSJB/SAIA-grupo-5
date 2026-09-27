@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { mutate } from "swr";
+import { useAuth } from "../../../hooks/useAuth";
 import { Alert, Button, Col, Container, Form, Row, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { type TableColumn } from "react-data-table-component";
@@ -14,6 +15,7 @@ import type { TipoElementoLimpieza } from "../../TiposElementoLimpieza/types";
 
 export function ElementosLimpiezaPage() {
     const navigate = useNavigate();
+    const { currentUser } = useAuth();
     const [search, setSearch] = useState("");
     const [elementoToDelete, setElementoToDelete] = useState<ElementoLimpieza | null>(null);
 
@@ -183,10 +185,11 @@ export function ElementosLimpiezaPage() {
                         title="Ver detalle"
                         onClick={() => navigate(`/elementos-limpieza/${row.id}`)}
                     >
-                        <i className="bi bi-eye"></i>
+                        <i className={`bi bi-eye ${!currentUser?.administrar ? "me-1" : ""}`}></i>
+                        {!currentUser?.administrar && "Ver detalle"}
                     </Button>
 
-                    {row.estado && (
+                    {currentUser?.administrar && row.estado && (
                         <>
                             <Button
                                 variant="outline-primary"
@@ -232,16 +235,18 @@ export function ElementosLimpiezaPage() {
                     {subHeaderComponentMemo}
                 </Col>
 
-                <Col xs="auto" className="d-flex justify-content-end">
-                    <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => navigate("/elementos-limpieza/new")}
-                        style={{ whiteSpace: "nowrap" }}
-                    >
-                        + Nuevo Elemento
-                    </Button>
-                </Col>
+                {currentUser?.administrar && (
+                    <Col xs="auto" className="d-flex justify-content-end">
+                        <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => navigate("/elementos-limpieza/new")}
+                            style={{ whiteSpace: "nowrap" }}
+                        >
+                            + Nuevo Elemento
+                        </Button>
+                    </Col>
+                )} 
             </Row>
 
             <AppTable

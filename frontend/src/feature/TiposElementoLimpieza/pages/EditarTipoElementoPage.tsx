@@ -8,6 +8,7 @@ import { useApi } from "../../../hooks/useApi";
 import { api } from "../../../libs/axios";
 import type { TipoElementoLimpieza } from "../types";
 import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
+import { getErrorMessage } from "../../../libs/errors";
 
 export function EditarTipoElementoPage() {
     const navigate = useNavigate();
@@ -33,17 +34,9 @@ export function EditarTipoElementoPage() {
             mostrarAlertaExito("El tipo de elemento se editó correctamente.");
             navigate("/tipos-elementos-limpieza");
         } catch (error: any) {
-            let mensaje = "No se pudo editar el tipo de elemento.";
-
-            if (error.response?.data?.detail) {
-                if (Array.isArray(error.response.data.detail)) {
-                    mensaje = error.response.data.detail[0].msg;
-                } else {
-                    mensaje = error.response.data.detail;
-                }
-            }
-
-            mostrarAlertaError(mensaje);
+            mostrarAlertaError(
+                getErrorMessage(error, "No se pudo editar el tipo de elemento.")
+            );
             console.log(error);
         }
     };

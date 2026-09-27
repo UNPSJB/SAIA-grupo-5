@@ -6,12 +6,14 @@ import { type TableColumn } from "react-data-table-component";
 import { AppTable } from "../../../components/AppTable";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
+import { useAuth } from "../../../hooks/useAuth";
 
 import type { RecambioElementoLimpieza } from "../types";
 import type { ElementoLimpieza } from "../../ElementosLimpieza/types";
 
 export function RecambiosElementoLimpiezaPage() {
     const navigate = useNavigate();
+    const { currentUser } = useAuth();
     const [search, setSearch] = useState("");
 
     const { data: recambios, error, isLoading } = useApi<RecambioElementoLimpieza[]>("/recambios-elementos-limpieza");
@@ -124,14 +126,16 @@ export function RecambiosElementoLimpiezaPage() {
                 </Col>
 
                 <Col xs="auto" className="d-flex justify-content-end">
-                    <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => navigate("/recambios-elementos-limpieza/new")}
-                        style={{ whiteSpace: "nowrap" }}
-                    >
-                        + Nuevo Recambio
-                    </Button>
+                    {currentUser?.administrar && (
+                        <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => navigate("/recambios-elementos-limpieza/new")}
+                            style={{ whiteSpace: "nowrap" }}
+                        >
+                            + Nuevo Recambio
+                        </Button>
+                    )}
                 </Col>
             </Row>
 

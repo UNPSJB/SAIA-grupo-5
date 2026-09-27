@@ -7,6 +7,7 @@ import { api } from "../../../libs/axios";
 import { useApi } from "../../../hooks/useApi";
 import type { ElementoLimpieza, NewElementoLimpieza } from "../types";
 import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
+import { getErrorMessage } from "../../../libs/errors";
 
 export function EditarElementoPage(){
     const navigate = useNavigate();
@@ -22,15 +23,9 @@ export function EditarElementoPage(){
             mostrarAlertaExito("El elemento de limpieza se editó correctamente.");
             navigate("/elementos-limpieza");
         } catch (error: any){
-            let mensaje = "No se pudo editar el elemento de limpieza.";
-            if (error.response?.data?.detail){
-                if (Array.isArray(error.response.data.detail)) {
-                    mensaje = error.response.data.detail[0].msg;
-                } else {
-                    mensaje = error.response.data.detail;
-                }
-            }
-            mostrarAlertaError(mensaje);
+            mostrarAlertaError(
+                getErrorMessage(error, "No se pudo editar el elemento de limpieza.")
+            );
             console.log(error);
         }
     };
@@ -44,23 +39,23 @@ export function EditarElementoPage(){
         </>
     )
 
+        if (error) return (
+        <Container>
+            <PageHeader title="Editar Elemento de Limpieza" />
+            <Row className="justify-content-center">
+                <Col md={6}>
+                    <Alert variant="danger">Ocurrió un error al cargar el Elemento de Limpieza</Alert>
+                </Col>
+            </Row>
+        </Container>
+    )
+
     if (!elementoLimpieza) return (
         <Container>
             <PageHeader title="Elemento de limpieza no encontrado" />
             <Row className="justify-content-center">
                 <Col md={6}>
                     <Alert variant="danger">El elemento de limpieza ingresado no existe</Alert>
-                </Col>
-            </Row>
-        </Container>
-    )
-
-    if (error) return (
-        <Container>
-            <PageHeader title="Editar Elemento de Limpieza" />
-            <Row className="justify-content-center">
-                <Col md={6}>
-                    <Alert variant="danger">Ocurrió un error al cargar el Elemento de Limpieza</Alert>
                 </Col>
             </Row>
         </Container>

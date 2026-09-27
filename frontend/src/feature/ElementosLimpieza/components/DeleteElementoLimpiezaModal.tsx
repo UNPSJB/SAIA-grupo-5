@@ -2,6 +2,7 @@ import { Button, Modal } from "react-bootstrap";
 import { api } from "../../../libs/axios";
 import type { ElementoLimpieza } from "../types";
 import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
+import { getErrorMessage } from "../../../libs/errors";
 
 interface DeleteElementoLimpiezaModalProps {
     elementoLimpieza: ElementoLimpieza | null;
@@ -18,9 +19,12 @@ export function DeleteElementoLimpiezaModal({ elementoLimpieza, onHide, onDelete
             mostrarAlertaExito(`El elemento de limpieza '${elementoLimpieza.nombre}' se dio de baja correctamente.`);
             onDeleted();
         } catch (error: any){
-            const mensajeBackend = error.response?.data?.detail;
-            const mensajeFinal = mensajeBackend || `No se pudo dar de baja el elemento de limpieza '${elementoLimpieza.nombre}'.`;
-            mostrarAlertaError(mensajeFinal);
+            mostrarAlertaError(
+                getErrorMessage(
+                    error,
+                    `No se pudo dar de baja el elemento de limpieza '${elementoLimpieza.nombre}'.`
+                )
+            );
             console.log(error);
         } finally{
             onHide();

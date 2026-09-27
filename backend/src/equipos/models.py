@@ -1,7 +1,12 @@
+from typing import TYPE_CHECKING
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.models import ModeloBase
 from sqlalchemy import ForeignKey
+
+if TYPE_CHECKING:
+    from src.sector.models import Sector
+    from src.tarea.models import Tarea
 
 
 class Equipo(ModeloBase):
@@ -12,15 +17,11 @@ class Equipo(ModeloBase):
     categoria: Mapped[str] = mapped_column(String(100))
     ubicacion: Mapped[str] = mapped_column(String(100))
     estado: Mapped[bool] = mapped_column(default=True)
+    sector_id: Mapped[int] = mapped_column(ForeignKey("sectores.id"), nullable=False)
+    sector: Mapped["Sector"] = relationship(back_populates="equipos")
+    tareas: Mapped[list["Tarea"]] = relationship(back_populates="equipo")
 
     """ # Implementaciones abiertas a cambios futuros
 
-    #Clave foranea al plan de limpieza del equipo
-    plan_limpieza_id: Mapped[int] = mapped_column(ForeignKey("plan_limpieza.id"))
-
-    #Relacion ORM para la navegacion con plan limpieza (Consultar la relacion Plan_Limpieza-Equipo)
-    plan_limpieza: Mapped["Plan_limpieza"] = relationship(back_populates="equipo")
-
     (DISCUTIR COMO RELACIONAR EL EQUIPO CON EL PLAN DE CALIBRACION)
     (DISCUTIR UN CAMPO ESTADO PARA BAJA LOGICA DEPENDIENDO SI QUEREMOS UN HISTORICO CON CALIBRACION) """
-

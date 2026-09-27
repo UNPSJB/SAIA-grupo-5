@@ -7,12 +7,14 @@ import { type TableColumn } from "react-data-table-component";
 import { AppTable } from "../../../components/AppTable";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
+import { useAuth } from "../../../hooks/useAuth";
 
 import { DeleteTipoElementoModal } from "../components/DeleteTipoElementoModal";
 import type { TipoElementoLimpieza } from "../types";
 
 export function TiposElementoLimpiezaPage() {
     const navigate = useNavigate();
+    const { currentUser } = useAuth();
     const [search, setSearch] = useState("");
     const [tipoToDelete, setTipoToDelete] = useState<TipoElementoLimpieza | null>(null);
 
@@ -62,7 +64,7 @@ export function TiposElementoLimpiezaPage() {
         </Container>
     );
 
-    const columns: TableColumn<TipoElementoLimpieza>[] = [
+    const baseColumns: TableColumn<TipoElementoLimpieza>[] = [
         {
             name: "Nombre",
             selector: row => row.nombre,
@@ -95,37 +97,42 @@ export function TiposElementoLimpiezaPage() {
                 </div>
             ),
         },
-        {
-            name: "Acciones",
-            center: true,
-            minWidth: "320px",
-            cell: row => (
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-
-                    <Button
-                        variant="outline-primary"
-                        size="sm"
-                        disabled={!row.estado}
-                        onClick={() => navigate(`/tipos-elementos-limpieza/${row.id}/edit`)}
-                    >
-                        <i className="bi bi-pencil me-1"></i>
-                        Editar
-                    </Button>
-
-                    {row.estado && (
-                        <Button
-                            variant="outline-danger"
-                            size="sm"
-                            onClick={() => setTipoToDelete(row)}
-                        >
-                            <i className="bi bi-trash3 me-1"></i>
-                            Eliminar
-                        </Button>
-                    )}
-                </div>
-            ),
-        },
     ];
+    const columns: TableColumn<TipoElementoLimpieza>[] = currentUser?.administrar
+        ? [
+            ...baseColumns,
+            {
+                name: "Acciones",
+                center: true,
+                minWidth: "320px",
+                cell: row => (
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+
+                        <Button
+                            variant="outline-primary"
+                            size="sm"
+                            disabled={!row.estado}
+                            onClick={() => navigate(`/tipos-elementos-limpieza/${row.id}/edit`)}
+                        >
+                            <i className="bi bi-pencil me-1"></i>
+                            Editar
+                        </Button>
+
+                        {row.estado && (
+                            <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={() => setTipoToDelete(row)}
+                            >
+                                <i className="bi bi-trash3 me-1"></i>
+                                Eliminar
+                            </Button>
+                        )}
+                    </div>
+                ),
+            },
+        ]
+        : baseColumns;
 
     return (
         <Container>
@@ -138,15 +145,17 @@ export function TiposElementoLimpiezaPage() {
                     {subHeaderComponentMemo}
                 </Col>
 
-                <Col xs="auto" className="d-flex justify-content-end">
-                    <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => navigate("/tipos-elementos-limpieza/new")}
-                    >
-                        + Nuevo Tipo
-                    </Button>
-                </Col>
+                {currentUser?.administrar && (
+                    <Col xs="auto" className="d-flex justify-content-end">
+                        <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => navigate("/tipos-elementos-limpieza/new")}
+                        >
+                            + Nuevo Tipo
+                        </Button>
+                    </Col>
+                )}
             </Row>
 
             <AppTable

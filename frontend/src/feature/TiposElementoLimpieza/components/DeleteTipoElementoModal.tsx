@@ -2,6 +2,7 @@ import { Button, Modal } from "react-bootstrap";
 import { api } from "../../../libs/axios";
 import type { TipoElementoLimpieza } from "../types";
 import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
+import { getErrorMessage } from "../../../libs/errors";
 
 interface DeleteTipoElementoLimpiezaModalProps {
     tipoElementoLimpieza: TipoElementoLimpieza | null;
@@ -18,9 +19,12 @@ export function DeleteTipoElementoModal({ tipoElementoLimpieza, onHide, onDelete
             mostrarAlertaExito(`El tipo '${tipoElementoLimpieza.nombre}' se dio de baja correctamente.`);
             onDeleted();
         } catch (error: any){
-            const mensajeBackend = error.response?.data?.detail;
-            const mensajeFinal = mensajeBackend || `No se pudo dar de baja el tipo '${tipoElementoLimpieza.nombre}'.`;
-            mostrarAlertaError(mensajeFinal);
+            mostrarAlertaError(
+                getErrorMessage(
+                    error,
+                    `No se pudo dar de baja el tipo '${tipoElementoLimpieza.nombre}'.`
+                )
+            );
             console.log(error);
         } finally{
             onHide();

@@ -5,6 +5,7 @@ import { mutate } from "swr";
 import { api } from "../../../libs/axios";
 import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
 import type { NewTipoElementoLimpieza } from "../types";
+import { getErrorMessage } from "../../../libs/errors";
 
 interface TipoElementoLimpiezaFormProps {
     onCreado: (tipoId: number) => void;
@@ -29,17 +30,9 @@ export function TipoElementoLimpiezaForm({ onCreado }: TipoElementoLimpiezaFormP
 
             onCreado(response.data.id);
         } catch (error: any) {
-            let mensaje = "No se pudo crear el tipo de elemento.";
-
-            if (error.response?.data?.detail) {
-                if (Array.isArray(error.response.data.detail)) {
-                    mensaje = error.response.data.detail[0].msg;
-                } else {
-                    mensaje = error.response.data.detail;
-                }
-            }
-
-            mostrarAlertaError(mensaje);
+            mostrarAlertaError(
+                getErrorMessage(error, "No se pudo crear el tipo de elemento.")
+            );
             console.log(error);
         }
     };
