@@ -4,25 +4,27 @@ import type { TipoElementoLimpieza } from "../types";
 import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
 import { getErrorMessage } from "../../../libs/errors";
 
-interface DeleteTipoElementoLimpiezaModalProps {
+interface EstadoTipoElementoModalProps {
     tipoElementoLimpieza: TipoElementoLimpieza | null;
     onHide: () => void;
     onDeleted: () => void;
 }
 
-export function DeleteTipoElementoModal({ tipoElementoLimpieza, onHide, onDeleted }: DeleteTipoElementoLimpiezaModalProps) {
-    const handleDarBaja = async () => {
+export function EstadoTipoElementoModal({ tipoElementoLimpieza, onHide, onDeleted }: EstadoTipoElementoModalProps) {
+    const cambiarEstado = async () => {
         if (!tipoElementoLimpieza) return;
 
+        const accion = tipoElementoLimpieza.estado ? "dar de baja" : "dar de alta";
+
         try {
-            await api.delete<TipoElementoLimpieza>(`/elementos-limpieza/tipos/${tipoElementoLimpieza.id}`);
-            mostrarAlertaExito(`El tipo '${tipoElementoLimpieza.nombre}' se dio de baja correctamente.`);
+            await api.patch<TipoElementoLimpieza>(`/elementos-limpieza/tipos/${tipoElementoLimpieza.id}/estado`);
+            mostrarAlertaExito(`El tipo de elemento '${tipoElementoLimpieza.nombre}' se ${tipoElementoLimpieza.estado ? "dio de baja" : "dio de alta"} correctamente.`);
             onDeleted();
         } catch (error: any){
             mostrarAlertaError(
                 getErrorMessage(
                     error,
-                    `No se pudo dar de baja el tipo '${tipoElementoLimpieza.nombre}'.`
+                    `No se pudo ${accion} el tipo de elemento '${tipoElementoLimpieza.nombre}'.`
                 )
             );
             console.log(error);
@@ -31,18 +33,24 @@ export function DeleteTipoElementoModal({ tipoElementoLimpieza, onHide, onDelete
         }
     };
 
+    if (!tipoElementoLimpieza) return null;
+
+    const estaActivo = tipoElementoLimpieza.estado;
+
     return (
-        <Modal show={tipoElementoLimpieza !== null} onHide={onHide}>
+        <Modal show={true} onHide={onHide}>
             <Modal.Header closeButton>
-                <Modal.Title>Dar de baja tipo de elemento</Modal.Title>
+                <Modal.Title>
+                    {estaActivo ? "Dar de baja tipo de elemento" : "Dar de alta tipo de elemento"}
+                </Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                ¿Estás seguro que querés dar de baja el tipo <strong>{tipoElementoLimpieza?.nombre}</strong>?
+                ¿Estás seguro que querés {estaActivo ? "dar de baja" : "dar de alta"} el tipo de elemento <strong>{tipoElementoLimpieza.nombre}</strong>?
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="secondary" onClick={onHide}>Cancelar</Button>
-                <Button variant="danger" onClick={handleDarBaja}>
-                    Dar de baja
+                <Button variant={estaActivo ? "danger" : "success"} onClick={cambiarEstado}>
+                    {estaActivo ? "Dar de baja" : "Dar de alta"}
                 </Button>
             </Modal.Footer>
         </Modal>

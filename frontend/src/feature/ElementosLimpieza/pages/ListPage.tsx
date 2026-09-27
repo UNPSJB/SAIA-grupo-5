@@ -9,7 +9,7 @@ import { AppTable } from "../../../components/AppTable";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 
-import { DeleteElementoLimpiezaModal } from "../components/DeleteElementoLimpiezaModal";
+import { EstadoElementoLimpiezaModal } from "../components/DeleteElementoLimpiezaModal";
 import type { ElementoLimpieza } from "../types";
 import type { TipoElementoLimpieza } from "../../TiposElementoLimpieza/types";
 
@@ -42,7 +42,7 @@ export function ElementosLimpiezaPage() {
                 (elemento.ubicacion ?? "").toLowerCase().includes(busqueda)
             );
         })
-        .sort((a, b) => a.codigo.localeCompare(b.codigo));;
+        .sort((a, b) => a.codigo.localeCompare(b.codigo));
     }, [search, elementos, tipos]);
 
     const subHeaderComponentMemo = useMemo(() => {
@@ -189,33 +189,37 @@ export function ElementosLimpiezaPage() {
                         {!currentUser?.administrar && "Ver detalle"}
                     </Button>
 
-                    {currentUser?.administrar && row.estado && (
+                    {currentUser?.administrar && (
                         <>
-                            <Button
-                                variant="outline-primary"
-                                size="sm"
-                                title="Editar"
-                                onClick={() => navigate(`/elementos-limpieza/${row.id}/edit`)}
-                            >
-                                <i className="bi bi-pencil"></i>
-                            </Button>
+                            {row.estado && (
+                                <>
+                                    <Button
+                                        variant="outline-primary"
+                                        size="sm"
+                                        title="Editar"
+                                        onClick={() => navigate(`/elementos-limpieza/${row.id}/edit`)}
+                                    >
+                                        <i className="bi bi-pencil"></i>
+                                    </Button>
+
+                                    <Button
+                                        variant="outline-success"
+                                        size="sm"
+                                        title="Registrar recambio"
+                                        onClick={() => navigate(`/recambios-elementos-limpieza/new/${row.id}`)}
+                                    >
+                                        <i className="bi bi-arrow-repeat"></i>
+                                    </Button>
+                                </>
+                            )}
 
                             <Button
-                                variant="outline-success"
+                                variant={row.estado ? "outline-danger" : "outline-success"}
                                 size="sm"
-                                title="Registrar recambio"
-                                onClick={() => navigate(`/recambios-elementos-limpieza/new/${row.id}`)}
-                            >
-                                <i className="bi bi-arrow-repeat"></i>
-                            </Button>
-
-                            <Button
-                                variant="outline-danger"
-                                size="sm"
-                                title="Dar de baja"
+                                title={row.estado ? "Dar de baja" : "Dar de alta"}
                                 onClick={() => setElementoToDelete(row)}
                             >
-                                <i className="bi bi-trash3"></i>
+                                <i className={`bi ${row.estado ? "bi-trash3" : "bi-check-circle"}`}></i>
                             </Button>
                         </>
                     )}
@@ -254,7 +258,7 @@ export function ElementosLimpiezaPage() {
                 data={filteredElementos}
             />
 
-            <DeleteElementoLimpiezaModal
+            <EstadoElementoLimpiezaModal
                 elementoLimpieza={elementoToDelete}
                 onHide={() => setElementoToDelete(null)}
                 onDeleted={() => mutate("/elementos-limpieza")}

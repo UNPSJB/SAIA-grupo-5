@@ -9,7 +9,7 @@ import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 import { useAuth } from "../../../hooks/useAuth";
 
-import { DeleteTipoElementoModal } from "../components/DeleteTipoElementoModal";
+import { EstadoTipoElementoModal } from "../components/DeleteTipoElementoModal";
 import type { TipoElementoLimpieza } from "../types";
 
 export function TiposElementoLimpiezaPage() {
@@ -104,30 +104,30 @@ export function TiposElementoLimpiezaPage() {
             {
                 name: "Acciones",
                 center: true,
-                minWidth: "320px",
+                minWidth: "220px",
                 cell: row => (
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-
-                        <Button
-                            variant="outline-primary"
-                            size="sm"
-                            disabled={!row.estado}
-                            onClick={() => navigate(`/tipos-elementos-limpieza/${row.id}/edit`)}
-                        >
-                            <i className="bi bi-pencil me-1"></i>
-                            Editar
-                        </Button>
-
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
                         {row.estado && (
                             <Button
-                                variant="outline-danger"
+                                variant="outline-primary"
                                 size="sm"
-                                onClick={() => setTipoToDelete(row)}
+                                title="Editar"
+                                onClick={() => navigate(`/tipos-elementos-limpieza/${row.id}/edit`)}
                             >
-                                <i className="bi bi-trash3 me-1"></i>
-                                Eliminar
+                                <i className="bi bi-pencil me-1"></i>
+                                Editar
                             </Button>
                         )}
+
+                        <Button
+                            variant={row.estado ? "outline-danger" : "outline-success"}
+                            size="sm"
+                            title={row.estado ? "Dar de baja" : "Dar de alta"}
+                            onClick={() => setTipoToDelete(row)}
+                        >
+                            <i className={`bi ${row.estado ? "bi-trash3 me-1" : "bi-check-circle me-1"}`}></i>
+                            {row.estado ? " Dar de baja" : " Dar de alta"}
+                        </Button>
                     </div>
                 ),
             },
@@ -163,7 +163,7 @@ export function TiposElementoLimpiezaPage() {
                 data={filteredTipos}
             />
 
-            <DeleteTipoElementoModal
+            <EstadoTipoElementoModal
                 tipoElementoLimpieza={tipoToDelete}
                 onHide={() => setTipoToDelete(null)}
                 onDeleted={() => mutate("/elementos-limpieza/tipos")}
