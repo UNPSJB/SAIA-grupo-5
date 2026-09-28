@@ -117,7 +117,7 @@ def crear_elemento_limpieza(db: Session, elemento: schemas.ElementoLimpiezaCreat
     tipo = db.scalar(
         select(TipoElementoLimpieza)
         .where(TipoElementoLimpieza.id == elemento.tipo_id,
-               TipoElementoLimpieza.estado == True)
+                TipoElementoLimpieza.estado == True)
     )
 
     if tipo is None:
@@ -219,8 +219,13 @@ def modificar_elemento_limpieza(db: Session, elemento_id: int, elemento: schemas
 def cambiar_estado_elemento_limpieza(db: Session, elemento_id: int) -> schemas.ElementoLimpieza:
     db_elemento = leer_elemento_limpieza_modelo(db, elemento_id)
 
-    db_elemento.estado = not db_elemento.estado
+    if not db_elemento.estado:
+        tipo = db.get(TipoElementoLimpieza, db_elemento.tipo_id)
 
+        if tipo is None or not tipo.estado:
+            raise exceptions.TipoElementoInactivo()
+
+    db_elemento.estado = not db_elemento.estado
     db.commit()
     db.refresh(db_elemento)
 

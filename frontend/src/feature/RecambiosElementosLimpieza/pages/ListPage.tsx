@@ -116,7 +116,7 @@ export function RecambiosElementoLimpiezaPage() {
 
     return (
         <Container>
-            <Row className="p-2" align-items-center>
+            <Row className="p-2 align-items-center">
                 <Col>
                     <PageHeader title="Recambios de Elementos de Limpieza" />
                 </Col>

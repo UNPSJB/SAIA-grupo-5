@@ -136,7 +136,7 @@ export function TiposElementoLimpiezaPage() {
 
     return (
         <Container>
-            <Row className="p-2" align-items-center>
+            <Row className="p-2 align-items-center">
                 <Col>
                     <PageHeader title="Tipos de Elementos de Limpieza" />
                 </Col>
