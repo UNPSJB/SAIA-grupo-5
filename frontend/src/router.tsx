@@ -19,6 +19,19 @@ import { ListPage as PersonalListPage } from './feature/Personal/pages/ListPage.
 import { EditarPersonaPage } from './feature/Personal/pages/EditarPersonaPage.tsx'
 import { NuevaPersonaPage } from './feature/Personal/pages/NuevaPersonaPage.tsx'
 
+import { ElementosLimpiezaPage } from './feature/ElementosLimpieza/pages/ListPage.tsx';
+import { NuevoElementoPage } from "./feature/ElementosLimpieza/pages/NuevoElementoPage";
+import { VerElementoPage } from './feature/ElementosLimpieza/pages/VerElementoPage.tsx'
+import { EditarElementoPage } from './feature/ElementosLimpieza/pages/EditarElementoPage.tsx'
+
+import { TiposElementoLimpiezaPage } from './feature/TiposElementoLimpieza/pages/ListPage.tsx'
+import { NuevoTipoElementoPage } from './feature/TiposElementoLimpieza/pages/NuevoTipoElementoPage.tsx'
+import { EditarTipoElementoPage } from './feature/TiposElementoLimpieza/pages/EditarTipoElementoPage.tsx'
+
+import { RecambiosElementoLimpiezaPage } from './feature/RecambiosElementosLimpieza/pages/ListPage.tsx'
+import { NuevoRecambioElementoLimpiezaPage } from './feature/RecambiosElementosLimpieza/pages/NuevoRecambioElementoLimpiezaPage.tsx'
+import { VerRecambioElementoLimpiezaPage } from './feature/RecambiosElementosLimpieza/pages/VerRecambioElementoLimpiezaPage.tsx'
+
 import { ListPage as ChecklistListPage } from './feature/Checklist/pages/ListPage.tsx'
 import { SuperficiesPage } from './feature/Superficies/pages/ListPage.tsx';
 import { NuevaSuperficiePage } from './feature/Superficies/pages/NuevoSuperficiePage.tsx';
@@ -31,6 +44,7 @@ import { EditarPlanLimpiezaPage } from './feature/PlanesLimpieza/pages/EditarPla
 import { TareasPage } from './feature/Tareas/pages/ListPage.tsx';
 import { HistorialPage } from './feature/Historial/pages/ListPage.tsx';
 import { ListPage as InsumoQuimicoListPage } from './feature/InsumosQuimicos/pages/ListPage.tsx'
+
 import { NuevoInsumoQuimicoPage } from './feature/InsumosQuimicos/pages/NuevoInsumoQuimicoPage.tsx'
 import { EditarInsumoQuimicoPage } from './feature/InsumosQuimicos/pages/EditarInsumoQuimicoPage.tsx'
 import { VerInsumoQuimicoPage } from './feature/InsumosQuimicos/pages/VerInsumoQuimicoPage.tsx'
@@ -39,6 +53,11 @@ import { ListPage as TipoQuimicoListPage } from './feature/TiposQuimicos/pages/L
 import { NuevoTipoQuimicoPage } from './feature/TiposQuimicos/pages/NuevoTipoQuimicoPage.tsx'
 import { EditarTipoQuimicoPage } from './feature/TiposQuimicos/pages/EditarTipoQuimicoPage.tsx'
 import { VerTipoQuimicoPage } from './feature/TiposQuimicos/pages/VerTipoQuimicoPage.tsx'
+
+import { ListPage as ConsumoProductoListPage } from './feature/ConsumoProducto/pages/ListPage.tsx'
+import { EditarConsumoProductoPage } from './feature/ConsumoProducto/pages/EditarConsumoProductoPage.tsx'
+import { NuevoConsumoProductoPage } from './feature/ConsumoProducto/pages/NuevoConsumoProductoPage.tsx'
+import { ConsumoAcumuladoPage } from './feature/ConsumoProducto/pages/ConsumoAcumuladoPage.tsx'
 
 import { Login, NoAutorizado } from './feature/auth'
 import AuthLayout from './layouts/AuthLayout.tsx'
@@ -136,6 +155,17 @@ const router = createBrowserRouter([
             ],
           },
           {
+            path: 'consumos-productos',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <ConsumoProductoListPage /> },
+              { path: 'new', element: <NuevoConsumoProductoPage /> },
+              { path: ':id/edit', element: <EditarConsumoProductoPage /> },
+              { path: 'tarea/:id', element: <ConsumoProductoListPage /> },
+              { path: 'consulta', element: <ConsumoAcumuladoPage /> },
+            ],
+          },
+          {
             path: 'superficies',
             children: [
               { index: true, element: <SuperficiesPage /> },
@@ -149,6 +179,32 @@ const router = createBrowserRouter([
               { index: true, element: <PlanesLimpiezaPage /> },
               { path: 'new', element: <NuevoPlanLimpiezaPage /> },
               { path: ':id/edit', element: <EditarPlanLimpiezaPage /> },
+            ],
+          },
+          {
+            path: 'elementos-limpieza',
+            children: [
+                { index: true, element: <ElementosLimpiezaPage /> },
+                { path: 'new', element: <NuevoElementoPage/>},
+                { path: ':id/edit', element: <EditarElementoPage/>},
+                { path: ':id', element: <VerElementoPage/>},
+            ],
+          },
+          {
+            path: "tipos-elementos-limpieza",
+            children: [
+                { index: true, element: <TiposElementoLimpiezaPage /> },
+                { path: "new", element: <NuevoTipoElementoPage /> },
+                { path: ":id/edit", element: <EditarTipoElementoPage /> },
+            ],
+          },
+          {
+            path: "recambios-elementos-limpieza",
+            children: [
+                { index: true, element: <RecambiosElementoLimpiezaPage /> },
+                { path: "new", element: <NuevoRecambioElementoLimpiezaPage /> },
+                { path: "new/:elementoId", element: <NuevoRecambioElementoLimpiezaPage /> },
+                { path: ":id", element: <VerRecambioElementoLimpiezaPage /> },
             ],
           },
           { path: 'tareas', element: <TareasPage /> },
@@ -165,7 +221,6 @@ const router = createBrowserRouter([
           }
         ],
       },
-      { path: '*', element: <Page404 /> },
 
     ],
   },
