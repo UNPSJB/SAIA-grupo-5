@@ -76,7 +76,7 @@ export function VerDetalleTareaOcurrenciaPage() {
 
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
                                 <Col sm={4} className="fw-bold text-secondary">Frecuencia</Col>
-                                <Col sm={8} className="fs-5">{tarea.frecuencia_snap} días</Col>
+                                <Col sm={8} className="fs-5">{tarea.frecuencia_snap} {tarea.frecuencia_snap === "1" ? "dia" : "dias"}</Col>
                             </Row>
 
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
