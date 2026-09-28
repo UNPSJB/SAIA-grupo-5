@@ -67,38 +67,63 @@ export function EditarTipoElementoPage() {
                 <div className="col-md-6 mx-auto">
                     <Form onSubmit={handleSubmit(actualizarTipo)} className="p-4 border rounded bg-white shadow-sm mt-3">
 
-                        <Form.Group className="mb-3">
-                            <Form.Label className="fw-bold">Nombre</Form.Label>
+                        <Form.Group className="mb-3 text-start" controlId="formNombreTipo">
+                            <Form.Label className="p-1 fw-bold">
+                                Nombre del Tipo *
+                            </Form.Label>
+
                             <Form.Control
                                 {...register("nombre", {
-                                    required: "El nombre es obligatorio."
+                                    required: "El nombre es obligatorio.",
+                                    minLength: {
+                                        value: 3,
+                                        message: "El nombre debe tener al menos 3 caracteres."
+                                    },
+                                    maxLength: {
+                                        value: 100,
+                                        message: "El nombre no puede superar los 100 caracteres."
+                                    },
+                                    validate: (value) =>
+                                        value.trim() !== "" ||
+                                        "El nombre no puede ser solo espacios en blanco."
                                 })}
                                 isInvalid={!!errors.nombre}
                             />
+
                             <Form.Control.Feedback type="invalid">
                                 {errors.nombre?.message}
                             </Form.Control.Feedback>
                         </Form.Group>
 
-                        <Form.Group className="mb-3">
-                            <Form.Label className="fw-bold">Prefijo</Form.Label>
+                        <Form.Group className="mb-3 text-start" controlId="formPrefijoTipo">
+                            <Form.Label className="p-1 fw-bold">
+                                Prefijo
+                            </Form.Label>
+
                             <Form.Control
                                 value={tipo.prefijo}
                                 disabled
                             />
                         </Form.Group>
 
-                        <Button
-                            variant="secondary"
-                            type="button"
-                            onClick={() => navigate("/tipos-elementos-limpieza")}
-                        >
-                            Cancelar
-                        </Button>
+                        <div className="d-flex justify-content-center gap-2">
+                            <Button
+                                variant="secondary"
+                                type="button"
+                                onClick={() => navigate("/tipos-elementos-limpieza")}
+                            >
+                                <i className="bi bi-x-circle me-1"></i>
+                                Cancelar
+                            </Button>
 
-                        <Button className="ms-2" type="submit">
-                            Editar Tipo
-                        </Button>
+                            <Button
+                                variant="primary"
+                                type="submit"
+                            >
+                                <i className="bi bi-floppy me-1"></i>
+                                Editar Tipo
+                            </Button>
+                        </div>
                     </Form>
                 </div>
             </Container>

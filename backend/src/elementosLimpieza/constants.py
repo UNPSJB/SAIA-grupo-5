@@ -8,3 +8,4 @@ class ErrorCode:
     TIPO_ELEMENTO_DUPLICADO = "Tipo de elemento de limpieza duplicado"
     PREFIJO_TIPO_ELEMENTO_DUPLICADO = "El prefijo del tipo de elemento de limpieza ya existe"
     TIPO_ELEMENTO_EN_USO = "No se puede dar de baja el tipo porque tiene elementos activos asociados"
+    TIPO_ELEMENTO_INACTIVO = "No se puede dar de alta el elemento porque su tipo está dado de baja"
