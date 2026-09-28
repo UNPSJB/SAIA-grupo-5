@@ -1,4 +1,5 @@
 # scripts/seed_all.py
+import src.all_models
 """
 Corre todos los scripts de seed
 

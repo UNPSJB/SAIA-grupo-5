@@ -5,6 +5,7 @@ from src.database import get_db
 from src.sector import schemas, services
 from src.equipos import schemas as equipos_schemas
 from src.superficies import schemas as superficies_schemas
+from src.auth.dependencies import tiene_permiso_administrar
 from src.auth.router_base import PermissionedRouter
 
 # Creamos un logger para este módulo específico. Más info.: https://docs.python.org/3/library/logging.html
@@ -19,11 +20,12 @@ router = PermissionedRouter(prefix="/sectores", tags=["sectores"])
 def create_sector(sector: schemas.SectorCreate, db: Session = Depends(get_db)):
     return services.crear_sector(db, sector)
 
-@router.get("/", response_model=list[schemas.Sector])
+""" Excepción a la regla por default: el listado completo y leer un sector también requiere admin. """
+@router.get("/", response_model=list[schemas.Sector], dependencies=[Depends(tiene_permiso_administrar)])
 def read_sectores(db: Session = Depends(get_db)):
     return services.listar_sectores(db)
 
-@router.get("/{sector_id}", response_model=schemas.Sector)
+@router.get("/{sector_id}", response_model=schemas.Sector, dependencies=[Depends(tiene_permiso_administrar)])
 def read_sector(sector_id: int, db: Session = Depends(get_db)):
     return services.leer_sector(db, sector_id)
 

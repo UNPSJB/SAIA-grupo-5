@@ -230,7 +230,7 @@ export function ElementosLimpiezaPage() {
 
     return (
         <Container>
-            <Row className="p-2" align-items-center>
+            <Row className="p-2 align-items-center">
                 <Col>
                     <PageHeader title="Elementos de Limpieza" />
                 </Col>

@@ -17,3 +17,6 @@ class PrefijoTipoElementoLimpiezaDuplicado(BadRequest):
 
 class TipoElementoLimpiezaEnUso(BadRequest):
     DETAIL = ErrorCode.TIPO_ELEMENTO_EN_USO
+
+class TipoElementoInactivo(BadRequest):
+    DETAIL = ErrorCode.TIPO_ELEMENTO_INACTIVO
