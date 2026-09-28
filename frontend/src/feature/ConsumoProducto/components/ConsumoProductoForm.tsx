@@ -29,7 +29,7 @@ export function ConsumoProductoForm({ textoBoton, onSubmit, valoresIniciales, so
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {   
     e.preventDefault();
     setValidated(true);
-    if (!tarea_id || !insumo_quimico_id || !cantidad_aproximada.trim() || !unidad_medida) return; // corta acá si falta algo
+    if (!tarea_id || !insumo_quimico_id || !cantidad_aproximada || !unidad_medida) return; // corta acá si falta algo
     onSubmit({ tarea_id: Number(tarea_id), insumo_quimico_id: Number(insumo_quimico_id),
         cantidad_aproximada: Number(cantidad_aproximada), unidad_medida: unidad_medida as UnidadMedida });
   }
@@ -92,17 +92,29 @@ export function ConsumoProductoForm({ textoBoton, onSubmit, valoresIniciales, so
                 </Form.Group>
             </Col>
         </Row>
+        <Row>
+          <Col md={12}>
+                <Form.Group className="mb-3 text-start" controlId="formDilucion">
+                    <Form.Label className="p-1 fw-bold">Dilución</Form.Label>
+                    <div className="form-control bg-light">
+                      {insumos?.find(
+                        (insumo) => String(insumo.id) === String(insumo_quimico_id)
+                      )?.dilucion || "Seleccione un insumo"}
+                    </div>
+                </Form.Group>
+            </Col>
+        </Row>
         <Form.Group className="mb-3 text-start" controlId="formCantidadAproximada">
             <Form.Label className="p-1 fw-bold">Cantidad (aproximada)</Form.Label>
             <Form.Control
                 required
-                type="float"
+                type="number"
                 placeholder="Ingrese la cantidad"
                 value={cantidad_aproximada} onChange={(e) => setCantidadAproximada(e.target.value)}
-                isInvalid={validated && !cantidad_aproximada.trim()}
+                isInvalid={validated && !cantidad_aproximada}
             />
             <Form.Control.Feedback type="invalid">
-                La cantidad es obligatoria.
+                La cantidad es obligatoria y debe ser un numero.
             </Form.Control.Feedback>
         </Form.Group>
 

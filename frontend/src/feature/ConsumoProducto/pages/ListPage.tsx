@@ -67,18 +67,20 @@ export function ListPage() {
             grow: 2,
         },
         {
-            name: "Cantidad",
+            name: 'Cantidad',
             selector: row => row.cantidad_aproximada,
             sortable: true,
             center: true,
+            minWidth: '200px',
             grow: 1,
-
+        },
+        {
+            name: 'Unidad de medida',
+            selector: row => row.unidad_medida,
+            sortable: true,
+            center: true,
             cell: row => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span>
-                        {row.cantidad_aproximada}
-                    </span>
-
                     <div
                         style={{
                             padding: '4px 12px',
@@ -90,7 +92,7 @@ export function ListPage() {
                             alignItems: 'center',
                             justifyContent: 'center',
                             whiteSpace: 'nowrap',
-                        }}      // Se modifico para poder poner las unidades de medida con los nombres completos y que se vean bien
+                        }}
                     >
                         {row.unidad_medida}
                     </div>
