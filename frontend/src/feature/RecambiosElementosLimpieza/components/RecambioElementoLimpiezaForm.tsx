@@ -111,9 +111,10 @@ export function RecambioElementoLimpiezaForm({ elementoId, onSubmit }: RecambioE
                 <Button
                     variant="secondary"
                     type="button"
-                    onClick={() => navigate(elementoId ? `/elementos-limpieza/${elementoId}` : "/recambios-elementos-limpieza")}
+                    onClick={() => navigate(-1)}
                 >
-                    <i className="bi bi-x-circle me-1"></i>Cancelar
+                    <i className="bi bi-x-circle me-1"></i>
+                    Cancelar
                 </Button>
 
                 <Button className="ms-2" variant="primary" type="submit">
