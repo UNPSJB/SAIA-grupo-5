@@ -1,8 +1,10 @@
-from datetime import date
+from datetime import date, datetime
 from src.models import ModeloBase
-from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import String, Date, Enum, Boolean
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import String, Date, DateTime, Text, Enum, Boolean, Float, ForeignKey
 from src.tareas_ocurrencia.constants import EstadoTareaOcurrencia
+from src.personal.models import Persona
+from typing import Optional
 
 
 def _valores_estado(enum_cls):
@@ -16,7 +18,8 @@ class TareaOcurrencia(ModeloBase):
     __tablename__ = "tareas_ocurrencia"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    operario_id: Mapped[int | None] = mapped_column(nullable=True)
+    operario_id: Mapped[int | None] = mapped_column(ForeignKey("personal.id"), nullable=True)
+    operario: Mapped[Optional["Persona"]] = relationship(lazy="joined")        # Uso lazy para no tener que modificar Persona
 
     # Sirven para poder generar el checklist diario
     tarea_id_origen: Mapped[int | None] = mapped_column(nullable=True)
@@ -32,7 +35,18 @@ class TareaOcurrencia(ModeloBase):
     plan_nombre_snap: Mapped[str] = mapped_column(String(60), nullable=False)
 
     fecha: Mapped[date] = mapped_column(Date, nullable=False)
-    fecha_completado: Mapped[date | None] = mapped_column(Date, nullable=True)
+    fecha_completado: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    foto_evidencia: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    # Con estos atributos vamos a poder dejar una marca si se edita una tarea realizada
+    fue_editada: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    fecha_edicion: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    # Atributos para consumo de insumos quimicos
+    insumo_quimico_id: Mapped[int | None] = mapped_column(ForeignKey("insumos_quimicos.id"), nullable=True)
+    cantidad_consumida: Mapped[float | None] = mapped_column(Float, nullable=True)
+
+    observacion: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
     estado: Mapped[EstadoTareaOcurrencia] = mapped_column(
         Enum(EstadoTareaOcurrencia, values_callable=_valores_estado),

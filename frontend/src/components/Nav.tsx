@@ -243,7 +243,14 @@ export function Nav() {
                             Personal
                         </BSNav.Link>
                     )}
+                    {currentUser?.administrar && (
+                        <BSNav.Link as={NavLink} to="/historial" onClick={() => setMostrarMenu(false)}>
+                            <i className="bi bi-clock-history me-2"></i>
+                            Historial
+                        </BSNav.Link>
+                    )}
                 </BSNav>
+                <hr className="mt-auto" />
                 <div className="mt-auto">
                     {currentUser?.administrar && (
                         <NavDropdown
@@ -283,7 +290,6 @@ export function Nav() {
                             </NavDropdown.Item>
                         </NavDropdown>
                     )}
-                    <hr className="my-3" />
 
                     <Button
                         variant="outline-light"

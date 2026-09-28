@@ -78,8 +78,9 @@ export function SuperficiesPage() {
             name: "Nombre",
             selector: row => row.nombre,
             sortable: true,
+            center: true,
             minWidth: '260px',
-            grow: 3,
+            grow: 2,
         },
         {
             name: "Tipo de Contacto",
@@ -94,7 +95,7 @@ export function SuperficiesPage() {
             center: true,
             cell: row => (
                 <Button
-                    variant="outline-primary"
+                    variant="outline-info"
                     size="sm"
                     onClick={() => setSuperficieSectores(row)}
                 >

@@ -1,7 +1,7 @@
 import { Button } from 'react-bootstrap';
 
-import { EstadoTareaOcurrencia } from '../types';
-import type { TareaOcurrencia } from '../types';
+import type { TareaOcurrencia } from '../../TareasOcurrencias/types';
+import { useAuth } from '../../../hooks';
 
 interface TareaMovilProps {
     tarea: TareaOcurrencia;
@@ -9,7 +9,10 @@ interface TareaMovilProps {
 }
 
 export function TareaMovil({ tarea, onCompletar }: TareaMovilProps) {
-    const completada = tarea.estado === EstadoTareaOcurrencia.COMPLETADA;
+    const { currentUser } = useAuth();
+
+    const completada = tarea.estado === 'Completada';
+    const laHizoOtro = completada && tarea.operario_id !== currentUser?.id;
 
     return (
 
@@ -55,16 +58,15 @@ export function TareaMovil({ tarea, onCompletar }: TareaMovilProps) {
             </div>
 
             {/* Boton con tamaño comodo para el dedo y que no se achique mas */}
-            {!completada && (
-                <Button
-                    variant="outline-success"
-                    className="w-100 mt-3"
-                    style={{ minHeight: 44 }}
-                    onClick={() => onCompletar(tarea)}
-                >
-                    <i className="bi bi-check2-circle me-1"></i>Marcar realizada
-                </Button>
-            )}
+            <Button
+                variant={completada ? "outline-info" : "outline-success"}
+                className="w-100 mt-3"
+                style={{ minHeight: 44 }}
+                disabled={laHizoOtro}
+                onClick={() => onCompletar(tarea)}
+            >
+                {completada ? (<><i className="bi bi-pencil me-1"></i>{laHizoOtro ? 'Completada por otro usuario' : 'Editar'}</>) : (<><i className="bi bi-check2-circle me-1"></i>Marcar realizada</>)}
+            </Button>
         </div>
     );
 }

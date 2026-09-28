@@ -1,5 +1,5 @@
 import logging
-from datetime import date
+from datetime import date, datetime
 from typing import List
 from sqlalchemy import select, update, delete
 from sqlalchemy.exc import IntegrityError
@@ -53,15 +53,27 @@ def completar_tarea_ocurrencia(
     db: Session, ocurrencia_id: int, datos: schemas.TareaOcurrenciaCompletar
 ) -> schemas.TareaOcurrencia:
     db_ocurrencia = leer_tarea_ocurrencia(db, ocurrencia_id)
-    db.execute(
-        update(TareaOcurrencia)
-        .where(TareaOcurrencia.id == ocurrencia_id)
-        .values(
-            operario_id=datos.operario_id,
-            estado=EstadoTareaOcurrencia.COMPLETADA,
-            fecha_completado=date.today(),
-        )
-    )
+
+    es_edicion = db_ocurrencia.estado == EstadoTareaOcurrencia.COMPLETADA
+
+    if es_edicion and db_ocurrencia.operario_id != datos.operario_id:
+        raise exceptions.TareaOcurrenciaCompletadaPorOtro()
+
+    db_ocurrencia.operario_id = datos.operario_id
+    db_ocurrencia.estado = EstadoTareaOcurrencia.COMPLETADA
+    db_ocurrencia.foto_evidencia = datos.foto_evidencia
+    db_ocurrencia.insumo_quimico_id = datos.insumo_quimico_id
+    db_ocurrencia.cantidad_consumida = datos.cantidad_consumida
+    db_ocurrencia.observacion = datos.observacion
+
+    if es_edicion:
+        db_ocurrencia.fue_editada = True
+        db_ocurrencia.fecha_edicion = datetime.now()
+        if not db_ocurrencia.fecha_completado:
+            db_ocurrencia.fecha_completado = datetime.now()
+    else:
+        db_ocurrencia.fecha_completado = datetime.now()
+
     db.commit()
     db.refresh(db_ocurrencia)
     return db_ocurrencia

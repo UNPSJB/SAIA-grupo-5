@@ -59,6 +59,8 @@ import { EditarConsumoProductoPage } from './feature/ConsumoProducto/pages/Edita
 import { NuevoConsumoProductoPage } from './feature/ConsumoProducto/pages/NuevoConsumoProductoPage.tsx'
 import { ConsumoAcumuladoPage } from './feature/ConsumoProducto/pages/ConsumoAcumuladoPage.tsx'
 
+import { VerDetalleTareaOcurrenciaPage } from './feature/Historial/pages/VerDetalleTareaOcurrenciaPage.tsx' 
+
 import { Login, NoAutorizado } from './feature/auth'
 import AuthLayout from './layouts/AuthLayout.tsx'
 import { ProtectedRoute } from './components/ProtectedRoute.tsx'
@@ -214,6 +216,13 @@ const router = createBrowserRouter([
             children: [
               { index: true, element: <HistorialPage /> },
             ],
+          },
+          {
+            path: 'tareas-ocurrencia',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { path: ':id', element: <VerDetalleTareaOcurrenciaPage />}
+            ]
           },
           { path: '*', element: <Page404 /> },
           {

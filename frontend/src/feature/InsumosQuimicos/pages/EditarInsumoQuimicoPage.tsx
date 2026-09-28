@@ -22,15 +22,12 @@ export function EditarInsumoQuimicoPage(){
             mostrarAlertaExito("El insumo químico se edito correctamente.");
             navigate("/insumos-quimicos");
         } catch (error: any){
-            let mensaje = "No se pudo editar el insumo químico.";        // Si falla el servidor por alguna razon, creamos este mensaje predeterminado
-            if (error.response?.data?.detail){      // Se le pregunta a Axios si el error tiene una respuesta del backend
-                if (Array.isArray(error.response.data.detail)) {        // Puede pasar que FastAPI mande el detail como un arreglo
-                    mensaje = error.response.data.detail[0].msg;        // Si es un arreglo metemos en mensaje eel primer error de la lista y solamente nos quedamos con el mensaje en si por eso usamos al final .msg
-                } else {
-                    mensaje = error.response.data.detail;   // Si paso por el else el detail es un texto normal y es el texto de las excepciones creadas por nosotros en el backend
-                }
+            let mensajeFinal = "No se pudo editar el insumo químico.";        // Si falla el servidor por alguna razon, creamos este mensaje predeterminado
+            if (error.response?.data?.detail){      
+                const detail = error.response.data.detail;
+                mensajeFinal = Array.isArray(detail) ? detail[0].msg : detail;
             }
-            mostrarAlertaError(mensaje);
+            mostrarAlertaError(mensajeFinal);
             console.log(error);
         }
     };

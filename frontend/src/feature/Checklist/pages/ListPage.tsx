@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import  { useState, useMemo, useEffect } from 'react';
 import { mutate } from 'swr';
 import { Alert, Button, ButtonGroup, Col, Container, Dropdown, Form, Row, Spinner } from 'react-bootstrap';
 import { type TableColumn } from 'react-data-table-component';
@@ -6,15 +6,15 @@ import { type TableColumn } from 'react-data-table-component';
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
 import { useApi } from '../../../hooks/useApi';
-import { api } from '../../../libs/axios';
+import { useAuth } from '../../../hooks';
 
-import { EstadoTareaOcurrencia } from '../types';
-import type { TareaOcurrencia } from '../types';
+
+import type { TareaOcurrencia } from '../../TareasOcurrencias/types';
 
 import { TareaMovil } from '../components/TareaMovil';
+import { CompletarTareaModal } from '../../TareasOcurrencias/components/CompletarTareaModal';
 
 
-const OPERARIO_ID = 1;      // TODO: esta momentaneo hasta implementar login
 
 function fechaHoy(): string {  // Esta cuenta tira la fecha real, toISOString a la noche me daba el dia siguiente
     const hoy = new Date();
@@ -24,9 +24,13 @@ function fechaHoy(): string {  // Esta cuenta tira la fecha real, toISOString a 
 }
 
 export function ListPage() {
+    const { currentUser } = useAuth();
+
     const [search, setSearch] = useState('');
     const { data: tareas, error, isLoading } = useApi<TareaOcurrencia[]>("/tareas-ocurrencia/")
     const [filtroPlan, setFiltroPlan] = useState('');
+
+    const [tareaSeleccionada, setTareaSeleccionada] = useState<TareaOcurrencia | null>(null);
 
     const planesDisponibles = useMemo(() => {
         if (!Array.isArray(tareas)) return [];
@@ -99,20 +103,9 @@ export function ListPage() {
         );
     }, [search, planesDisponibles, filtroPlan]);
 
-    const completarTarea = async (tarea: TareaOcurrencia) => {
-        try {
-            await api.put(`/tareas-ocurrencia/${tarea.id}/completar`, { operario_id: OPERARIO_ID });
-            await mutate("/tareas-ocurrencia/");
-        } catch (error: any) { 
-            if (error.response && error.response.data && error.response.data.detail) {
-                alert(error.response.data.detail);
-            } else {
-                alert("No se pudo completar la tarea."); 
-            }
-
-            console.log(error)
-        }
-    };
+    const abrirModal = (tarea: TareaOcurrencia) => {
+        setTareaSeleccionada(tarea);
+    }
 
     if (isLoading) return (
         <>
@@ -147,7 +140,7 @@ export function ListPage() {
                     <div
                         style={{
                             fontWeight: 600,
-                            textDecoration: row.estado === EstadoTareaOcurrencia.COMPLETADA ? 'line-through' : 'none',
+                            textDecoration: row.estado === 'Completada' ? 'line-through' : 'none',
                         }}
                     >
                         {row.tarea_nombre_snap}
@@ -186,7 +179,7 @@ export function ListPage() {
         },
         {
             name: 'Estado',
-            selector: row => row.estado === EstadoTareaOcurrencia.COMPLETADA ? 'Realizada' : 'Pendiente',
+            selector: row => row.estado === 'Completada' ? 'Realizada' : 'Pendiente',
             sortable: true,
             center: true,
             cell: row => (
@@ -195,8 +188,8 @@ export function ListPage() {
                         style={{
                             padding: '4px 12px',
                             borderRadius: '16px',
-                            background: row.estado === EstadoTareaOcurrencia.COMPLETADA ? '#dcfce7' : '#fef9c3',
-                            color: row.estado === EstadoTareaOcurrencia.COMPLETADA ? '#166534' : '#854d0e',
+                            background: row.estado === 'Completada' ? '#dcfce7' : '#fef9c3',
+                            color: row.estado === 'Completada' ? '#166534' : '#854d0e',
                             fontWeight: 700,
                             display: 'flex',
                             alignItems: 'center',
@@ -204,7 +197,7 @@ export function ListPage() {
                             whiteSpace: 'nowrap',
                         }}
                     >
-                        {row.estado === EstadoTareaOcurrencia.COMPLETADA ? 'Realizada' : 'Pendiente'}
+                        {row.estado === 'Completada' ? 'Realizada' : 'Pendiente'}
                     </div>
                 </div>
             )
@@ -214,19 +207,28 @@ export function ListPage() {
             name: "Acciones",
             center: true,
             minWidth: '180px',
-            cell: (row) => (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    {(row.estado === EstadoTareaOcurrencia.PENDIENTE &&
-                        <Button
-                            variant="outline-success"
-                            size="sm"
-                            onClick={() => completarTarea(row)}
-                        >
-                            <i className="bi bi-check2-circle me-1"></i>Marcar realizada
-                        </Button>
-                    )}
-                </div>
-            )
+            cell: row => {
+                const estaCompletada = row.estado === 'Completada';
+                const laHizoOtro = estaCompletada && row.operario_id !== currentUser?.id;
+                const tienePermiso = currentUser?.operar === true;
+                if (!tienePermiso)
+                    return <>-</>
+                return(
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <Button
+                        variant={estaCompletada ? "outline-info" : "outline-success"}
+                        size="sm"
+                        disabled={laHizoOtro}
+                        title={laHizoOtro ? "Completada por otro usuario" : ""}
+                        onClick={() => abrirModal(row)}
+                    >
+                        {estaCompletada ? (
+                            <><i className="bi bi-pencil me-1"></i>Editar</>) : (<><i className="bi bi-check2-circle me-1"></i>Marcar realizada</>)
+                        }   
+                    </Button>
+                    </div>
+                )
+            },
         },
     ];
 
@@ -249,10 +251,18 @@ export function ListPage() {
             </div>
             <div className="d-lg-none">    {/*Si no es tamaño lg muestra la version movil */}
                 {filteredTareas.map((tarea) => (
-                    <TareaMovil key={tarea.id} tarea={tarea} onCompletar={completarTarea} />
+                    <TareaMovil key={tarea.id} tarea={tarea} onCompletar={abrirModal} />
                 ))}
                 {filteredTareas.length === 0 && <p className="text-muted text-center p-4">No se encontraron resultados.</p>}
             </div>
+                <CompletarTareaModal
+                    tarea={tareaSeleccionada}
+                    onHide={() => setTareaSeleccionada(null)}
+                    onCompleted={() => {
+                        mutate("/tareas-ocurrencia/");
+                    }}
+                />
+            
         </Container>
     );
 }

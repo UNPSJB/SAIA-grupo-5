@@ -64,7 +64,7 @@ export function ListPage() {
             selector: row => row.insumo.nombre,
             sortable: true,
             center: true,
-            grow: 2,
+            grow: 1.5,
         },
         {
             name: 'Cantidad',
