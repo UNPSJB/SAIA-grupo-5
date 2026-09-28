@@ -12,6 +12,8 @@ from src.plan_limpieza.models import PlanLimpieza
 from src.tarea.models import Tarea
 from src.tareas_ocurrencia.models import TareaOcurrencia
 from src.superficies.models import Superficie
+from src.elementosLimpieza.models import ElementoLimpieza, TipoElementoLimpieza
+from src.recambiosElementosLimpieza.models import RecambioElementoLimpieza
 from src.insumo_quimico.models import InsumoQuimico
 from src.tipo_quimico.models import TipoQuimico
 from src.consumo_producto.models import ConsumoProducto
@@ -36,6 +38,8 @@ from src.tareas_ocurrencia.router import router as tareas_ocurrencia_router
 from src.superficies.router import router as superficies_router
 from src.insumo_quimico.router import router as insumo_quimico_router
 from src.tipo_quimico.router import router as tipo_quimico_router
+from src.elementosLimpieza.router import router as elementos_limpieza_router
+from src.recambiosElementosLimpieza.router import router as recambios_elementos_limpieza_router
 from src.consumo_producto.router import router as consumos_router
 
 
@@ -72,8 +76,9 @@ app.include_router(plan_limpieza_router)
 app.include_router(tarea_router)
 app.include_router(tareas_ocurrencia_router)
 app.include_router(superficies_router)
-
 app.include_router(insumo_quimico_router)
 app.include_router(tipo_quimico_router)
+app.include_router(elementos_limpieza_router)
+app.include_router(recambios_elementos_limpieza_router)
 app.include_router(consumos_router)
 
