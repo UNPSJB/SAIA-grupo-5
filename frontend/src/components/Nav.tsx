@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Nav as BSNav, Offcanvas, Button, Badge  } from "react-bootstrap";
+import { Nav as BSNav, NavDropdown, Offcanvas, Button, Badge  } from "react-bootstrap";
 
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../hooks";
@@ -67,18 +67,17 @@ export function Nav() {
                         <i className="bi bi-droplet me-2"></i>
                         Insumos Quimicos
                     </BSNav.Link>
-
-                    <BSNav.Link as={NavLink} to="/tipos-quimicos">
-                        <i className="bi bi-flask me-2"></i>
-                        Tipos de Quimicos
-                    </BSNav.Link>
                     <BSNav.Link as={NavLink} to="/equipos">
                         <i className="bi bi-tools me-2"></i>
                         Equipos
                     </BSNav.Link>
-                    <BSNav.Link as={NavLink} to="/sectores">
-                        <i className="bi bi-geo-alt me-2"></i>
-                        Sectores
+                    <BSNav.Link as={NavLink} to="/elementos-limpieza">
+                        <i className="bi bi-bucket me-2"></i>
+                        Elementos de Limpieza
+                    </BSNav.Link>
+                    <BSNav.Link as={NavLink} to="/recambios-elementos-limpieza">
+                        <i className="bi bi-clock-history me-2"></i>
+                        Recambios Elementos
                     </BSNav.Link>
                     <BSNav.Link as={NavLink} to="/checklist">
                         <i className="bi bi-check2-square me-2"></i>
@@ -96,10 +95,18 @@ export function Nav() {
                         <i className="bi bi-list-check me-2"></i>
                         Tareas
                     </BSNav.Link>
+
+                    {/* Módulo de Personal y consumoProducto solo visible para usuarios con permiso de administrar */}
                     {currentUser?.administrar && (
-                        <BSNav.Link as={NavLink} to="/personal">
-                            <i className="bi bi-people me-2"></i>
-                            Personal
+                            <BSNav.Link as={NavLink} to="/personal">
+                                <i className="bi bi-people me-2"></i>
+                                Personal
+                            </BSNav.Link>
+                    )}
+                    {currentUser?.administrar && (
+                        <BSNav.Link as={NavLink} to="/consumos-productos/consulta">
+                                <i className="bi bi-droplet-half me-2"></i>
+                                Consulta de Consumo
                         </BSNav.Link>
                     )}
                     {currentUser?.administrar && (
@@ -108,11 +115,39 @@ export function Nav() {
                             Historial
                         </BSNav.Link>
                     )}
+
                 </BSNav>
 
-                <hr className="mt-auto" />
+                <div className="mt-auto">
+                    {currentUser?.administrar && (
+                        <NavDropdown
+                            title={
+                                <>
+                                    <i className="bi bi-database me-2"></i>
+                                    Datos Maestros
+                                </>
+                            }
+                            id="datos-maestros-dropdown"
+                        >
+                            <NavDropdown.Item as={NavLink} to="/sectores">
+                                <i className="bi bi-geo-alt me-2"></i>
+                                Sectores
+                            </NavDropdown.Item>
 
-                <div>
+                            <NavDropdown.Item as={NavLink} to="/tipos-elementos-limpieza">
+                                <i className="bi bi-tags me-2"></i>
+                                Tipos de Elementos
+                            </NavDropdown.Item>
+
+                            <NavDropdown.Item as={NavLink} to="/tipos-quimicos">
+                                <i className="bi bi-flask me-2"></i>
+                                Tipos de Químicos
+                            </NavDropdown.Item>
+                        </NavDropdown>
+                    )}
+
+                    <hr className="my-3" />
+
                     <Button
                         variant="outline-light"
                         size="sm"
@@ -174,18 +209,17 @@ export function Nav() {
                         <i className="bi bi-droplet me-2"></i>
                         Insumos Quimicos
                     </BSNav.Link>
-
-                    <BSNav.Link as={NavLink} to="/tipos-quimicos" onClick={() => setMostrarMenu(false)}>
-                        <i className="bi bi-flask me-2"></i>
-                        Tipos de Quimicos
-                    </BSNav.Link>
                     <BSNav.Link as={NavLink} to="/equipos" onClick={() => setMostrarMenu(false)}>
                         <i className="bi bi-tools me-2"></i>
                         Equipos
                     </BSNav.Link>
-                    <BSNav.Link as={NavLink} to="/sectores" onClick={() => setMostrarMenu(false)}>
-                        <i className="bi bi-geo-alt me-2"></i>
-                        Sectores
+                    <BSNav.Link as={NavLink} to="/elementos-limpieza" onClick={() => setMostrarMenu(false)}>
+                        <i className="bi bi-bucket me-2"></i>
+                        Elementos de Limpieza
+                    </BSNav.Link>
+                    <BSNav.Link as={NavLink} to="/recambios-elementos-limpieza" onClick={() => setMostrarMenu(false)}>
+                        <i className="bi bi-clock-history me-2"></i>
+                        Recambios Elementos
                     </BSNav.Link>
                     <BSNav.Link as={NavLink} to="/checklist" onClick={() => setMostrarMenu(false)}>
                         <i className="bi bi-check2-square me-2"></i>
@@ -217,8 +251,46 @@ export function Nav() {
                     )}
                 </BSNav>
                 <hr className="mt-auto" />
+                <div className="mt-auto">
+                    {currentUser?.administrar && (
+                        <NavDropdown
+                            title={
+                                <>
+                                    <i className="bi bi-database me-2"></i>
+                                    Datos Maestros
+                                </>
+                            }
+                            id="datos-maestros-dropdown-mobile"
+                        >
+                            <NavDropdown.Item
+                                as={NavLink}
+                                to="/sectores"
+                                onClick={() => setMostrarMenu(false)}
+                            >
+                                <i className="bi bi-geo-alt me-2"></i>
+                                Sectores
+                            </NavDropdown.Item>
 
-                <div>
+                            <NavDropdown.Item
+                                as={NavLink}
+                                to="/tipos-elementos-limpieza"
+                                onClick={() => setMostrarMenu(false)}
+                            >
+                                <i className="bi bi-tags me-2"></i>
+                                Tipos de Elementos
+                            </NavDropdown.Item>
+
+                            <NavDropdown.Item
+                                as={NavLink}
+                                to="/tipos-quimicos"
+                                onClick={() => setMostrarMenu(false)}
+                            >
+                                <i className="bi bi-flask me-2"></i>
+                                Tipos de Químicos
+                            </NavDropdown.Item>
+                        </NavDropdown>
+                    )}
+
                     <Button
                         variant="outline-light"
                         size="sm"

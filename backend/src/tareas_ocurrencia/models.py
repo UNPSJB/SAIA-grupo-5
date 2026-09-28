@@ -1,8 +1,10 @@
 from datetime import date, datetime
 from src.models import ModeloBase
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Date, DateTime, Text, Enum, Boolean, Float, ForeignKey
 from src.tareas_ocurrencia.constants import EstadoTareaOcurrencia
+from src.personal.models import Persona
+from typing import Optional
 
 
 def _valores_estado(enum_cls):
@@ -16,7 +18,8 @@ class TareaOcurrencia(ModeloBase):
     __tablename__ = "tareas_ocurrencia"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    operario_id: Mapped[int | None] = mapped_column(nullable=True)
+    operario_id: Mapped[int | None] = mapped_column(ForeignKey("personal.id"), nullable=True)
+    operario: Mapped[Optional["Persona"]] = relationship(lazy="joined")        # Uso lazy para no tener que modificar Persona
 
     # Sirven para poder generar el checklist diario
     tarea_id_origen: Mapped[int | None] = mapped_column(nullable=True)

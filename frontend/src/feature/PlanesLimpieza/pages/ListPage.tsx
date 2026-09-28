@@ -13,6 +13,7 @@ import { api } from '../../../libs/axios';
 import { DeletePlanLimpiezaModal } from '../components/DeletePlanLimpiezaModal';
 import { VerDescripcionModal } from '../components/VerDescripcionModal';
 import type { PlanLimpieza } from "../types";
+import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
 
 export function PlanesLimpiezaPage() {
     const navigate = useNavigate();
@@ -25,20 +26,14 @@ export function PlanesLimpiezaPage() {
     const cambiarEstado = async (plan: PlanLimpieza) => {
         try {
             await api.put(`/planes-limpieza/${plan.id}/estado`);
+            mostrarAlertaExito("El plan de limpieza se dio de alta correctamente.") // ESTO ES PROVISORIO
             await mutate("/planes-limpieza/");
         } catch (err: any) {
             const detail = err.response?.data?.detail || `No se pudo ${plan.activo ? 'dar de baja' : 'dar de alta'} el plan de limpieza.`;
-            alert(detail);
+            mostrarAlertaError(detail)
             console.log(err);
         }
     };
-
-    const encabezadoTareas = (label: string) => (
-        <div className="text-center lh-sm">
-            <div className="fw-bold">Tareas</div>
-            <div>{label}</div>
-        </div>
-    );
 
     const baseColumns = useMemo<TableColumn<PlanLimpieza>[]>(() => [
         {
@@ -46,8 +41,9 @@ export function PlanesLimpiezaPage() {
             name: "Nombre",
             selector: row => row.nombre,
             sortable: true,
+            center: true,
             minWidth: '220px',
-            grow: 3,
+            grow: 1.5,
         },
         {
             id: "descripcion",
@@ -55,7 +51,7 @@ export function PlanesLimpiezaPage() {
             center: true,
             cell: row => (
                 <Button
-                    variant="outline-primary"
+                    variant="outline-info"
                     size="sm"
                     onClick={() => setPlanDescripcion(row)}
                 >
@@ -64,7 +60,7 @@ export function PlanesLimpiezaPage() {
             ),
         },
         {
-            name: encabezadoTareas("Todas"),
+            name: "Tareas", // Le ponemos el nombre directo acá
             center: true,
             cell: row => (
                 <Button
@@ -72,48 +68,6 @@ export function PlanesLimpiezaPage() {
                     size="sm"
                     disabled={!row.activo}
                     onClick={() => navigate(`/tareas?plan_id=${row.id}`)}
-                >
-                    <i className="bi bi-box-arrow-up-right"></i> Ver
-                </Button>
-            ),
-        },
-        {
-            name: encabezadoTareas("Sector"),
-            center: true,
-            cell: row => (
-                <Button
-                    variant="outline-primary"
-                    size="sm"
-                    disabled={!row.activo}
-                    onClick={() => navigate(`/tareas?plan_id=${row.id}&relacion=sector`)}
-                >
-                    <i className="bi bi-box-arrow-up-right"></i> Ver
-                </Button>
-            ),
-        },
-        {
-            name: encabezadoTareas("Superficies"),
-            center: true,
-            cell: row => (
-                <Button
-                    variant="outline-primary"
-                    size="sm"
-                    disabled={!row.activo}
-                    onClick={() => navigate(`/tareas?plan_id=${row.id}&relacion=superficie`)}
-                >
-                    <i className="bi bi-box-arrow-up-right"></i> Ver
-                </Button>
-            ),
-        },
-        {
-            name: encabezadoTareas("Equipo"),
-            center: true,
-            cell: row => (
-                <Button
-                    variant="outline-primary"
-                    size="sm"
-                    disabled={!row.activo}
-                    onClick={() => navigate(`/tareas?plan_id=${row.id}&relacion=equipo`)}
                 >
                     <i className="bi bi-box-arrow-up-right"></i> Ver
                 </Button>
@@ -145,8 +99,7 @@ export function PlanesLimpiezaPage() {
                 </div>
             )
         },
-        // eslint-disable-next-line react-hooks/exhaustive-deps -- navigate y los setState son referencias estables
-    ], []);
+    ], [navigate]);
 
     const columns: TableColumn<PlanLimpieza>[] = currentUser?.administrar
         ? [
@@ -172,7 +125,7 @@ export function PlanesLimpiezaPage() {
                                 size="sm"
                                 onClick={() => setPlanToDelete(row)}
                             >
-                                <i className="bi bi-trash3 me-1"></i>Eliminar
+                                <i className="bi-dash-circle me-1"></i>Dar de baja
                             </Button>
                         ) : (
                             <Button
@@ -180,7 +133,7 @@ export function PlanesLimpiezaPage() {
                                 size="sm"
                                 onClick={() => cambiarEstado(row)}
                             >
-                                <i className="bi bi-person-check me-1"></i>Dar de alta
+                                <i className="bi-check-circle me-1"></i>Dar de alta
                             </Button>
                         )}
                     </div>

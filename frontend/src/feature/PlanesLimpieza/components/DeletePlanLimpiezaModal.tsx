@@ -2,6 +2,7 @@ import { Button, Modal } from "react-bootstrap";
 import { api } from "../../../libs/axios";
 import { getErrorMessage } from "../../../libs/errors";
 import type { PlanLimpieza } from "../types";
+import { mostrarAlertaExito, mostrarAlertaError } from "../../../libs/alertas";
 
 interface DeletePlanLimpiezaModalProps {
     plan: PlanLimpieza | null;
@@ -14,11 +15,15 @@ export function DeletePlanLimpiezaModal({ plan, onHide, onDeleted }: DeletePlanL
         if (!plan) return;
         try {
             await api.delete(`/planes-limpieza/${plan.id}`);
+            mostrarAlertaExito(`El plan de limpieza se dio de baja correctamente.`)
             onDeleted();
-            onHide();
         } catch (error: any) {
-            alert(getErrorMessage(error, "No se pudo eliminar el plan de limpieza."));
+            const mensajeBackend = error.response?.data?.detail;
+            const mensajeFinal = mensajeBackend || `No se pudo dar de baja el plan de limpieza.'.`;
+            mostrarAlertaError(mensajeFinal);
             console.log(error);
+        } finally{
+            onHide()
         }
     };
 

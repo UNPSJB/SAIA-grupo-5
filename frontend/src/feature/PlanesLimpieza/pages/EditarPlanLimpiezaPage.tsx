@@ -6,6 +6,7 @@ import { PlanLimpiezaForm } from "../components/PlanLimpiezaForm";
 import { api } from "../../../libs/axios";
 import { useApi } from "../../../hooks/useApi";
 import type { PlanLimpieza, NewPlanLimpieza } from "../types";
+import { mostrarAlertaExito, mostrarAlertaError } from "../../../libs/alertas";
 
 export function EditarPlanLimpiezaPage(){
     const navigate = useNavigate();     // Esto se usa para cambiar de pagina cuando cree el plan
@@ -18,9 +19,15 @@ export function EditarPlanLimpiezaPage(){
             await api.put(`/planes-limpieza/${id}`, datos);
             await mutate("/planes-limpieza/");
             await mutate(`/planes-limpieza/${id}`);
+            mostrarAlertaExito("El plan de limpieza se edito correctamente.")
             navigate("/planes-limpieza");
-        } catch (error){
-            alert("No se pudo editar el plan de limpieza.");
+        } catch (error: any){
+            let mensajeFinal = "No se pudo editar el plan de limpieza"
+            if (error.response?.data?.detail){      
+                const detail = error.response.data.detail;
+                mensajeFinal = Array.isArray(detail) ? detail[0].msg : detail;
+            }
+            mostrarAlertaError(mensajeFinal);
             console.log(error)
         }
     };

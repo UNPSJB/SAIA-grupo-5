@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from src.sector.models import Sector
     from src.superficies.models import Superficie
     from src.equipos.models import Equipo
+    from src.consumos_productos.models import ConsumoProducto
 
 val_frecuencias = ", ".join(str(f.value) for f in Frecuencia)
 
@@ -79,3 +80,6 @@ class Tarea(ModeloBase):
 
     # Para TareaOcurrencia
     ultima_generacion: Mapped[date | None] = mapped_column(Date, nullable=True)
+
+    # Para ConsumoProducto
+    consumos_producto: Mapped[list["ConsumoProducto"]] = relationship(back_populates="tarea")

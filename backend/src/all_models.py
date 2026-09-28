@@ -12,3 +12,6 @@ from src.plan_limpieza.models import PlanLimpieza
 from src.tarea.models import Tarea
 from src.tareas_ocurrencia.models import TareaOcurrencia
 from src.superficies.models import Superficie
+from src.elementosLimpieza.models import ElementoLimpieza, TipoElementoLimpieza
+from src.recambiosElementosLimpieza.models import RecambioElementoLimpieza
+from src.consumo_producto.models import ConsumoProducto

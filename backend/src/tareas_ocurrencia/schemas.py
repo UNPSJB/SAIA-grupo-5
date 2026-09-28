@@ -16,9 +16,16 @@ class TareaOcurrenciaCreate(BaseModel):
     fecha_completado: date | None = None
     estado: EstadoTareaOcurrencia = EstadoTareaOcurrencia.PENDIENTE
 
+class PersonaBaica(BaseModel):
+    nombre: str
+    apellido: str
+    model_config = ConfigDict(from_attributes=True)
+
 class TareaOcurrencia(BaseModel):
     id: int
     operario_id: int | None
+    operario: PersonaBaica | None = None
+
     tarea_nombre_snap: str
     tarea_descripcion_snap: str | None
     frecuencia_snap: str

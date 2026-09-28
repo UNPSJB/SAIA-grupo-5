@@ -4,6 +4,10 @@ export type EstadoTareaOcurrencia = 'Pendiente' | 'Completada' | 'Cancelada';
 export interface TareaOcurrencia {
     id: number;
     operario_id?: number | null;
+    operario?:{
+        nombre: string;
+        apellido: string;
+    } | null;
     
     tarea_nombre_snap: string;
     tarea_descripcion_snap?: string | null;

@@ -20,8 +20,11 @@ export function DeleteTipoQuimicoModal({ tipoQuimico, onHide, onDeleted }: Delet
             mostrarAlertaExito(`El tipo químico '${tipoQuimico.nombre}' se dio de ${estabaActivo ? 'baja' : 'alta'} correctamente.`);
             onDeleted();
         } catch (error: any){
-            const mensajeBackend = error.response?.data?.detail;
-            const mensajeFinal = mensajeBackend || `No se pudo ${estabaActivo ? 'dar de baja' : 'dar de alta'} el tipo químico '${tipoQuimico.nombre}'.`;
+            let mensajeFinal = "No se pudo editar el plan de No se pudo ${estabaActivo ? 'dar de baja' : 'dar de alta'} el tipo químico '${tipoQuimico.nombre}'."
+            if (error.response?.data?.detail){      
+                const detail = error.response.data.detail;
+                mensajeFinal = Array.isArray(detail) ? detail[0].msg : detail;
+            }
             mostrarAlertaError(mensajeFinal);
             console.log(error);
         } finally {

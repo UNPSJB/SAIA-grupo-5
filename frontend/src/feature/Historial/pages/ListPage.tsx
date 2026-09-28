@@ -7,16 +7,15 @@ import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 import { PRIORIDAD_LABELS, PRIORIDAD_VARIANTS, type Prioridad } from "../../Tareas/types";
 
+import { useNavigate } from "react-router-dom";
+
 import {
     ESTADO_HISTORIAL_VARIANTS,
     getEstadoHistorial,
-    type TareaOcurrencia,
 } from "../types";
 
-function formatearFecha(fecha: string | null): string {
-    if (!fecha) return "-";
-    return new Date(`${fecha}T00:00:00`).toLocaleDateString("es-AR");
-}
+import { type TareaOcurrencia } from "../../TareasOcurrencias/types"; 
+
 
 function toISODate(fecha: Date): string {
     return fecha.toISOString().slice(0, 10);
@@ -29,6 +28,8 @@ export function HistorialPage() {
         d.setDate(d.getDate() - 7);
         return d;
     }, []);
+
+    const navigate = useNavigate();
 
     const [fechaHasta, setFechaHasta] = useState(toISODate(hoy));
     const [fechaDesde, setFechaDesde] = useState(toISODate(hace7dias));
@@ -66,16 +67,18 @@ export function HistorialPage() {
         {
             id: "tarea",
             name: "Tarea",
+            center: true,
             selector: row => row.tarea_nombre_snap,
             sortable: true,
-            grow: 2,
+            grow: 1.5,
         },
         {
             id: "plan",
             name: "Plan de Limpieza",
+            center: true,
             selector: row => row.plan_nombre_snap,
             sortable: true,
-            grow: 2,
+            grow: 1.5,
         },
         {
             id: "prioridad",
@@ -88,14 +91,6 @@ export function HistorialPage() {
                     {PRIORIDAD_LABELS[row.prioridad_snap as Prioridad] ?? row.prioridad_snap}
                 </Badge>
             ),
-        },
-        {
-            id: "fecha",
-            name: "Fecha",
-            center: true,
-            sortable: true,
-            selector: row => row.fecha,
-            cell: row => formatearFecha(row.fecha),
         },
         {
             id: "fecha_completado",
@@ -116,7 +111,21 @@ export function HistorialPage() {
                 return <Badge bg={ESTADO_HISTORIAL_VARIANTS[estado]}>{estado}</Badge>;
             },
         },
-    ], []);
+        {
+            id: "detalle",
+            name: "Detalle",
+            center: true,
+            cell: row => (
+                <Button
+                    variant="outline-info"
+                    size="sm"
+                    onClick={() => navigate(`/tareas-ocurrencia/${row.id}`)}
+                >
+                    <i className="bi bi-eye me-1"></i>Ver
+                </Button>
+            ),
+        },
+    ], [navigate]);
 
     const conditionalRowStyles: ConditionalStyles<TareaOcurrencia>[] = [
         {
