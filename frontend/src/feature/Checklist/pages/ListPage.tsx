@@ -210,6 +210,9 @@ export function ListPage() {
             cell: row => {
                 const estaCompletada = row.estado === 'Completada';
                 const laHizoOtro = estaCompletada && row.operario_id !== currentUser?.id;
+                const tienePermiso = currentUser?.operar === true;
+                if (!tienePermiso)
+                    return <>-</>
                 return(
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <Button

@@ -59,7 +59,7 @@ export function TareaMovil({ tarea, onCompletar }: TareaMovilProps) {
 
             {/* Boton con tamaño comodo para el dedo y que no se achique mas */}
             <Button
-                variant={completada ? "outline-info" : "putline-success"}
+                variant={completada ? "outline-info" : "outline-success"}
                 className="w-100 mt-3"
                 style={{ minHeight: 44 }}
                 disabled={laHizoOtro}

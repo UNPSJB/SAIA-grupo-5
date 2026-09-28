@@ -166,7 +166,7 @@ export function CompletarTareaModal({ tarea, onHide, onCompleted }: CompletarTar
                             {errors.observacion?.message}
                         </Form.Control.Feedback>
                 </Form.Group>
-
+                {/* 
                     <hr />
 
                     <h5 className="mb-3">Consumo de Quimicos (Opcional)</h5>
@@ -203,6 +203,7 @@ export function CompletarTareaModal({ tarea, onHide, onCompleted }: CompletarTar
                             </Form.Control.Feedback>
                         </Form.Group>
                     )}
+                */}
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={handleClose} disabled={cargando}>
