@@ -71,6 +71,8 @@ import { EditarVencimientoPersonalPage } from './feature/VencimientoPersonal/pag
 import { NuevoVencimientoPersonalPage } from './feature/VencimientoPersonal/pages/NuevoVencimientoPersonalPage.tsx'
 import { VerVencimientoPersonalPage } from './feature/VencimientoPersonal/pages/VerVencimientoPersonalPage.tsx'
 
+import { ConfiguracionSistemaPage } from './feature/ConfiguracionSistema/pages/ConfiguracionSistemaPage.tsx'
+
 
 import { Login, NoAutorizado } from './feature/auth'
 import AuthLayout from './layouts/AuthLayout.tsx'
@@ -253,6 +255,13 @@ const router = createBrowserRouter([
             children: [
               { path: ':id', element: <VerVencimientoPersonalPage /> },
               { path: ':id/edit', element: <EditarVencimientoPersonalPage /> },
+            ],
+          },
+          {
+            path: 'configuracion-sistema',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <ConfiguracionSistemaPage /> },
             ],
           },
           { path: '*', element: <Page404 /> },
