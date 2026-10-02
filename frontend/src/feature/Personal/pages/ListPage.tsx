@@ -195,7 +195,14 @@ export function ListPage() {
               disabled={!row.activo}
               onClick={() => navigate(`/personal/${row.id}/edit`)}
             >
-              <i className="bi bi-pencil me-1"></i>Editar
+              <i className="bi bi-pencil"></i>
+            </Button>
+            <Button
+              variant="outline-warning"
+              size="sm"
+              onClick={() => navigate(`/personal/${row.id}/vencimientos`)}
+            >
+              <i className="bi bi-calendar-check"></i>
             </Button>
             {row.activo ? (
               <Button
@@ -203,7 +210,7 @@ export function ListPage() {
                 size="sm"
                 onClick={() => setPersonaToDelete(row)}
               >
-                <i className="bi bi-trash3 me-1"></i>Eliminar
+                <i className="bi bi-person-dash"></i>
               </Button>
             ) : (
               <Button
@@ -211,7 +218,7 @@ export function ListPage() {
                 size="sm"
                 onClick={() => cambiarEstado(row)}
               >
-                <i className="bi bi-person-check me-1"></i>Dar de Alta
+                <i className="bi bi-person-check"></i>
               </Button>
             )}
           </div>

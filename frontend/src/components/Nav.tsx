@@ -115,6 +115,7 @@ export function Nav() {
                             Historial
                         </BSNav.Link>
                     )}
+                    
 
                 </BSNav>
 
@@ -142,6 +143,10 @@ export function Nav() {
                             <NavDropdown.Item as={NavLink} to="/tipos-quimicos">
                                 <i className="bi bi-flask me-2"></i>
                                 Tipos de Químicos
+                            </NavDropdown.Item>
+
+                            <NavDropdown.Item as={NavLink} to="/tipos-vencimientos">
+                                <i className="bi bi-calendar-plus me-1"></i>                       Tipos de Vencimientos
                             </NavDropdown.Item>
                         </NavDropdown>
                     )}
