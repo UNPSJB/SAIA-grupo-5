@@ -61,6 +61,17 @@ import { ConsumoAcumuladoPage } from './feature/ConsumoProducto/pages/ConsumoAcu
 
 import { VerDetalleTareaOcurrenciaPage } from './feature/Historial/pages/VerDetalleTareaOcurrenciaPage.tsx' 
 
+import { ListPage as TipoVencimientoListPage } from './feature/TiposVencimientos/pages/ListPage.tsx'
+import { EditarTipoVencimientoPage } from './feature/TiposVencimientos/pages/EditarTipoVencimientoPage.tsx'
+import { NuevoTipoVencimientoPage } from './feature/TiposVencimientos/pages/NuevoTipoVencimientoPage.tsx'
+import { VerTipoVencimientoPage } from './feature/TiposVencimientos/pages/VerTipoVencimientoPage.tsx'
+
+import { ListPage as VencimientoPersonalListPage } from './feature/VencimientoPersonal/pages/ListPage.tsx'
+import { EditarVencimientoPersonalPage } from './feature/VencimientoPersonal/pages/EditarVencimientoPersonalPage.tsx'
+import { NuevoVencimientoPersonalPage } from './feature/VencimientoPersonal/pages/NuevoVencimientoPersonalPage.tsx'
+import { VerVencimientoPersonalPage } from './feature/VencimientoPersonal/pages/VerVencimientoPersonalPage.tsx'
+
+
 import { Login, NoAutorizado } from './feature/auth'
 import AuthLayout from './layouts/AuthLayout.tsx'
 import { ProtectedRoute } from './components/ProtectedRoute.tsx'
@@ -154,6 +165,8 @@ const router = createBrowserRouter([
               { index: true, element: <PersonalListPage /> },
               { path: 'new', element: <NuevaPersonaPage /> },
               { path: ':id/edit', element: <EditarPersonaPage /> },
+              { path: ':personaId/vencimientos', element: <VencimientoPersonalListPage /> },
+              { path: ':personaId/vencimientos/new', element: <NuevoVencimientoPersonalPage /> },
             ],
           },
           {
@@ -223,6 +236,24 @@ const router = createBrowserRouter([
             children: [
               { path: ':id', element: <VerDetalleTareaOcurrenciaPage />}
             ]
+          },
+          {
+            path: 'tipos-vencimientos',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <TipoVencimientoListPage /> },
+              { path: 'new', element: <NuevoTipoVencimientoPage /> },
+              { path: ':id', element: <VerTipoVencimientoPage /> },
+              { path: ':id/edit', element: <EditarTipoVencimientoPage /> },
+            ],
+          },
+          {
+            path: 'vencimiento-personal',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { path: ':id', element: <VerVencimientoPersonalPage /> },
+              { path: ':id/edit', element: <EditarVencimientoPersonalPage /> },
+            ],
           },
           { path: '*', element: <Page404 /> },
           {
