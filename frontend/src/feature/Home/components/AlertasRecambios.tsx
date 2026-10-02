@@ -1,4 +1,5 @@
-import { Alert, Badge, Button, Card, Spinner, Table } from "react-bootstrap";
+import { useState } from "react";
+import { Alert, Badge, Button, Card, Collapse, Spinner, Table } from "react-bootstrap";
 import { mutate } from "swr";
 import { useApi } from "../../../hooks/useApi";
 import { api } from "../../../libs/axios";
@@ -15,6 +16,7 @@ function textoVencimiento(diasRestantes: number): string {
 
 export function AlertasRecambios() {
     const { data: elementos, error, isLoading } = useApi<ElementoLimpieza[]>(ALERTAS_URL);
+    const [open, setOpen] = useState(true);
 
     const registrarRecambio = async (elemento: ElementoLimpieza) => {
         try {
@@ -56,48 +58,60 @@ export function AlertasRecambios() {
 
     return (
         <Card className="mb-4 shadow-sm text-start">
-            <Card.Header className="fw-bold">
+            <Card.Header
+                className="fw-bold"
+                role="button"
+                style={{ cursor: "pointer" }}
+                onClick={() => setOpen((prev) => !prev)}
+                aria-controls="alertas-recambios"
+                aria-expanded={open}
+            >
+                <i className={`bi ${open ? "bi-chevron-down" : "bi-chevron-right"} me-2`}></i>
                 <i className="bi bi-bell-fill me-2"></i>Notificaciones
                 <Badge bg="secondary" className="ms-2">{elementos.length}</Badge>
             </Card.Header>
-            <Table responsive hover className="mb-0 align-middle">
-                <thead>
-                    <tr>
-                        <th>Código</th>
-                        <th>Elemento</th>
-                        <th>Ubicación</th>
-                        <th>Estado</th>
-                        <th className="text-end">Acción</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {elementos.map((elemento) => {
-                        const dias = elemento.dias_restantes ?? 0;
-                        const vencido = dias < 0;
-                        return (
-                            <tr key={elemento.id}>
-                                <td>{elemento.codigo}</td>
-                                <td>{elemento.nombre}</td>
-                                <td>{elemento.ubicacion || "-"}</td>
-                                <td>
-                                    <Badge bg={vencido ? "danger" : "warning"} text={vencido ? undefined : "dark"}>
-                                        {textoVencimiento(dias)}
-                                    </Badge>
-                                </td>
-                                <td className="text-end">
-                                    <Button
-                                        variant="outline-success"
-                                        size="sm"
-                                        onClick={() => registrarRecambio(elemento)}
-                                    >
-                                        <i className="bi bi-arrow-repeat me-1"></i>Registrar recambio
-                                    </Button>
-                                </td>
+            <Collapse in={open}>
+                <div id="alertas-recambios">
+                    <Table responsive hover className="mb-0 align-middle">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Elemento</th>
+                                <th>Ubicación</th>
+                                <th>Estado</th>
+                                <th className="text-end">Acción</th>
                             </tr>
-                        );
-                    })}
-                </tbody>
-            </Table>
+                        </thead>
+                        <tbody>
+                            {elementos.map((elemento) => {
+                                const dias = elemento.dias_restantes ?? 0;
+                                const vencido = dias < 0;
+                                return (
+                                    <tr key={elemento.id}>
+                                        <td>{elemento.codigo}</td>
+                                        <td>{elemento.nombre}</td>
+                                        <td>{elemento.ubicacion || "-"}</td>
+                                        <td>
+                                            <Badge bg={vencido ? "danger" : "warning"} text={vencido ? undefined : "dark"}>
+                                                {textoVencimiento(dias)}
+                                            </Badge>
+                                        </td>
+                                        <td className="text-end">
+                                            <Button
+                                                variant="outline-success"
+                                                size="sm"
+                                                onClick={() => registrarRecambio(elemento)}
+                                            >
+                                                <i className="bi bi-arrow-repeat me-1"></i>Registrar recambio
+                                            </Button>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </Table>
+                </div>
+            </Collapse>
         </Card>
     );
 }
