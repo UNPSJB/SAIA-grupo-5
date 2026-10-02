@@ -74,7 +74,7 @@ export function AlertasVencimientosPersonal() {
                                 const vencido = vencimiento.estado === "Vencido";
                                 return (
                                     <tr key={vencimiento.id} className={vencido ? "table-danger" : "table-warning"}>
-                                        <td>{vencimiento.persona.nombre}</td>
+                                        <td>{vencimiento.persona.nombre} {vencimiento.persona.apellido}</td>
                                         <td>{vencimiento.tipo_vencimiento.nombre}</td>
                                         <td>{formatearFecha(vencimiento.fecha_hasta)}</td>
                                         <td>

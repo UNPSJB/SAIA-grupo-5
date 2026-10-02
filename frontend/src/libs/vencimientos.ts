@@ -1,4 +1,4 @@
-import type { VencimientoPersonal } from "../feature/Personal/types";
+import type { VencimientoPersonal } from "../feature/VencimientoPersonal/types";
 
 export type EstadoVencimiento = "Vencido" | "Proximo";
 
@@ -17,10 +17,6 @@ function diasRestantesHasta(fecha: string): number {
     return Math.round((objetivo.getTime() - hoy.getTime()) / MS_POR_DIA);
 }
 
-// De la lista completa de vencimientos, se queda solo con los ya vencidos y
-// los que vencen dentro de `antelacionDias` (15 por defecto), con los días
-// restantes ya calculados y ordenados por urgencia (vencido hace más tiempo
-// primero, luego los más próximos a vencer).
 export function clasificarVencimientos(
     vencimientos: VencimientoPersonal[],
     antelacionDias: number = ANTELACION_DIAS_DEFAULT,
