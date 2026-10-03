@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
 import { mutate } from "swr";
 import { useAuth } from "../../../hooks/useAuth";
-import { Alert, Button, Col, Container, Form, Row, Spinner } from "react-bootstrap";
+import { Alert, Button, Col, Container, Form, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { type TableColumn } from "react-data-table-component";
 
 import { AppTable } from "../../../components/AppTable";
 import { PageHeader } from "../../../components/PageHeader";
+import { PageLoading } from "../../../components/PageLoading";
 import { ActionButton } from "../../../components/ActionButton";
 import { useApi } from "../../../hooks/useApi";
 
@@ -57,14 +58,7 @@ export function ElementosLimpiezaPage() {
         );
     }, []);
 
-    if (isLoading) return (
-        <>
-            <PageHeader title="Elementos de Limpieza" />
-            <Spinner animation="border" role="status">
-                <span className="visually-hidden">Loading...</span>
-            </Spinner>
-        </>
-    );
+    if (isLoading) return <PageLoading title="Elementos de Limpieza" />;
 
     if (!elementos || error) return (
         <Container>

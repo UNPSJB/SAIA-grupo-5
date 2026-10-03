@@ -1,10 +1,11 @@
 import  { useState, useMemo, useEffect } from 'react';
 import { mutate } from 'swr';
-import { Alert, Button, ButtonGroup, Col, Container, Dropdown, Form, Row, Spinner } from 'react-bootstrap';
+import { Alert, Button, ButtonGroup, Col, Container, Dropdown, Form, Row } from 'react-bootstrap';
 import { type TableColumn } from 'react-data-table-component';
 
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
+import { PageLoading } from '../../../components/PageLoading';
 import { ActionButton } from '../../../components/ActionButton';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks';
@@ -108,14 +109,7 @@ export function ListPage() {
         setTareaSeleccionada(tarea);
     }
 
-    if (isLoading) return (
-        <>
-            <PageHeader title="Checklist de limpieza" />
-            <Spinner animation="border" role="status">
-                <span className="visually-hidden">Loading...</span>
-            </Spinner>
-        </>
-    )
+    if (isLoading) return <PageLoading title="Checklist de limpieza" />;
     if (!tareas || error) return (
         <Container>
             <PageHeader title="Checklist de limpieza" />

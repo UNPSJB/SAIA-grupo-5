@@ -1,11 +1,12 @@
 import { useState, useMemo} from "react";
 import { mutate } from 'swr';
-import { Alert, Button, Col, Container, Form, Row, Spinner } from 'react-bootstrap';
+import { Alert, Button, Col, Container, Form, Row } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 import { type TableColumn } from 'react-data-table-component';
 
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
+import { PageLoading } from '../../../components/PageLoading';
 import { ActionButton } from '../../../components/ActionButton';
 import { useApi } from '../../../hooks/useApi';
 
@@ -40,14 +41,7 @@ export function ListPage() {
         );
     }, [search]);
     
-    if (isLoading) return (
-        <>
-            <PageHeader title="Insumos químicos utilizados en la tarea" />
-            <Spinner animation="border" role="status">
-                <span className="visually-hidden">Loading...</span>
-            </Spinner>
-        </>
-    )
+    if (isLoading) return <PageLoading title="Insumos químicos utilizados en la tarea" />;
     if (!consumos || error) return (
         <Container>
             <PageHeader title="Insumos químicos utilizados en la tarea" />

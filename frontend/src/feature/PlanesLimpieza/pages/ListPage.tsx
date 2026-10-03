@@ -1,11 +1,12 @@
 import { useState, useMemo } from "react";
 import { mutate } from 'swr';
-import { Alert, Button, Col, Container, Form, Row, Spinner } from 'react-bootstrap';
+import { Alert, Button, Col, Container, Form, Row } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { type TableColumn } from 'react-data-table-component';
 
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
+import { PageLoading } from '../../../components/PageLoading';
 import { ActionButton } from '../../../components/ActionButton';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
@@ -161,14 +162,7 @@ export function PlanesLimpiezaPage() {
         );
     }, [search]);
 
-    if (isLoading) return (
-        <>
-            <PageHeader title="Listado de Planes de Limpieza" />
-            <Spinner animation="border" role="status">
-                <span className="visually-hidden">Loading...</span>
-            </Spinner>
-        </>
-    )
+    if (isLoading) return <PageLoading title="Listado de Planes de Limpieza" />;
     if (!planes || error) return (
         <Container>
             <PageHeader title="Listado de Planes de Limpieza" />
