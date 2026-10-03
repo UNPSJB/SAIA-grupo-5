@@ -60,6 +60,7 @@ import { NuevoConsumoProductoPage } from './feature/ConsumoProducto/pages/NuevoC
 import { ConsumoAcumuladoPage } from './feature/ConsumoProducto/pages/ConsumoAcumuladoPage.tsx'
 
 import { VerDetalleTareaOcurrenciaPage } from './feature/Historial/pages/VerDetalleTareaOcurrenciaPage.tsx' 
+import { NotificacionesPage } from './feature/Notificaciones/pages/ListPage.tsx'
 
 import { ListPage as TipoVencimientoListPage } from './feature/TiposVencimientos/pages/ListPage.tsx'
 import { EditarTipoVencimientoPage } from './feature/TiposVencimientos/pages/EditarTipoVencimientoPage.tsx'
@@ -77,6 +78,7 @@ import { ConfiguracionSistemaPage } from './feature/ConfiguracionSistema/pages/C
 import { Login, NoAutorizado } from './feature/auth'
 import AuthLayout from './layouts/AuthLayout.tsx'
 import { ProtectedRoute } from './components/ProtectedRoute.tsx'
+import { NotificationHistoryRoute } from './components/NotificationHistoryRoute.tsx'
 
 import App from './App.tsx'
 
@@ -225,6 +227,13 @@ const router = createBrowserRouter([
             ],
           },
           { path: 'tareas', element: <TareasPage /> },
+          {
+            path: 'notificaciones',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <NotificationHistoryRoute><NotificacionesPage /></NotificationHistoryRoute> },
+            ],
+          },
           {
             path: 'historial',
             element: <ProtectedRoute requireAdmin />,

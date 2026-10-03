@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { Alert, Badge, Button, Card, Collapse, Spinner, Table } from "react-bootstrap";
+import { Alert, Badge, Card, Spinner, Table } from "react-bootstrap";
 import { mutate } from "swr";
 import { useApi } from "../../../hooks/useApi";
 import { api } from "../../../libs/axios";
+import { ActionButton } from "../../../components/ActionButton";
 import type { ElementoLimpieza } from "../../ElementosLimpieza/types";
 
 const ALERTAS_URL = "/elementos-limpieza/alertas";
@@ -70,16 +70,39 @@ export function AlertasRecambios() {
                 <i className="bi bi-bell-fill me-2"></i>Notificaciones
                 <Badge bg="secondary" className="ms-2">{elementos.length}</Badge>
             </Card.Header>
-            <Collapse in={open}>
-                <div id="alertas-recambios">
-                    <Table responsive hover className="mb-0 align-middle">
-                        <thead>
-                            <tr>
-                                <th>Código</th>
-                                <th>Elemento</th>
-                                <th>Ubicación</th>
-                                <th>Estado</th>
-                                <th className="text-end">Acción</th>
+            <Table responsive hover className="mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Elemento</th>
+                        <th>Ubicación</th>
+                        <th>Estado</th>
+                        <th className="text-end">Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {elementos.map((elemento) => {
+                        const dias = elemento.dias_restantes ?? 0;
+                        const vencido = dias < 0;
+                        return (
+                            <tr key={elemento.id}>
+                                <td>{elemento.codigo}</td>
+                                <td>{elemento.nombre}</td>
+                                <td>{elemento.ubicacion || "-"}</td>
+                                <td>
+                                    <Badge bg={vencido ? "danger" : "warning"} text={vencido ? undefined : "dark"}>
+                                        {textoVencimiento(dias)}
+                                    </Badge>
+                                </td>
+                                <td className="text-end">
+                                    <ActionButton
+                                        variant="outline-success"
+                                        size="sm"
+                                        tooltip="Recambio"
+                                        icon="bi-arrow-repeat"
+                                        onClick={() => registrarRecambio(elemento)}
+                                    />
+                                </td>
                             </tr>
                         </thead>
                         <tbody>
