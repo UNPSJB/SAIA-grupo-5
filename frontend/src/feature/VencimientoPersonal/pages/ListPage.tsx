@@ -11,6 +11,7 @@ import { useAuth } from '../../../hooks/useAuth';
 
 import type { VencimientoPersonal } from '../types';
 import type { Persona } from '../../Personal/types';
+import type { ConfiguracionSistema } from '../../ConfiguracionSistema/types';
 import { RenovarVencimientoModal } from '../components/RenovarVencimientoModal';
 import { HistoricoVencimientoModal } from '../components/HistoricoVencimientoModal';
 
@@ -21,8 +22,11 @@ export function ListPage() {
     const { personaId } = useParams();
     const [search, setSearch] = useState('');
 
-    const { data: persona } = useApi<Persona>(`/personal/${personaId}`);    
+    const { data: persona } = useApi<Persona>(`/personal/${personaId}`);
     const { data: vencimientos, error, isLoading } = useApi<VencimientoPersonal[]>(`/vencimiento-personal/persona/${personaId}`);
+
+    const { data: configuracion } = useApi<ConfiguracionSistema>(currentUser?.administrar ? '/configuracion-sistema/' : null);
+    const diasAntelacion = configuracion?.dias_antelacion_vencimiento ?? 15;
 
     const [vencimientoToRenovar, setVencimientoToRenovar] = useState<VencimientoPersonal | null>(null);
     const [vencimientoHistorico, setVencimientoHistorico] = useState<VencimientoPersonal | null>(null);
@@ -116,7 +120,7 @@ export function ListPage() {
             minWidth: '190px',
             cell: row => {
                 const vencido = row.dias_restantes <= 0;
-                const proximo = row.dias_restantes > 0 && row.dias_restantes <= 15;
+                const proximo = row.dias_restantes > 0 && row.dias_restantes <= diasAntelacion;
                 const badge = vencido ? '#fee2e2' : proximo ? '#fef3c7' : '#dcfce7';
                 const color = vencido ? '#991b1b' : proximo ? '#92400e' : '#166534';
                 const texto = vencido

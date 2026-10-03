@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
-import { Alert, Button, Col, Container, Form, Row, Spinner } from "react-bootstrap";
+import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
 import { mutate } from "swr";
 import { PageHeader } from "../../../components/PageHeader";
+import { PageLoading } from "../../../components/PageLoading";
+import { PageError } from "../../../components/PageError";
 import { useApi } from "../../../hooks/useApi";
 import { api } from "../../../libs/axios";
 import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
@@ -53,73 +55,62 @@ export function ConfiguracionSistemaPage() {
         }
     };
 
-    if (isLoading) {
-        return (
-            <>
-                <PageHeader title="Configuración del Sistema" />
-                <Spinner animation="border" role="status">
-                    <span className="visually-hidden">Cargando...</span>
-                </Spinner>
-            </>
-        );
-    }
+    if (isLoading) return <PageLoading title="Configuración del Sistema" />;
 
-    if (error || !configuracion) {
-        return (
-            <Container>
-                <PageHeader title="Configuración del Sistema" />
-                <Row className="justify-content-center">
-                    <Col md={6}>
-                        <Alert variant="danger">Ocurrió un error al cargar la configuración del sistema.</Alert>
-                    </Col>
-                </Row>
-            </Container>
-        );
-    }
+    if (error || !configuracion) return (
+        <PageError title="Configuración del Sistema" message="Ocurrió un error al cargar la configuración del sistema." />
+    );
 
     return (
         <Container>
             <PageHeader title="Configuración del Sistema" />
 
             <Row className="justify-content-center">
-                <Col md={6}>
-                    <Form onSubmit={handleSubmit}>
-                        <Form.Group className="mb-3 text-start" controlId="formDiasAntelacion">
-                            <Form.Label className="p-1 fw-bold">
-                                Antelación de alerta de vencimientos de personal (días)
-                            </Form.Label>
-                            <Form.Control
-                                required
-                                type="number"
-                                min={0}
-                                value={diasAntelacion}
-                                onChange={(e) => setDiasAntelacion(Number(e.target.value))}
-                            />
-                            <Form.Text className="text-muted">
-                                Con cuántos días de anticipación se avisa que un vencimiento de personal está por vencer.
-                            </Form.Text>
-                        </Form.Group>
+                <Col md={7} lg={6}>
+                    <Card className="shadow-sm">
+                        <Card.Header className="fw-bold">
+                            <i className="bi bi-gear me-2"></i>Parámetros generales
+                        </Card.Header>
+                        <Card.Body>
+                            <Form onSubmit={handleSubmit}>
+                                <Form.Group className="mb-3 text-start" controlId="formDiasAntelacion">
+                                    <Form.Label className="p-1 fw-bold">
+                                        Antelación de alerta de vencimientos de personal (días)
+                                    </Form.Label>
+                                    <Form.Control
+                                        required
+                                        type="number"
+                                        min={0}
+                                        value={diasAntelacion}
+                                        onChange={(e) => setDiasAntelacion(Number(e.target.value))}
+                                    />
+                                    <Form.Text className="text-muted">
+                                        Con cuántos días de anticipación se avisa que un vencimiento de personal está por vencer.
+                                    </Form.Text>
+                                </Form.Group>
 
-                        <Form.Group className="mb-3 text-start" controlId="formHoraGeneracion">
-                            <Form.Label className="p-1 fw-bold">
-                                Hora de generación de checklists
-                            </Form.Label>
-                            <Form.Control
-                                required
-                                type="time"
-                                value={horaGeneracion}
-                                onChange={(e) => setHoraGeneracion(e.target.value)}
-                            />
-                            <Form.Text className="text-muted">
-                                Hora del día en la que se generan automáticamente las tareas pendientes del checklist diario.
-                            </Form.Text>
-                        </Form.Group>
+                                <Form.Group className="mb-3 text-start" controlId="formHoraGeneracion">
+                                    <Form.Label className="p-1 fw-bold">
+                                        Hora de generación de checklists
+                                    </Form.Label>
+                                    <Form.Control
+                                        required
+                                        type="time"
+                                        value={horaGeneracion}
+                                        onChange={(e) => setHoraGeneracion(e.target.value)}
+                                    />
+                                    <Form.Text className="text-muted">
+                                        Hora del día en la que se generan automáticamente las tareas pendientes del checklist diario.
+                                    </Form.Text>
+                                </Form.Group>
 
-                        <Button variant="primary" type="submit" disabled={guardando}>
-                            <i className="bi bi-floppy me-1"></i>
-                            {guardando ? "Guardando..." : "Guardar cambios"}
-                        </Button>
-                    </Form>
+                                <Button variant="primary" type="submit" disabled={guardando}>
+                                    <i className="bi bi-floppy me-1"></i>
+                                    {guardando ? "Guardando..." : "Guardar cambios"}
+                                </Button>
+                            </Form>
+                        </Card.Body>
+                    </Card>
                 </Col>
             </Row>
         </Container>

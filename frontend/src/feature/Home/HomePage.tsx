@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { Alert, Card, Col, Container, Row, Spinner } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 import {
     Bar,
     BarChart,
@@ -16,9 +17,9 @@ import {
 import { useApi } from "../../hooks/useApi";
 import { useAuth } from "../../hooks/useAuth";
 import type { ElementoLimpieza } from "../ElementosLimpieza/types";
-import type { InsumoQuimico } from "../InsumosQuimicos/types";
-import type { Sector } from "../Sectores/types";
 import type { TareaOcurrencia } from "../TareasOcurrencias/types";
+import type { VencimientoPersonal } from "../VencimientoPersonal/types";
+import type { ConfiguracionSistema } from "../ConfiguracionSistema/types";
 import { getEstadoHistorial } from "../Historial/types";
 import "./HomePage.css";
 
@@ -48,15 +49,26 @@ function MetricCard({
     icon,
     tone,
     detail,
+    to,
 }: {
     label: string;
     value: number | string;
     icon: string;
     tone: string;
     detail?: string;
+    to?: string;
 }) {
+    const navigate = useNavigate();
+    const clickable = Boolean(to);
+
     return (
-        <Card className="dashboard-metric h-100">
+        <Card
+            className={`dashboard-metric h-100${clickable ? " dashboard-metric-clickable" : ""}`}
+            role={clickable ? "button" : undefined}
+            tabIndex={clickable ? 0 : undefined}
+            onClick={clickable ? () => navigate(to!) : undefined}
+            onKeyDown={clickable ? (event) => { if (event.key === "Enter") navigate(to!); } : undefined}
+        >
             <Card.Body>
                 <div className="d-flex align-items-start justify-content-between gap-2">
                     <div>
@@ -85,16 +97,20 @@ export function HomePage() {
 
     const { data: history, error: historyError, isLoading: historyLoading } = useApi<TareaOcurrencia[]>(historyUrl);
     const { data: elements, error: elementsError, isLoading: elementsLoading } = useApi<ElementoLimpieza[]>("/elementos-limpieza/");
-    const { data: chemicals, error: chemicalsError, isLoading: chemicalsLoading } = useApi<InsumoQuimico[]>("/insumos-quimicos/");
-    const { data: sectors, error: sectorsError, isLoading: sectorsLoading } = useApi<Sector[]>(
-        currentUser?.administrar ? "/sectores/" : null,
+    const { data: vencimientosPersonal, error: vencimientosPersonalError, isLoading: vencimientosPersonalLoading } = useApi<VencimientoPersonal[]>(
+        currentUser?.administrar ? "/vencimiento-personal/" : null,
+    );
+    const { data: configuracion } = useApi<ConfiguracionSistema>(
+        currentUser?.administrar ? "/configuracion-sistema/" : null,
     );
 
     const occurrences = useMemo(() => history ?? [], [history]);
     const activeElements = (elements ?? []).filter((element) => element.estado);
     const overdueElements = activeElements.filter((element) => element.dias_restantes !== null && element.dias_restantes < 0);
     const dueSoonElements = activeElements.filter((element) => element.dias_restantes !== null && element.dias_restantes >= 0 && element.dias_restantes <= 7);
-    const activeChemicals = (chemicals ?? []).filter((chemical) => chemical.activo);
+    const diasAntelacionVencimiento = configuracion?.dias_antelacion_vencimiento ?? 15;
+    const vencimientosPersonalVencidos = (vencimientosPersonal ?? []).filter((vencimiento) => vencimiento.dias_restantes <= 0);
+    const vencimientosPersonalProximos = (vencimientosPersonal ?? []).filter((vencimiento) => vencimiento.dias_restantes > 0 && vencimiento.dias_restantes <= diasAntelacionVencimiento);
 
     const { completed, overdueTasks, pendingTasks, compliance, activityByDay } = useMemo(() => {
         const completedTasks = occurrences.filter((occurrence) => occurrence.estado === "Completada").length;
@@ -143,7 +159,7 @@ export function HomePage() {
     }, [activeElements, dueSoonElements.length, overdueElements.length]);
 
     const historyHasError = Boolean(historyError);
-    const inventoryHasError = Boolean(elementsError || chemicalsError);
+    const inventoryHasError = Boolean(elementsError);
     const formatMetric = (loading: boolean, error: boolean, value: number | string) =>
         loading ? "…" : error ? "—" : value;
 
@@ -158,7 +174,7 @@ export function HomePage() {
                 <span className="dashboard-period"><i className="bi bi-calendar3 me-2" />Últimos 30 días</span>
             </div>
 
-            {(historyHasError || inventoryHasError || (currentUser?.administrar && sectorsError)) && (
+            {(historyHasError || inventoryHasError) && (
                 <Alert variant="warning" className="dashboard-alert">
                     No se pudieron cargar algunos indicadores. Los datos disponibles siguen visibles.
                 </Alert>
@@ -179,15 +195,32 @@ export function HomePage() {
 
             <section aria-label="Indicadores de inventario" className="mb-4">
                 <div className="dashboard-section-heading">
-                    <div><h2>Inventario y recambios</h2><span>Elementos activos y fechas de recambio</span></div>
-                    {(elementsLoading || chemicalsLoading) && <Spinner animation="border" size="sm" variant="success" aria-label="Cargando inventario" />}
+                    <div><h2>Inventario, recambios y vencimientos</h2><span>Elementos activos, fechas de recambio y vencimientos de personal</span></div>
+                    {(elementsLoading || vencimientosPersonalLoading) && <Spinner animation="border" size="sm" variant="success" aria-label="Cargando inventario" />}
                 </div>
                 <Row className="g-3">
-                    <Col xs={6} md={4} xl={3}><MetricCard label="Elementos de limpieza" value={formatMetric(elementsLoading, Boolean(elementsError), activeElements.length)} icon="bi-bucket" tone={SEAFOAM.primary} detail="Activos" /></Col>
-                    <Col xs={6} md={4} xl={3}><MetricCard label="Sectores" value={currentUser?.administrar ? formatMetric(sectorsLoading, Boolean(sectorsError), (sectors ?? []).filter((sector) => sector.activo).length) : "—"} icon="bi-geo-alt" tone={SEAFOAM.info} detail={currentUser?.administrar ? "Activos" : "Solo administración"} /></Col>
-                    <Col xs={6} md={4} xl={3}><MetricCard label="Químicos" value={formatMetric(chemicalsLoading, Boolean(chemicalsError), activeChemicals.length)} icon="bi-droplet-half" tone={SEAFOAM.secondary} detail="Activos" /></Col>
-                    <Col xs={6} md={4} xl={3}><MetricCard label="Elementos vencidos" value={formatMetric(elementsLoading, Boolean(elementsError), overdueElements.length)} icon="bi-calendar-x" tone={SEAFOAM.danger} detail="Requieren recambio" /></Col>
-                    <Col xs={6} md={4} xl={3}><MetricCard label="Por vencer" value={formatMetric(elementsLoading, Boolean(elementsError), dueSoonElements.length)} icon="bi-calendar2-week" tone={SEAFOAM.warning} detail="Dentro de los próximos 7 días" /></Col>
+                    <Col xs={6} md={4} xl={3}><MetricCard label="Elementos vencidos" value={formatMetric(elementsLoading, Boolean(elementsError), overdueElements.length)} icon="bi-calendar-x" tone={SEAFOAM.danger} detail="Requieren recambio" to="/elementos-limpieza?estado=vencido" /></Col>
+                    <Col xs={6} md={4} xl={3}><MetricCard label="Elementos Por vencer" value={formatMetric(elementsLoading, Boolean(elementsError), dueSoonElements.length)} icon="bi-calendar2-week" tone={SEAFOAM.warning} detail="Dentro de los próximos 7 días" to="/elementos-limpieza?estado=por-vencer" /></Col>
+                    <Col xs={6} md={4} xl={3}>
+                        <MetricCard
+                            label="Personal vencidos"
+                            value={currentUser?.administrar ? formatMetric(vencimientosPersonalLoading, Boolean(vencimientosPersonalError), vencimientosPersonalVencidos.length) : "—"}
+                            icon="bi-person-x"
+                            tone={SEAFOAM.danger}
+                            detail={currentUser?.administrar ? "Vencimientos de personal" : "Solo administración"}
+                            to={currentUser?.administrar ? "/personal?vencimientos=vencido" : undefined}
+                        />
+                    </Col>
+                    <Col xs={6} md={4} xl={3}>
+                        <MetricCard
+                            label="Personal por vencer"
+                            value={currentUser?.administrar ? formatMetric(vencimientosPersonalLoading, Boolean(vencimientosPersonalError), vencimientosPersonalProximos.length) : "—"}
+                            icon="bi-person-exclamation"
+                            tone={SEAFOAM.warning}
+                            detail={currentUser?.administrar ? "Dentro de la antelación configurada" : "Solo administración"}
+                            to={currentUser?.administrar ? "/personal?vencimientos=proximo" : undefined}
+                        />
+                    </Col>
                 </Row>
             </section>
 
