@@ -6,6 +6,7 @@ import { type TableColumn } from 'react-data-table-component';
 
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
+import { ActionButton } from '../../../components/ActionButton';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
 
@@ -152,31 +153,30 @@ export function ListPage() {
             minWidth: '280px',
             cell: (row) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <Button
+                    <ActionButton
                         variant="outline-info"
                         size="sm"
+                        tooltip="Ver"
+                        icon="bi-eye"
                         onClick={() => navigate (`/insumos-quimicos/${row.id}`)}
-                    >
-                        <i className="bi bi-eye me-1"></i>Ver
-                    </Button>
+                    />
                     {currentUser?.administrar && (
                         <>
-                            <Button
+                            <ActionButton
                                 variant="outline-primary"
                                 size="sm"
+                                tooltip="Editar"
+                                icon="bi-pencil"
                                 disabled={!row.activo}      // Si no esta activo se muestra en gris y no se puede editar
                                 onClick={() => navigate(`/insumos-quimicos/${row.id}/edit`)}
-                            >
-                                <i className="bi bi-pencil me-1"></i>Editar
-                            </Button>
-                            <Button
+                            />
+                            <ActionButton
                                 variant={row.activo ? 'outline-danger' : 'outline-success'}
                                 size="sm"
+                                tooltip={row.activo ? 'Dar de baja' : 'Dar de alta'}
+                                icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
                                 onClick={() => setInsumoQuimicoToDelete(row)}
-                            >
-                                <i className={`bi ${row.activo ? 'bi-dash-circle' : 'bi-check-circle'} me-1`}></i>
-                                {row.activo ? 'Dar de baja' : 'Dar de alta'}
-                            </Button>
+                            />
                         </>
                     )}
                 </div>

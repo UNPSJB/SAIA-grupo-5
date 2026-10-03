@@ -6,6 +6,7 @@ import { type TableColumn } from 'react-data-table-component';
 
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
+import { ActionButton } from '../../../components/ActionButton';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
 
@@ -136,22 +137,22 @@ export function ListPage() {
                 center: true,
                 cell: (row) => (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <Button
+                        <ActionButton
                             variant="outline-primary"
                             size="sm"
+                            tooltip="Editar"
+                            icon="bi-pencil"
                             disabled={!row.activo}
                             onClick={() => navigate(`/insumos/${row.id}/edit`)}
-                        >
-                            <i className="bi bi-pencil me-1"></i>Editar
-                        </Button>
+                        />
                         {row.activo && (
-                            <Button
+                            <ActionButton
                                 variant="outline-danger"
                                 size="sm"
+                                tooltip="Dar de baja"
+                                icon="bi-dash-circle"
                                 onClick={() => setInsumoToDelete(row)}
-                            >
-                                <i className="bi bi-trash3 me-1"></i>Eliminar
-                            </Button>
+                            />
                         )}
                     </div>
                 )

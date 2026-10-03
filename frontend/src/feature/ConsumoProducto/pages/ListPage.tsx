@@ -6,6 +6,7 @@ import { type TableColumn } from 'react-data-table-component';
 
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
+import { ActionButton } from '../../../components/ActionButton';
 import { useApi } from '../../../hooks/useApi';
 
 import { DeleteConsumoProductoModal } from '../components/DeleteConsumoProductoModal'; 
@@ -130,22 +131,21 @@ export function ListPage() {
             minWidth: "50px",
             cell: (row) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <Button
+                    <ActionButton
                         variant="outline-primary"
                         size="sm"
+                        tooltip="Editar"
+                        icon="bi-pencil"
                         disabled={!row.estado}      // Si no esta activo se muestra en gris y no se puede editar
                         onClick={() => navigate(`/consumos-productos/${row.id}/edit`)}
-                    >
-                        <i className="bi bi-pencil me-1"></i>Editar
-                    </Button>
-                    <Button
+                    />
+                    <ActionButton
                         variant={row.estado ? 'outline-danger' : 'outline-success'}
                         size="sm"
+                        tooltip={row.estado ? 'Dar de baja' : 'Dar de alta'}
+                        icon={row.estado ? 'bi-dash-circle' : 'bi-check-circle'}
                         onClick={() => setConsumoProductoToDelete(row)}
-                    >
-                        <i className={`bi ${row.estado ? 'bi-dash-circle' : 'bi-check-circle'} me-1`}></i>
-                        {row.estado ? 'Dar de baja' : 'Dar de alta'}
-                    </Button>
+                    />
                 </div>
             )
         },

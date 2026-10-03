@@ -5,6 +5,7 @@ import { type TableColumn } from "react-data-table-component";
 
 import { AppTable } from "../../../components/AppTable";
 import { PageHeader } from "../../../components/PageHeader";
+import { ActionButton } from "../../../components/ActionButton";
 import { useApi } from "../../../hooks/useApi";
 import { useAuth } from "../../../hooks/useAuth";
 
@@ -102,14 +103,13 @@ export function RecambiosElementoLimpiezaPage() {
             name: "Acciones",
             center: true,
             cell: row => (
-                <Button
+                <ActionButton
                     variant="outline-secondary"
                     size="sm"
+                    tooltip="Ver"
+                    icon="bi-eye"
                     onClick={() => navigate(`/recambios-elementos-limpieza/${row.id}`)}
-                >
-                    <i className="bi bi-eye me-1"></i>
-                    Ver detalle
-                </Button>
+                />
             ),
         },
     ];

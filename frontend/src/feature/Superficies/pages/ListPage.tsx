@@ -6,6 +6,7 @@ import { type TableColumn } from 'react-data-table-component';
 
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
+import { ActionButton } from '../../../components/ActionButton';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
 import { api } from '../../../libs/axios';
@@ -139,30 +140,30 @@ export function SuperficiesPage() {
                 minWidth: "220px",
                 cell: (row) => (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <Button
+                        <ActionButton
                             variant="outline-primary"
                             size="sm"
+                            tooltip="Editar"
+                            icon="bi-pencil"
                             disabled={!row.activo}
                             onClick={() => navigate(`/superficies/${row.id}/edit`)}
-                        >
-                            <i className="bi bi-pencil me-1"></i>Editar
-                        </Button>
+                        />
                         {row.activo ? (
-                            <Button
+                            <ActionButton
                                 variant="outline-danger"
                                 size="sm"
+                                tooltip="Dar de baja"
+                                icon="bi-dash-circle"
                                 onClick={() => setSuperficieToDelete(row)}
-                            >
-                                <i className="bi bi-trash3 me-1"></i>Eliminar
-                            </Button>
+                            />
                         ) : (
-                            <Button
+                            <ActionButton
                                 variant="outline-success"
                                 size="sm"
+                                tooltip="Dar de alta"
+                                icon="bi-check-circle"
                                 onClick={() => cambiarEstado(row)}
-                            >
-                                <i className="bi bi-person-check me-1"></i>Dar de alta
-                            </Button>
+                            />
                         )}
                     </div>
                 )

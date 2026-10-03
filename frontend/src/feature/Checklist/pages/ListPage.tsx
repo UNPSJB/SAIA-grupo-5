@@ -5,6 +5,7 @@ import { type TableColumn } from 'react-data-table-component';
 
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
+import { ActionButton } from '../../../components/ActionButton';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks';
 
@@ -215,17 +216,14 @@ export function ListPage() {
                     return <>-</>
                 return(
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <Button
+                    <ActionButton
                         variant={estaCompletada ? "outline-info" : "outline-success"}
                         size="sm"
                         disabled={laHizoOtro}
-                        title={laHizoOtro ? "Completada por otro usuario" : ""}
+                        tooltip={laHizoOtro ? "Completada por otro usuario" : estaCompletada ? "Editar" : "Marcar realizada"}
+                        icon={estaCompletada ? "bi-pencil" : "bi-check2-circle"}
                         onClick={() => abrirModal(row)}
-                    >
-                        {estaCompletada ? (
-                            <><i className="bi bi-pencil me-1"></i>Editar</>) : (<><i className="bi bi-check2-circle me-1"></i>Marcar realizada</>)
-                        }   
-                    </Button>
+                    />
                     </div>
                 )
             },

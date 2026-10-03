@@ -6,6 +6,7 @@ import { type TableColumn } from "react-data-table-component";
 
 import { AppTable } from "../../../components/AppTable";
 import { PageHeader } from "../../../components/PageHeader";
+import { ActionButton } from "../../../components/ActionButton";
 import { useApi } from "../../../hooks/useApi";
 import { useAuth } from "../../../hooks/useAuth";
 
@@ -108,26 +109,22 @@ export function TiposElementoLimpiezaPage() {
                 cell: row => (
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
                         {row.estado && (
-                            <Button
+                            <ActionButton
                                 variant="outline-primary"
                                 size="sm"
-                                title="Editar"
+                                tooltip="Editar"
+                                icon="bi-pencil"
                                 onClick={() => navigate(`/tipos-elementos-limpieza/${row.id}/edit`)}
-                            >
-                                <i className="bi bi-pencil me-1"></i>
-                                Editar
-                            </Button>
+                            />
                         )}
 
-                        <Button
+                        <ActionButton
                             variant={row.estado ? "outline-danger" : "outline-success"}
                             size="sm"
-                            title={row.estado ? "Dar de baja" : "Dar de alta"}
+                            tooltip={row.estado ? "Dar de baja" : "Dar de alta"}
+                            icon={row.estado ? "bi-dash-circle" : "bi-check-circle"}
                             onClick={() => setTipoToDelete(row)}
-                        >
-                            <i className={`bi ${row.estado ? "bi-trash3 me-1" : "bi-check-circle me-1"}`}></i>
-                            {row.estado ? " Dar de baja" : " Dar de alta"}
-                        </Button>
+                        />
                     </div>
                 ),
             },
