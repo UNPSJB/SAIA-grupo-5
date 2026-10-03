@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
 import { mutate } from "swr";
-import { Alert, Button, Col, Container, Form, Row } from "react-bootstrap";
+import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { type TableColumn } from "react-data-table-component";
 
 import { AppTable } from "../../../components/AppTable";
 import { PageHeader } from "../../../components/PageHeader";
 import { PageLoading } from "../../../components/PageLoading";
+import { PageError } from "../../../components/PageError";
 import { ActionButton } from "../../../components/ActionButton";
 import { useApi } from "../../../hooks/useApi";
 import { useAuth } from "../../../hooks/useAuth";
@@ -47,16 +48,7 @@ export function TiposElementoLimpiezaPage() {
     if (isLoading) return <PageLoading title="Tipos de Elementos de Limpieza" />;
 
     if (!tipos || error) return (
-        <Container>
-            <PageHeader title="Tipos de Elementos de Limpieza" />
-            <Row className="justify-content-center">
-                <Col md={6}>
-                    <Alert variant="danger">
-                        Ocurrió un error al cargar los tipos de elementos
-                    </Alert>
-                </Col>
-            </Row>
-        </Container>
+        <PageError title="Tipos de Elementos de Limpieza" message="Ocurrió un error al cargar los tipos de elementos" />
     );
 
     const baseColumns: TableColumn<TipoElementoLimpieza>[] = [

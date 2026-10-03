@@ -1,12 +1,13 @@
 import { useState, useMemo} from "react";
 import { mutate } from 'swr';
-import { Alert, Button, Col, Container, Form, Row } from 'react-bootstrap';
+import { Button, Col, Container, Form, Row } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 import { type TableColumn } from 'react-data-table-component';
 
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
 import { PageLoading } from '../../../components/PageLoading';
+import { PageError } from '../../../components/PageError';
 import { ActionButton } from '../../../components/ActionButton';
 import { useApi } from '../../../hooks/useApi';
 
@@ -43,15 +44,8 @@ export function ListPage() {
     
     if (isLoading) return <PageLoading title="Insumos químicos utilizados en la tarea" />;
     if (!consumos || error) return (
-        <Container>
-            <PageHeader title="Insumos químicos utilizados en la tarea" />
-            <Row className="justify-content-center">
-                <Col md={6}>
-                    <Alert variant="danger">Ocurrió un error al cargar los Consumos</Alert>
-                </Col>
-            </Row>
-        </Container>
-    )
+        <PageError title="Insumos químicos utilizados en la tarea" message="Ocurrió un error al cargar los Consumos" />
+    );
 
     const columns: TableColumn<ConsumoProducto>[] = [
         {

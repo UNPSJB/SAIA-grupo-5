@@ -1,13 +1,14 @@
 import { useMemo, useState } from "react";
 import { mutate } from "swr";
 import { useAuth } from "../../../hooks/useAuth";
-import { Alert, Button, Col, Container, Form, Row } from "react-bootstrap";
+import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { type TableColumn } from "react-data-table-component";
 
 import { AppTable } from "../../../components/AppTable";
 import { PageHeader } from "../../../components/PageHeader";
 import { PageLoading } from "../../../components/PageLoading";
+import { PageError } from "../../../components/PageError";
 import { ActionButton } from "../../../components/ActionButton";
 import { useApi } from "../../../hooks/useApi";
 
@@ -61,16 +62,7 @@ export function ElementosLimpiezaPage() {
     if (isLoading) return <PageLoading title="Elementos de Limpieza" />;
 
     if (!elementos || error) return (
-        <Container>
-            <PageHeader title="Elementos de Limpieza" />
-            <Row className="justify-content-center">
-                <Col md={6}>
-                    <Alert variant="danger">
-                        Ocurrió un error al cargar los elementos de limpieza
-                    </Alert>
-                </Col>
-            </Row>
-        </Container>
+        <PageError title="Elementos de Limpieza" message="Ocurrió un error al cargar los elementos de limpieza" />
     );
 
     const columns: TableColumn<ElementoLimpieza>[] = [

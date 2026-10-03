@@ -1,11 +1,12 @@
 import { useMemo, useState } from "react";
-import { Alert, Button, Col, Container, Form, Row } from "react-bootstrap";
+import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { type TableColumn } from "react-data-table-component";
 
 import { AppTable } from "../../../components/AppTable";
 import { PageHeader } from "../../../components/PageHeader";
 import { PageLoading } from "../../../components/PageLoading";
+import { PageError } from "../../../components/PageError";
 import { ActionButton } from "../../../components/ActionButton";
 import { useApi } from "../../../hooks/useApi";
 import { useAuth } from "../../../hooks/useAuth";
@@ -56,16 +57,7 @@ export function RecambiosElementoLimpiezaPage() {
     if (isLoading) return <PageLoading title="Recambios de Elementos de Limpieza" />;
 
     if (!recambios || error) return (
-        <Container>
-            <PageHeader title="Recambios de Elementos de Limpieza" />
-            <Row className="justify-content-center">
-                <Col md={6}>
-                    <Alert variant="danger">
-                        Ocurrió un error al cargar los recambios
-                    </Alert>
-                </Col>
-            </Row>
-        </Container>
+        <PageError title="Recambios de Elementos de Limpieza" message="Ocurrió un error al cargar los recambios" />
     );
 
     const columns: TableColumn<RecambioElementoLimpieza>[] = [

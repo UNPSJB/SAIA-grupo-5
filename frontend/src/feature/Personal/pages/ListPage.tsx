@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import { Alert, Button, Col, Container, Form, Row } from 'react-bootstrap'
+import { Button, Col, Container, Form, Row } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import { type TableColumn } from 'react-data-table-component'
 import { mutate } from 'swr'
@@ -7,6 +7,7 @@ import { mutate } from 'swr'
 import { AppTable } from '../../../components/AppTable'
 import { PageHeader } from '../../../components/PageHeader'
 import { PageLoading } from '../../../components/PageLoading'
+import { PageError } from '../../../components/PageError'
 import { ActionButton } from '../../../components/ActionButton'
 import { useApi } from '../../../hooks/useApi'
 import { useAuth } from '../../../hooks/useAuth'
@@ -71,16 +72,7 @@ export function ListPage() {
   }
 
   if (!personal || error) {
-    return (
-      <Container>
-        <PageHeader title="Listado de Personal" />
-        <Row className="justify-content-center">
-          <Col md={6}>
-            <Alert variant="danger">Ocurrió un error al cargar Personal</Alert>
-          </Col>
-        </Row>
-      </Container>
-    )
+    return <PageError title="Listado de Personal" message="Ocurrió un error al cargar Personal" />
   }
 
   const baseColumns: TableColumn<Persona>[] = [

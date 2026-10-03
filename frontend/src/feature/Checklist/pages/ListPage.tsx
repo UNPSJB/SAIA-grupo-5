@@ -1,11 +1,12 @@
 import  { useState, useMemo, useEffect } from 'react';
 import { mutate } from 'swr';
-import { Alert, Button, ButtonGroup, Col, Container, Dropdown, Form, Row } from 'react-bootstrap';
+import { Button, ButtonGroup, Col, Container, Dropdown, Form, Row } from 'react-bootstrap';
 import { type TableColumn } from 'react-data-table-component';
 
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
 import { PageLoading } from '../../../components/PageLoading';
+import { PageError } from '../../../components/PageError';
 import { ActionButton } from '../../../components/ActionButton';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks';
@@ -111,15 +112,8 @@ export function ListPage() {
 
     if (isLoading) return <PageLoading title="Checklist de limpieza" />;
     if (!tareas || error) return (
-        <Container>
-            <PageHeader title="Checklist de limpieza" />
-            <Row className="justify-content-center">
-                <Col md={6}>
-                    <Alert variant="danger">Ocurrió un error al cargar el checklist</Alert>
-                </Col>
-            </Row>
-        </Container>
-    )
+        <PageError title="Checklist de limpieza" message="Ocurrió un error al cargar el checklist" />
+    );
 
     const columns: TableColumn<TareaOcurrencia>[] = [
         {

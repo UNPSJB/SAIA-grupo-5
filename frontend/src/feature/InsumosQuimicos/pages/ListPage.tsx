@@ -1,12 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { mutate } from 'swr';
-import { Alert, Button, Col, Container, Form, Row } from 'react-bootstrap';
+import { Button, Col, Container, Form, Row } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { type TableColumn } from 'react-data-table-component';
 
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
 import { PageLoading } from '../../../components/PageLoading';
+import { PageError } from '../../../components/PageError';
 import { ActionButton } from '../../../components/ActionButton';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
@@ -47,15 +48,8 @@ export function ListPage() {
 
     if (isLoading) return <PageLoading title="Listado de Insumos Químicos" />;
     if (!insumosQuimicos || error) return (
-        <Container>
-            <PageHeader title="Listado de Insumos Químicos" />
-            <Row className="justify-content-center">
-                <Col md={6}>
-                    <Alert variant="danger">Ocurrió un error al cargar Insumos Químicos</Alert>
-                </Col>
-            </Row>
-        </Container>
-    )
+        <PageError title="Listado de Insumos Químicos" message="Ocurrió un error al cargar Insumos Químicos" />
+    );
 
     const columns: TableColumn<InsumoQuimico>[] = [
         {
