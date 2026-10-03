@@ -20,7 +20,6 @@ import type { InsumoQuimico } from "../InsumosQuimicos/types";
 import type { Sector } from "../Sectores/types";
 import type { TareaOcurrencia } from "../TareasOcurrencias/types";
 import { getEstadoHistorial } from "../Historial/types";
-import { AlertasRecambios } from "./components/AlertasRecambios";
 import "./HomePage.css";
 
 const SEAFOAM = {
@@ -251,7 +250,6 @@ export function HomePage() {
                 </Col>
             </Row>
 
-            {currentUser?.administrar && <div className="dashboard-notifications"><AlertasRecambios /></div>}
         </Container>
     );
 }
