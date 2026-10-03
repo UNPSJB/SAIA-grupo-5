@@ -1,10 +1,13 @@
 import  { useState, useMemo, useEffect } from 'react';
 import { mutate } from 'swr';
-import { Alert, Button, ButtonGroup, Col, Container, Dropdown, Form, Row, Spinner } from 'react-bootstrap';
+import { Button, ButtonGroup, Col, Container, Dropdown, Form, Row } from 'react-bootstrap';
 import { type TableColumn } from 'react-data-table-component';
 
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
+import { PageLoading } from '../../../components/PageLoading';
+import { PageError } from '../../../components/PageError';
+import { ActionButton } from '../../../components/ActionButton';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks';
 
@@ -107,24 +110,10 @@ export function ListPage() {
         setTareaSeleccionada(tarea);
     }
 
-    if (isLoading) return (
-        <>
-            <PageHeader title="Checklist de limpieza" />
-            <Spinner animation="border" role="status">
-                <span className="visually-hidden">Loading...</span>
-            </Spinner>
-        </>
-    )
+    if (isLoading) return <PageLoading title="Checklist de limpieza" />;
     if (!tareas || error) return (
-        <Container>
-            <PageHeader title="Checklist de limpieza" />
-            <Row className="justify-content-center">
-                <Col md={6}>
-                    <Alert variant="danger">Ocurrió un error al cargar el checklist</Alert>
-                </Col>
-            </Row>
-        </Container>
-    )
+        <PageError title="Checklist de limpieza" message="Ocurrió un error al cargar el checklist" />
+    );
 
     const columns: TableColumn<TareaOcurrencia>[] = [
         {
@@ -215,17 +204,14 @@ export function ListPage() {
                     return <>-</>
                 return(
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <Button
+                    <ActionButton
                         variant={estaCompletada ? "outline-info" : "outline-success"}
                         size="sm"
                         disabled={laHizoOtro}
-                        title={laHizoOtro ? "Completada por otro usuario" : ""}
+                        tooltip={laHizoOtro ? "Completada por otro usuario" : estaCompletada ? "Editar" : "Marcar realizada"}
+                        icon={estaCompletada ? "bi-pencil" : "bi-check2-circle"}
                         onClick={() => abrirModal(row)}
-                    >
-                        {estaCompletada ? (
-                            <><i className="bi bi-pencil me-1"></i>Editar</>) : (<><i className="bi bi-check2-circle me-1"></i>Marcar realizada</>)
-                        }   
-                    </Button>
+                    />
                     </div>
                 )
             },

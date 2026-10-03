@@ -1,11 +1,14 @@
 import { useMemo, useState } from "react";
 import { mutate } from "swr";
-import { Alert, Button, Col, Container, Form, Row, Spinner } from "react-bootstrap";
+import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { type TableColumn } from "react-data-table-component";
 
 import { AppTable } from "../../../components/AppTable";
 import { PageHeader } from "../../../components/PageHeader";
+import { PageLoading } from "../../../components/PageLoading";
+import { PageError } from "../../../components/PageError";
+import { ActionButton } from "../../../components/ActionButton";
 import { useApi } from "../../../hooks/useApi";
 import { useAuth } from "../../../hooks/useAuth";
 
@@ -42,26 +45,10 @@ export function TiposElementoLimpiezaPage() {
         );
     }, []);
 
-    if (isLoading) return (
-        <>
-            <PageHeader title="Tipos de Elementos de Limpieza" />
-            <Spinner animation="border" role="status">
-                <span className="visually-hidden">Loading...</span>
-            </Spinner>
-        </>
-    );
+    if (isLoading) return <PageLoading title="Tipos de Elementos de Limpieza" />;
 
     if (!tipos || error) return (
-        <Container>
-            <PageHeader title="Tipos de Elementos de Limpieza" />
-            <Row className="justify-content-center">
-                <Col md={6}>
-                    <Alert variant="danger">
-                        Ocurrió un error al cargar los tipos de elementos
-                    </Alert>
-                </Col>
-            </Row>
-        </Container>
+        <PageError title="Tipos de Elementos de Limpieza" message="Ocurrió un error al cargar los tipos de elementos" />
     );
 
     const baseColumns: TableColumn<TipoElementoLimpieza>[] = [
@@ -108,26 +95,22 @@ export function TiposElementoLimpiezaPage() {
                 cell: row => (
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
                         {row.estado && (
-                            <Button
+                            <ActionButton
                                 variant="outline-primary"
                                 size="sm"
-                                title="Editar"
+                                tooltip="Editar"
+                                icon="bi-pencil"
                                 onClick={() => navigate(`/tipos-elementos-limpieza/${row.id}/edit`)}
-                            >
-                                <i className="bi bi-pencil me-1"></i>
-                                Editar
-                            </Button>
+                            />
                         )}
 
-                        <Button
+                        <ActionButton
                             variant={row.estado ? "outline-danger" : "outline-success"}
                             size="sm"
-                            title={row.estado ? "Dar de baja" : "Dar de alta"}
+                            tooltip={row.estado ? "Dar de baja" : "Dar de alta"}
+                            icon={row.estado ? "bi-dash-circle" : "bi-check-circle"}
                             onClick={() => setTipoToDelete(row)}
-                        >
-                            <i className={`bi ${row.estado ? "bi-trash3 me-1" : "bi-check-circle me-1"}`}></i>
-                            {row.estado ? " Dar de baja" : " Dar de alta"}
-                        </Button>
+                        />
                     </div>
                 ),
             },

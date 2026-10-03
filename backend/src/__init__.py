@@ -6,3 +6,5 @@ from src.recambiosElementosLimpieza.models import RecambioElementoLimpieza
 from src.consumo_producto.models import ConsumoProducto# noqa: F401
 from src.tipos_vencimientos.models import TipoVencimiento  # noqa: F401
 from src.vencimiento_personal.models import VencimientoPersonal  # noqa: F401
+from src.notificaciones.models import Notificacion  # noqa: F401
+

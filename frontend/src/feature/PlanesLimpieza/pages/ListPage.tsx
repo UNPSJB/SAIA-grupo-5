@@ -1,11 +1,14 @@
 import { useState, useMemo } from "react";
 import { mutate } from 'swr';
-import { Alert, Button, Col, Container, Form, Row, Spinner } from 'react-bootstrap';
+import { Button, Col, Container, Form, Row } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { type TableColumn } from 'react-data-table-component';
 
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
+import { PageLoading } from '../../../components/PageLoading';
+import { PageError } from '../../../components/PageError';
+import { ActionButton } from '../../../components/ActionButton';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
 import { api } from '../../../libs/axios';
@@ -111,30 +114,30 @@ export function PlanesLimpiezaPage() {
                 minWidth: "220px",
                 cell: (row) => (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <Button
+                        <ActionButton
                             variant="outline-primary"
                             size="sm"
+                            tooltip="Editar"
+                            icon="bi-pencil"
                             disabled={!row.activo}
                             onClick={() => navigate(`/planes-limpieza/${row.id}/edit`)}
-                        >
-                            <i className="bi bi-pencil me-1"></i>Editar
-                        </Button>
+                        />
                         {row.activo ? (
-                            <Button
+                            <ActionButton
                                 variant="outline-danger"
                                 size="sm"
+                                tooltip="Dar de baja"
+                                icon="bi-dash-circle"
                                 onClick={() => setPlanToDelete(row)}
-                            >
-                                <i className="bi-dash-circle me-1"></i>Dar de baja
-                            </Button>
+                            />
                         ) : (
-                            <Button
+                            <ActionButton
                                 variant="outline-success"
                                 size="sm"
+                                tooltip="Dar de alta"
+                                icon="bi-check-circle"
                                 onClick={() => cambiarEstado(row)}
-                            >
-                                <i className="bi-check-circle me-1"></i>Dar de alta
-                            </Button>
+                            />
                         )}
                     </div>
                 )
@@ -160,24 +163,10 @@ export function PlanesLimpiezaPage() {
         );
     }, [search]);
 
-    if (isLoading) return (
-        <>
-            <PageHeader title="Listado de Planes de Limpieza" />
-            <Spinner animation="border" role="status">
-                <span className="visually-hidden">Loading...</span>
-            </Spinner>
-        </>
-    )
+    if (isLoading) return <PageLoading title="Listado de Planes de Limpieza" />;
     if (!planes || error) return (
-        <Container>
-            <PageHeader title="Listado de Planes de Limpieza" />
-            <Row className="justify-content-center">
-                <Col md={6}>
-                    <Alert variant="danger">Ocurrió un error al cargar los Planes de Limpieza</Alert>
-                </Col>
-            </Row>
-        </Container>
-    )
+        <PageError title="Listado de Planes de Limpieza" message="Ocurrió un error al cargar los Planes de Limpieza" />
+    );
 
     return (
         <Container>
