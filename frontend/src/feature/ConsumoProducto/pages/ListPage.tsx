@@ -1,11 +1,14 @@
 import { useState, useMemo} from "react";
 import { mutate } from 'swr';
-import { Alert, Button, Col, Container, Form, Row, Spinner } from 'react-bootstrap';
+import { Button, Col, Container, Form, Row } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 import { type TableColumn } from 'react-data-table-component';
 
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
+import { PageLoading } from '../../../components/PageLoading';
+import { PageError } from '../../../components/PageError';
+import { ActionButton } from '../../../components/ActionButton';
 import { useApi } from '../../../hooks/useApi';
 
 import { DeleteConsumoProductoModal } from '../components/DeleteConsumoProductoModal'; 
@@ -39,24 +42,10 @@ export function ListPage() {
         );
     }, [search]);
     
-    if (isLoading) return (
-        <>
-            <PageHeader title="Insumos químicos utilizados en la tarea" />
-            <Spinner animation="border" role="status">
-                <span className="visually-hidden">Loading...</span>
-            </Spinner>
-        </>
-    )
+    if (isLoading) return <PageLoading title="Insumos químicos utilizados en la tarea" />;
     if (!consumos || error) return (
-        <Container>
-            <PageHeader title="Insumos químicos utilizados en la tarea" />
-            <Row className="justify-content-center">
-                <Col md={6}>
-                    <Alert variant="danger">Ocurrió un error al cargar los Consumos</Alert>
-                </Col>
-            </Row>
-        </Container>
-    )
+        <PageError title="Insumos químicos utilizados en la tarea" message="Ocurrió un error al cargar los Consumos" />
+    );
 
     const columns: TableColumn<ConsumoProducto>[] = [
         {
@@ -130,22 +119,21 @@ export function ListPage() {
             minWidth: "50px",
             cell: (row) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <Button
+                    <ActionButton
                         variant="outline-primary"
                         size="sm"
+                        tooltip="Editar"
+                        icon="bi-pencil"
                         disabled={!row.estado}      // Si no esta activo se muestra en gris y no se puede editar
                         onClick={() => navigate(`/consumos-productos/${row.id}/edit`)}
-                    >
-                        <i className="bi bi-pencil me-1"></i>Editar
-                    </Button>
-                    <Button
+                    />
+                    <ActionButton
                         variant={row.estado ? 'outline-danger' : 'outline-success'}
                         size="sm"
+                        tooltip={row.estado ? 'Dar de baja' : 'Dar de alta'}
+                        icon={row.estado ? 'bi-dash-circle' : 'bi-check-circle'}
                         onClick={() => setConsumoProductoToDelete(row)}
-                    >
-                        <i className={`bi ${row.estado ? 'bi-dash-circle' : 'bi-check-circle'} me-1`}></i>
-                        {row.estado ? 'Dar de baja' : 'Dar de alta'}
-                    </Button>
+                    />
                 </div>
             )
         },
