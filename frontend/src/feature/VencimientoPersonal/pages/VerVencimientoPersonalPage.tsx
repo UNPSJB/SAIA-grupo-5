@@ -71,13 +71,19 @@ export function VerVencimientoPersonalPage() {
                             </Row>
 
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
+                                <Col sm={4} className="fw-bold text-secondary">Fecha de Carga</Col>
+                                <Col sm={8}>{new Date(vencimiento.fecha_carga).toLocaleString("es-AR")}</Col>
+                            </Row>
+
+
+                            <Row className="mb-3 border-bottom pb-3 align-items-center">
                                 <Col sm={4} className="fw-bold text-secondary">Fecha Desde</Col>
-                                <Col sm={8}>{vencimiento.fecha_desde}</Col>
+                                <Col sm={8}>{vencimiento.fecha_desde.split("-").reverse().join("/")}</Col>
                             </Row>
 
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
                                 <Col sm={4} className="fw-bold text-secondary">Fecha Hasta (Vencimiento)</Col>
-                                <Col sm={8}>{vencimiento.fecha_hasta}</Col>
+                                <Col sm={8}>{vencimiento.fecha_hasta.split("-").reverse().join("/")}</Col>
                             </Row>
 
                             <Row className="mb-3 border-bottom pb-3 align-items-center">

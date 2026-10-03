@@ -99,13 +99,13 @@ export function ListPage() {
         },
         {
             name: 'Fecha Desde',
-            selector: row => row.fecha_desde,
+            selector: row => row.fecha_desde.split("-").reverse().join("/"),
             sortable: true,
             center: true,
         },
         {
             name: 'Vencimiento',
-            selector: row => row.fecha_hasta,
+            selector: row => row.fecha_hasta.split("-").reverse().join("/"),
             sortable: true,
             center: true,
         },
