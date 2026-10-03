@@ -8,6 +8,7 @@ class PersonaBasica(BaseModel):
     id: int
     nombre: str
     apellido: str
+    activo: bool
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -35,7 +36,7 @@ class VencimientoPersonal(VencimientoPersonalBase):
     fecha_carga: datetime
     es_actual: bool
     dias_restantes: int    
-    
+
     persona: PersonaBasica | None = None
     tipo_vencimiento: TipoVencimiento | None = None
 

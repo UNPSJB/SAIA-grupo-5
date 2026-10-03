@@ -152,6 +152,7 @@ export function VerVencimientoPersonalPage() {
 
                             <Button
                                 variant="primary"
+                                disabled={!vencimiento.persona?.activo}
                                 onClick={() => navigate(`/vencimiento-personal/${vencimiento.id}/edit`)}
                             >
                                 <i className="bi bi-pencil me-1"></i>Editar Vencimiento

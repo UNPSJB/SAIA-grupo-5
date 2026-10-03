@@ -3,6 +3,7 @@ import { mutate } from 'swr';
 import { Alert, Button, Col, Container, Form, Row, Spinner } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 import { type TableColumn } from 'react-data-table-component';
+import { ActionButton } from '../../../components/ActionButton';
 
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
@@ -120,10 +121,10 @@ export function ListPage() {
                 const badge = vencido ? '#fee2e2' : proximo ? '#fef3c7' : '#dcfce7';
                 const color = vencido ? '#991b1b' : proximo ? '#92400e' : '#166534';
                 const texto = vencido
-                    ? `Vencido (${Math.abs(row.dias_restantes)} d)`
+                    ? `Vencido (${Math.abs(row.dias_restantes)} dias)`
                     : proximo
                     ? `Proximo a vencer (${row.dias_restantes} d)`
-                    : `Vigente (${row.dias_restantes} d)`;
+                    : `Vigente (${row.dias_restantes} dias)`;
 
                 return (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -152,36 +153,40 @@ export function ListPage() {
             minWidth: '280px',
             cell: (row) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <Button
+                    <ActionButton
                         variant="outline-info"
                         size="sm"
+                        tooltip="Ver vencimiento"
+                        icon="bi bi-eye"
                         onClick={() => navigate (`/vencimiento-personal/${row.id}`)}
-                    >
-                        <i className="bi bi-eye"></i>
-                    </Button>
-                    <Button
-                        variant="outline-secondary"
+                    />
+
+
+                    <ActionButton
+                        variant="outline-warning"
                         size="sm"
+                        tooltip="Historico"
+                        icon="bi bi-clock-history"
                         onClick={() => setVencimientoHistorico(row)}
-                    >
-                        <i className="bi bi-clock-history"></i>
-                    </Button>   
+                    />
                     {currentUser?.administrar && (
                         <>
-                            <Button
+                            <ActionButton
                                 variant="outline-primary"
                                 size="sm"
+                                tooltip="Editar"
+                                icon="bi bi-pencil"
+                                disabled={!persona?.activo}
                                 onClick={() => navigate(`/vencimiento-personal/${row.id}/edit`)}
-                            >
-                                <i className="bi bi-pencil"></i>
-                            </Button>
-                            <Button
+                            />
+                            <ActionButton
                                 variant="outline-success"
                                 size="sm"
+                                tooltip="Renovar"
+                                icon="bi bi-arrow-repeat"
+                                disabled={!persona?.activo}
                                 onClick={() => setVencimientoToRenovar(row)}
-                            >
-                                <i className={`bi bi-arrow-repeat`}></i>
-                            </Button>
+                            />
                         </>
                     )}
                 </div>
@@ -213,6 +218,7 @@ export function ListPage() {
                         <Button
                             variant="primary"
                             size='sm'
+                            disabled={!persona?.activo}
                             onClick={() => navigate(`/personal/${personaId}/vencimientos/new`)}
                             style={{ whiteSpace: "nowrap" }}
                         >
