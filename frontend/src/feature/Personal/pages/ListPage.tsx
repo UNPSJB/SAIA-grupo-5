@@ -73,6 +73,7 @@ export function ListPage() {
       const coincideBusqueda = (
         persona.nombre.toLowerCase().includes(searchLower) ||
         (persona.apellido && persona.apellido.toLowerCase().includes(searchLower)) ||
+        (persona.username && persona.username.toLowerCase().includes(searchLower)) ||
         (persona.dni && persona.dni.toLowerCase().includes(searchLower)) ||
         capacidadesTexto.toLowerCase().includes(searchLower)
       )
@@ -122,6 +123,13 @@ export function ListPage() {
       center: true,
       minWidth: '180px',
       grow: 2,
+    },
+    {
+      name: 'Usuario',
+      selector: (row) => row.username || '',
+      sortable: true,
+      center: true,
+      minWidth: '120px',
     },
     {
       name: 'DNI',
