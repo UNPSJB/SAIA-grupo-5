@@ -1,7 +1,11 @@
 from src.models import ModeloBase
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Boolean
 from src.personal.constants import Capacidades
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.vencimiento_personal.models import VencimientoPersonal
 
 
 class Persona(ModeloBase):
@@ -14,6 +18,9 @@ class Persona(ModeloBase):
     mail: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
     username: Mapped[str] = mapped_column(String(50), unique=True, index=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
+
+    vencimientos: Mapped[list["VencimientoPersonal"]] = relationship(back_populates = "persona")
+
     operar: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     administrar: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     activo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
