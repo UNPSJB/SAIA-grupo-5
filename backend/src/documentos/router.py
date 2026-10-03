@@ -30,3 +30,8 @@ def update_documento(documento_id: int, documento: schemas.DocumentoUpdate, db: 
 @router.patch("/{documento_id}/estado", response_model=schemas.Documento)
 def cambiar_estado_documento(documento_id: int, db: Session = Depends(get_db)):
     return services.cambiar_estado_documento(db, documento_id)
+
+
+
+#revisar modificar documento
+#revisar duplicado de doc, tipo y version

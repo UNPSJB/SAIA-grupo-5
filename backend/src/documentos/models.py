@@ -18,4 +18,4 @@ class Documento(ModeloBase):
     tipo_id: Mapped[int] = mapped_column(ForeignKey("tipos_documentos.id"), index=True, nullable=False)
 
     versiones: Mapped[list["VersionDocumento"]] = relationship(back_populates="documento")
-    tipo: Mapped["TipoDocumento"] = relationship(back_populates="tipo_documento")
+    tipo: Mapped["TipoDocumento"] = relationship(back_populates="documentos")

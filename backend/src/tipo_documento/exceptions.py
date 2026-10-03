@@ -7,3 +7,6 @@ class TipoDocumentoNoEncontrado(NotFound):
 
 class TipoDocumentoEnUso(BadRequest):
     DETAIL = ErrorCode.TIPO_DOCUMENTO_EN_USO
+
+class TipoDocumentoDuplicado(BadRequest):
+    DETAIL = ErrorCode.TIPO_DOCUMENTO_DUPLICADO

@@ -4,3 +4,6 @@ from src.equipos.models import Equipo# noqa: F401
 from src.elementosLimpieza.models import ElementoLimpieza, TipoElementoLimpieza# noqa: F401
 from src.recambiosElementosLimpieza.models import RecambioElementoLimpieza
 from src.consumo_producto.models import ConsumoProducto# noqa: F401
+from src.tipo_documento.models import TipoDocumento
+from src.documentos.models import Documento
+from src.version_documento.models import VersionDocumento

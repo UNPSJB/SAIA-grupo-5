@@ -3,22 +3,22 @@ from typing import Annotated
 from datetime import date, datetime
 
 class VersionDocumentoBase(BaseModel):
-    version: int
+    version: Annotated[int, Field(gt=0)]
     documento_id: int
     fecha_subida: datetime
     archivo: str
-    fecha_desde_vigencia: datetime
+    fecha_desde_vigencia: datetime | None = None
     fecha_hasta_vigencia: datetime | None = None
 
 class VersionDocumentoCreate(VersionDocumentoBase):
     pass
 
 class VersionDocumentoUpdate(VersionDocumentoBase):
-    pass
+    vigente: bool
 
 class VersionDocumento(VersionDocumentoBase):
     id: int
-    #activo: bool
+    activo: bool
     vigente: bool
     
     model_config = ConfigDict(from_attributes=True)

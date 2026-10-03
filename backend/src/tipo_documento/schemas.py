@@ -12,7 +12,7 @@ class TipoDocumentoCreate(TipoDocumentoBase):
 class TipoDocumentoUpdate(TipoDocumentoBase):
     pass
 
-class TipoElementoLimpieza(TipoDocumentoBase):
+class TipoDocumento(TipoDocumentoBase):
     id: int
     activo: bool
 

@@ -41,7 +41,9 @@ from src.tipo_quimico.router import router as tipo_quimico_router
 from src.elementosLimpieza.router import router as elementos_limpieza_router
 from src.recambiosElementosLimpieza.router import router as recambios_elementos_limpieza_router
 from src.consumo_producto.router import router as consumos_router
-
+from src.documentos.router import router as documentos_router
+from src.tipo_documento.router import router as tipo_documento_router
+from src.version_documento.router import router as version_documento_router
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -81,4 +83,8 @@ app.include_router(tipo_quimico_router)
 app.include_router(elementos_limpieza_router)
 app.include_router(recambios_elementos_limpieza_router)
 app.include_router(consumos_router)
+
+app.include_router(documentos_router)
+app.include_router(tipo_documento_router)
+app.include_router(version_documento_router)
 
