@@ -10,7 +10,7 @@ class TipoDocumento(ModeloBase):
     __tablename__ = "tipos_documentos"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    nombre: Mapped[str] = mapped_column(String(60), nullable=False)
+    nombre: Mapped[str] = mapped_column(String(60), unique=True, index=True, nullable=False)
     descripcion: Mapped[str | None] = mapped_column(String(100), nullable=True)
     activo: Mapped[bool] = mapped_column(Boolean, default=True)
 

@@ -59,6 +59,11 @@ import { EditarConsumoProductoPage } from './feature/ConsumoProducto/pages/Edita
 import { NuevoConsumoProductoPage } from './feature/ConsumoProducto/pages/NuevoConsumoProductoPage.tsx'
 import { ConsumoAcumuladoPage } from './feature/ConsumoProducto/pages/ConsumoAcumuladoPage.tsx'
 
+import { ListPage as TipoDocumentoListPage } from './feature/TiposDocumentos/pages/ListPage.tsx'
+import { EditarTipoDocumentoPage } from './feature/TiposDocumentos/pages/EditarTipoDocumentoPage.tsx'
+import { NuevoTipoDocumentoPage } from './feature/TiposDocumentos/pages/NuevoTipoDocumentoPage.tsx'
+import { VerTipoDocumentoPage } from './feature/TiposDocumentos/pages/VerTipoDocumentoPage.tsx'
+
 import { VerDetalleTareaOcurrenciaPage } from './feature/Historial/pages/VerDetalleTareaOcurrenciaPage.tsx' 
 
 import { Login, NoAutorizado } from './feature/auth'
@@ -223,6 +228,20 @@ const router = createBrowserRouter([
             children: [
               { path: ':id', element: <VerDetalleTareaOcurrenciaPage />}
             ]
+          },
+          {
+            path: 'tipos-documentos',
+            children: [
+              { index: true, element: <TipoDocumentoListPage /> },
+              { path: ':id', element: <VerTipoDocumentoPage /> },
+              {
+                element: <ProtectedRoute requireAdmin />,
+                children: [
+                  { path: 'new', element: <NuevoTipoDocumentoPage /> },
+                  { path: ':id/edit', element: <EditarTipoDocumentoPage /> },
+                ],
+              },
+            ],
           },
           { path: '*', element: <Page404 /> },
           {

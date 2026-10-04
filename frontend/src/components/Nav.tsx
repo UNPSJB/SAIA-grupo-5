@@ -143,6 +143,10 @@ export function Nav() {
                                 <i className="bi bi-flask me-2"></i>
                                 Tipos de Químicos
                             </NavDropdown.Item>
+                            <NavDropdown.Item as={NavLink} to="/tipos-documentos">
+                                <i className="bi-file-earmark-text me-2"></i>
+                                Tipos de Documentos
+                            </NavDropdown.Item>
                         </NavDropdown>
                     )}
 
@@ -287,6 +291,14 @@ export function Nav() {
                             >
                                 <i className="bi bi-flask me-2"></i>
                                 Tipos de Químicos
+                            </NavDropdown.Item>
+                            <NavDropdown.Item
+                                as={NavLink}
+                                to="/tipos-documentos"
+                                onClick={() => setMostrarMenu(false)}
+                            >
+                                <i className="bi bi-flask me-2"></i>
+                                Tipos de Documentos
                             </NavDropdown.Item>
                         </NavDropdown>
                     )}
