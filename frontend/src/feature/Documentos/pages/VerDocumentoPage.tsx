@@ -3,11 +3,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 import type { Documento } from "../types";
+import { useAuth } from '../../../hooks';
 
 export function VerDocumentoPage() {
     const navigate = useNavigate();
     const { id } = useParams(); 
     const { data: tipos } = useApi('/tipos-documentos/');
+    const { currentUser } = useAuth();
+    const isAdmin = Boolean(currentUser?.administrar);
 
     const { data: documento, isLoading, error } = useApi<Documento>(`/documentos/${id}`);
 
@@ -105,15 +108,15 @@ export function VerDocumentoPage() {
                             >
                                 <i className="bi bi-arrow-left me-1"></i>Volver a la lista
                             </Button>
-                            
-                            <Button 
-                                variant="primary" 
-                                disabled={!documento.activo}
-                                onClick={() => navigate(`/documentos/${documento.id}/edit`)}
-                            >
-                                <i className="bi bi-pencil me-1"></i>Editar Documento   
-
-                            </Button>
+                            {isAdmin && (
+                                <Button 
+                                    variant="primary" 
+                                    disabled={!documento.activo}
+                                    onClick={() => navigate(`/documentos/${documento.id}/edit`)}
+                                >
+                                    <i className="bi bi-pencil me-1"></i>Editar Documento   
+                                </Button>
+                            )}
                         </Card.Footer>
                     </Card>
                 </Col>

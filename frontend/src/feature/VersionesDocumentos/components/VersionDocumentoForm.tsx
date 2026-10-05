@@ -6,11 +6,11 @@ import React, { useState } from 'react';
 
 interface VersionDocumentoFormProps {
     textoBoton: string;
-    onSubmit: (datos: { documento_id: number; archivo: string }) => void;
-    valoresIniciales?: { documento_id: number; archivo: string; fecha_subida: string; };
+    onSubmit: (datos: { documento_id: number; observacion: string, archivo: string }) => void;
+    valoresIniciales?: { documento_id: number; observacion: string, archivo: string; fecha_subida: string; };
 }
 
-interface VersionDocumentoFormData { archivo: string; }
+interface VersionDocumentoFormData { observacion: string; archivo: string; }
 
 export function VersionDocumentoForm({ textoBoton, onSubmit, valoresIniciales }: VersionDocumentoFormProps) {
     const navigate = useNavigate();
@@ -21,6 +21,7 @@ export function VersionDocumentoForm({ textoBoton, onSubmit, valoresIniciales }:
 
     const {register, handleSubmit, formState: { errors }, } = useForm<VersionDocumentoFormData> ({
         defaultValues: {
+            observacion: valoresIniciales?.observacion || "",
             archivo: "",
         },
     });
@@ -50,9 +51,14 @@ export function VersionDocumentoForm({ textoBoton, onSubmit, valoresIniciales }:
     const archivoMostrar = archivoBase64 || valoresIniciales?.archivo;
 
     const onSubmitHookForm = (data: VersionDocumentoFormData) => {
+        if (!archivoBase64 && !valoresIniciales?.archivo) { 
+            setArchivoError("El archivo es obligatorio");
+            return;
+        }
         const archivoFinal = archivoBase64 ? archivoBase64 : (valoresIniciales?.archivo || null);
         onSubmit({
             documento_id: valoresIniciales?.documento_id || Number(documentoId),
+            observacion: data.observacion.trim(),
             archivo: archivoFinal,
         });
     };
@@ -81,28 +87,41 @@ export function VersionDocumentoForm({ textoBoton, onSubmit, valoresIniciales }:
                     </Form.Group>
             )}
 
-            <Form.Group className="mb-3 text-start">
-                <Form.Label className="p-1 fw-bold">Archivo (*)</Form.Label>
-                <Form.Control
-                    type="file"
-                    accept="application/pdf"
-                    onChange={handleFileChange}
-                    isInvalid={!!archivoError}
+            <Form.Group className="mb-3 text-start" controlId="formObservacion">
+                <Form.Label className="p-1 fw-bold">Observación</Form.Label>
+                <Form.Control as="textarea" rows={3}
+                    placeholder="Escribi una observación..."
+                    {...register("observacion",{
+                        maxLength: {
+                            value: 300,
+                            message: "La observación no puede superar los 300 caracteres."
+                        },
+                    })}
+                    isInvalid={!!errors.observacion}
                 />
                 <Form.Control.Feedback type="invalid">
-                    {archivoError}
+                    {errors.observacion?.message}
                 </Form.Control.Feedback>
+            </Form.Group>
 
-                {archivoMostrar && (
-                    <div className="mt-3 text-center">
-                        <p className="small text-muted mb-1">
-                            {archivoBase64 ? "Archivo nuevo a subir:" : "Archivo actual guardado:"}
-                        </p>
-
-                        <div className="p-2 border rounded bg-light d-inline-block">
-                            <i className="bi bi-file-earmark-pdf text-danger me-2"></i>
-                            <span>Documento PDF cargado correctamente</span>
-                        </div>
+            <Form.Group className="mb-3 text-start">
+                <Form.Label className="p-1 fw-bold">Archivo (*)</Form.Label>
+                {!valoresIniciales ? (
+                    <>
+                        <Form.Control
+                            type="file"
+                            accept="application/pdf"
+                            onChange={handleFileChange}
+                            isInvalid={!!archivoError}
+                        />
+                        <Form.Control.Feedback type="invalid">
+                            {archivoError}
+                        </Form.Control.Feedback>
+                    </>
+                ) : (
+                    <div className="p-2 border rounded bg-light d-inline-block">
+                        <i className="bi bi-file-earmark-pdf text-danger me-2"></i>
+                        <span>Documento PDF cargado correctamente</span>
                     </div>
                 )}
             </Form.Group>

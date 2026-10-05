@@ -48,7 +48,7 @@ def modificar_version_documento(db: Session, version_id: int, version: schemas.V
     if db_version is None:
             raise exceptions.VersionNoEncontrada()
     
-    db_version.vigente = version.vigente
+    db_version.observacion = version.observacion
     db.commit()
     db.refresh(db_version)
     return db_version

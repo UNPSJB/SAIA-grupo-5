@@ -11,9 +11,10 @@ class VersionDocumento(ModeloBase):
     __tablename__ = "versiones_documentos"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    version: Mapped[int] = mapped_column(index=True, unique=True, nullable=False)
+    version: Mapped[int] = mapped_column(index=True, nullable=False)
     vigente: Mapped[bool] = mapped_column(Boolean, default=False)
     activo: Mapped[bool] = mapped_column(Boolean, default=True)
+    observacion: Mapped[str | None] = mapped_column(String(300), nullable=True)
     documento_id: Mapped[int] = mapped_column(ForeignKey("documentos.id"), index=True, nullable=False)
     fecha_subida: Mapped[date] = mapped_column(Date, nullable=False)
     archivo: Mapped[str] = mapped_column(Text, nullable=False)

@@ -304,7 +304,7 @@ const router = createBrowserRouter([
               },
             ],
           },
-
+          {
             path: 'tipos-vencimientos',
             element: <ProtectedRoute requireAdmin />,
             children: [

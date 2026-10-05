@@ -16,6 +16,7 @@ export function EditarVersionDocumentoPage(){
 
     const actualizarVersionDocumento = async (datos: NewVersionDocumento) => {
         try{
+            await api.put(`/versiones-documentos/${id}`, datos);
             await mutate(`/versiones-documentos/documento/${version.documento_id}`);
             await mutate(`/versiones-documentos/${id}`);
             mostrarAlertaExito("La versión del documento se edito correctamente.");
@@ -70,7 +71,10 @@ export function EditarVersionDocumentoPage(){
                 <VersionDocumentoForm textoBoton="Editar Versión"
                     onSubmit={actualizarVersionDocumento}
                     valoresIniciales={{ 
-                    documento_id: version.documento_id || ""}}/>
+                    documento_id: version.documento_id || "",
+                    observacion: version.observacion,
+                    archivo: version.archivo,
+                    fecha_subida: version.fecha_subida }}/>
             </Container>
         </>
     )

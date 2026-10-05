@@ -8,6 +8,7 @@ export type VersionDocumento = {
     documento_id: number
     fecha_subida: string
     archivo: string
+    observacion: string
     documento: Documento
     fecha_desde_vigencia: string | null
     fecha_hasta_vigencia: string | null
@@ -15,5 +16,6 @@ export type VersionDocumento = {
 
 export type NewVersionDocumento = {
     documento_id: number
+    observacion?: string
     archivo: string
 }

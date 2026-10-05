@@ -3,12 +3,16 @@ import { useNavigate, useParams } from "react-router-dom";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 import type { VersionDocumento } from "../types";
+import { useAuth } from '../../../hooks';
 
 export function VerVersionDocumentoPage() {
     const navigate = useNavigate();
     const { id } = useParams(); 
     const { data: version, isLoading, error } = useApi<VersionDocumento>(`/versiones-documentos/${id}`);
     const { data: documento } = useApi<{ nombre: string }>( version ? `/documentos/${version.documento_id}` : "");
+    const { currentUser } = useAuth();
+    const isAdmin = Boolean(currentUser?.administrar);
+
     if (isLoading) return (
         <>
             <PageHeader title="Detalle de la Version" />
@@ -55,6 +59,14 @@ export function VerVersionDocumentoPage() {
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
                                 <Col sm={4} className="fw-bold text-secondary">Version</Col>
                                 <Col sm={8} className="fs-5">{version.version}</Col>
+                            </Row>
+
+                            <Row className="mb-3 border-bottom pb-3 align-items-center">
+                                <Col sm={4} className="fw-bold text-secondary">Observación</Col>
+                                <Col sm={8}>
+                                    {version.observacion ? (
+                                        <span>{version.observacion}</span>) : (<span className="text-muted fst-italic">Sin observacion detallada</span>)}
+                                </Col>
                             </Row>
 
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
@@ -125,16 +137,16 @@ export function VerVersionDocumentoPage() {
                             >
                                 <i className="bi bi-arrow-left me-1"></i>Volver a la lista
                             </Button>
-                            
-                            <Button 
-                                variant="primary" 
-                                disabled={!version.activo}
-                                onClick={() => navigate(`/documentos/${version.id}/edit`)}
-                            >
-                                <i className="bi bi-pencil me-1"></i>Editar Version   
+                            {isAdmin && (
+                                <Button 
+                                    variant="primary" 
+                                    disabled={!version.activo}
+                                    onClick={() => navigate(`/versiones-documentos/version/${version.id}/edit`)}
+                                >
+                                    <i className="bi bi-pencil me-1"></i>Editar Version   
 
-                            </Button>
-                            
+                                </Button>
+                            )}
                         </Card.Footer>
                     </Card>
                 </Col>
