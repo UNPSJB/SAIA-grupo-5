@@ -255,13 +255,6 @@ export function ListPage() {
               disabled={!row.activo}
               onClick={() => navigate(`/personal/${row.id}/edit`)}
             />
-            <ActionButton
-              variant="outline-warning"
-              size="sm"
-              tooltip="Vencimientos"
-              icon="bi-calendar-check"
-              onClick={() => navigate(`/personal/${row.id}/vencimientos`)}
-            />
             {row.activo ? (
               <ActionButton
                 variant="outline-danger"
