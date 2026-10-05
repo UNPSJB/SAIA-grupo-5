@@ -1,6 +1,5 @@
-import { Button, Modal, Form, Alert } from "react-bootstrap";
+import { Button, Modal } from "react-bootstrap";
 import { api } from "../../../libs/axios";
-import { useState } from "react";
 import type { ConsumoProducto } from "../types";
 import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
 
