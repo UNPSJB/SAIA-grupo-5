@@ -64,6 +64,11 @@ import { EditarTipoDocumentoPage } from './feature/TiposDocumentos/pages/EditarT
 import { NuevoTipoDocumentoPage } from './feature/TiposDocumentos/pages/NuevoTipoDocumentoPage.tsx'
 import { VerTipoDocumentoPage } from './feature/TiposDocumentos/pages/VerTipoDocumentoPage.tsx'
 
+import { ListPage as DocumentoListPage } from './feature/Documentos/pages/ListPage.tsx'
+import { EditarDocumentoPage } from './feature/Documentos/pages/EditarDocumentoPage.tsx'
+import { NuevoDocumentoPage } from './feature/Documentos/pages/NuevoDocumentoPage.tsx'
+import { VerDocumentoPage } from './feature/Documentos/pages/VerDocumentoPage.tsx'
+
 import { VerDetalleTareaOcurrenciaPage } from './feature/Historial/pages/VerDetalleTareaOcurrenciaPage.tsx' 
 
 import { Login, NoAutorizado } from './feature/auth'
@@ -239,6 +244,20 @@ const router = createBrowserRouter([
                 children: [
                   { path: 'new', element: <NuevoTipoDocumentoPage /> },
                   { path: ':id/edit', element: <EditarTipoDocumentoPage /> },
+                ],
+              },
+            ],
+          },
+          {
+            path: 'documentos',
+            children: [
+              { index: true, element: <DocumentoListPage /> },
+              { path: ':id', element: <VerDocumentoPage /> },
+              {
+                element: <ProtectedRoute requireAdmin />,
+                children: [
+                  { path: 'new', element: <NuevoDocumentoPage /> },
+                  { path: ':id/edit', element: <EditarDocumentoPage /> },
                 ],
               },
             ],

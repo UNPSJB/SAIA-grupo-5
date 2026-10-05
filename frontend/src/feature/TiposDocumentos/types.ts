@@ -7,4 +7,5 @@ export type TipoDocumento = {
 
 export type NewTipoDocumento = {
     nombre: string
+    descripcion?: string
 }
