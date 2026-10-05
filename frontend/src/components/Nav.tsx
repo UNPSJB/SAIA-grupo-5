@@ -59,7 +59,7 @@ const navGroups: NavGroup[] = [
             { label: 'Sectores', to: '/sectores', icon: 'bi-geo-alt' },
             { label: 'Tipos de elementos', to: '/tipos-elementos-limpieza', icon: 'bi-tags' },
             { label: 'Tipos de químicos', to: '/tipos-quimicos', icon: 'bi-flask' },
-            { label: 'Tipos de vencimientos', to: '/tipos-vencimientos', icon: 'bi-calendar-check' },
+            { label: 'Tipos de Vencimientos', to: '/tipos-vencimientos', icon: 'bi-calendar-plus'}
         ],
     },
 ];
