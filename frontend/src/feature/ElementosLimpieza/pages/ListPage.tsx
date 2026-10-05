@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { mutate } from "swr";
 import { useAuth } from "../../../hooks/useAuth";
-import { Button, ButtonGroup, Col, Container, Dropdown, Form, Row } from "react-bootstrap";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Button, Col, Container, Form, Row } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 import { type TableColumn } from "react-data-table-component";
 
 import { AppTable } from "../../../components/AppTable";
@@ -16,22 +16,9 @@ import { EstadoElementoLimpiezaModal } from "../components/DeleteElementoLimpiez
 import type { ElementoLimpieza } from "../types";
 import type { TipoElementoLimpieza } from "../../TiposElementoLimpieza/types";
 
-type EstadoFiltro = "todos" | "vencido" | "por-vencer";
-
-const ESTADO_FILTRO_LABELS: Record<EstadoFiltro, string> = {
-    todos: "Todos",
-    vencido: "Vencidos",
-    "por-vencer": "Por vencer",
-};
-
 export function ElementosLimpiezaPage() {
     const navigate = useNavigate();
     const { currentUser } = useAuth();
-    const [searchParams, setSearchParams] = useSearchParams();
-    const estadoFiltro: EstadoFiltro = (() => {
-        const valor = searchParams.get("estado");
-        return valor === "vencido" || valor === "por-vencer" ? valor : "todos";
-    })();
     const [search, setSearch] = useState("");
     const [elementoToDelete, setElementoToDelete] = useState<ElementoLimpieza | null>(null);
 
@@ -50,24 +37,16 @@ export function ElementosLimpiezaPage() {
         return elementos.filter((elemento) => {
             const nombreTipo = obtenerNombreTipo(elemento.tipo_id);
 
-            const coincideBusqueda = (
+            return (
                 elemento.codigo.toLowerCase().includes(busqueda) ||
                 elemento.nombre.toLowerCase().includes(busqueda) ||
                 nombreTipo.toLowerCase().includes(busqueda) ||
                 (elemento.material ?? "").toLowerCase().includes(busqueda) ||
                 (elemento.ubicacion ?? "").toLowerCase().includes(busqueda)
             );
-
-            const coincideEstado = estadoFiltro === "vencido"
-                ? elemento.dias_restantes !== null && elemento.dias_restantes < 0
-                : estadoFiltro === "por-vencer"
-                ? elemento.dias_restantes !== null && elemento.dias_restantes >= 0 && elemento.dias_restantes <= 7
-                : true;
-
-            return coincideBusqueda && coincideEstado;
         })
         .sort((a, b) => a.codigo.localeCompare(b.codigo));
-    }, [search, elementos, tipos, estadoFiltro]);
+    }, [search, elementos, tipos]);
 
     const subHeaderComponentMemo = useMemo(() => {
         return (
@@ -240,35 +219,6 @@ export function ElementosLimpiezaPage() {
 
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
-                </Col>
-
-                <Col xs="auto" className="align-self-center">
-                    <Dropdown as={ButtonGroup}>
-                        <Button
-                            variant="outline-secondary"
-                            size="sm"
-                            onClick={() => setSearchParams({})}
-                        >
-                            Filtrar por: {ESTADO_FILTRO_LABELS[estadoFiltro]}
-                        </Button>
-                        <Dropdown.Toggle
-                            split
-                            variant="outline-secondary"
-                            size="sm"
-                            id="dropdown-filtro-elementos"
-                        />
-                        <Dropdown.Menu>
-                            {(Object.entries(ESTADO_FILTRO_LABELS) as [EstadoFiltro, string][]).map(([valor, label]) => (
-                                <Dropdown.Item
-                                    key={valor}
-                                    active={estadoFiltro === valor}
-                                    onClick={() => setSearchParams(valor === "todos" ? {} : { estado: valor })}
-                                >
-                                    {label}
-                                </Dropdown.Item>
-                            ))}
-                        </Dropdown.Menu>
-                    </Dropdown>
                 </Col>
 
                 {currentUser?.administrar && (
