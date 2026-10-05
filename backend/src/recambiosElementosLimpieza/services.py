@@ -8,10 +8,6 @@ from src.recambiosElementosLimpieza.models import RecambioElementoLimpieza
 from src.recambiosElementosLimpieza import schemas, exceptions
 from src.elementosLimpieza.models import ElementoLimpieza
 from src.elementosLimpieza import exceptions as elemento_exceptions
-from src.notificaciones.services import (
-    generar_notificacion_recambio_elemento_individual,
-    resolver_notificaciones_recambio_elemento,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -39,9 +35,6 @@ def crear_recambio(db: Session, elemento_id: int, recambio: schemas.RecambioElem
     db.add(_recambio)
     db.commit()
     db.refresh(_recambio)
-
-    resolver_notificaciones_recambio_elemento(db, elemento_id)
-    generar_notificacion_recambio_elemento_individual(db, elemento_id)
 
     return _recambio
 

@@ -61,8 +61,6 @@
 }
 
 .dashboard-metric:hover { transform: translateY(-2px); box-shadow: 0 .45rem 1.1rem rgba(30, 49, 57, .08); }
-.dashboard-metric-clickable { cursor: pointer; }
-.dashboard-metric-clickable:focus-visible { outline: 2px solid #06794f; outline-offset: 2px; }
 .dashboard-metric .card-body { padding: 1.05rem 1.1rem .95rem; }
 .dashboard-metric-label { color: #7d898e; font-size: .79rem; font-weight: 600; }
 .dashboard-metric-value { margin-top: .3rem; color: #29383e; font-size: 1.8rem; font-weight: 700; letter-spacing: -.04em; line-height: 1.15; }
