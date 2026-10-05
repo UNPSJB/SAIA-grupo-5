@@ -69,6 +69,12 @@ import { EditarDocumentoPage } from './feature/Documentos/pages/EditarDocumentoP
 import { NuevoDocumentoPage } from './feature/Documentos/pages/NuevoDocumentoPage.tsx'
 import { VerDocumentoPage } from './feature/Documentos/pages/VerDocumentoPage.tsx'
 
+import { ListPage as VersionDocumentoListPage } from './feature/VersionesDocumentos/pages/ListPage.tsx'
+import { EditarVersionDocumentoPage } from './feature/VersionesDocumentos/pages/EditarVersionDocumentoPage.tsx'
+import { NuevaVersionDocumentoPage } from './feature/VersionesDocumentos/pages/NuevaVersionDocumentoPage.tsx'
+import { VerVersionDocumentoPage } from './feature/VersionesDocumentos/pages/VerVersionDocumentoPage.tsx'
+
+
 import { VerDetalleTareaOcurrenciaPage } from './feature/Historial/pages/VerDetalleTareaOcurrenciaPage.tsx' 
 
 import { Login, NoAutorizado } from './feature/auth'
@@ -262,6 +268,21 @@ const router = createBrowserRouter([
               },
             ],
           },
+          {
+            path: 'versiones-documentos',
+            children: [
+              { path: 'documento/:documentoId', element: <VersionDocumentoListPage /> },
+              { path: 'version/:id', element: <VerVersionDocumentoPage /> },
+              {
+                element: <ProtectedRoute requireAdmin />,
+                children: [
+                  { path: 'documento/:documentoId/new', element: <NuevaVersionDocumentoPage /> },
+                  { path: 'version/:id/edit', element: <EditarVersionDocumentoPage /> },
+                ],
+              },
+            ],
+          },
+
           { path: '*', element: <Page404 /> },
           {
             path: 'checklist', element: <ChecklistListPage />

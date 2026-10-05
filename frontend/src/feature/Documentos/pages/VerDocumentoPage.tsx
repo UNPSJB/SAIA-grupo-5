@@ -67,6 +67,15 @@ export function VerDocumentoPage() {
                                 <Col sm={8}>{documento.tipo.nombre}</Col>
                             </Row>
 
+                            <Row className="mb-3 border-bottom pb-3 align-items-center">
+                                <Col sm={4} className="fw-bold text-secondary">Versiones</Col>
+                                <Col sm={8}>
+                                    <Button variant="outline-info" size="sm" disabled={!documento.activo} onClick={() => navigate(`/versiones-documentos/documento/${documento.id}`)}>
+                                        <i className="bi bi-box-arrow-up-right me-2"></i>Ver
+                                    </Button>
+                                </Col>
+                            </Row>
+
                             <Row className="mb-2 align-items-center">
                                 <Col sm={4} className="fw-bold text-secondary">Estado Actual</Col>
                                 <Col sm={8}>

@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from typing import List
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -9,7 +10,19 @@ from src.version_documento import schemas, exceptions
 logger = logging.getLogger(__name__)
 
 def crear_version_documento(db: Session, version: schemas.VersionDocumentoCreate) -> schemas.VersionDocumento:
-    _version = VersionDocumento(**version.model_dump())
+    ultima_version = db.scalar(select(VersionDocumento.version)
+                                   .where(VersionDocumento.documento_id == version.documento_id)
+                                   .order_by(VersionDocumento.version.desc())
+                                   .limit(1)
+    )
+
+    nueva_version = (ultima_version or 0) + 1
+
+    datos = version.model_dump()
+    datos["version"] = nueva_version
+    datos["fecha_subida"] = datetime.now()
+    
+    _version = VersionDocumento(**datos)
     db.add(_version)
     db.commit()
     db.refresh(_version)
@@ -32,6 +45,9 @@ def leer_version_documento(db: Session, version_id: int) -> schemas.VersionDocum
 
 def modificar_version_documento(db: Session, version_id: int, version: schemas.VersionDocumentoUpdate) -> schemas.VersionDocumento:
     db_version = leer_version_documento(db, version_id)
+    if db_version is None:
+            raise exceptions.VersionNoEncontrada()
+    
     db_version.vigente = version.vigente
     db.commit()
     db.refresh(db_version)

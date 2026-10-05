@@ -12,10 +12,10 @@ export function NuevoDocumentoPage() {
 
     const guardarDocumento = async (datos: NewDocumento) => {
         try{
-            await api.post("/documentos/", datos);
+            const respuesta = await api.post("/documentos/", datos);
             await mutate("/documentos/");
-            mostrarAlertaExito("El documento se creo correctamente.");     
-            navigate("/documentos");
+            mostrarAlertaExito("El documento se creo correctamente.");
+            navigate(`/versiones-documentos/documento/${respuesta.data.id}`);
         } catch (error: any){  
             let mensajeFinal = "No se pudo crear el documento.";       
             if (error.response?.data?.detail){    
