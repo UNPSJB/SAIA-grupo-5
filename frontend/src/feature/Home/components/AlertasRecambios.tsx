@@ -1,7 +1,8 @@
-import { Alert, Badge, Button, Card, Spinner, Table } from "react-bootstrap";
+import { Alert, Badge, Card, Spinner, Table } from "react-bootstrap";
 import { mutate } from "swr";
 import { useApi } from "../../../hooks/useApi";
 import { api } from "../../../libs/axios";
+import { ActionButton } from "../../../components/ActionButton";
 import type { ElementoLimpieza } from "../../ElementosLimpieza/types";
 
 const ALERTAS_URL = "/elementos-limpieza/alertas";
@@ -85,13 +86,13 @@ export function AlertasRecambios() {
                                     </Badge>
                                 </td>
                                 <td className="text-end">
-                                    <Button
+                                    <ActionButton
                                         variant="outline-success"
                                         size="sm"
+                                        tooltip="Recambio"
+                                        icon="bi-arrow-repeat"
                                         onClick={() => registrarRecambio(elemento)}
-                                    >
-                                        <i className="bi bi-arrow-repeat me-1"></i>Registrar recambio
-                                    </Button>
+                                    />
                                 </td>
                             </tr>
                         );

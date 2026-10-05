@@ -1,11 +1,14 @@
 import { useState, useMemo } from "react";
 import { mutate } from 'swr';
-import { Alert, Button, Col, Container, Form, Row, Spinner } from 'react-bootstrap';
+import { Button, Col, Container, Form, Row } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { type TableColumn } from 'react-data-table-component';
 
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
+import { PageLoading } from '../../../components/PageLoading';
+import { PageError } from '../../../components/PageError';
+import { ActionButton } from '../../../components/ActionButton';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
 import { api } from '../../../libs/axios';
@@ -54,24 +57,10 @@ export function SuperficiesPage() {
         }
     };
 
-    if (isLoading) return (
-        <>
-            <PageHeader title="Listado de Superficies" />
-            <Spinner animation="border" role="status">
-                <span className="visually-hidden">Loading...</span>
-            </Spinner>
-        </>
-    )
+    if (isLoading) return <PageLoading title="Listado de Superficies" />;
     if (!superficies || error) return (
-        <Container>
-            <PageHeader title="Listado de Superficies" />
-            <Row className="justify-content-center">
-                <Col md={6}>
-                    <Alert variant="danger">Ocurrió un error al cargar las Superficies</Alert>
-                </Col>
-            </Row>
-        </Container>
-    )
+        <PageError title="Listado de Superficies" message="Ocurrió un error al cargar las Superficies" />
+    );
 
     const baseColumns: TableColumn<Superficie>[] = [
         {
@@ -139,30 +128,30 @@ export function SuperficiesPage() {
                 minWidth: "220px",
                 cell: (row) => (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <Button
+                        <ActionButton
                             variant="outline-primary"
                             size="sm"
+                            tooltip="Editar"
+                            icon="bi-pencil"
                             disabled={!row.activo}
                             onClick={() => navigate(`/superficies/${row.id}/edit`)}
-                        >
-                            <i className="bi bi-pencil me-1"></i>Editar
-                        </Button>
+                        />
                         {row.activo ? (
-                            <Button
+                            <ActionButton
                                 variant="outline-danger"
                                 size="sm"
+                                tooltip="Dar de baja"
+                                icon="bi-dash-circle"
                                 onClick={() => setSuperficieToDelete(row)}
-                            >
-                                <i className="bi bi-trash3 me-1"></i>Eliminar
-                            </Button>
+                            />
                         ) : (
-                            <Button
+                            <ActionButton
                                 variant="outline-success"
                                 size="sm"
+                                tooltip="Dar de alta"
+                                icon="bi-check-circle"
                                 onClick={() => cambiarEstado(row)}
-                            >
-                                <i className="bi bi-person-check me-1"></i>Dar de alta
-                            </Button>
+                            />
                         )}
                     </div>
                 )

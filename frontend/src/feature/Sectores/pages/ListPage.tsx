@@ -1,11 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { mutate } from 'swr';
-import { Alert, Button, Col, Container, Form, Row, Spinner } from 'react-bootstrap';
+import { Button, Col, Container, Form, Row } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { type TableColumn } from 'react-data-table-component';
 
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
+import { PageLoading } from '../../../components/PageLoading';
+import { PageError } from '../../../components/PageError';
+import { ActionButton } from '../../../components/ActionButton';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
 import { api } from '../../../libs/axios';
@@ -54,24 +57,10 @@ export function ListPage() {
         }
     };
 
-    if (isLoading) return (
-        <>
-            <PageHeader title="Listado de Sectores" />
-            <Spinner animation="border" role="status">
-                <span className="visually-hidden">Loading...</span>
-            </Spinner>
-        </>
-    )
+    if (isLoading) return <PageLoading title="Listado de Sectores" />;
     if (!sectores || error) return (
-        <Container>
-            <PageHeader title="Listado de Sectores" />
-            <Row className="justify-content-center">
-                <Col md={6}>
-                    <Alert variant="danger">Ocurrió un error al cargar Sectores</Alert>
-                </Col>
-            </Row>
-        </Container>
-    )
+        <PageError title="Listado de Sectores" message="Ocurrió un error al cargar Sectores" />
+    );
 
     const baseColumns: TableColumn<Sector>[] = [
         {
@@ -153,30 +142,30 @@ export function ListPage() {
                 minWidth: "220px",
                 cell: (row) => (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <Button
+                        <ActionButton
                             variant="outline-primary"
                             size="sm"
+                            tooltip="Editar"
+                            icon="bi-pencil"
                             disabled={!row.activo}
                             onClick={() => navigate(`/sectores/${row.id}/edit`)}
-                        >
-                            <i className="bi bi-pencil me-1"></i>Editar
-                        </Button>
+                        />
                         {row.activo ? (
-                            <Button
+                            <ActionButton
                                 variant="outline-danger"
                                 size="sm"
+                                tooltip="Dar de baja"
+                                icon="bi-dash-circle"
                                 onClick={() => setSectorToDelete(row)}
-                            >
-                                <i className="bi bi-trash3 me-1"></i>Eliminar
-                            </Button>
+                            />
                         ) : (
-                            <Button
+                            <ActionButton
                                 variant="outline-success"
                                 size="sm"
+                                tooltip="Dar de alta"
+                                icon="bi-check-circle"
                                 onClick={() => cambiarEstado(row)}
-                            >
-                                <i className="bi bi-person-check me-1"></i>Dar de alta
-                            </Button>
+                            />
                         )}
                     </div>
                 )

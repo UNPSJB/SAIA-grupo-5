@@ -19,3 +19,5 @@ from src.tipo_quimico.models import TipoQuimico
 from src.tipo_documento.models import TipoDocumento
 from src.documentos.models import Documento
 from src.version_documento.models import VersionDocumento
+from src.notificaciones.models import Notificacion
+

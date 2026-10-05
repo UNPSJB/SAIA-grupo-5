@@ -76,10 +76,23 @@ import { VerVersionDocumentoPage } from './feature/VersionesDocumentos/pages/Ver
 
 
 import { VerDetalleTareaOcurrenciaPage } from './feature/Historial/pages/VerDetalleTareaOcurrenciaPage.tsx' 
+import { NotificacionesPage } from './feature/Notificaciones/pages/ListPage.tsx'
+
+import { ListPage as TipoVencimientoListPage } from './feature/TiposVencimientos/pages/ListPage.tsx'
+import { EditarTipoVencimientoPage } from './feature/TiposVencimientos/pages/EditarTipoVencimientoPage.tsx'
+import { NuevoTipoVencimientoPage } from './feature/TiposVencimientos/pages/NuevoTipoVencimientoPage.tsx'
+import { VerTipoVencimientoPage } from './feature/TiposVencimientos/pages/VerTipoVencimientoPage.tsx'
+
+import { ListPage as VencimientoPersonalListPage } from './feature/VencimientoPersonal/pages/ListPage.tsx'
+import { EditarVencimientoPersonalPage } from './feature/VencimientoPersonal/pages/EditarVencimientoPersonalPage.tsx'
+import { NuevoVencimientoPersonalPage } from './feature/VencimientoPersonal/pages/NuevoVencimientoPersonalPage.tsx'
+import { VerVencimientoPersonalPage } from './feature/VencimientoPersonal/pages/VerVencimientoPersonalPage.tsx'
+
 
 import { Login, NoAutorizado } from './feature/auth'
 import AuthLayout from './layouts/AuthLayout.tsx'
 import { ProtectedRoute } from './components/ProtectedRoute.tsx'
+import { NotificationHistoryRoute } from './components/NotificationHistoryRoute.tsx'
 
 import App from './App.tsx'
 
@@ -170,6 +183,8 @@ const router = createBrowserRouter([
               { index: true, element: <PersonalListPage /> },
               { path: 'new', element: <NuevaPersonaPage /> },
               { path: ':id/edit', element: <EditarPersonaPage /> },
+              { path: ':personaId/vencimientos', element: <VencimientoPersonalListPage /> },
+              { path: ':personaId/vencimientos/new', element: <NuevoVencimientoPersonalPage /> },
             ],
           },
           {
@@ -227,6 +242,13 @@ const router = createBrowserRouter([
           },
           { path: 'tareas', element: <TareasPage /> },
           {
+            path: 'notificaciones',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <NotificationHistoryRoute><NotificacionesPage /></NotificationHistoryRoute> },
+            ],
+          },
+          {
             path: 'historial',
             element: <ProtectedRoute requireAdmin />,
             children: [
@@ -283,6 +305,23 @@ const router = createBrowserRouter([
             ],
           },
 
+            path: 'tipos-vencimientos',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <TipoVencimientoListPage /> },
+              { path: 'new', element: <NuevoTipoVencimientoPage /> },
+              { path: ':id', element: <VerTipoVencimientoPage /> },
+              { path: ':id/edit', element: <EditarTipoVencimientoPage /> },
+            ],
+          },
+          {
+            path: 'vencimiento-personal',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { path: ':id', element: <VerVencimientoPersonalPage /> },
+              { path: ':id/edit', element: <EditarVencimientoPersonalPage /> },
+            ],
+          },
           { path: '*', element: <Page404 /> },
           {
             path: 'checklist', element: <ChecklistListPage />

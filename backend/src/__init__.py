@@ -7,3 +7,8 @@ from src.consumo_producto.models import ConsumoProducto# noqa: F401
 from src.tipo_documento.models import TipoDocumento
 from src.documentos.models import Documento
 from src.version_documento.models import VersionDocumento
+from src.tipos_vencimientos.models import TipoVencimiento  # noqa: F401
+from src.vencimiento_personal.models import VencimientoPersonal  # noqa: F401
+from src.notificaciones.models import Notificacion  # noqa: F401
+
+

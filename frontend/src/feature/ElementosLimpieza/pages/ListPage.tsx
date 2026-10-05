@@ -1,12 +1,15 @@
 import { useMemo, useState } from "react";
 import { mutate } from "swr";
 import { useAuth } from "../../../hooks/useAuth";
-import { Alert, Button, Col, Container, Form, Row, Spinner } from "react-bootstrap";
+import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { type TableColumn } from "react-data-table-component";
 
 import { AppTable } from "../../../components/AppTable";
 import { PageHeader } from "../../../components/PageHeader";
+import { PageLoading } from "../../../components/PageLoading";
+import { PageError } from "../../../components/PageError";
+import { ActionButton } from "../../../components/ActionButton";
 import { useApi } from "../../../hooks/useApi";
 
 import { EstadoElementoLimpiezaModal } from "../components/DeleteElementoLimpiezaModal";
@@ -56,26 +59,10 @@ export function ElementosLimpiezaPage() {
         );
     }, []);
 
-    if (isLoading) return (
-        <>
-            <PageHeader title="Elementos de Limpieza" />
-            <Spinner animation="border" role="status">
-                <span className="visually-hidden">Loading...</span>
-            </Spinner>
-        </>
-    );
+    if (isLoading) return <PageLoading title="Elementos de Limpieza" />;
 
     if (!elementos || error) return (
-        <Container>
-            <PageHeader title="Elementos de Limpieza" />
-            <Row className="justify-content-center">
-                <Col md={6}>
-                    <Alert variant="danger">
-                        Ocurrió un error al cargar los elementos de limpieza
-                    </Alert>
-                </Col>
-            </Row>
-        </Container>
+        <PageError title="Elementos de Limpieza" message="Ocurrió un error al cargar los elementos de limpieza" />
     );
 
     const columns: TableColumn<ElementoLimpieza>[] = [
@@ -179,48 +166,43 @@ export function ElementosLimpiezaPage() {
             minWidth: "180px",
             cell: row => (
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-                    <Button
+                    <ActionButton
                         variant="outline-secondary"
                         size="sm"
-                        title="Ver detalle"
+                        tooltip="Ver"
+                        icon="bi-eye"
                         onClick={() => navigate(`/elementos-limpieza/${row.id}`)}
-                    >
-                        <i className={`bi bi-eye ${!currentUser?.administrar ? "me-1" : ""}`}></i>
-                        {!currentUser?.administrar && "Ver detalle"}
-                    </Button>
+                    />
 
                     {currentUser?.administrar && (
                         <>
                             {row.estado && (
                                 <>
-                                    <Button
+                                    <ActionButton
                                         variant="outline-primary"
                                         size="sm"
-                                        title="Editar"
+                                        tooltip="Editar"
+                                        icon="bi-pencil"
                                         onClick={() => navigate(`/elementos-limpieza/${row.id}/edit`)}
-                                    >
-                                        <i className="bi bi-pencil"></i>
-                                    </Button>
+                                    />
 
-                                    <Button
+                                    <ActionButton
                                         variant="outline-success"
                                         size="sm"
-                                        title="Registrar recambio"
+                                        tooltip="Recambio"
+                                        icon="bi-arrow-repeat"
                                         onClick={() => navigate(`/recambios-elementos-limpieza/new/${row.id}`)}
-                                    >
-                                        <i className="bi bi-arrow-repeat"></i>
-                                    </Button>
+                                    />
                                 </>
                             )}
 
-                            <Button
+                            <ActionButton
                                 variant={row.estado ? "outline-danger" : "outline-success"}
                                 size="sm"
-                                title={row.estado ? "Dar de baja" : "Dar de alta"}
+                                tooltip={row.estado ? "Dar de baja" : "Dar de alta"}
+                                icon={row.estado ? "bi-dash-circle" : "bi-check-circle"}
                                 onClick={() => setElementoToDelete(row)}
-                            >
-                                <i className={`bi ${row.estado ? "bi-trash3" : "bi-check-circle"}`}></i>
-                            </Button>
+                            />
                         </>
                     )}
                 </div>
