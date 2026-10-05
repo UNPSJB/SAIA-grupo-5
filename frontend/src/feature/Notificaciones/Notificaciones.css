@@ -1,0 +1,15 @@
+.notification-page { max-width: 1320px; margin: 0 auto; color: #263238; text-align: left; }
+.notification-eyebrow { color: #06794f; font-size: .68rem; font-weight: 750; letter-spacing: .13em; }
+.notification-page h1 { margin-top: .3rem; color: #25343a; font-weight: 700; letter-spacing: -.03em; }
+.notification-history-card { overflow: hidden; border: 1px solid #e8edef; border-radius: .75rem; box-shadow: 0 .2rem .7rem rgba(30, 49, 57, .035); }
+.notification-history-card .card-body { padding: 1.15rem; }
+.notification-filter { max-width: 12rem; }
+.notification-table thead th { color: #718087; font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.notification-table tbody td { color: #435158; font-size: .86rem; }
+.notification-row-unread { background: #f4faf7; }
+.notification-results-count { margin-top: .85rem; color: #899499; font-size: .76rem; text-align: right; }
+.notification-empty-state { display: flex; min-height: 14rem; flex-direction: column; align-items: center; justify-content: center; gap: .5rem; color: #8a969b; text-align: center; }
+.notification-empty-state > i { margin-bottom: .3rem; color: #0fa28b; font-size: 2rem; }
+.notification-empty-state strong { color: #46555a; }
+.notification-empty-state span { font-size: .83rem; }
+@media (max-width: 767.98px) { .notification-history-card .card-body { padding: .85rem; } .notification-filter { max-width: none; } }

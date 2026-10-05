@@ -1,11 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { mutate } from 'swr';
-import { Alert, Button, Col, Container, Form, Row, Spinner } from 'react-bootstrap';
+import { Button, Col, Container, Form, Row } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { type TableColumn } from 'react-data-table-component';
 
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
+import { PageLoading } from '../../../components/PageLoading';
+import { PageError } from '../../../components/PageError';
+import { ActionButton } from '../../../components/ActionButton';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
 
@@ -41,24 +44,10 @@ export function ListPage() {
         );
     }, [search]);
 
-    if (isLoading) return (
-        <>
-            <PageHeader title="Listado de Tipos Químicos" />
-            <Spinner animation="border" role="status">
-                <span className="visually-hidden">Cargando...</span>
-            </Spinner>
-        </>
-    )
+    if (isLoading) return <PageLoading title="Listado de Tipos Químicos" />;
     if (!tiposQuimicos || error) return (
-        <Container>
-            <PageHeader title="Listado de Tipos Químicos" />
-            <Row className="justify-content-center">
-                <Col md={6}>
-                    <Alert variant="danger">Ocurrió un error al cargar Tipos Químicos</Alert>
-                </Col>
-            </Row>
-        </Container>
-    )
+        <PageError title="Listado de Tipos Químicos" message="Ocurrió un error al cargar Tipos Químicos" />
+    );
 
     const columns: TableColumn<TipoQuimico>[] = [
         {
@@ -98,33 +87,32 @@ export function ListPage() {
             center: true,
             cell: (row) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <Button
+                    <ActionButton
                         variant="outline-info"
                         size="sm"
+                        tooltip="Ver"
+                        icon="bi-eye"
                         onClick={() => navigate(`/tipos-quimicos/${row.id}`)}
-                    >
-                        <i className="bi bi-eye me-1"></i>Ver
-                    </Button>
+                    />
 
                     {currentUser?.administrar && (
                         <>
-                            <Button
+                            <ActionButton
                                 variant="outline-primary"
                                 size="sm"
+                                tooltip="Editar"
+                                icon="bi-pencil"
                                 disabled={!row.activo}      // Si no esta activo se muestra en gris y no se puede editar
                                 onClick={() => navigate(`/tipos-quimicos/${row.id}/edit`)}
-                            >
-                                <i className="bi bi-pencil me-1"></i>Editar
-                            </Button>
-                            <Button
+                            />
+                            <ActionButton
                                 variant={row.activo ? 'outline-danger' : 'outline-success'}
                                 size="sm"
+                                tooltip={row.activo ? 'Dar de baja' : 'Dar de alta'}
+                                icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
                                 onClick={() => setTipoQuimicoToDelete(row)}
-                            >
-                                <i className={`bi ${row.activo ? 'bi-dash-circle' : 'bi-check-circle'} me-1`}></i>
-                                {row.activo ? 'Dar de baja' : 'Dar de alta'}
-                            </Button>
-                        </>  
+                            />
+                        </>
                     )}
                 </div>
             )
