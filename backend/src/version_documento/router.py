@@ -5,6 +5,8 @@ from sqlalchemy.orm import Session
 from src.database import get_db
 from src.version_documento import schemas, services
 from src.auth.router_base import PermissionedRouter
+from src.auth.dependencies import get_current_persona
+from src.personal.models import Persona
 
 # Creamos un logger para este módulo específico. Más info.: https://docs.python.org/3/library/logging.html
 logger = logging.getLogger(__name__)
@@ -36,4 +38,13 @@ def update_version_documento(version_id: int, version: schemas.VersionDocumentoU
 @router.patch("/{version_id}/estado", response_model=schemas.VersionDocumento)
 def cambiar_estado_version_documento(version_id: int, db: Session = Depends(get_db)):
     return services.cambiar_estado_version_documento(db, version_id)
+
+@router.post("/documento/{documento_id}/version/{version_id}/vigencia", response_model=schemas.VersionDocumento)
+def marcar_version_vigente(
+    documento_id: int,
+    version_id: int,
+    db: Session = Depends(get_db),
+    current_persona: Persona = Depends(get_current_persona)
+):
+    return services.marcar_version_vigente(db, documento_id, version_id, current_persona.id)
 

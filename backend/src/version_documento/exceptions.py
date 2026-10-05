@@ -6,3 +6,9 @@ class VersionNoEncontrada(NotFound):
 
 class VersionVigente(BadRequest):
     DETAIL = ErrorCode.VERSION_VIGENTE
+
+class VersionInactiva(BadRequest):
+    DETAIL = ErrorCode.VERSION_INACTIVA
+
+class VersionIntegridad(BadRequest):
+    DETAIL = ErrorCode.VERSION_INTEGRIDAD
