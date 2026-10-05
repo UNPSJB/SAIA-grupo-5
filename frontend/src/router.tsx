@@ -61,6 +61,10 @@ import { ConsumoAcumuladoPage } from './feature/ConsumoProducto/pages/ConsumoAcu
 
 import { VerDetalleTareaOcurrenciaPage } from './feature/Historial/pages/VerDetalleTareaOcurrenciaPage.tsx' 
 
+import { PlanesCalibracionPage } from './feature/PlanesCalibracion/pages/PlanesCalibracionPage.tsx'
+import { NuevoPlanCalibracionPage } from './feature/PlanesCalibracion/pages/NuevoPlanCalibracionPage.tsx'
+import { EditarPlanCalibracionPage } from './feature/PlanesCalibracion/pages/EditarPlanCalibracionPage.tsx'
+
 import { Login, NoAutorizado } from './feature/auth'
 import AuthLayout from './layouts/AuthLayout.tsx'
 import { ProtectedRoute } from './components/ProtectedRoute.tsx'
@@ -207,6 +211,14 @@ const router = createBrowserRouter([
                 { path: "new", element: <NuevoRecambioElementoLimpiezaPage /> },
                 { path: "new/:elementoId", element: <NuevoRecambioElementoLimpiezaPage /> },
                 { path: ":id", element: <VerRecambioElementoLimpiezaPage /> },
+            ],
+          },
+          {
+            path: 'planes-calibracion',
+            children: [
+                { index: true, element: <PlanesCalibracionPage /> },
+                { path: 'new', element: <NuevoPlanCalibracionPage/>},
+                { path: ':id/edit', element: <EditarPlanCalibracionPage/>},
             ],
           },
           { path: 'tareas', element: <TareasPage /> },
