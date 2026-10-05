@@ -3,12 +3,15 @@ import { useNavigate, useParams } from "react-router-dom";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 import type { VencimientoPersonal } from "../types";
+import type { ConfiguracionSistema } from "../../ConfiguracionSistema/types";
 
 export function VerVencimientoPersonalPage() {
     const navigate = useNavigate();
     const { id } = useParams();
 
     const { data: vencimiento, isLoading, error } = useApi<VencimientoPersonal>(`/vencimiento-personal/${id}`);
+    const { data: configuracion } = useApi<ConfiguracionSistema>('/configuracion-sistema/');
+    const diasAntelacion = configuracion?.dias_antelacion_vencimiento ?? 15;
 
     if (isLoading) return (
         <>
@@ -34,7 +37,7 @@ export function VerVencimientoPersonalPage() {
     );
 
     const vencido = vencimiento.dias_restantes <= 0;
-    const proximo = vencimiento.dias_restantes > 0 && vencimiento.dias_restantes <= 15;
+    const proximo = vencimiento.dias_restantes > 0 && vencimiento.dias_restantes <= diasAntelacion;
     const badge = vencido ? '#fee2e2' : proximo ? '#fef3c7' : '#dcfce7';
     const color = vencido ? '#991b1b' : proximo ? '#92400e' : '#166534';
     const textoEstado = vencido
@@ -74,7 +77,6 @@ export function VerVencimientoPersonalPage() {
                                 <Col sm={4} className="fw-bold text-secondary">Fecha de Carga</Col>
                                 <Col sm={8}>{new Date(vencimiento.fecha_carga).toLocaleString("es-AR")}</Col>
                             </Row>
-
 
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
                                 <Col sm={4} className="fw-bold text-secondary">Fecha Desde</Col>

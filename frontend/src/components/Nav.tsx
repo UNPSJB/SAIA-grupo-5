@@ -59,7 +59,7 @@ const navGroups: NavGroup[] = [
             { label: 'Sectores', to: '/sectores', icon: 'bi-geo-alt' },
             { label: 'Tipos de elementos', to: '/tipos-elementos-limpieza', icon: 'bi-tags' },
             { label: 'Tipos de químicos', to: '/tipos-quimicos', icon: 'bi-flask' },
-            { label: 'Tipos de Vencimientos', to: '/tipos-vencimientos', icon: 'bi-calendar-plus'}
+            { label: 'Tipos de vencimientos', to: '/tipos-vencimientos', icon: 'bi-calendar-check' },
         ],
     },
 ];
@@ -270,8 +270,8 @@ export function Nav({ children }: { children: React.ReactNode }) {
                                     <span>{email}</span>
                                 </div>
                                 <Dropdown.Divider />
-                                <Dropdown.Item as="button" onClick={(event) => event.preventDefault()}>
-                                    <i className="bi bi-gear me-2" />Configuración de cuenta
+                                <Dropdown.Item as="button" onClick={() => navigate('/configuracion-sistema')}>
+                                    <i className="bi bi-gear me-2" />Configuración de Sistema
                                 </Dropdown.Item>
                                 <Dropdown.Divider />
                                 <Dropdown.Item as="button" onClick={() => void logout()}>
