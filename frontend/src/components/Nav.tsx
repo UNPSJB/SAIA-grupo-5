@@ -76,8 +76,12 @@ export function Nav() {
                         Elementos de Limpieza
                     </BSNav.Link>
                     <BSNav.Link as={NavLink} to="/recambios-elementos-limpieza">
-                        <i className="bi bi-clock-history me-2"></i>
+                        <i className="bi bi-clock me-2"></i>
                         Recambios Elementos
+                    </BSNav.Link>
+                    <BSNav.Link as={NavLink} to="/planes-calibracion">
+                        <i className="bi bi-tools me-2"></i>
+                        Planes de Calibracion
                     </BSNav.Link>
                     <BSNav.Link as={NavLink} to="/checklist">
                         <i className="bi bi-check2-square me-2"></i>
