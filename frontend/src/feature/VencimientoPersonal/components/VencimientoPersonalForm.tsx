@@ -23,6 +23,21 @@ interface VencimientoPersonalFormData {
     observacion: string;
 }
 
+const obtenerNombreArchivo = (base64: string | null | undefined): string => {
+    if (!base64) return "";
+
+    const matchNombre = base64.match(/;name=([^;]+);base64,/);      // Esto busca adentro del texto Base64 si esta guardado la parte ';name=([^;]+);base64,' y saca lo que esta en el medio que es el nombre del archivo
+
+    if (matchNombre?.[1]) {
+        return decodeURIComponent(matchNombre[1]);      // Convierte los espacios o acentos en texto normal para que se vea bien en la pantalla.
+    }
+
+    {/* Estos if y return son por si entras al editar y no seleccionaste otro archivo */}
+    if (base64.startsWith("data:application/pdf")) return "Documento PDF adjunto.pdf";      
+    if (base64.startsWith("data:image/")) return "Imagen adjunta";
+    return "Documento adjunto";
+};
+
 export function VencimientoPersonalForm({ textoBoton, esEdicion = false, rutaCancelar, onSubmit, valoresIniciales }: VencimientoPersonalFormProps) {
     const navigate = useNavigate();
     const { data: tiposVencimientos } = useApi<TipoVencimiento[]>('/tipos-vencimientos/');
@@ -53,7 +68,10 @@ export function VencimientoPersonalForm({ textoBoton, esEdicion = false, rutaCan
         const reader = new FileReader();        // Es una herramienta del navegador que sabe leer archivos
         reader.readAsDataURL(file);     // Es una funcion que le indica a la herramienta que tiene que traducir la foto a Base64
         reader.onload = () => {     // Indica que cuando termine de leer el archivo entre y guarde el resultado en fotoBase64
-            setArchivoBase64(reader.result as string);
+            const resultado = reader.result as string;
+
+            const conNombre = resultado.replace(";base64,", `;name=${encodeURIComponent(file.name)};base64,`);
+            setArchivoBase64(conNombre);
         };
         reader.onerror = () => {        // Si hubo algun problema con el archivo guardamos el error
             setArchivoError("Ocurrio un problema al cargar el archivo.");
@@ -106,6 +124,8 @@ export function VencimientoPersonalForm({ textoBoton, esEdicion = false, rutaCan
                     <Form.Label className="p-1 fw-bold">Fecha Desde *</Form.Label>
                     <Form.Control
                         type="date"
+                        readOnly={esEdicion}
+                        style={esEdicion ? { backgroundColor: "#e9ecef", pointerEvents: "none" } : undefined}
                         {...register("fecha_desde", { required: "La fecha desde es obligatoria." })}
                         isInvalid={!!errors.fecha_desde}
                     />
@@ -118,6 +138,10 @@ export function VencimientoPersonalForm({ textoBoton, esEdicion = false, rutaCan
                     <Form.Label className="p-1 fw-bold">Fecha Hasta (Vencimiento) *</Form.Label>
                     <Form.Control
                         type="date"
+                        min={fechaDesdeWatch || undefined}
+                        disabled={!esEdicion && !fechaDesdeWatch}
+                        readOnly={esEdicion}
+                        style={esEdicion ? { backgroundColor: "#e9ecef", pointerEvents: "none" } : undefined}
                         {...register("fecha_hasta", {
                             required: "La fecha de vencimiento es obligatoria.",
                             validate: (fecha) => !fechaDesdeWatch || fecha >= fechaDesdeWatch || "La fecha hasta no puede ser menor a la fecha desde.",
@@ -146,16 +170,26 @@ export function VencimientoPersonalForm({ textoBoton, esEdicion = false, rutaCan
                                 {archivoBase64 ? "Archivo nuevo a subir:" : "Archivo actual guardado:"}
                             </p>
                             {esImagen ? (
-                                <img
-                                    src={archivoMostrar}
-                                    alt="Comprobante de vencimiento"
-                                    style={{ maxHeight: '150px', borderRadius: '8px', objectFit: 'cover' }}
-                                    className="border shadow-sm"
-                                />
+                                <div>
+                                    <img
+                                        src={archivoMostrar}
+                                        alt="Comprobante de vencimiento"
+                                        style={{ maxHeight: '150px', borderRadius: '8px', objectFit: 'cover' }}
+                                        className="border shadow-sm"
+                                    />
+                                    <div className="small text-muted">{obtenerNombreArchivo(archivoMostrar)}</div>
+                                </div>
                             ) : (
-                                <div className="p-2 border rounded bg-light d-inline-block">
-                                    <i className="bi bi-file-earmark-check text-success me-2"></i>
-                                    <span>Documento cargado correctamente</span>
+                                <div className="p-2 px-3 border rounded bg-light d-inline-flex align-items-center gap-2">
+                                    <i className="bi bi-file-earmark-text text-success fs-5"></i>
+                                    <span className="fw-semibold">{obtenerNombreArchivo(archivoMostrar)}</span>
+                                    <a
+                                        href={archivoMostrar}
+                                        download={obtenerNombreArchivo(archivoMostrar)}
+                                        className="btn btn-outline-primary btn-sm ms-2"
+                                    >
+                                        <i className="bi bi-download me-1"></i>Ver
+                                    </a>
                                 </div>
                             )}
                         </div>
@@ -189,13 +223,14 @@ export function VencimientoPersonalForm({ textoBoton, esEdicion = false, rutaCan
                         {errors.observacion?.message}
                     </Form.Control.Feedback>
                 </Form.Group>
-
-                <Button variant="secondary" type="button" onClick={() => navigate(rutaCancelar)}>
-                    <i className="bi bi-x-circle me-1"></i>Cancelar
-                </Button>
-                <Button className="ms-2" variant="primary" type="submit">
-                    <i className="bi bi-floppy me-1"></i> {textoBoton}
-                </Button>
+                <div className="d-flex justify-content-end">
+                    <Button variant="secondary" type="button" onClick={() => navigate(rutaCancelar)}>
+                        <i className="bi bi-x-circle me-1"></i>Cancelar
+                    </Button>
+                    <Button className="ms-2" variant="primary" type="submit">
+                        <i className="bi bi-floppy me-1"></i> {textoBoton}
+                    </Button>
+                </div>
             </Form>
         </div>
     );

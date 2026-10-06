@@ -1,6 +1,5 @@
 import { Button, Modal } from "react-bootstrap";
 import { api } from "../../../libs/axios";
-import { getErrorMessage } from "../../../libs/errors";
 import type { PlanLimpieza } from "../types";
 import { mostrarAlertaExito, mostrarAlertaError } from "../../../libs/alertas";
 

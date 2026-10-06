@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { type TableColumn } from 'react-data-table-component';
 import { ActionButton } from '../../../components/ActionButton';
 
-import { AppTable } from '../../../components/AppTable'; 
+import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader'; 
 import { useApi } from '../../../hooks'; 
 import { useAuth } from '../../../hooks';
@@ -124,7 +124,7 @@ export function ListPage() {
                                 icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
                                 onClick={() => setTipoVencimientoToDelete(row)}
                             />
-                        </>  
+                        </>
                     )}
                 </div>
             )

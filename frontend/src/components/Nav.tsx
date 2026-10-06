@@ -217,8 +217,14 @@ export function Nav({ children }: { children: React.ReactNode }) {
                                 </div>
                                 <Dropdown.Divider />
                                 <Dropdown.Item as="button" onClick={(event) => event.preventDefault()}>
-                                    <i className="bi bi-gear me-2" />Configuración de cuenta
+                                    <i className="bi bi-person-gear me-2" />Configuración de cuenta
                                 </Dropdown.Item>
+                                {
+                                    isAdmin && (<Dropdown.Item as="button" onClick={() => navigate('/configuracion-sistema')}>
+                                        <i className="bi bi-gear me-2" />Configuración de Sistema
+                                    </Dropdown.Item>)
+                                }
+
                                 <Dropdown.Divider />
                                 <Dropdown.Item as="button" onClick={() => void logout()}>
                                     <i className="bi bi-box-arrow-right me-2" />Cerrar sesión
