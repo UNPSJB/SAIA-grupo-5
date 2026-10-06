@@ -10,7 +10,7 @@ export interface PlanCalibracion {
 
 export interface NewPlanCalibracion {
     equipo_id: number;
-    fecha_inicio: string;
+    fecha_inicio: string | null;
     periodicidad: number;
 }
 

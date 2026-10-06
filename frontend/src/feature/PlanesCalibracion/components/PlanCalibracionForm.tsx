@@ -6,7 +6,7 @@ import type { Equipo } from "../../Equipos/types";
 
 interface PlanCalibracionFormProps {
     textoBoton: string;
-    onSubmit: (datos: { equipo_id: number, fecha_inicio: string, periodicidad: number }) => void;
+    onSubmit: (datos: { equipo_id: number, fecha_inicio: string | null, periodicidad: number }) => void;
     valoresIniciales?: { equipo_id: number, fecha_inicio: string, periodicidad: number };
     editando?: boolean;
 }
@@ -32,7 +32,7 @@ export function PlanCalibracionForm({ textoBoton, onSubmit, valoresIniciales, ed
     const onSubmitHookForm = (data: PlanCalibracionFormData) => {
         onSubmit({
             equipo_id: Number(data.equipo_id),
-            fecha_inicio: data.fecha_inicio,
+            fecha_inicio: data.fecha_inicio || null,
             periodicidad: Number(data.periodicidad),
         });
     };
@@ -64,19 +64,18 @@ export function PlanCalibracionForm({ textoBoton, onSubmit, valoresIniciales, ed
                 </Form.Group>
 
                 <Form.Group className="mb-3 text-start" controlId="formFechaInicio">
-                    <Form.Label className="p-1 fw-bold">Fecha de Inicio *</Form.Label>
+                    <Form.Label className="p-1 fw-bold mb-0">Fecha de Inicio</Form.Label>
+                    
+                    <Form.Text className="text-muted d-block px-1 mb-2">
+                        Si se deja vacío, se utilizará la fecha actual.
+                    </Form.Text>
+                    
                     <Form.Control
                         type="date"
                         max={new Date().toISOString().split("T")[0]}
-                        {...register("fecha_inicio", {
-                            required: "La fecha de inicio es obligatoria."
-                        })}
                         isInvalid={!!errors.fecha_inicio}
                         disabled={editando}
                     />
-                    <Form.Control.Feedback type="invalid">
-                        {errors.fecha_inicio?.message}
-                    </Form.Control.Feedback>
                 </Form.Group>
 
                 <Form.Group className="mb-3 text-start" controlId="formPeriodicidad">

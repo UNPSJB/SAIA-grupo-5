@@ -37,7 +37,9 @@ def crear_plan_calibracion(db: Session, plan: schemas.PlanCalibracionCreate) -> 
     if equipo is None:
         raise equipo_exceptions.EquipoNoEncontrado()
 
-    if plan.fecha_inicio > date.today():
+    fecha_inicio = plan.fecha_inicio or date.today()
+
+    if fecha_inicio > date.today():
         raise exceptions.FechaPlanCalibracionInvalida()
 
     plan_existente = db.scalar(select(PlanCalibracion).where(PlanCalibracion.equipo_id == plan.equipo_id))
@@ -45,7 +47,11 @@ def crear_plan_calibracion(db: Session, plan: schemas.PlanCalibracionCreate) -> 
     if plan_existente:
         raise exceptions.PlanCalibracionDuplicado()
 
-    _plan = PlanCalibracion(**plan.model_dump())
+    _plan = PlanCalibracion(
+        equipo_id=plan.equipo_id,
+        fecha_inicio=fecha_inicio,
+        periodicidad=plan.periodicidad
+    )
 
     db.add(_plan)
     db.commit()
