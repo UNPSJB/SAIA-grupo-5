@@ -3,6 +3,7 @@ import { Button, OverlayTrigger, Tooltip, type ButtonProps } from "react-bootstr
 interface ActionButtonProps extends ButtonProps {
     tooltip: string;
     icon: string;
+    download?: string | boolean;
 }
 
 export function ActionButton({ tooltip, icon, disabled, style, ...buttonProps }: ActionButtonProps) {

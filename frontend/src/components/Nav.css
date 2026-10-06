@@ -234,7 +234,7 @@
 .sb-app-shell .btn:active:not(:disabled) { transform: translateY(1px); }
 .sb-app-shell .btn:focus-visible { box-shadow: 0 0 0 .2rem rgba(15, 162, 139, .25); }
 
-.sb-app-shell .btn-primary {
+.btn-primary {
     --bs-btn-color: #fff;
     --bs-btn-bg: var(--sb-seafoam-primary);
     --bs-btn-border-color: var(--sb-seafoam-primary);
@@ -250,7 +250,7 @@
     box-shadow: 0 .125rem .25rem rgba(6, 121, 79, .18);
 }
 
-.sb-app-shell .btn-secondary {
+.btn-secondary {
     --bs-btn-color: #fff;
     --bs-btn-bg: var(--sb-seafoam-secondary);
     --bs-btn-border-color: var(--sb-seafoam-secondary);
@@ -265,7 +265,7 @@
     --bs-btn-disabled-border-color: var(--sb-seafoam-secondary);
 }
 
-.sb-app-shell .btn-success {
+.btn-success {
     --bs-btn-color: #123c29;
     --bs-btn-bg: var(--sb-seafoam-success);
     --bs-btn-border-color: var(--sb-seafoam-success);
@@ -280,7 +280,7 @@
     --bs-btn-disabled-border-color: var(--sb-seafoam-success);
 }
 
-.sb-app-shell .btn-danger {
+.btn-danger {
     --bs-btn-color: #fff;
     --bs-btn-bg: var(--sb-seafoam-danger);
     --bs-btn-border-color: var(--sb-seafoam-danger);
@@ -295,7 +295,7 @@
     --bs-btn-disabled-border-color: var(--sb-seafoam-danger);
 }
 
-.sb-app-shell .btn-warning {
+.btn-warning {
     --bs-btn-color: #3f330a;
     --bs-btn-bg: var(--sb-seafoam-warning);
     --bs-btn-border-color: var(--sb-seafoam-warning);
@@ -310,7 +310,7 @@
     --bs-btn-disabled-border-color: var(--sb-seafoam-warning);
 }
 
-.sb-app-shell .btn-info {
+.btn-info {
     --bs-btn-color: #fff;
     --bs-btn-bg: var(--sb-seafoam-info);
     --bs-btn-border-color: var(--sb-seafoam-info);
@@ -325,7 +325,7 @@
     --bs-btn-disabled-border-color: var(--sb-seafoam-info);
 }
 
-.sb-app-shell .btn-outline-primary {
+.btn-outline-primary {
     --bs-btn-color: var(--sb-seafoam-primary);
     --bs-btn-border-color: var(--sb-seafoam-primary);
     --bs-btn-hover-color: #fff;
@@ -338,7 +338,7 @@
     --bs-btn-disabled-border-color: var(--sb-seafoam-primary);
 }
 
-.sb-app-shell .btn-outline-secondary {
+.btn-outline-secondary {
     --bs-btn-color: var(--sb-seafoam-secondary);
     --bs-btn-border-color: var(--sb-seafoam-secondary);
     --bs-btn-hover-color: #fff;
@@ -349,7 +349,7 @@
     --bs-btn-active-border-color: #0b806e;
 }
 
-.sb-app-shell .btn-outline-success {
+.btn-outline-success {
     --bs-btn-color: #218650;
     --bs-btn-border-color: var(--sb-seafoam-success);
     --bs-btn-hover-color: #123c29;
@@ -360,7 +360,7 @@
     --bs-btn-active-border-color: #2caf69;
 }
 
-.sb-app-shell .btn-outline-danger {
+.btn-outline-danger {
     --bs-btn-color: var(--sb-seafoam-danger);
     --bs-btn-border-color: var(--sb-seafoam-danger);
     --bs-btn-hover-color: #fff;
@@ -371,7 +371,7 @@
     --bs-btn-active-border-color: #b23226;
 }
 
-.sb-app-shell .btn-outline-warning {
+.btn-outline-warning {
     --bs-btn-color: #856404;
     --bs-btn-border-color: var(--sb-seafoam-warning);
     --bs-btn-hover-color: #3f330a;
@@ -382,7 +382,7 @@
     --bs-btn-active-border-color: #ca9909;
 }
 
-.sb-app-shell .btn-outline-info {
+.btn-outline-info {
     --bs-btn-color: var(--sb-seafoam-info);
     --bs-btn-border-color: var(--sb-seafoam-info);
     --bs-btn-hover-color: #fff;

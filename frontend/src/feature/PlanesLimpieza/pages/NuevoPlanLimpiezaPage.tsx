@@ -4,7 +4,6 @@ import { mutate } from "swr";
 import { PageHeader } from "../../../components/PageHeader";
 import { PlanLimpiezaForm } from "../components/PlanLimpiezaForm";
 import { api } from "../../../libs/axios";
-import { getErrorMessage } from "../../../libs/errors";
 import type { NewPlanLimpieza } from "../types";
 import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
 

@@ -18,6 +18,7 @@ export type ConsumoProducto = {
     insumo_quimico_id: number
     cantidad_aproximada: number
     unidad_medida: UnidadMedida
+    insumo: InsumoResumen
     estado: boolean
 }
 
@@ -26,7 +27,6 @@ export type NewConsumoProducto = {
     insumo_quimico_id: number
     cantidad_aproximada: number
     unidad_medida: UnidadMedida
-    insumo: InsumoResumen
 }
 
 export type InsumoResumen = {

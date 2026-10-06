@@ -8,6 +8,10 @@ from src.vencimiento_personal import schemas, exceptions
 from src.tipos_vencimientos import services as tipos_vencimientos_services
 from src.personal.models import Persona
 from src.personal import exceptions as personal_exceptions
+from src.notificaciones.services import (
+    generar_notificacion_vencimiento_personal_individual,
+    resolver_notificaciones_vencimiento_personal,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +71,9 @@ def crear_vencimiento(db: Session, vencimiento: schemas.VencimientoPersonalCreat
     db.add(_vencimiento)
     db.commit()
     db.refresh(_vencimiento)
+
+    generar_notificacion_vencimiento_personal_individual(db, _vencimiento.id)
+
     return _vencimiento
 
 
@@ -85,6 +92,10 @@ def renovar_vencimiento(db: Session, vencimiento_id: int, vencimiento: schemas.V
     db.add(_vencimiento)
     db.commit()
     db.refresh(_vencimiento)
+
+    resolver_notificaciones_vencimiento_personal(db, vencimiento_id)
+    generar_notificacion_vencimiento_personal_individual(db, _vencimiento.id)
+
     return _vencimiento
 
 
@@ -98,6 +109,10 @@ def modificar_vencimiento(db: Session, vencimiento_id: int, vencimiento: schemas
 
     db.commit()
     db.refresh(db_vencimiento)
+
+    resolver_notificaciones_vencimiento_personal(db, vencimiento_id)
+    generar_notificacion_vencimiento_personal_individual(db, vencimiento_id)
+
     return db_vencimiento
 
 def listar_vencimientos_personal(db: Session) -> List[schemas.VencimientoPersonal]:
