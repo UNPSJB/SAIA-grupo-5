@@ -20,7 +20,9 @@ import type { ElementoLimpieza } from "../ElementosLimpieza/types";
 import type { TareaOcurrencia } from "../TareasOcurrencias/types";
 import type { VencimientoPersonal } from "../VencimientoPersonal/types";
 import type { ConfiguracionSistema } from "../ConfiguracionSistema/types";
+import type { PlanCalibracion } from "../PlanesCalibracion/types";
 import { getEstadoHistorial } from "../Historial/types";
+import { clasificarPorDiasRestantes } from "../VencimientosConsolidados/lib/estado";
 import "./HomePage.css";
 
 const SEAFOAM = {
@@ -103,6 +105,9 @@ export function HomePage() {
     const { data: configuracion } = useApi<ConfiguracionSistema>(
         currentUser?.administrar ? "/configuracion-sistema/" : null,
     );
+    const { data: planesCalibracion, error: planesCalibracionError, isLoading: planesCalibracionLoading } = useApi<PlanCalibracion[]>(
+        currentUser?.administrar ? "/planes-calibracion/" : null,
+    );
 
     const occurrences = useMemo(() => history ?? [], [history]);
     const activeElements = (elements ?? []).filter((element) => element.estado);
@@ -111,6 +116,16 @@ export function HomePage() {
     const diasAntelacionVencimiento = configuracion?.dias_antelacion_vencimiento ?? 15;
     const vencimientosPersonalVencidos = (vencimientosPersonal ?? []).filter((vencimiento) => vencimiento.dias_restantes <= 0);
     const vencimientosPersonalProximos = (vencimientosPersonal ?? []).filter((vencimiento) => vencimiento.dias_restantes > 0 && vencimiento.dias_restantes <= diasAntelacionVencimiento);
+    const planesCalibracionActivos = (planesCalibracion ?? []).filter((plan) => plan.estado);
+    const planesCalibracionVencidosOProximos = planesCalibracionActivos.filter((plan) => {
+        const estado = clasificarPorDiasRestantes(plan.dias_restantes, diasAntelacionVencimiento);
+        return estado === "vencido" || estado === "proximo";
+    });
+    const vencimientosConsolidadosLoading = elementsLoading || vencimientosPersonalLoading || planesCalibracionLoading;
+    const vencimientosConsolidadosError = Boolean(elementsError) || Boolean(vencimientosPersonalError) || Boolean(planesCalibracionError);
+    const vencimientosConsolidadosTotal = overdueElements.length + dueSoonElements.length
+        + vencimientosPersonalVencidos.length + vencimientosPersonalProximos.length
+        + planesCalibracionVencidosOProximos.length;
 
     const { completed, overdueTasks, pendingTasks, compliance, activityByDay } = useMemo(() => {
         const completedTasks = occurrences.filter((occurrence) => occurrence.estado === "Completada").length;
@@ -196,7 +211,7 @@ export function HomePage() {
             <section aria-label="Indicadores de inventario" className="mb-4">
                 <div className="dashboard-section-heading">
                     <div><h2>Inventario, recambios y vencimientos</h2><span>Elementos activos, fechas de recambio y vencimientos de personal</span></div>
-                    {(elementsLoading || vencimientosPersonalLoading) && <Spinner animation="border" size="sm" variant="success" aria-label="Cargando inventario" />}
+                    {(elementsLoading || vencimientosPersonalLoading || planesCalibracionLoading) && <Spinner animation="border" size="sm" variant="success" aria-label="Cargando inventario" />}
                 </div>
                 <Row className="g-3">
                     <Col xs={6} md={4} xl={3}><MetricCard label="Elementos vencidos" value={formatMetric(elementsLoading, Boolean(elementsError), overdueElements.length)} icon="bi-calendar-x" tone={SEAFOAM.danger} detail="Requieren recambio" to="/elementos-limpieza?estado=vencido" /></Col>
@@ -219,6 +234,16 @@ export function HomePage() {
                             tone={SEAFOAM.warning}
                             detail={currentUser?.administrar ? "Dentro de la antelación configurada" : "Solo administración"}
                             to={currentUser?.administrar ? "/personal?vencimientos=proximo" : undefined}
+                        />
+                    </Col>
+                    <Col xs={6} md={4} xl={3}>
+                        <MetricCard
+                            label="Vencimientos consolidados"
+                            value={currentUser?.administrar ? formatMetric(vencimientosConsolidadosLoading, vencimientosConsolidadosError, vencimientosConsolidadosTotal) : "—"}
+                            icon="bi-calendar-x"
+                            tone={SEAFOAM.info}
+                            detail={currentUser?.administrar ? "Personal, elementos y equipos" : "Solo administración"}
+                            to={currentUser?.administrar ? "/vencimientos" : undefined}
                         />
                     </Col>
                 </Row>
