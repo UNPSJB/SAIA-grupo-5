@@ -15,11 +15,8 @@ import {
     YAxis,
 } from "recharts";
 import { useApi } from "../../hooks/useApi";
-import { useAuth } from "../../hooks/useAuth";
 import type { ElementoLimpieza } from "../ElementosLimpieza/types";
 import type { TareaOcurrencia } from "../TareasOcurrencias/types";
-import type { VencimientoPersonal } from "../VencimientoPersonal/types";
-import type { ConfiguracionSistema } from "../ConfiguracionSistema/types";
 import { getEstadoHistorial } from "../Historial/types";
 import "./HomePage.css";
 
@@ -86,7 +83,6 @@ function MetricCard({
 }
 
 export function HomePage() {
-    const { currentUser } = useAuth();
     const today = useMemo(() => new Date(), []);
     const fromDate = useMemo(() => {
         const date = new Date();
@@ -97,20 +93,11 @@ export function HomePage() {
 
     const { data: history, error: historyError, isLoading: historyLoading } = useApi<TareaOcurrencia[]>(historyUrl);
     const { data: elements, error: elementsError, isLoading: elementsLoading } = useApi<ElementoLimpieza[]>("/elementos-limpieza/");
-    const { data: vencimientosPersonal, error: vencimientosPersonalError, isLoading: vencimientosPersonalLoading } = useApi<VencimientoPersonal[]>(
-        currentUser?.administrar ? "/vencimiento-personal/" : null,
-    );
-    const { data: configuracion } = useApi<ConfiguracionSistema>(
-        currentUser?.administrar ? "/configuracion-sistema/" : null,
-    );
 
     const occurrences = useMemo(() => history ?? [], [history]);
     const activeElements = (elements ?? []).filter((element) => element.estado);
     const overdueElements = activeElements.filter((element) => element.dias_restantes !== null && element.dias_restantes < 0);
     const dueSoonElements = activeElements.filter((element) => element.dias_restantes !== null && element.dias_restantes >= 0 && element.dias_restantes <= 7);
-    const diasAntelacionVencimiento = configuracion?.dias_antelacion_vencimiento ?? 15;
-    const vencimientosPersonalVencidos = (vencimientosPersonal ?? []).filter((vencimiento) => vencimiento.dias_restantes <= 0);
-    const vencimientosPersonalProximos = (vencimientosPersonal ?? []).filter((vencimiento) => vencimiento.dias_restantes > 0 && vencimiento.dias_restantes <= diasAntelacionVencimiento);
 
     const { completed, overdueTasks, pendingTasks, compliance, activityByDay } = useMemo(() => {
         const completedTasks = occurrences.filter((occurrence) => occurrence.estado === "Completada").length;
@@ -195,32 +182,12 @@ export function HomePage() {
 
             <section aria-label="Indicadores de inventario" className="mb-4">
                 <div className="dashboard-section-heading">
-                    <div><h2>Inventario, recambios y vencimientos</h2><span>Elementos activos, fechas de recambio y vencimientos de personal</span></div>
-                    {(elementsLoading || vencimientosPersonalLoading) && <Spinner animation="border" size="sm" variant="success" aria-label="Cargando inventario" />}
+                    <div><h2>Inventario y recambios</h2><span>Elementos activos y fechas de recambio</span></div>
+                    {elementsLoading && <Spinner animation="border" size="sm" variant="success" aria-label="Cargando inventario" />}
                 </div>
                 <Row className="g-3">
                     <Col xs={6} md={4} xl={3}><MetricCard label="Elementos vencidos" value={formatMetric(elementsLoading, Boolean(elementsError), overdueElements.length)} icon="bi-calendar-x" tone={SEAFOAM.danger} detail="Requieren recambio" to="/elementos-limpieza?estado=vencido" /></Col>
                     <Col xs={6} md={4} xl={3}><MetricCard label="Elementos Por vencer" value={formatMetric(elementsLoading, Boolean(elementsError), dueSoonElements.length)} icon="bi-calendar2-week" tone={SEAFOAM.warning} detail="Dentro de los próximos 7 días" to="/elementos-limpieza?estado=por-vencer" /></Col>
-                    <Col xs={6} md={4} xl={3}>
-                        <MetricCard
-                            label="Personal vencidos"
-                            value={currentUser?.administrar ? formatMetric(vencimientosPersonalLoading, Boolean(vencimientosPersonalError), vencimientosPersonalVencidos.length) : "—"}
-                            icon="bi-person-x"
-                            tone={SEAFOAM.danger}
-                            detail={currentUser?.administrar ? "Vencimientos de personal" : "Solo administración"}
-                            to={currentUser?.administrar ? "/personal?vencimientos=vencido" : undefined}
-                        />
-                    </Col>
-                    <Col xs={6} md={4} xl={3}>
-                        <MetricCard
-                            label="Personal por vencer"
-                            value={currentUser?.administrar ? formatMetric(vencimientosPersonalLoading, Boolean(vencimientosPersonalError), vencimientosPersonalProximos.length) : "—"}
-                            icon="bi-person-exclamation"
-                            tone={SEAFOAM.warning}
-                            detail={currentUser?.administrar ? "Dentro de la antelación configurada" : "Solo administración"}
-                            to={currentUser?.administrar ? "/personal?vencimientos=proximo" : undefined}
-                        />
-                    </Col>
                 </Row>
             </section>
 
