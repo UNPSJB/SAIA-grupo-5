@@ -241,7 +241,7 @@ export function ListPage() {
         cell: (row) => (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <ActionButton
-              variant="outline-secondary"
+              variant="outline-warning"
               size="sm"
               tooltip="Ver vencimientos"
               icon="bi-calendar-check"

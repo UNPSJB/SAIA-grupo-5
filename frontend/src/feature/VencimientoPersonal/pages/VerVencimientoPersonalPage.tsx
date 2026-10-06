@@ -5,6 +5,21 @@ import { useApi } from "../../../hooks/useApi";
 import type { VencimientoPersonal } from "../types";
 import type { ConfiguracionSistema } from "../../ConfiguracionSistema/types";
 
+const obtenerNombreArchivo = (base64: string | null | undefined): string => {
+    if (!base64) return "";
+
+    const matchNombre = base64.match(/;name=([^;]+);base64,/);      // Esto busca adentro del texto Base64 si esta guardado la parte ';name=([^;]+);base64,' y saca lo que esta en el medio que es el nombre del archivo
+
+    if (matchNombre?.[1]) {
+        return decodeURIComponent(matchNombre[1]);      // Convierte los espacios o acentos en texto normal para que se vea bien en la pantalla.
+    }
+
+    {/* Estos if y return son por si entras al editar y no seleccionaste otro archivo */}
+    if (base64.startsWith("data:application/pdf")) return "Documento PDF adjunto.pdf";      
+    if (base64.startsWith("data:image/")) return "Imagen adjunta";
+    return "Documento adjunto";
+};
+
 export function VerVencimientoPersonalPage() {
     const navigate = useNavigate();
     const { id } = useParams();
@@ -53,17 +68,11 @@ export function VerVencimientoPersonalPage() {
             <Row className="justify-content-center mt-3">
                 <Col md={8}>
                     <Card className="shadow-sm border-0 rounded-3">
-                        <Card.Header className="bg-white border-bottom p-4">
-                            <h5 className="mb-0 fw-bold text-primary">
-                                <i className="bi bi-info-circle me-2"></i>
-                                Informacion del Vencimiento
-                            </h5>
-                        </Card.Header>
 
                         <Card.Body className="p-4">
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
                                 <Col sm={4} className="fw-bold text-secondary">Persona</Col>
-                                <Col sm={8} className="fs-5">
+                                <Col sm={8} className="fs-6">
                                     {vencimiento.persona.nombre} {vencimiento.persona.apellido}
                                 </Col>
                             </Row>
@@ -125,7 +134,7 @@ export function VerVencimientoPersonalPage() {
                                 <Col sm={8}>
                                     {vencimiento.archivo_adjunto ? (
                                         <div>
-                                            {vencimiento.archivo_adjunto.startsWith("data:image/") && (
+                                            {vencimiento.archivo_adjunto.startsWith("data:image/") ? (
                                                 <div className="mb-2">
                                                     <img
                                                         src={vencimiento.archivo_adjunto}
@@ -133,11 +142,21 @@ export function VerVencimientoPersonalPage() {
                                                         style={{ maxWidth: '100%', maxHeight: '250px', borderRadius: '8px' }}
                                                         className="border shadow-sm"
                                                     />
+                                                    <div className="small text-muted mt-1">
+                                                        {obtenerNombreArchivo(vencimiento.archivo_adjunto)}
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="mb-2">
+                                                    <span className="badge bg-light text-dark border p-2">
+                                                        <i className="bi bi-file-earmark-text text-success me-1"></i>
+                                                        {obtenerNombreArchivo(vencimiento.archivo_adjunto)}
+                                                    </span>
                                                 </div>
                                             )}
                                             <a
                                                 href={vencimiento.archivo_adjunto}
-                                                download={`comprobante_${vencimiento.persona.apellido}_${vencimiento.tipo_vencimiento.nombre}`}
+                                                download={`vencimiento_${vencimiento.persona.apellido}_${vencimiento.tipo_vencimiento.nombre}_${vencimiento.fecha_desde.split("-").reverse().join("/")}`}
                                                 className="btn btn-outline-primary btn-sm"
                                             >
                                                 <i className="bi bi-download me-1"></i>Descargar Archivo Adjunto

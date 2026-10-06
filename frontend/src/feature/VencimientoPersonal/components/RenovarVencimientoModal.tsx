@@ -17,6 +17,21 @@ interface RenovarVencimientoFormData {
     observacion: string;
 }
 
+const obtenerNombreArchivo = (base64: string | null | undefined): string => {
+    if (!base64) return "";
+
+    const matchNombre = base64.match(/;name=([^;]+);base64,/);      // Esto busca adentro del texto Base64 si esta guardado la parte ';name=([^;]+);base64,' y saca lo que esta en el medio que es el nombre del archivo
+
+    if (matchNombre?.[1]) {
+        return decodeURIComponent(matchNombre[1]);      // Convierte los espacios o acentos en texto normal para que se vea bien en la pantalla.
+    }
+
+    {/* Estos if y return son por si entras al editar y no seleccionaste otro archivo */}
+    if (base64.startsWith("data:application/pdf")) return "Documento PDF adjunto.pdf";      
+    if (base64.startsWith("data:image/")) return "Imagen adjunta";
+    return "Documento adjunto";
+};
+
 export function RenovarVencimientoModal({ vencimiento, onHide, onRenovado }: RenovarVencimientoModalProps) {
     const [archivoBase64, setArchivoBase64] = useState<string | null>(null);
     const [archivoError, setArchivoError] = useState<string | null>(null);
@@ -43,7 +58,9 @@ export function RenovarVencimientoModal({ vencimiento, onHide, onRenovado }: Ren
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = () => {
-            setArchivoBase64(reader.result as string);
+            const resultado = reader.result as string;
+            const conNombre = resultado.replace(";base64,", `;name=${encodeURIComponent(file.name)};base64,`);
+            setArchivoBase64(conNombre);
         };
         reader.onerror = () => {
             setArchivoError("Ocurrio un problema al cargar el archivo.");
@@ -104,6 +121,7 @@ export function RenovarVencimientoModal({ vencimiento, onHide, onRenovado }: Ren
                         <Form.Label className="p-1 fw-bold">Nueva Fecha Desde *</Form.Label>
                         <Form.Control
                             type="date"
+                            min={vencimiento?.fecha_desde}
                             {...register("fecha_desde", { required: "La fecha desde es obligatoria." })}
                             isInvalid={!!errors.fecha_desde}
                         />
@@ -114,6 +132,7 @@ export function RenovarVencimientoModal({ vencimiento, onHide, onRenovado }: Ren
                         <Form.Label className="p-1 fw-bold">Nueva Fecha Hasta (Vencimiento) *</Form.Label>
                         <Form.Control
                             type="date"
+                            min={vencimiento?.fecha_hasta}
                             {...register("fecha_hasta", {
                                 required: "La fecha de vencimiento es obligatoria.",
                                 validate: (fecha) => !fechaDesdeWatch || fecha >= fechaDesdeWatch || "La fecha hasta no puede ser menor a la fecha desde.",
@@ -137,16 +156,26 @@ export function RenovarVencimientoModal({ vencimiento, onHide, onRenovado }: Ren
                             <div className="mt-3 text-center">
                                 <p className="small text-muted mb-1">Archivo nuevo a subir:</p>
                                 {esImagen ? (
-                                    <img
-                                        src={archivoBase64}
-                                        alt="Comprobante"
-                                        style={{ maxHeight: '150px', borderRadius: '8px', objectFit: 'cover' }}
-                                        className="border shadow-sm"
-                                    />
+                                    <div>
+                                        <img
+                                            src={archivoBase64}
+                                            alt="Comprobante"
+                                            style={{ maxHeight: '150px', borderRadius: '8px', objectFit: 'cover' }}
+                                            className="border shadow-sm"
+                                        />
+                                            <div className="small text-muted">{obtenerNombreArchivo(archivoBase64)}</div>
+                                    </div>
                                 ) : (
-                                    <div className="p-2 border rounded bg-light d-inline-block">
-                                        <i className="bi bi-file-earmark-check text-success me-2"></i>
-                                        <span>Documento cargado correctamente</span>
+                                    <div className="p-2 px-3 border rounded bg-light d-inline-flex align-items-center gap-2">
+                                        <i className="bi bi-file-earmark-text text-success fs-5"></i>
+                                        <span className="fw-semibold">{obtenerNombreArchivo(archivoBase64)}</span>
+                                        <a
+                                            href={archivoBase64}
+                                            download={obtenerNombreArchivo(archivoBase64)}
+                                            className="btn btn-outline-primary btn-sm ms-2"
+                                        >
+                                            <i className="bi bi-download me-1"></i>Ver
+                                        </a>
                                     </div>
                                 )}
                             </div>
