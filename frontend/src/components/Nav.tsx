@@ -44,6 +44,7 @@ const navGroups: NavGroup[] = [
             { label: 'Equipos', to: '/equipos', icon: 'bi-tools' },
             { label: 'Elementos de limpieza', to: '/elementos-limpieza', icon: 'bi-bucket' },
             { label: 'Recambios', to: '/recambios-elementos-limpieza', icon: 'bi-arrow-repeat' },
+            { label: 'Planes de calibracion', to: '/planes-calibracion', icon: 'bi-tools' },
             { label: 'Planes de limpieza', to: '/planes-limpieza', icon: 'bi-clipboard-check' },
             { label: 'Superficies', to: '/superficies', icon: 'bi-virus2' },
             { label: 'Personal', to: '/personal', icon: 'bi-people', adminOnly: true },

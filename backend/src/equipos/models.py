@@ -20,8 +20,6 @@ class Equipo(ModeloBase):
     sector_id: Mapped[int] = mapped_column(ForeignKey("sectores.id"), nullable=False)
     sector: Mapped["Sector"] = relationship(back_populates="equipos")
     tareas: Mapped[list["Tarea"]] = relationship(back_populates="equipo")
-
-    """ # Implementaciones abiertas a cambios futuros
-
-    (DISCUTIR COMO RELACIONAR EL EQUIPO CON EL PLAN DE CALIBRACION)
-    (DISCUTIR UN CAMPO ESTADO PARA BAJA LOGICA DEPENDIENDO SI QUEREMOS UN HISTORICO CON CALIBRACION) """
+    
+    #Relacion con plan calibracion
+    plan_calibracion: Mapped["PlanCalibracion | None"] = relationship(back_populates="equipo", uselist=False)
