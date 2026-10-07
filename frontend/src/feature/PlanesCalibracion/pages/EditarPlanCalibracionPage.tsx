@@ -15,7 +15,7 @@ export function EditarPlanCalibracionPage(){
 
     const { data: planCalibracion, isLoading, error } = useApi<PlanCalibracion>(`/planes-calibracion/${id}`);
 
-    const actualizarPlanCalibracion = async (datos: { equipo_id: number, fecha_inicio: string, periodicidad: number }) => {
+    const actualizarPlanCalibracion = async (datos: { equipo_id: number, fecha_inicio: string | null, periodicidad: number }) => {
         try{
             await api.put(`/planes-calibracion/${id}`, {
                 periodicidad: datos.periodicidad
