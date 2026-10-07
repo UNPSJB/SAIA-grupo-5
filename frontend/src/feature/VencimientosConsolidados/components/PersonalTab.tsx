@@ -74,6 +74,7 @@ export function PersonalTab({ diasAntelacion }: { diasAntelacion: number }) {
         },
         {
             name: "Tipo de Vencimiento",
+            filterable: true,
             selector: (row) => row.tipo_vencimiento.nombre,
             sortable: true,
             center: true,
