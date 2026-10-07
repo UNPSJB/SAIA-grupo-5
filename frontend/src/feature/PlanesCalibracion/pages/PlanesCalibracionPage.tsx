@@ -85,14 +85,7 @@ export function PlanesCalibracionPage() {
             sortable: true,
             center: true,
             grow: 2,
-            minWidth: "180px",
-        },
-        {
-            name: "Fecha de Inicio",
-            selector: row => row.fecha_inicio,
-            sortable: true,
-            center: true,
-            minWidth: "140px",
+            maxWidth: "90px",
         },
         {
             name: "Periodicidad",

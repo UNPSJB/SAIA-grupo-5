@@ -9,7 +9,7 @@ class PlanCalibracionBase(BaseModel):
 
 class PlanCalibracionCreate(PlanCalibracionBase):
     equipo_id: int
-    fecha_inicio: date
+    fecha_inicio: date | None = None
 
 
 class PlanCalibracionUpdate(BaseModel):
