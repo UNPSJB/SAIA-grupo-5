@@ -1,5 +1,4 @@
-import type { ComponentType } from 'react';
-import DataTable, { type ColumnGroup, type ConditionalStyles, type ExpanderComponentProps, type TableColumn } from 'react-data-table-component';
+import DataTable, { type ColumnGroup, type ConditionalStyles, type TableColumn } from 'react-data-table-component';
 
 const customStyles = {
     headCells: {
@@ -15,12 +14,9 @@ interface AppTableProps<T> {
     columnGroups?: ColumnGroup[];
     onColumnGroupOrderChange?: (nextGroups: ColumnGroup[], nextColumns: TableColumn<T>[]) => void;
     conditionalRowStyles?: ConditionalStyles<T>[];
-    expandableRows?: boolean;
-    expandableRowsComponent?: ComponentType<ExpanderComponentProps<T>>;
-    expandableRowsComponentProps?: Record<string, unknown>;
 }
 
-export function AppTable<T>({ columns, data, columnGroups, onColumnGroupOrderChange, conditionalRowStyles, expandableRows, expandableRowsComponent, expandableRowsComponentProps }: AppTableProps<T>) {
+export function AppTable<T>({ columns, data, columnGroups, onColumnGroupOrderChange, conditionalRowStyles }: AppTableProps<T>) {
     return (
         <DataTable
             columns={columns}
@@ -28,9 +24,6 @@ export function AppTable<T>({ columns, data, columnGroups, onColumnGroupOrderCha
             columnGroups={columnGroups}
             onColumnGroupOrderChange={onColumnGroupOrderChange}
             conditionalRowStyles={conditionalRowStyles}
-            expandableRows={expandableRows}
-            expandableRowsComponent={expandableRowsComponent}
-            expandableRowsComponentProps={expandableRowsComponentProps}
             pagination
             noDataComponent={<div className="p-4 text-muted">No se encontraron resultados.</div>}
             paginationComponentOptions={{
