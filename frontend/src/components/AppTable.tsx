@@ -17,9 +17,10 @@ interface AppTableProps<T> {
     conditionalRowStyles?: ConditionalStyles<T>[];
     expandableRows?: boolean;
     expandableRowsComponent?: ComponentType<ExpanderComponentProps<T>>;
+    expandableRowsComponentProps?: Record<string, unknown>;
 }
 
-export function AppTable<T>({ columns, data, columnGroups, onColumnGroupOrderChange, conditionalRowStyles, expandableRows, expandableRowsComponent }: AppTableProps<T>) {
+export function AppTable<T>({ columns, data, columnGroups, onColumnGroupOrderChange, conditionalRowStyles, expandableRows, expandableRowsComponent, expandableRowsComponentProps }: AppTableProps<T>) {
     return (
         <DataTable
             columns={columns}
@@ -29,6 +30,7 @@ export function AppTable<T>({ columns, data, columnGroups, onColumnGroupOrderCha
             conditionalRowStyles={conditionalRowStyles}
             expandableRows={expandableRows}
             expandableRowsComponent={expandableRowsComponent}
+            expandableRowsComponentProps={expandableRowsComponentProps}
             pagination
             noDataComponent={<div className="p-4 text-muted">No se encontraron resultados.</div>}
             paginationComponentOptions={{

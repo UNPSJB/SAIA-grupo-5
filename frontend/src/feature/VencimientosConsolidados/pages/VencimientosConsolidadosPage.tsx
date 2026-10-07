@@ -1,3 +1,4 @@
+import { useSearchParams } from 'react-router-dom';
 import { Container, Tab, Tabs } from "react-bootstrap"
 import { PageHeader } from "../../../components/PageHeader"
 import { useApi } from "../../../hooks/useApi"
@@ -8,13 +9,15 @@ import { EquiposTab } from "../components/EquiposTab"
 import { DocumentosTab } from "../components/DocumentosTab"
 
 export function VencimientosConsolidadosPage() {
+    const [searchParams] = useSearchParams();
+    const defaultTab = searchParams.get('default')
     const { data: configuracion } = useApi<ConfiguracionSistema>("/configuracion-sistema/")
     const diasAntelacion = configuracion?.dias_antelacion_vencimiento ?? 15
 
     return (
         <Container>
             <PageHeader title="Vencimientos consolidados" />
-            <Tabs defaultActiveKey="personal" className="mb-3">
+            <Tabs defaultActiveKey={defaultTab!=null? defaultTab : "personal"} className="mb-3">
                 <Tab eventKey="personal" title="Personal">
                     <PersonalTab diasAntelacion={diasAntelacion} />
                 </Tab>

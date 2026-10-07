@@ -1,4 +1,4 @@
-import { useMemo } from "react"
+import { useMemo, type ComponentType } from "react"
 import { Table } from "react-bootstrap"
 import { useNavigate } from "react-router-dom"
 import type { ExpanderComponentProps, TableColumn } from "react-data-table-component"
@@ -18,7 +18,39 @@ type GrupoPersona = {
     estado: EstadoVencimientos
 }
 
-function DetalleVencimientos({ data }: ExpanderComponentProps<GrupoPersona>) {
+function celdaEstadoVencimiento(diasRestantes: number, diasAntelacion: number) {
+    const vencido = diasRestantes <= 0;
+    const proximo = diasRestantes > 0 && diasRestantes <= diasAntelacion;
+    const badge = vencido ? '#fee2e2' : proximo ? '#fef3c7' : '#dcfce7';
+    const color = vencido ? '#991b1b' : proximo ? '#92400e' : '#166534';
+    const texto = vencido
+        ? `Vencido (${Math.abs(diasRestantes)} dias)`
+        : proximo
+        ? `Proximo a vencer (${diasRestantes} d)`
+        : `Vigente (${diasRestantes} dias)`;
+
+    return (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div
+                style={{
+                    padding: '4px 12px',
+                    borderRadius: '16px',
+                    background: badge,
+                    color: color,
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    whiteSpace: 'nowrap',
+                }}
+            >
+                {texto}
+            </div>
+        </div>
+    );
+}
+
+function DetalleVencimientos({ data, diasAntelacion }: ExpanderComponentProps<GrupoPersona> & { diasAntelacion: number }) {
     return (
         <div className="p-3">
             <Table size="sm" bordered responsive className="mb-0">
@@ -34,9 +66,7 @@ function DetalleVencimientos({ data }: ExpanderComponentProps<GrupoPersona>) {
                         <tr key={vencimiento.id}>
                             <td>{vencimiento.tipo_vencimiento.nombre}</td>
                             <td>{vencimiento.fecha_hasta.split("-").reverse().join("/")}</td>
-                            <td>
-                                <EstadoBadge estado={vencimiento.dias_restantes <= 0 ? "vencido" : "proximo"} />
-                            </td>
+                            <td>{celdaEstadoVencimiento(vencimiento.dias_restantes, diasAntelacion)}</td>
                         </tr>
                     ))}
                 </tbody>
@@ -67,7 +97,10 @@ export function PersonalTab({ diasAntelacion }: { diasAntelacion: number }) {
     }, [vencimientos, diasAntelacion])
 
     if (isLoading) return <PageLoading title="Personal" />
-    if (!vencimientos || error) return <PageError title="Personal" message="Ocurrió un error al cargar los vencimientos de personal" />
+    if (!vencimientos || error) return <PageError
+        title="Personal"
+        message="Ocurrió un error al cargar los vencimientos de personal"
+    />
 
     const columns: TableColumn<GrupoPersona>[] = [
         {
@@ -100,7 +133,8 @@ export function PersonalTab({ diasAntelacion }: { diasAntelacion: number }) {
             columns={columns}
             data={grupos}
             expandableRows
-            expandableRowsComponent={DetalleVencimientos}
+            expandableRowsComponent={DetalleVencimientos as ComponentType<ExpanderComponentProps<GrupoPersona>>}
+            expandableRowsComponentProps={{ diasAntelacion }}
             conditionalRowStyles={estilosFilaPorEstado<GrupoPersona>((row) => row.estado)}
         />
     )
