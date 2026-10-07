@@ -14,7 +14,6 @@ import {
     YAxis,
 } from "recharts";
 import { useApi } from "../../hooks/useApi";
-import { useAuth } from "../../hooks/useAuth";
 import type { ElementoLimpieza } from "../ElementosLimpieza/types";
 import type { TareaOcurrencia } from "../TareasOcurrencias/types";
 import { calcularEstadoVencimientos, type VencimientoPersonal } from "../VencimientoPersonal/types";
@@ -26,9 +25,11 @@ import { toDateKey, dateFromKey } from "../../libs/date";
 import { MetricCard } from "./components/MetricCard";
 import { SEAFOAM } from "./constants";
 import "./HomePage.css";
+import { useAuth } from "../../hooks";
 
 export function HomePage() {
     const { currentUser } = useAuth();
+
     const today = useMemo(() => new Date(), []);
     const fromDate = useMemo(() => {
         const date = new Date();
@@ -85,7 +86,6 @@ export function HomePage() {
 
     const vencimientosConsolidadosLoading = elementsLoading || vencimientosPersonalLoading || planesCalibracionLoading;
     const vencimientosConsolidadosError = Boolean(elementsError) || Boolean(vencimientosPersonalError) || Boolean(planesCalibracionError);
-
 
     const { completed, overdueTasks, pendingTasks, compliance, activityByDay } = useMemo(() => {
         const completedTasks = occurrences.filter((occurrence) => occurrence.estado === "Completada").length;

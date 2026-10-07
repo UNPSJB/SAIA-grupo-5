@@ -71,6 +71,7 @@ import { ListPage as VencimientoPersonalListPage } from './feature/VencimientoPe
 import { EditarVencimientoPersonalPage } from './feature/VencimientoPersonal/pages/EditarVencimientoPersonalPage.tsx'
 import { NuevoVencimientoPersonalPage } from './feature/VencimientoPersonal/pages/NuevoVencimientoPersonalPage.tsx'
 import { VerVencimientoPersonalPage } from './feature/VencimientoPersonal/pages/VerVencimientoPersonalPage.tsx'
+import { VencimientoConsolidadoPage } from './feature/VencimientoPersonal/pages/ListadoConsolidadoVencimientoPersonal.tsx'
 
 import { ConfiguracionSistemaPage } from './feature/ConfiguracionSistema/pages/ConfiguracionSistemaPage.tsx'
 
@@ -275,6 +276,7 @@ const router = createBrowserRouter([
             path: 'vencimiento-personal',
             element: <ProtectedRoute requireAdmin />,
             children: [
+              { index: true, element: <VencimientoConsolidadoPage />},
               { path: ':id', element: <VerVencimientoPersonalPage /> },
               { path: ':id/edit', element: <EditarVencimientoPersonalPage /> },
             ],

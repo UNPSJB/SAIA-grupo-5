@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react'
-import { Button, ButtonGroup, Col, Container, Dropdown, Form, Row } from 'react-bootstrap'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Button, Col, Container, Form, Row } from 'react-bootstrap'
+import { useNavigate } from 'react-router-dom'
 import { type TableColumn } from 'react-data-table-component'
 import { mutate } from 'swr'
 
@@ -15,15 +15,6 @@ import { api } from '../../../libs/axios'
 import { Capacidades } from '../../Capacidades/types'
 import { DeletePersonaModal } from '../components/DeletePersonaModal'
 import type { Persona } from '../types'
-import type { VencimientoPersonal, FiltroVencimientos } from '../../VencimientoPersonal/types'
-import {
-  ESTADO_VENCIMIENTOS_LABELS,
-  ESTADO_VENCIMIENTOS_ESTILOS,
-  ESTADO_VENCIMIENTOS_ORDEN,
-  FILTRO_VENCIMIENTOS_LABELS,
-  calcularEstadoVencimientos,
-} from '../../VencimientoPersonal/types'
-import type { ConfiguracionSistema } from '../../ConfiguracionSistema/types'
 
 const capacidadLabels: Record<string, string> = {
   [Capacidades.OPERAR]: 'Operar',
@@ -34,34 +25,8 @@ export function ListPage() {
   const navigate = useNavigate()
   const { currentUser } = useAuth()
   const [search, setSearch] = useState('')
-  const [searchParams, setSearchParams] = useSearchParams()
-  // Permite llegar con el filtro ya elegido, ej. desde las cards "Vencidos" /
-  // "Próximos a vencer" del Home.
-  const filtroVencimientos: FiltroVencimientos = (() => {
-    const valor = searchParams.get('vencimientos')
-    return valor === 'vencido' || valor === 'proximo' || valor === 'vigente' || valor === 'sin-vencimientos'
-      ? valor
-      : 'todos'
-  })()
   const { data: personal, error, isLoading } = useApi<Persona[]>('/personal/')
-  const { data: vencimientosPersonal } = useApi<VencimientoPersonal[]>('/vencimiento-personal/')
-  const { data: configuracion } = useApi<ConfiguracionSistema>('/configuracion-sistema/')
   const [personaToDelete, setPersonaToDelete] = useState<Persona | null>(null)
-
-  const diasAntelacion = configuracion?.dias_antelacion_vencimiento ?? 15
-
-  const vencimientosPorPersona = useMemo(() => {
-    const mapa = new Map<number, VencimientoPersonal[]>()
-    for (const vencimiento of vencimientosPersonal ?? []) {
-      const lista = mapa.get(vencimiento.persona_id) ?? []
-      lista.push(vencimiento)
-      mapa.set(vencimiento.persona_id, lista)
-    }
-    return mapa
-  }, [vencimientosPersonal])
-
-  const estadoVencimientosDe = (personaId: number) =>
-    calcularEstadoVencimientos(vencimientosPorPersona.get(personaId) ?? [], diasAntelacion)
 
   const filteredPersonal = useMemo(() => {
     if (!Array.isArray(personal)) return []
@@ -70,20 +35,15 @@ export function ListPage() {
         .map((capacidad) => capacidadLabels[capacidad] ?? capacidad)
         .join(' ')
       const searchLower = search.toLowerCase()
-      const coincideBusqueda = (
+      return (
         persona.nombre.toLowerCase().includes(searchLower) ||
         (persona.apellido && persona.apellido.toLowerCase().includes(searchLower)) ||
         (persona.username && persona.username.toLowerCase().includes(searchLower)) ||
         (persona.dni && persona.dni.toLowerCase().includes(searchLower)) ||
         capacidadesTexto.toLowerCase().includes(searchLower)
       )
-      const coincideFiltroVencimiento = filtroVencimientos === 'todos'
-        || estadoVencimientosDe(persona.id) === filtroVencimientos
-
-      return coincideBusqueda && coincideFiltroVencimiento
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- estadoVencimientosDe depende de vencimientosPorPersona/diasAntelacion, ya listados
-  }, [search, personal, filtroVencimientos, vencimientosPorPersona, diasAntelacion])
+  }, [search, personal])
 
   const subHeaderComponentMemo = useMemo(() => {
     return (
@@ -137,37 +97,6 @@ export function ListPage() {
       sortable: true,
       center: true,
       minWidth: '110px',
-    },
-    {
-      name: 'Vencimientos',
-      selector: (row) => ESTADO_VENCIMIENTOS_ORDEN[estadoVencimientosDe(row.id)],
-      sortable: true,
-      center: true,
-      minWidth: '150px',
-      cell: (row) => {
-        const estado = estadoVencimientosDe(row.id)
-        const estilos = ESTADO_VENCIMIENTOS_ESTILOS[estado]
-        return (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div
-              style={{
-                padding: '3px 10px',
-                borderRadius: '14px',
-                background: estilos.background,
-                color: estilos.color,
-                fontWeight: 600,
-                fontSize: '0.85rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {ESTADO_VENCIMIENTOS_LABELS[estado]}
-            </div>
-          </div>
-        )
-      },
     },
     {
       name: 'Capacidades',
@@ -241,7 +170,7 @@ export function ListPage() {
         cell: (row) => (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <ActionButton
-              variant="outline-secondary"
+              variant="outline-warning"
               size="sm"
               tooltip="Ver vencimientos"
               icon="bi-calendar-check"
@@ -286,34 +215,6 @@ export function ListPage() {
         </Col>
         <Col xs="auto" className="align-self-center">
           {subHeaderComponentMemo}
-        </Col>
-        <Col xs="auto" className="align-self-center">
-          <Dropdown as={ButtonGroup}>
-            <Button
-              variant="outline-secondary"
-              size="sm"
-              onClick={() => setSearchParams({})}
-            >
-              Vencimientos: {FILTRO_VENCIMIENTOS_LABELS[filtroVencimientos]}
-            </Button>
-            <Dropdown.Toggle
-              split
-              variant="outline-secondary"
-              size="sm"
-              id="dropdown-filtro-vencimientos-personal"
-            />
-            <Dropdown.Menu>
-              {(Object.entries(FILTRO_VENCIMIENTOS_LABELS) as [FiltroVencimientos, string][]).map(([valor, label]) => (
-                <Dropdown.Item
-                  key={valor}
-                  active={filtroVencimientos === valor}
-                  onClick={() => setSearchParams(valor === 'todos' ? {} : { vencimientos: valor })}
-                >
-                  {label}
-                </Dropdown.Item>
-              ))}
-            </Dropdown.Menu>
-          </Dropdown>
         </Col>
         {currentUser?.administrar && (
           <Col xs="auto" className="d-flex justify-content-end">
