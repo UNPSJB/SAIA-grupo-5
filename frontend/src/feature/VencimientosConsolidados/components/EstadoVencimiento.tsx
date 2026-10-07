@@ -1,7 +1,7 @@
 import { ESTADO_VENCIMIENTOS_LABELS } from "../../VencimientoPersonal/types"
 import { ESTADO_VENCIMIENTOS_ESTILOS, type EstadoVencimientos } from "../lib/estado"
 
-export function EstadoBadge({ estado }: { estado: EstadoVencimientos }) {
+export function EstadoVencimiento({ estado }: { estado: EstadoVencimientos }) {
     const estilo = ESTADO_VENCIMIENTOS_ESTILOS[estado]
     return (
         <div
