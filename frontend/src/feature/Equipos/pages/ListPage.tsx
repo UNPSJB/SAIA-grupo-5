@@ -1,11 +1,14 @@
 import { useState, useMemo } from "react";
 import { mutate } from 'swr';
-import { Alert, Button, Col, Container, Form, Row, Spinner } from 'react-bootstrap';
+import { Button, Col, Container, Form, Row } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { type TableColumn } from 'react-data-table-component';
 
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
+import { PageLoading } from '../../../components/PageLoading';
+import { PageError } from '../../../components/PageError';
+import { ActionButton } from '../../../components/ActionButton';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
 
@@ -41,24 +44,10 @@ export function EquiposPage() {
         );
     }, []);
 
-    if (isLoading) return (
-        <>
-            <PageHeader title="Listado de Equipos" />
-            <Spinner animation="border" role="status">
-                <span className="visually-hidden">Loading...</span>
-            </Spinner>
-        </>
-    );
+    if (isLoading) return <PageLoading title="Listado de Equipos" />;
 
     if (!equipos || error) return (
-        <Container>
-            <PageHeader title="Listado de Equipos" />
-            <Row className="justify-content-center">
-                <Col md={6}>
-                    <Alert variant="danger">Ocurrió un error al cargar los Equipos</Alert>
-                </Col>
-            </Row>
-        </Container>
+        <PageError title="Listado de Equipos" message="Ocurrió un error al cargar los Equipos" />
     );
 
     const baseColumns: TableColumn<Equipo>[] = [
@@ -118,23 +107,23 @@ export function EquiposPage() {
                 minWidth: "220px",
                 cell: (row) => (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <Button
+                        <ActionButton
                             variant="outline-primary"
                             size="sm"
+                            tooltip="Editar"
+                            icon="bi-pencil"
                             disabled={!row.estado}
                             onClick={() => navigate(`/equipos/${row.id}/edit`)}
-                        >
-                            <i className="bi bi-pencil me-1"></i>Editar
-                        </Button>
+                        />
 
                         {row.estado && (
-                            <Button
+                            <ActionButton
                                 variant="outline-danger"
                                 size="sm"
+                                tooltip="Dar de baja"
+                                icon="bi-dash-circle"
                                 onClick={() => setEquipoToDelete(row)}
-                            >
-                                <i className="bi bi-trash3 me-1"></i>Eliminar
-                            </Button>
+                            />
                         )}
                     </div>
                 )
@@ -144,7 +133,7 @@ export function EquiposPage() {
 
     return (
         <Container>
-            <Row className="p-2">
+            <Row className="p-2 align-items-center">
                 <Col>
                     <PageHeader title="Listado de Equipos" />
                 </Col>

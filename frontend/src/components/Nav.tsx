@@ -1,314 +1,291 @@
-import React, { useState } from 'react';
-import { Nav as BSNav, NavDropdown, Offcanvas, Button, Badge  } from "react-bootstrap";
+import { useEffect, useMemo, useState } from 'react';
+import { Badge, Dropdown } from 'react-bootstrap';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { mutate } from 'swr';
+import { useApi } from '../hooks/useApi';
+import { useAuth } from '../hooks';
+import { api } from '../libs/axios';
+import type { Notificacion } from '../feature/Notificaciones/types';
+import './Nav.css';
 
-import { NavLink } from "react-router-dom";
-import { useAuth } from "../hooks";
-
-export function Nav() {
-    const [mostrarMenu, setMostrarMenu] = useState(false);
-    const { currentUser, logout } = useAuth();
-
-    return (
-        <>
-        <div className="d-none d-lg-flex
-            flex-column
-            flex-shrink-0
-            p-3
-            min-vh-100
-            text-white"
-            style={{ minWidth: 220, backgroundColor: "#0a0091"}}
-        >
-            <div className="sticky-top d-flex flex-column" style={{ top: 0, minHeight: "calc(100vh - 2rem)" }}>
-                <div className="d-flex align-items-center justify-content-between">
-                    <span className="text-white fs-4 fw-bold">SAIA-5</span>
-                </div>
-
-                {currentUser && (
-                    <div className="mt-2 mb-2 p-2 rounded" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
-                        <div className="small text-truncate fw-semibold">
-                            <i className="bi bi-person-circle me-1"></i>
-                            {currentUser.nombre} {currentUser.apellido || ''}
-                        </div>
-                        <div className="d-flex gap-1 mt-1 flex-wrap">
-                            {currentUser.administrar && (
-                                <Badge bg="info" className="text-dark" style={{ fontSize: "0.7rem" }}>
-                                    Admin
-                                </Badge>
-                            )}
-                            {currentUser.operar && (
-                                <Badge bg="secondary" style={{ fontSize: "0.7rem" }}>
-                                    Operario
-                                </Badge>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                <hr />
-
-                <BSNav
-                    className="nav nav-pills flex-column mb-auto"
-                    style={
-                        {
-                            "--bs-nav-link-color": "#adb5bd",
-                            "--bs-nav-link-hover-color": "#fff",
-                        } as React.CSSProperties
-                    }
-                >
-                    <BSNav.Link as={NavLink} to="/" end>
-                        <i className="bi bi-house-door me-2"></i>
-                        Home
-                    </BSNav.Link>
-                    <BSNav.Link as={NavLink} to="/insumos">
-                        <i className="bi bi-box-seam me-2"></i>
-                        Insumos
-                    </BSNav.Link>
-                    <BSNav.Link as={NavLink} to="/insumos-quimicos">
-                        <i className="bi bi-droplet me-2"></i>
-                        Insumos Quimicos
-                    </BSNav.Link>
-                    <BSNav.Link as={NavLink} to="/equipos">
-                        <i className="bi bi-tools me-2"></i>
-                        Equipos
-                    </BSNav.Link>
-                    <BSNav.Link as={NavLink} to="/elementos-limpieza">
-                        <i className="bi bi-bucket me-2"></i>
-                        Elementos de Limpieza
-                    </BSNav.Link>
-                    <BSNav.Link as={NavLink} to="/recambios-elementos-limpieza">
-                        <i className="bi bi-clock-history me-2"></i>
-                        Recambios Elementos
-                    </BSNav.Link>
-                    <BSNav.Link as={NavLink} to="/checklist">
-                        <i className="bi bi-check2-square me-2"></i>
-                        Checklist
-                    </BSNav.Link>
-                    <BSNav.Link as={NavLink} to="/superficies">
-                        <i className="bi bi-virus2 me-2"></i>
-                        Superficies
-                    </BSNav.Link>
-                    <BSNav.Link as={NavLink} to="/planes-limpieza">
-                        <i className="bi bi-clipboard-check me-2"></i>
-                        Planes de Limpieza
-                    </BSNav.Link>
-                    <BSNav.Link as={NavLink} to="/tareas">
-                        <i className="bi bi-list-check me-2"></i>
-                        Tareas
-                    </BSNav.Link>
-
-                    {/* Módulo de Personal y consumoProducto solo visible para usuarios con permiso de administrar */}
-                    {currentUser?.administrar && (
-                            <BSNav.Link as={NavLink} to="/personal">
-                                <i className="bi bi-people me-2"></i>
-                                Personal
-                            </BSNav.Link>
-                    )}
-                    {currentUser?.administrar && (
-                        <BSNav.Link as={NavLink} to="/consumos-productos/consulta">
-                                <i className="bi bi-droplet-half me-2"></i>
-                                Consulta de Consumo
-                        </BSNav.Link>
-                    )}
-                    {currentUser?.administrar && (
-                        <BSNav.Link as={NavLink} to="/historial">
-                            <i className="bi bi-clock-history me-2"></i>
-                            Historial
-                        </BSNav.Link>
-                    )}
-
-                </BSNav>
-
-                <div className="mt-auto">
-                    {currentUser?.administrar && (
-                        <NavDropdown
-                            title={
-                                <>
-                                    <i className="bi bi-database me-2"></i>
-                                    Datos Maestros
-                                </>
-                            }
-                            id="datos-maestros-dropdown"
-                        >
-                            <NavDropdown.Item as={NavLink} to="/sectores">
-                                <i className="bi bi-geo-alt me-2"></i>
-                                Sectores
-                            </NavDropdown.Item>
-
-                            <NavDropdown.Item as={NavLink} to="/tipos-elementos-limpieza">
-                                <i className="bi bi-tags me-2"></i>
-                                Tipos de Elementos
-                            </NavDropdown.Item>
-
-                            <NavDropdown.Item as={NavLink} to="/tipos-quimicos">
-                                <i className="bi bi-flask me-2"></i>
-                                Tipos de Químicos
-                            </NavDropdown.Item>
-                        </NavDropdown>
-                    )}
-
-                    <hr className="my-3" />
-
-                    <Button
-                        variant="outline-light"
-                        size="sm"
-                        className="w-100 d-flex align-items-center justify-content-center"
-                        onClick={logout}
-                    >
-                        <i className="bi bi-box-arrow-right me-2"></i>
-                        Cerrar sesión
-                    </Button>
-                </div>
-            </div>
-        </div>
-        <div
-            className="d-lg-none d-flex
-            align-items-center 
-            px-3 
-            py-2 
-            text-white 
-            sticky-top"
-            style={{ backgroundColor: "#0a0091" }}
-        >
-            <button
-                type="button"
-                className="btn btn-outline-light me-3"
-                onClick={() => setMostrarMenu(true)}
-                aria-label="Abrir menú"
-            >
-                <i className="bi bi-list"></i>
-            </button>
-            <span className="fs-4">SAIA-5</span>
-        </div>
-            <Offcanvas
-                show={mostrarMenu}
-                onHide={() => setMostrarMenu(false)}
-                className="text-white"
-                style={{ backgroundColor: "#0a0091" }}
-            >
-                <Offcanvas.Header closeButton closeVariant="white">
-                    <Offcanvas.Title>SAIA-5</Offcanvas.Title>
-                </Offcanvas.Header>
-                <Offcanvas.Body>
-                    
-                <BSNav
-                    className="nav nav-pills flex-column mb-auto"
-                    style={{
-                        "--bs-nav-link-color": "#adb5bd",
-                        "--bs-nav-link-hover-color": "#fff"
-                    } as React.CSSProperties}
-                >
-                    <BSNav.Link as={NavLink} to="/" end onClick={() => setMostrarMenu(false)}>
-                        <i className="bi bi-house-door me-2" ></i>
-                        Home
-                    </BSNav.Link>
-                    <BSNav.Link as={NavLink} to="/insumos" onClick={() => setMostrarMenu(false)}>
-                        <i className="bi bi-box-seam me-2"></i>
-                        Insumos
-                    </BSNav.Link>
-                    <BSNav.Link as={NavLink} to="/insumos-quimicos" onClick={() => setMostrarMenu(false)}>
-                        <i className="bi bi-droplet me-2"></i>
-                        Insumos Quimicos
-                    </BSNav.Link>
-                    <BSNav.Link as={NavLink} to="/equipos" onClick={() => setMostrarMenu(false)}>
-                        <i className="bi bi-tools me-2"></i>
-                        Equipos
-                    </BSNav.Link>
-                    <BSNav.Link as={NavLink} to="/elementos-limpieza" onClick={() => setMostrarMenu(false)}>
-                        <i className="bi bi-bucket me-2"></i>
-                        Elementos de Limpieza
-                    </BSNav.Link>
-                    <BSNav.Link as={NavLink} to="/recambios-elementos-limpieza" onClick={() => setMostrarMenu(false)}>
-                        <i className="bi bi-clock-history me-2"></i>
-                        Recambios Elementos
-                    </BSNav.Link>
-                    <BSNav.Link as={NavLink} to="/checklist" onClick={() => setMostrarMenu(false)}>
-                        <i className="bi bi-check2-square me-2"></i>
-                        Checklist
-                    </BSNav.Link>
-                    <BSNav.Link as={NavLink} to="/superficies" onClick={() => setMostrarMenu(false)}>
-                        <i className="bi bi-virus2 me-2"></i>
-                        Superficies
-                    </BSNav.Link>
-                    <BSNav.Link as={NavLink} to="/planes-limpieza" onClick={() => setMostrarMenu(false)}>
-                        <i className="bi bi-clipboard-check me-2"></i>
-                        Planes de Limpieza
-                    </BSNav.Link>
-                    <BSNav.Link as={NavLink} to="/tareas" onClick={() => setMostrarMenu(false)}>
-                        <i className="bi bi-list-check me-2"></i>
-                        Tareas
-                    </BSNav.Link>
-                    {currentUser?.administrar && (
-                        <BSNav.Link as={NavLink} to="/personal" onClick={() => setMostrarMenu(false)}>
-                            <i className="bi bi-people me-2"></i>
-                            Personal
-                        </BSNav.Link>
-                    )}
-                    {currentUser?.administrar && (
-                        <BSNav.Link as={NavLink} to="/historial" onClick={() => setMostrarMenu(false)}>
-                            <i className="bi bi-clock-history me-2"></i>
-                            Historial
-                        </BSNav.Link>
-                    )}
-                </BSNav>
-                <hr className="mt-auto" />
-                <div className="mt-auto">
-                    {currentUser?.administrar && (
-                        <NavDropdown
-                            title={
-                                <>
-                                    <i className="bi bi-database me-2"></i>
-                                    Datos Maestros
-                                </>
-                            }
-                            id="datos-maestros-dropdown-mobile"
-                        >
-                            <NavDropdown.Item
-                                as={NavLink}
-                                to="/sectores"
-                                onClick={() => setMostrarMenu(false)}
-                            >
-                                <i className="bi bi-geo-alt me-2"></i>
-                                Sectores
-                            </NavDropdown.Item>
-
-                            <NavDropdown.Item
-                                as={NavLink}
-                                to="/tipos-elementos-limpieza"
-                                onClick={() => setMostrarMenu(false)}
-                            >
-                                <i className="bi bi-tags me-2"></i>
-                                Tipos de Elementos
-                            </NavDropdown.Item>
-
-                            <NavDropdown.Item
-                                as={NavLink}
-                                to="/tipos-quimicos"
-                                onClick={() => setMostrarMenu(false)}
-                            >
-                                <i className="bi bi-flask me-2"></i>
-                                Tipos de Químicos
-                            </NavDropdown.Item>
-                        </NavDropdown>
-                    )}
-
-                    <Button
-                        variant="outline-light"
-                        size="sm"
-                        className="w-100 d-flex align-items-center justify-content-center"
-                        onClick={() => {
-                            setMostrarMenu(false);
-                            logout();
-                        }}
-                    >
-                        <i className="bi bi-box-arrow-right me-2"></i>
-                        Cerrar sesión
-                    </Button>
-                </div>
-
-                </Offcanvas.Body>
-            </Offcanvas>        
-        </>
-    );
+interface NavItem {
+    label: string;
+    to: string;
+    icon: string;
+    adminOnly?: boolean;
 }
 
+interface NavGroup {
+    id: string;
+    label: string;
+    icon: string;
+    items: NavItem[];
+    adminOnly?: boolean;
+}
 
+const navGroups: NavGroup[] = [
+    {
+        id: 'operaciones',
+        label: 'Operaciones',
+        icon: 'bi-clipboard2-check',
+        items: [
+            { label: 'Tareas', to: '/tareas', icon: 'bi-list-check' },
+            { label: 'Checklist', to: '/checklist', icon: 'bi-check2-square' },
+            { label: 'Historial', to: '/historial', icon: 'bi-clock-history', adminOnly: true },
+        ],
+    },
+    {
+        id: 'gestion',
+        label: 'Gestión',
+        icon: 'bi-grid',
+        items: [
+            { label: 'Insumos', to: '/insumos', icon: 'bi-box-seam' },
+            { label: 'Insumos químicos', to: '/insumos-quimicos', icon: 'bi-droplet' },
+            { label: 'Equipos', to: '/equipos', icon: 'bi-tools' },
+            { label: 'Elementos de limpieza', to: '/elementos-limpieza', icon: 'bi-bucket' },
+            { label: 'Recambios', to: '/recambios-elementos-limpieza', icon: 'bi-arrow-repeat' },
+            { label: 'Planes de limpieza', to: '/planes-limpieza', icon: 'bi-clipboard-check' },
+            { label: 'Superficies', to: '/superficies', icon: 'bi-virus2' },
+            { label: 'Documentos', to: '/documentos', icon: 'bi bi-file-text' },
+            { label: 'Personal', to: '/personal', icon: 'bi-people', adminOnly: true },
+            { label: 'Consulta de consumo', to: '/consumos-productos/consulta', icon: 'bi-droplet-half', adminOnly: true },
+        ],
+    },
+    {
+        id: 'datos-maestros',
+        label: 'Datos maestros',
+        icon: 'bi-database',
+        adminOnly: true,
+        items: [
+            { label: 'Sectores', to: '/sectores', icon: 'bi-geo-alt' },
+            { label: 'Tipos de elementos', to: '/tipos-elementos-limpieza', icon: 'bi-tags' },
+            { label: 'Tipos de químicos', to: '/tipos-quimicos', icon: 'bi-flask' },
+            { label: 'Tipos de Vencimientos', to: '/tipos-vencimientos', icon: 'bi-calendar-plus'},
+            { label: 'Tipos de Documentos', to: '/tipos-documentos', icon: 'bi bi-flask'}
+        ],
+    },
+];
+
+function isPathActive(pathname: string, to: string) {
+    return pathname === to || pathname.startsWith(`${to}/`);
+}
+
+export function Nav({ children }: { children: React.ReactNode }) {
+    const { currentUser, logout } = useAuth();
+    const location = useLocation();
+    const navigate = useNavigate();
+    const isAdmin = Boolean(currentUser?.administrar);
+    const { data: notifications } = useApi<Notificacion[]>(isAdmin ? '/notificaciones/' : null);
+    const [menuState, setMenuState] = useState({
+        pathname: location.pathname,
+        expandedGroup: null as string | null,
+        mobileMenuOpen: false,
+    });
+    const visibleGroups = useMemo(
+        () => navGroups
+            .filter((group) => !group.adminOnly || currentUser?.administrar)
+            .map((group) => ({
+                ...group,
+                items: group.items.filter((item) => !item.adminOnly || currentUser?.administrar),
+            })),
+        [currentUser?.administrar],
+    );
+
+    const activeGroupId = visibleGroups.find((group) =>
+        group.items.some((item) => isPathActive(location.pathname, item.to)),
+    )?.id ?? null;
+    const routeChanged = menuState.pathname !== location.pathname;
+    const expandedGroup = routeChanged ? activeGroupId : menuState.expandedGroup;
+    const mobileMenuOpen = !routeChanged && menuState.mobileMenuOpen;
+
+    useEffect(() => {
+        if (!isAdmin) return undefined;
+        const interval = window.setInterval(() => void mutate('/notificaciones/'), 30_000);
+        return () => window.clearInterval(interval);
+    }, [isAdmin]);
+
+    const closeMobileMenu = () => setMenuState({
+        pathname: location.pathname,
+        expandedGroup,
+        mobileMenuOpen: false,
+    });
+
+    const displayName = `${currentUser?.nombre ?? ''} ${currentUser?.apellido ?? ''}`.trim() || currentUser?.username || 'Usuario';
+    const email = currentUser?.mail || currentUser?.email || '';
+    const pendingNotifications = (notifications ?? []).filter((notification) => !notification.leida && !notification.resuelta);
+    const recentNotifications = (notifications ?? []).filter((notification) => !notification.resuelta).slice(0, 5);
+
+    const openNotification = async (notification: Notificacion) => {
+        if (!notification.leida) {
+            await api.patch(`/notificaciones/${notification.id}/leida`);
+            await mutate('/notificaciones/');
+        }
+        if (notification.url) navigate(notification.url);
+    };
+
+    const openNotificationHistory = () => {
+        navigate('/notificaciones', { state: { fromBell: true } });
+    };
+
+    return (
+        <div className="sb-app-shell">
+            {mobileMenuOpen && (
+                <button
+                    type="button"
+                    className="sb-sidebar-backdrop"
+                    aria-label="Cerrar menú de navegación"
+                    onClick={closeMobileMenu}
+                />
+            )}
+
+            <aside className={`sb-sidebar${mobileMenuOpen ? ' is-open' : ''}`}>
+
+                <div className="sb-sidebar-content">
+                    <span className="sb-section-label">INICIO</span>
+                    <NavLink
+                        to="/"
+                        end
+                        className={({ isActive }) => `sb-nav-link${isActive ? ' active' : ''}`}
+                        onClick={closeMobileMenu}
+                    >
+                        <i className="bi bi-speedometer2" />
+                        <span>Panel principal</span>
+                    </NavLink>
+
+                    <span className="sb-section-label sb-section-spaced">GESTIÓN DEL SISTEMA</span>
+                    {visibleGroups.map((group) => {
+                        const isOpen = expandedGroup === group.id;
+                        const groupIsActive = group.items.some((item) => isPathActive(location.pathname, item.to));
+                        return (
+                            <div className="sb-nav-group" key={group.id}>
+                                <button
+                                    type="button"
+                                    className={`sb-nav-link sb-nav-group-toggle${groupIsActive ? ' active' : ''}`}
+                                    aria-expanded={isOpen}
+                                    aria-controls={`sb-group-${group.id}`}
+                                    onClick={() => setMenuState({
+                                        pathname: location.pathname,
+                                        expandedGroup: isOpen ? null : group.id,
+                                        mobileMenuOpen,
+                                    })}
+                                >
+                                    <i className={`bi ${group.icon}`} />
+                                    <span>{group.label}</span>
+                                    <i className={`bi bi-chevron-${isOpen ? 'down' : 'right'} sb-chevron`} />
+                                </button>
+                                {isOpen && (
+                                    <div className="sb-subnav" id={`sb-group-${group.id}`}>
+                                        {group.items.map((item) => (
+                                            <NavLink
+                                                to={item.to}
+                                                key={item.to}
+                                                className={({ isActive }) => `sb-nav-link sb-subnav-link${isActive || isPathActive(location.pathname, item.to) ? ' active' : ''}`}
+                                                onClick={closeMobileMenu}
+                                            >
+                                                <i className={`bi ${item.icon}`} />
+                                                <span>{item.label}</span>
+                                            </NavLink>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+
+                <div className="sb-sidebar-footer">
+                    <span className="sb-sidebar-footer-icon"><i className="bi bi-shield-check" /></span>
+                    <span><strong>SAIA-5</strong><small>Gestión de inocuidad</small></span>
+                </div>
+            </aside>
+
+            <div className="sb-main">
+                <header className="sb-topbar">
+                    <div className="d-flex align-items-center gap-3">
+                        <button
+                            type="button"
+                            className="sb-menu-toggle"
+                            aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
+                            aria-expanded={mobileMenuOpen}
+                            onClick={() => setMenuState({
+                                pathname: location.pathname,
+                                expandedGroup,
+                                mobileMenuOpen: !mobileMenuOpen,
+                            })}
+                        >
+                            <i className={`bi ${mobileMenuOpen ? 'bi-x-lg' : 'bi-list'}`} />
+                        </button>
+                        <span className="sb-topbar-title">Sistema de gestión</span>
+                    </div>
+
+                    <div className="sb-topbar-actions">
+                        {isAdmin && (
+                            <Dropdown align="end" className="sb-notification-dropdown">
+                                <Dropdown.Toggle as="button" id="sb-notification-menu" className="sb-notification-toggle" aria-label={`Notificaciones: ${pendingNotifications.length} pendientes`}>
+                                    <i className="bi bi-bell" aria-hidden="true" />
+                                    {pendingNotifications.length > 0 && (
+                                        <Badge bg="danger" pill className="sb-notification-count">
+                                            {pendingNotifications.length > 99 ? '99+' : pendingNotifications.length}
+                                        </Badge>
+                                    )}
+                                </Dropdown.Toggle>
+                                <Dropdown.Menu className="sb-notification-menu">
+                                    <div className="sb-notification-heading">
+                                        <strong>Notificaciones</strong>
+                                        <span>{pendingNotifications.length} pendientes</span>
+                                    </div>
+                                    <div className="sb-notification-list">
+                                        {recentNotifications.length === 0 ? (
+                                            <div className="sb-notification-empty">No hay notificaciones recientes.</div>
+                                        ) : recentNotifications.map((notification) => (
+                                            <button
+                                                type="button"
+                                                className={`sb-notification-item${notification.leida ? ' is-read' : ''}`}
+                                                key={notification.id}
+                                                onClick={() => void openNotification(notification)}
+                                            >
+                                                <span className="sb-notification-dot" />
+                                                <span className="sb-notification-copy">
+                                                    <strong>{notification.titulo}</strong>
+                                                    <span>{notification.entidad}</span>
+                                                    <small>{notification.descripcion}</small>
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <Dropdown.Divider />
+                                    <Dropdown.Item as="button" onClick={openNotificationHistory} className="sb-notification-all">
+                                        Ver todas las notificaciones <i className="bi bi-arrow-right" />
+                                    </Dropdown.Item>
+                                </Dropdown.Menu>
+                            </Dropdown>
+                        )}
+                        <Dropdown align="end">
+                            <Dropdown.Toggle as="button" id="sb-account-menu" className="sb-account-toggle">
+                                <span className="sb-avatar" aria-hidden="true"><i className="bi bi-person-fill" /></span>
+                                <span className="sb-account-name">{displayName}</span>
+                                <i className="bi bi-chevron-down sb-account-chevron" aria-hidden="true" />
+                            </Dropdown.Toggle>
+                            <Dropdown.Menu className="sb-account-menu">
+                                <div className="sb-account-summary">
+                                    <strong>{displayName}</strong>
+                                    <span>{email}</span>
+                                </div>
+                                <Dropdown.Divider />
+                                <Dropdown.Item as="button" onClick={(event) => event.preventDefault()}>
+                                    <i className="bi bi-gear me-2" />Configuración de cuenta
+                                </Dropdown.Item>
+                                <Dropdown.Divider />
+                                <Dropdown.Item as="button" onClick={() => void logout()}>
+                                    <i className="bi bi-box-arrow-right me-2" />Cerrar sesión
+                                </Dropdown.Item>
+                            </Dropdown.Menu>
+                        </Dropdown>
+                    </div>
+                </header>
+
+                <main className="sb-page-content">{children}</main>
+            </div>
+        </div>
+    );
+}

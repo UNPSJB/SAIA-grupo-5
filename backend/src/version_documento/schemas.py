@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field
 from typing import Annotated
-from datetime import datetime
+from datetime import datetime, date
 
 class PersonaBasica(BaseModel):
     nombre: str
@@ -8,20 +8,20 @@ class PersonaBasica(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 class VersionDocumentoBase(BaseModel):
-    version: Annotated[int, Field(gt=0)]
     documento_id: int
-    fecha_subida: datetime
     archivo: str
+    observacion: Annotated[str | None, Field(max_length=300)] = None
 
 class VersionDocumentoCreate(VersionDocumentoBase):
     pass
 
-class VersionDocumentoUpdate(BaseModel):
 
-    archivo: str | None = None
+class VersionDocumentoUpdate(VersionDocumentoBase):
+    observacion: Annotated[str | None, Field(max_length=300)] = None
 
 class VersionDocumento(VersionDocumentoBase):
     id: int
+    version: int
     activo: bool
     vigente: bool
     fecha_desde_vigencia: datetime | None = None
@@ -29,6 +29,8 @@ class VersionDocumento(VersionDocumentoBase):
     aprobador_id: int | None = None
     aprobador: PersonaBasica | None = None
     fecha_aprobacion: datetime | None = None
+    fecha_subida: date
+    
     model_config = ConfigDict(from_attributes=True)
 
 class VersionDocumentoDelete(BaseModel):

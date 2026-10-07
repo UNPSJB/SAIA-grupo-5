@@ -2,7 +2,8 @@ from typing import TYPE_CHECKING, Optional
 from datetime import date, datetime
 from src.models import ModeloBase
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, Boolean, ForeignKey, DateTime, Text, Index, text
+from sqlalchemy import String, Boolean, ForeignKey, DateTime, Text, Index, text, Date
+
 
 if TYPE_CHECKING:
     from src.documentos.models import Documento
@@ -20,11 +21,12 @@ class VersionDocumento(ModeloBase):
     )
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    version: Mapped[int] = mapped_column(index=True)
+    version: Mapped[int] = mapped_column(index=True, nullable=False)
     vigente: Mapped[bool] = mapped_column(Boolean, default=False)
     activo: Mapped[bool] = mapped_column(Boolean, default=True)
+    observacion: Mapped[str | None] = mapped_column(String(300), nullable=True)
     documento_id: Mapped[int] = mapped_column(ForeignKey("documentos.id"), index=True, nullable=False)
-    fecha_subida: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    fecha_subida: Mapped[date] = mapped_column(Date, nullable=False)
     archivo: Mapped[str] = mapped_column(Text, nullable=False)
 
     fecha_desde_vigencia: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)

@@ -24,8 +24,8 @@ def read_versiones(db: Session = Depends(get_db)):
 
 #listado versiones de UN documento
 @router.get("/documento/{documento_id}", response_model=list[schemas.VersionDocumento])
-def read_versiones_documento(documento_id:int, db: Session = Depends(get_db)):
-    return services.listar_versiones_documento(db, documento_id)
+def read_versiones_documento(documento_id: int, incluir_historicas: bool = Query(False), db: Session = Depends(get_db)):
+    return services.listar_versiones_documento(db, documento_id, incluir_historicas)
 
 @router.get("/{version_id}", response_model=schemas.VersionDocumento)
 def read_version_documento(version_id: int, db: Session = Depends(get_db)):

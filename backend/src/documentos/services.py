@@ -32,6 +32,8 @@ def modificar_documento(db: Session, documento_id: int, documento: schemas.Docum
     db_documento = leer_documento(db, documento_id)
     db_documento.nombre = documento.nombre
     db_documento.descripcion = documento.descripcion
+    db_documento.tipo_id = documento.tipo_id
+    
     db.commit()
     db.refresh(db_documento)
     return db_documento

@@ -11,7 +11,7 @@ class Documento(ModeloBase):
     __tablename__ = "documentos"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    nombre: Mapped[str] = mapped_column(String(100), nullable=False)
+    nombre: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
     descripcion: Mapped[str | None] = mapped_column(String(500), nullable=True)
     activo: Mapped[bool] = mapped_column(Boolean, default=True)
 

@@ -17,6 +17,9 @@ from src.recambiosElementosLimpieza.models import RecambioElementoLimpieza
 from src.insumo_quimico.models import InsumoQuimico
 from src.tipo_quimico.models import TipoQuimico
 from src.consumo_producto.models import ConsumoProducto
+from src.tipos_vencimientos.models import TipoVencimiento
+from src.vencimiento_personal.models import VencimientoPersonal
+from src.notificaciones.models import Notificacion
 
 # Importamos la configuración validada por Pydantic
 from src.config import settings
@@ -44,6 +47,9 @@ from src.consumo_producto.router import router as consumos_router
 from src.documentos.router import router as documentos_router
 from src.tipo_documento.router import router as tipo_documento_router
 from src.version_documento.router import router as version_documento_router
+from src.tipos_vencimientos.router import router as tipos_vencimientos_router
+from src.vencimiento_personal.router import router as vencimiento_personal_router
+from src.notificaciones.router import router as notificaciones_router
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -83,6 +89,10 @@ app.include_router(tipo_quimico_router)
 app.include_router(elementos_limpieza_router)
 app.include_router(recambios_elementos_limpieza_router)
 app.include_router(consumos_router)
+app.include_router(tipos_vencimientos_router)
+app.include_router(vencimiento_personal_router)
+app.include_router(notificaciones_router)
+
 
 app.include_router(documentos_router)
 app.include_router(tipo_documento_router)

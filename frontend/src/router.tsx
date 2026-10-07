@@ -59,11 +59,40 @@ import { EditarConsumoProductoPage } from './feature/ConsumoProducto/pages/Edita
 import { NuevoConsumoProductoPage } from './feature/ConsumoProducto/pages/NuevoConsumoProductoPage.tsx'
 import { ConsumoAcumuladoPage } from './feature/ConsumoProducto/pages/ConsumoAcumuladoPage.tsx'
 
+import { ListPage as TipoDocumentoListPage } from './feature/TiposDocumentos/pages/ListPage.tsx'
+import { EditarTipoDocumentoPage } from './feature/TiposDocumentos/pages/EditarTipoDocumentoPage.tsx'
+import { NuevoTipoDocumentoPage } from './feature/TiposDocumentos/pages/NuevoTipoDocumentoPage.tsx'
+import { VerTipoDocumentoPage } from './feature/TiposDocumentos/pages/VerTipoDocumentoPage.tsx'
+
+import { ListPage as DocumentoListPage } from './feature/Documentos/pages/ListPage.tsx'
+import { EditarDocumentoPage } from './feature/Documentos/pages/EditarDocumentoPage.tsx'
+import { NuevoDocumentoPage } from './feature/Documentos/pages/NuevoDocumentoPage.tsx'
+import { VerDocumentoPage } from './feature/Documentos/pages/VerDocumentoPage.tsx'
+
+import { ListPage as VersionDocumentoListPage } from './feature/VersionesDocumentos/pages/ListPage.tsx'
+import { EditarVersionDocumentoPage } from './feature/VersionesDocumentos/pages/EditarVersionDocumentoPage.tsx'
+import { NuevaVersionDocumentoPage } from './feature/VersionesDocumentos/pages/NuevaVersionDocumentoPage.tsx'
+import { VerVersionDocumentoPage } from './feature/VersionesDocumentos/pages/VerVersionDocumentoPage.tsx'
+
+
 import { VerDetalleTareaOcurrenciaPage } from './feature/Historial/pages/VerDetalleTareaOcurrenciaPage.tsx' 
+import { NotificacionesPage } from './feature/Notificaciones/pages/ListPage.tsx'
+
+import { ListPage as TipoVencimientoListPage } from './feature/TiposVencimientos/pages/ListPage.tsx'
+import { EditarTipoVencimientoPage } from './feature/TiposVencimientos/pages/EditarTipoVencimientoPage.tsx'
+import { NuevoTipoVencimientoPage } from './feature/TiposVencimientos/pages/NuevoTipoVencimientoPage.tsx'
+import { VerTipoVencimientoPage } from './feature/TiposVencimientos/pages/VerTipoVencimientoPage.tsx'
+
+import { ListPage as VencimientoPersonalListPage } from './feature/VencimientoPersonal/pages/ListPage.tsx'
+import { EditarVencimientoPersonalPage } from './feature/VencimientoPersonal/pages/EditarVencimientoPersonalPage.tsx'
+import { NuevoVencimientoPersonalPage } from './feature/VencimientoPersonal/pages/NuevoVencimientoPersonalPage.tsx'
+import { VerVencimientoPersonalPage } from './feature/VencimientoPersonal/pages/VerVencimientoPersonalPage.tsx'
+
 
 import { Login, NoAutorizado } from './feature/auth'
 import AuthLayout from './layouts/AuthLayout.tsx'
 import { ProtectedRoute } from './components/ProtectedRoute.tsx'
+import { NotificationHistoryRoute } from './components/NotificationHistoryRoute.tsx'
 
 import App from './App.tsx'
 
@@ -154,6 +183,8 @@ const router = createBrowserRouter([
               { index: true, element: <PersonalListPage /> },
               { path: 'new', element: <NuevaPersonaPage /> },
               { path: ':id/edit', element: <EditarPersonaPage /> },
+              { path: ':personaId/vencimientos', element: <VencimientoPersonalListPage /> },
+              { path: ':personaId/vencimientos/new', element: <NuevoVencimientoPersonalPage /> },
             ],
           },
           {
@@ -211,6 +242,13 @@ const router = createBrowserRouter([
           },
           { path: 'tareas', element: <TareasPage /> },
           {
+            path: 'notificaciones',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <NotificationHistoryRoute><NotificacionesPage /></NotificationHistoryRoute> },
+            ],
+          },
+          {
             path: 'historial',
             element: <ProtectedRoute requireAdmin />,
             children: [
@@ -223,6 +261,66 @@ const router = createBrowserRouter([
             children: [
               { path: ':id', element: <VerDetalleTareaOcurrenciaPage />}
             ]
+          },
+          {
+            path: 'tipos-documentos',
+            children: [
+              { index: true, element: <TipoDocumentoListPage /> },
+              { path: ':id', element: <VerTipoDocumentoPage /> },
+              {
+                element: <ProtectedRoute requireAdmin />,
+                children: [
+                  { path: 'new', element: <NuevoTipoDocumentoPage /> },
+                  { path: ':id/edit', element: <EditarTipoDocumentoPage /> },
+                ],
+              },
+            ],
+          },
+          {
+            path: 'documentos',
+            children: [
+              { index: true, element: <DocumentoListPage /> },
+              { path: ':id', element: <VerDocumentoPage /> },
+              {
+                element: <ProtectedRoute requireAdmin />,
+                children: [
+                  { path: 'new', element: <NuevoDocumentoPage /> },
+                  { path: ':id/edit', element: <EditarDocumentoPage /> },
+                ],
+              },
+            ],
+          },
+          {
+            path: 'versiones-documentos',
+            children: [
+              { path: 'documento/:documentoId', element: <VersionDocumentoListPage /> },
+              { path: 'version/:id', element: <VerVersionDocumentoPage /> },
+              {
+                element: <ProtectedRoute requireAdmin />,
+                children: [
+                  { path: 'documento/:documentoId/new', element: <NuevaVersionDocumentoPage /> },
+                  { path: 'version/:id/edit', element: <EditarVersionDocumentoPage /> },
+                ],
+              },
+            ],
+          },
+          {
+            path: 'tipos-vencimientos',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <TipoVencimientoListPage /> },
+              { path: 'new', element: <NuevoTipoVencimientoPage /> },
+              { path: ':id', element: <VerTipoVencimientoPage /> },
+              { path: ':id/edit', element: <EditarTipoVencimientoPage /> },
+            ],
+          },
+          {
+            path: 'vencimiento-personal',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { path: ':id', element: <VerVencimientoPersonalPage /> },
+              { path: ':id/edit', element: <EditarVencimientoPersonalPage /> },
+            ],
           },
           { path: '*', element: <Page404 /> },
           {
