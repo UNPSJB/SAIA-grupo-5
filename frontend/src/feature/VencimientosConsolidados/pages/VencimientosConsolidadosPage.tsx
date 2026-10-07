@@ -6,13 +6,13 @@ import type { ConfiguracionSistema } from "../../ConfiguracionSistema/types"
 import { PersonalTab } from "../components/PersonalTab"
 import { ElementosTab } from "../components/ElementosTab"
 import { EquiposTab } from "../components/EquiposTab"
-import { DocumentosTab } from "../components/DocumentosTab"
 
 export function VencimientosConsolidadosPage() {
     const [searchParams] = useSearchParams();
     const defaultTab = searchParams.get('default')
     const { data: configuracion } = useApi<ConfiguracionSistema>("/configuracion-sistema/")
     const diasAntelacion = configuracion?.dias_antelacion_vencimiento ?? 15
+    const diasAntelacionElementos = configuracion?.dias_antelacion_elementos ?? 15
 
     return (
         <Container>
@@ -22,13 +22,10 @@ export function VencimientosConsolidadosPage() {
                     <PersonalTab diasAntelacion={diasAntelacion} />
                 </Tab>
                 <Tab eventKey="elementos" title="Elementos de limpieza">
-                    <ElementosTab diasAntelacion={diasAntelacion} />
+                    <ElementosTab diasAntelacion={diasAntelacionElementos} />
                 </Tab>
                 <Tab eventKey="equipos" title="Equipos">
                     <EquiposTab diasAntelacion={diasAntelacion} />
-                </Tab>
-                <Tab eventKey="documentos" title="Documentos">
-                    <DocumentosTab />
                 </Tab>
             </Tabs>
         </Container>

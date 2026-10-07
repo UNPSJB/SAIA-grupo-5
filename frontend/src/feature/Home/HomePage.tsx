@@ -51,6 +51,7 @@ export function HomePage() {
         currentUser?.administrar ? "/configuracion-sistema/" : null,
     );
     const diasAntelacionVencimiento = configuracion?.dias_antelacion_vencimiento ?? 15;
+    const diasAntelacionElementos = configuracion?.dias_antelacion_elementos ?? 15;
 
     const activeElements = (elements ?? []).filter((element) => element.estado);
     const overdueElements = activeElements.filter((element) =>
@@ -59,7 +60,7 @@ export function HomePage() {
     const dueSoonElements = activeElements.filter((element) =>
         element.dias_restantes !== null
         && element.dias_restantes >= 0
-        && element.dias_restantes <= diasAntelacionVencimiento);
+        && element.dias_restantes <= diasAntelacionElementos);
 
     const { data: planesCalibracion, error: planesCalibracionError, isLoading: planesCalibracionLoading } = useApi<PlanCalibracion[]>(
         currentUser?.administrar ? "/planes-calibracion/" : null,
@@ -127,11 +128,11 @@ export function HomePage() {
         const onTrack = activeElements.length - overdueElements.length - dueSoonElements.length - withoutSchedule;
         return [
             { name: "Al día", value: onTrack, color: SEAFOAM.primary },
-            { name: "Por vencer · 7 días", value: dueSoonElements.length, color: SEAFOAM.warning },
+            { name: `Por vencer · ${diasAntelacionElementos} días`, value: dueSoonElements.length, color: SEAFOAM.warning },
             { name: "Vencidos", value: overdueElements.length, color: SEAFOAM.danger },
             { name: "Sin frecuencia", value: withoutSchedule, color: "#a7b1ba" },
         ].filter((item) => item.value > 0);
-    }, [activeElements, dueSoonElements.length, overdueElements.length]);
+    }, [activeElements, dueSoonElements.length, overdueElements.length, diasAntelacionElementos]);
 
     const historyHasError = Boolean(historyError);
     const inventoryHasError = Boolean(elementsError);
@@ -195,7 +196,7 @@ export function HomePage() {
                             value={formatMetric(elementsLoading, Boolean(elementsError), dueSoonElements.length)}
                             icon="bi-calendar2-week"
                             tone={SEAFOAM.warning}
-                            detail="Dentro de los próximos 7 días"
+                            detail={`Dentro de los próximos ${diasAntelacionElementos} días`}
                             to="/vencimientos?default=elementos"
                         />
                     </Col>

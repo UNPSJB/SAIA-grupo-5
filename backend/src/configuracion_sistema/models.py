@@ -13,6 +13,9 @@ class ConfiguracionSistema(ModeloBase):
     # Antelación de alerta de vencimiento de personal
     dias_antelacion_vencimiento: Mapped[int] = mapped_column(Integer, nullable=False, default=15)
 
+    # Antelación de alerta de vencimiento de elementos de limpieza
+    dias_antelacion_elementos: Mapped[int] = mapped_column(Integer, nullable=False, default=15)
+
     # Hora de generación de las ocurrencias de tareas del checklist
     # ver --> src/scheduler/scheduler.py
     hora_generacion_checklists: Mapped[int] = mapped_column(Integer, nullable=False, default=7)
