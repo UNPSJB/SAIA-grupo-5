@@ -1,9 +1,10 @@
 import { Container, Spinner, Alert, Row, Col, Card, Button } from "react-bootstrap";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 import type { VencimientoPersonal } from "../types";
 import type { ConfiguracionSistema } from "../../ConfiguracionSistema/types";
+import { PageLoading } from "../../../components/PageLoading";
 
 const obtenerNombreArchivo = (base64: string | null | undefined): string => {
     if (!base64) return "";
@@ -22,20 +23,16 @@ const obtenerNombreArchivo = (base64: string | null | undefined): string => {
 
 export function VerVencimientoPersonalPage() {
     const navigate = useNavigate();
+    const locacion = useLocation();
     const { id } = useParams();
 
     const { data: vencimiento, isLoading, error } = useApi<VencimientoPersonal>(`/vencimiento-personal/${id}`);
     const { data: configuracion } = useApi<ConfiguracionSistema>('/configuracion-sistema/');
     const diasAntelacion = configuracion?.dias_antelacion_vencimiento ?? 15;
 
-    if (isLoading) return (
-        <>
-            <PageHeader title="Detalle del Vencimiento" />
-            <Spinner animation="border" role="status" className="d-block mx-auto mt-5 text-primary">
-                <span className="visually-hidden">Cargando...</span>
-            </Spinner>
-        </>
-    );
+    const tituloPagina = "Detalle del Vencimiento";
+
+    if (isLoading) return <PageLoading title={tituloPagina} />;
 
     if (!vencimiento || error) return (
         <Container>
@@ -51,6 +48,8 @@ export function VerVencimientoPersonalPage() {
         </Container>
     );
 
+    const rutaVolver = locacion.state?.rutaVolver || `/personal/${vencimiento.persona_id}/vencimientos`;
+
     const vencido = vencimiento.dias_restantes <= 0;
     const proximo = vencimiento.dias_restantes > 0 && vencimiento.dias_restantes <= diasAntelacion;
     const badge = vencido ? '#fee2e2' : proximo ? '#fef3c7' : '#dcfce7';
@@ -63,7 +62,7 @@ export function VerVencimientoPersonalPage() {
 
     return (
         <Container>
-            <PageHeader title="Detalle del Vencimiento" />
+            <PageHeader title={tituloPagina} />
 
             <Row className="justify-content-center mt-3">
                 <Col md={8}>
@@ -172,7 +171,7 @@ export function VerVencimientoPersonalPage() {
                         <Card.Footer className="bg-light border-top p-3 d-flex justify-content-end gap-2">
                             <Button
                                 variant="outline-secondary"
-                                onClick={() => navigate(`/personal/${vencimiento.persona_id}/vencimientos`)}
+                                onClick={() => navigate(rutaVolver)}
                             >
                                 <i className="bi bi-arrow-left me-1"></i>Volver a la lista
                             </Button>
@@ -180,7 +179,7 @@ export function VerVencimientoPersonalPage() {
                             <Button
                                 variant="primary"
                                 disabled={!vencimiento.persona?.activo}
-                                onClick={() => navigate(`/vencimiento-personal/${vencimiento.id}/edit`)}
+                                onClick={() => navigate(`/vencimiento-personal/${vencimiento.id}/edit`, { state: locacion.state })}
                             >
                                 <i className="bi bi-pencil me-1"></i>Editar Vencimiento
                             </Button>
