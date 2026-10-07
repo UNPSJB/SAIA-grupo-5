@@ -1,30 +1,28 @@
 import React, { useState, useMemo } from 'react';
 import { mutate } from 'swr';
-import { Alert, Button, Col, Container, Form, Row, Spinner } from 'react-bootstrap';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Alert, Col, Container, Form, Row } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import { type TableColumn } from 'react-data-table-component';
 import { ActionButton } from '../../../components/ActionButton';
 
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
+import { PageLoading } from '../../../components/PageLoading';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
 
 import type { VencimientoPersonal } from '../types';
-import type { Persona } from '../../Personal/types';
 import type { ConfiguracionSistema } from '../../ConfiguracionSistema/types';
 import { RenovarVencimientoModal } from '../components/RenovarVencimientoModal';
 import { HistoricoVencimientoModal } from '../components/HistoricoVencimientoModal';
 
 
-export function ListPage() {
+export function VencimientoConsolidadoPage() {
     const navigate = useNavigate();    
     const { currentUser } = useAuth();
-    const { personaId } = useParams();
     const [search, setSearch] = useState('');
 
-    const { data: persona } = useApi<Persona>(`/personal/${personaId}`);
-    const { data: vencimientos, error, isLoading } = useApi<VencimientoPersonal[]>(`/vencimiento-personal/persona/${personaId}`);
+    const { data: vencimientos, error, isLoading } = useApi<VencimientoPersonal[]>(`/vencimiento-personal/`);
 
     const { data: configuracion } = useApi<ConfiguracionSistema>(currentUser?.administrar ? '/configuracion-sistema/' : null);
     const diasAntelacion = configuracion?.dias_antelacion_vencimiento ?? 15;
@@ -32,37 +30,40 @@ export function ListPage() {
     const [vencimientoToRenovar, setVencimientoToRenovar] = useState<VencimientoPersonal | null>(null);
     const [vencimientoHistorico, setVencimientoHistorico] = useState<VencimientoPersonal | null>(null);
 
-    // useMemo infiere que retorna un array de tipo Insumo[]
     const filteredVencimientos = useMemo(() => {
         if (!Array.isArray(vencimientos)) return [];     // Se agrego una validacion para preguntar si insumos es un array
-        return (vencimientos ?? []).filter((vencimiento) => {
+        const termino = search.toLowerCase().trim();        // Limpia lo que se escribio en la busqueda
+
+        return[...vencimientos].filter((vencimiento) => {       // Creamos una copia de la lista original antes de filtrarla pq el sort modificaria el arreglo original
+            const nombreCompleto = `${vencimiento.persona.nombre} ${vencimiento.persona.apellido}`.toLowerCase();
+            const apellidoNombre = `${vencimiento.persona.apellido} ${vencimiento.persona.nombre}`.toLowerCase();
+            const tipoNombre = vencimiento.tipo_vencimiento.nombre.toLowerCase();
+
+            {/* Si lo que buscaste coincide con cualquiera de los 3 deja esa fila en la tabla */}
             return (
-                vencimiento.tipo_vencimiento.nombre.toLowerCase().includes(search.toLowerCase())
+                nombreCompleto.includes(termino) ||
+                apellidoNombre.includes(termino) ||
+                tipoNombre.includes(termino)
             );
-        });
+        }).sort((v1, v2) => v1.dias_restantes - v2.dias_restantes)      // Ordena las filas de mas urgente a menos urgente
     }, [search, vencimientos]);
 
     const subHeaderComponentMemo = useMemo(() => {
         return (
             <Form.Control
                 type="text"
-                placeholder="Buscar tipo vencimiento..."
+                placeholder="Buscar por persona o tipo..."
                 className=" mr-sm-2"
+                style={{ minWidth: '250px' }}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
             />
         );
-    }, [search]);
+    }, []);
 
-    const tituloPagina = persona ? `Vencimientos de ${persona.nombre} ${persona.apellido}` : "Listado de Vencimientos";
+    const tituloPagina = "Vencimientos del Personal"
 
-    if (isLoading) return (
-        <>
-            <PageHeader title={tituloPagina} />
-            <Spinner animation="border" role="status">
-                <span className="visually-hidden">Cargando...</span>
-            </Spinner>
-        </>
-    )
+    if (isLoading) return <PageLoading title={tituloPagina} />;
+
     if (!vencimientos || error) return (
         <Container>
             <PageHeader title={tituloPagina} />
@@ -75,6 +76,14 @@ export function ListPage() {
     )
 
     const columns: TableColumn<VencimientoPersonal>[] = [
+        {
+            name: 'Persona',
+            selector: row => `${row.persona.nombre} ${row.persona.apellido}`,
+            sortable: true,
+            center: true,
+            minWidth: '180px',
+            grow:1.2,
+        },
         {
             name: 'Tipo de Vencimiento',
             selector: row => row.tipo_vencimiento.nombre,
@@ -157,7 +166,8 @@ export function ListPage() {
         {
             name: "Acciones",
             center: true,
-            minWidth: '280px',
+            minWidth: '190px',
+            grow: 0.2,
             cell: (row) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <ActionButton
@@ -165,7 +175,7 @@ export function ListPage() {
                         size="sm"
                         tooltip="Ver vencimiento"
                         icon="bi bi-eye"
-                        onClick={() => navigate (`/vencimiento-personal/${row.id}`)}
+                        onClick={() => navigate (`/vencimiento-personal/${row.id}`, { state: { rutaVolver: '/vencimiento-personal' } })}
                     />
 
                     <ActionButton
@@ -182,15 +192,15 @@ export function ListPage() {
                                 size="sm"
                                 tooltip="Editar"
                                 icon="bi bi-pencil"
-                                disabled={!persona?.activo}
-                                onClick={() => navigate(`/vencimiento-personal/${row.id}/edit`)}
+                                disabled={!row.persona?.activo}
+                                onClick={() => navigate(`/vencimiento-personal/${row.id}/edit`, { state: { rutaVolver: '/vencimiento-personal' } })}
                             />
                             <ActionButton
                                 variant="outline-success"
                                 size="sm"
                                 tooltip="Renovar"
                                 icon="bi bi-arrow-repeat"
-                                disabled={!persona?.activo}
+                                disabled={!row.persona?.activo}
                                 onClick={() => setVencimientoToRenovar(row)}
                             />
                         </>
@@ -202,44 +212,19 @@ export function ListPage() {
 
     return (
         <Container>
-            <Row className="p-2 align-items-center" >
+            <Row className="p-2 align-items-center justify-content-between" >
                 <Col>
-                    <Button 
-                        variant="outline-secondary" 
-                        size="sm" 
-                        onClick={() => navigate("/personal")}
-                    >
-                        <i className="bi bi-arrow-left me-1"></i>Volver
-                    </Button>               
-                </Col>
-                <Col>
-                    <div style={{ fontSize: "0.85rem", whiteSpace: "nowrap" }}>
-                        <PageHeader title={tituloPagina} />
-                    </div>
+                    <PageHeader title={tituloPagina} />
                 </Col>
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
                 </Col>
-
-                {currentUser?.administrar && (
-                    <Col xs="auto" className="d-flex justify-content-end">
-                        <Button
-                            variant="primary"
-                            size='sm'
-                            disabled={!persona?.activo}
-                            onClick={() => navigate(`/personal/${personaId}/vencimientos/new`)}
-                            style={{ whiteSpace: "nowrap" }}
-                        >
-                            + Nuevo Vencimiento
-                        </Button>
-                    </Col>
-                )}
             </Row>
             <AppTable columns={columns} data={filteredVencimientos} />
             <RenovarVencimientoModal
                 vencimiento={vencimientoToRenovar}
                 onHide={() => setVencimientoToRenovar(null)}
-                onRenovado={() => mutate(`/vencimiento-personal/persona/${personaId}`)}
+                onRenovado={() => mutate(`/vencimiento-personal/`)}
             />
             <HistoricoVencimientoModal
                 vencimiento={vencimientoHistorico}
