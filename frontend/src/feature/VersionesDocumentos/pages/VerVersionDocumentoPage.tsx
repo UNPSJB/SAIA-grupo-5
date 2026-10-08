@@ -1,9 +1,11 @@
-import { Container, Spinner, Alert, Row, Col, Card, Button } from "react-bootstrap";
+import { Container, Alert, Row, Col, Card, Button } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 import type { VersionDocumento } from "../types";
 import { useAuth } from '../../../hooks';
+import { PageLoading } from "../../../components/PageLoading";
+
 
 export function VerVersionDocumentoPage() {
     const navigate = useNavigate();
@@ -13,14 +15,8 @@ export function VerVersionDocumentoPage() {
     const { currentUser } = useAuth();
     const isAdmin = Boolean(currentUser?.administrar);
 
-    if (isLoading) return (
-        <>
-            <PageHeader title="Detalle de la Version" />
-            <Spinner animation="border" role="status" className="d-block mx-auto mt-5 text-primary">
-                <span className="visually-hidden">Cargando...</span>
-            </Spinner>
-        </>
-    );
+    if (isLoading) return <PageLoading title="Detalle de la Versión" />;
+
 
     if (!version || error) return (
         <Container>

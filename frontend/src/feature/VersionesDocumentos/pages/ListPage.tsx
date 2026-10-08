@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { mutate } from 'swr';
-import { Alert, Button, Col, Container, Form, Row, Spinner } from 'react-bootstrap';
+import { Alert, Button, Col, Container, Form, Row } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 import { type TableColumn } from 'react-data-table-component';
+import { PageLoading } from "../../../components/PageLoading";
 
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
@@ -40,14 +41,8 @@ export function ListPage() {
         );
     }, [search]);
 
-    if (isLoading) return (
-        <>
-            <PageHeader title="Listado de Versiones" />
-            <Spinner animation="border" role="status">
-                <span className="visually-hidden">Cargando...</span>
-            </Spinner>
-        </>
-    )
+    if (isLoading) return <PageLoading title="Listado de Versiones" />;
+
     if (!versiones || error) return (
         <Container>
             <PageHeader title="Listado de Versiones" />

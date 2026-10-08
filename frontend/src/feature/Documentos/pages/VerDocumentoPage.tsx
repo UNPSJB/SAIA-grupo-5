@@ -4,6 +4,8 @@ import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 import type { Documento } from "../types";
 import { useAuth } from '../../../hooks';
+import { PageLoading } from "../../../components/PageLoading";
+
 
 export function VerDocumentoPage() {
     const navigate = useNavigate();
@@ -14,14 +16,8 @@ export function VerDocumentoPage() {
 
     const { data: documento, isLoading, error } = useApi<Documento>(`/documentos/${id}`);
 
-    if (isLoading) return (
-        <>
-            <PageHeader title="Detalle del Documento" />
-            <Spinner animation="border" role="status" className="d-block mx-auto mt-5 text-primary">
-                <span className="visually-hidden">Cargando...</span>
-            </Spinner>
-        </>
-    );
+    if (isLoading) return <PageLoading title="Detalle del Documento" />;
+
 
     if (!documento || error) return (
         <Container>
