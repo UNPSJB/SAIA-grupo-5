@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useApi } from '../../../hooks/useApi';
 import React, { useState } from 'react';
+import type { Documento } from '../../Documentos/types';
 
 interface VersionDocumentoFormProps {
     textoBoton: string;
@@ -17,7 +18,7 @@ export function VersionDocumentoForm({ textoBoton, onSubmit, valoresIniciales }:
     const { documentoId } = useParams();
     const [archivoBase64, setArchivoBase64] = useState<string | null>(null);
     const [archivoError, setArchivoError] = useState<string | null>(null);
-    const { data: documento } = useApi(`/documentos/${valoresIniciales?.documento_id || documentoId}`);
+    const { data: documento } = useApi<Documento>(`/documentos/${valoresIniciales?.documento_id || documentoId}`);
 
     const {register, handleSubmit, formState: { errors }, } = useForm<VersionDocumentoFormData> ({
         defaultValues: {
@@ -48,14 +49,12 @@ export function VersionDocumentoForm({ textoBoton, onSubmit, valoresIniciales }:
             setArchivoError("Ocurrio un problema al cargar el archivo.");
         };
     }
-    const archivoMostrar = archivoBase64 || valoresIniciales?.archivo;
-
     const onSubmitHookForm = (data: VersionDocumentoFormData) => {
-        if (!archivoBase64 && !valoresIniciales?.archivo) { 
+        const archivoFinal = archivoBase64 || valoresIniciales?.archivo;
+        if (!archivoFinal) {
             setArchivoError("El archivo es obligatorio");
             return;
         }
-        const archivoFinal = archivoBase64 ? archivoBase64 : (valoresIniciales?.archivo || null);
         onSubmit({
             documento_id: valoresIniciales?.documento_id || Number(documentoId),
             observacion: data.observacion.trim(),

@@ -1,4 +1,4 @@
-import type { TipoDocumento } from "../TipoDocumento/types"
+import type { TipoDocumento } from "../TiposDocumentos/types"
 
 export type Documento = {
     id: number
@@ -10,7 +10,7 @@ export type Documento = {
 }
 
 export type NewDocumento = {
-    tipo_id: number
+    nombre: string
     descripcion?: string
-    tipo: TipoDocumento
+    tipo_id: number
 }

@@ -1,4 +1,4 @@
-import { Container, Spinner, Alert, Row, Col, Card, Button } from "react-bootstrap";
+import { Container, Alert, Row, Col, Card, Button } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
@@ -9,8 +9,7 @@ import { PageLoading } from "../../../components/PageLoading";
 
 export function VerDocumentoPage() {
     const navigate = useNavigate();
-    const { id } = useParams(); 
-    const { data: tipos } = useApi('/tipos-documentos/');
+    const { id } = useParams();
     const { currentUser } = useAuth();
     const isAdmin = Boolean(currentUser?.administrar);
 

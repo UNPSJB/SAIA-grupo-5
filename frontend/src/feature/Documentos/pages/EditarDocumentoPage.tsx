@@ -65,9 +65,9 @@ export function EditarDocumentoPage(){
             <Container>
                 <DocumentoForm textoBoton="Editar Documento"
                     onSubmit={actualizarDocumento}
-                    valoresIniciales={{ nombre: documento.nombre, 
-                    descripcion: documento.descripcion, 
-                    tipo_id: documento.tipo_id || ""}}/>
+                    valoresIniciales={{ nombre: documento.nombre,
+                    descripcion: documento.descripcion,
+                    tipo_id: documento.tipo_id}}/>
             </Container>
         </>
     )
