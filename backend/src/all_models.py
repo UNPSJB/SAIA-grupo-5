@@ -16,7 +16,7 @@ from src.elementosLimpieza.models import ElementoLimpieza, TipoElementoLimpieza
 from src.recambiosElementosLimpieza.models import RecambioElementoLimpieza
 from src.consumo_producto.models import ConsumoProducto
 from src.tipo_quimico.models import TipoQuimico
-from src.configuracion_sistema.models import ConfiguracionSistema
 from src.planesCalibracion.models import PlanCalibracion
 from src.registrosCalibracion.models import RegistroCalibracion
+from src.configuracion_sistema.models import ConfiguracionSistema
 from src.notificaciones.models import Notificacion
