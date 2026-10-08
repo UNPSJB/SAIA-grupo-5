@@ -20,8 +20,6 @@ class IncidenteBase(BaseModel):
     foto_opcional: str | None = None
 
 class IncidenteCreate(IncidenteBase):
-    fecha_abierto: datetime
-    operario_id: int
     tipo_id: int
     sector_id: int | None = None
 
