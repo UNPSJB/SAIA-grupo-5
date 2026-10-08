@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { UnidadMedida } from '../types';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useApi } from '../../../hooks/useApi';
+import type { InsumoQuimico } from '../../InsumosQuimicos/types';
+import type { Tarea } from '../../Tareas/types';
 
 
 interface ConsumoProductoFormProps {
@@ -23,8 +25,8 @@ export function ConsumoProductoForm({ textoBoton, onSubmit, valoresIniciales, so
   const [insumo_quimico_id, setInsumoQuimicoId] = useState(valoresIniciales?.insumo_quimico_id || "");
   const [cantidad_aproximada, setCantidadAproximada] = useState(valoresIniciales?.cantidad_aproximada || "");
   const [unidad_medida, setUnidadMedida] = useState<UnidadMedida | "">(valoresIniciales?.unidad_medida || "");     // Se agrega el <UnidadMedida | ""> para exigir que los valores unicamente puedan ser los de las unidades de medidas que definio Alex
-  const { data: insumos } = useApi('/insumos-quimicos/');
-  const { data: tarea } = useApi(`/tareas/${tarea_id}`);
+  const { data: insumos } = useApi<InsumoQuimico[]>('/insumos-quimicos/');
+  const { data: tarea } = useApi<Tarea>(`/tareas/${tarea_id}`);
 
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {   
     e.preventDefault();

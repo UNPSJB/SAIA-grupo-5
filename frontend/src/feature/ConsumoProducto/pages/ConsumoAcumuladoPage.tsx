@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Alert, Button, Col, Container, Form, Row, Spinner } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
 import { type TableColumn } from 'react-data-table-component';
 
 import { AppTable } from '../../../components/AppTable';
@@ -9,7 +8,6 @@ import { useApi } from '../../../hooks/useApi';
 import type { ConsumoAcumuladoProducto } from "../types";
 
 export function ConsumoAcumuladoPage() {
-    const navigate = useNavigate();
  
     const [fecha_desde, setFechaDesde] = useState("");
     const [fecha_hasta, setFechaHasta] = useState("");
