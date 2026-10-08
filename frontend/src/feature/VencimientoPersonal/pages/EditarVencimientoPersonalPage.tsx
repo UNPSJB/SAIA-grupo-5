@@ -1,5 +1,5 @@
-import { Container, Spinner, Alert, Col, Row } from "react-bootstrap";
-import { useNavigate, useParams } from "react-router-dom";
+import { Container, Alert, Col, Row } from "react-bootstrap";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { mutate } from "swr";
 import { PageHeader } from "../../../components/PageHeader";
 import { VencimientoPersonalForm } from "../components/VencimientoPersonalForm";
@@ -7,12 +7,16 @@ import { api } from "../../../libs/axios";
 import { useApi } from "../../../hooks/useApi";
 import type { VencimientoPersonal, NewVencimientoPersonal } from "../types";
 import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
+import { PageLoading } from "../../../components/PageLoading";
 
 export function EditarVencimientoPersonalPage() {
     const navigate = useNavigate();
     const { id } = useParams();
 
     const { data: vencimiento, isLoading, error } = useApi<VencimientoPersonal>(`/vencimiento-personal/${id}`);
+    
+    const locacion = useLocation();
+    const rutaVolver = locacion.state?.rutaVolver || `/personal/${vencimiento?.persona_id}/vencimientos`;
 
     const actualizarVencimiento = async (datos: NewVencimientoPersonal) => {
         try {
@@ -23,7 +27,7 @@ export function EditarVencimientoPersonalPage() {
             await mutate(`/vencimiento-personal/`);
             await mutate(`/vencimiento-personal/${id}`);
             mostrarAlertaExito("El vencimiento se edito correctamente.");
-            navigate(`/personal/${vencimiento?.persona_id}/vencimientos`);
+            navigate(rutaVolver);
         } catch (error: any) {
             let mensajeFinal = "No se pudo editar el vencimiento.";
             if (error.response?.data?.detail) {
@@ -35,14 +39,9 @@ export function EditarVencimientoPersonalPage() {
         }
     };
 
-    if (isLoading) return (
-        <>
-            <PageHeader title="Editar Vencimiento" />
-            <Spinner animation="border" role="status">
-                <span className="visually-hidden">Cargando...</span>
-            </Spinner>
-        </>
-    );
+    const tituloPagina = "Editar Vencimiento";
+
+    if (isLoading) return <PageLoading title={tituloPagina} />;
 
     if (!vencimiento) return (
         <Container>
@@ -57,7 +56,7 @@ export function EditarVencimientoPersonalPage() {
 
     if (error) return (
         <Container>
-            <PageHeader title="Editar Vencimiento" />
+            <PageHeader title={tituloPagina} />
             <Row className="justify-content-center">
                 <Col md={6}>
                     <Alert variant="danger">Ocurrió un error al cargar el Vencimiento.</Alert>
@@ -68,12 +67,12 @@ export function EditarVencimientoPersonalPage() {
 
     return (
         <>
-            <PageHeader title="Editar Vencimiento" />
+            <PageHeader title={tituloPagina} />
             <Container>
                 <VencimientoPersonalForm
                     textoBoton="Editar Vencimiento"
                     esEdicion={true}
-                    rutaCancelar={`/personal/${vencimiento.persona_id}/vencimientos`}
+                    rutaCancelar={rutaVolver}
                     onSubmit={actualizarVencimiento}
                     valoresIniciales={{
                         tipo_vencimiento_id: vencimiento.tipo_vencimiento_id,

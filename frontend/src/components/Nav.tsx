@@ -6,65 +6,9 @@ import { useApi } from '../hooks/useApi';
 import { useAuth } from '../hooks';
 import { api } from '../libs/axios';
 import type { Notificacion } from '../feature/Notificaciones/types';
+import { navGroups } from './navGroups';
+import { Breadcrumbs } from './Breadcrumbs';
 import './Nav.css';
-
-interface NavItem {
-    label: string;
-    to: string;
-    icon: string;
-    adminOnly?: boolean;
-}
-
-interface NavGroup {
-    id: string;
-    label: string;
-    icon: string;
-    items: NavItem[];
-    adminOnly?: boolean;
-}
-
-const navGroups: NavGroup[] = [
-    {
-        id: 'operaciones',
-        label: 'Operaciones',
-        icon: 'bi-clipboard2-check',
-        items: [
-            { label: 'Tareas', to: '/tareas', icon: 'bi-list-check' },
-            { label: 'Checklist', to: '/checklist', icon: 'bi-check2-square' },
-            { label: 'Historial', to: '/historial', icon: 'bi-clock-history', adminOnly: true },
-        ],
-    },
-    {
-        id: 'gestion',
-        label: 'Gestión',
-        icon: 'bi-grid',
-        items: [
-            { label: 'Insumos', to: '/insumos', icon: 'bi-box-seam' },
-            { label: 'Insumos químicos', to: '/insumos-quimicos', icon: 'bi-droplet' },
-            { label: 'Equipos', to: '/equipos', icon: 'bi-tools' },
-            { label: 'Elementos de limpieza', to: '/elementos-limpieza', icon: 'bi-bucket' },
-            { label: 'Recambios', to: '/recambios-elementos-limpieza', icon: 'bi-arrow-repeat' },
-            { label: 'Planes de limpieza', to: '/planes-limpieza', icon: 'bi-clipboard-check' },
-            { label: 'Superficies', to: '/superficies', icon: 'bi-virus2' },
-            { label: 'Documentos', to: '/documentos', icon: 'bi bi-file-text' },
-            { label: 'Personal', to: '/personal', icon: 'bi-people', adminOnly: true },
-            { label: 'Consulta de consumo', to: '/consumos-productos/consulta', icon: 'bi-droplet-half', adminOnly: true },
-        ],
-    },
-    {
-        id: 'datos-maestros',
-        label: 'Datos maestros',
-        icon: 'bi-database',
-        adminOnly: true,
-        items: [
-            { label: 'Sectores', to: '/sectores', icon: 'bi-geo-alt' },
-            { label: 'Tipos de elementos', to: '/tipos-elementos-limpieza', icon: 'bi-tags' },
-            { label: 'Tipos de químicos', to: '/tipos-quimicos', icon: 'bi-flask' },
-            { label: 'Tipos de Vencimientos', to: '/tipos-vencimientos', icon: 'bi-calendar-plus'},
-            { label: 'Tipos de Documentos', to: '/tipos-documentos', icon: 'bi bi-flask'}
-        ],
-    },
-];
 
 function isPathActive(pathname: string, to: string) {
     return pathname === to || pathname.startsWith(`${to}/`);
@@ -215,7 +159,7 @@ export function Nav({ children }: { children: React.ReactNode }) {
                         >
                             <i className={`bi ${mobileMenuOpen ? 'bi-x-lg' : 'bi-list'}`} />
                         </button>
-                        <span className="sb-topbar-title">Sistema de gestión</span>
+                        <Breadcrumbs />
                     </div>
 
                     <div className="sb-topbar-actions">
@@ -273,8 +217,14 @@ export function Nav({ children }: { children: React.ReactNode }) {
                                 </div>
                                 <Dropdown.Divider />
                                 <Dropdown.Item as="button" onClick={(event) => event.preventDefault()}>
-                                    <i className="bi bi-gear me-2" />Configuración de cuenta
+                                    <i className="bi bi-person-gear me-2" />Configuración de cuenta
                                 </Dropdown.Item>
+                                {
+                                    isAdmin && (<Dropdown.Item as="button" onClick={() => navigate('/configuracion-sistema')}>
+                                        <i className="bi bi-gear me-2" />Configuración de Sistema
+                                    </Dropdown.Item>)
+                                }
+
                                 <Dropdown.Divider />
                                 <Dropdown.Item as="button" onClick={() => void logout()}>
                                     <i className="bi bi-box-arrow-right me-2" />Cerrar sesión
