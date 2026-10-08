@@ -3,9 +3,7 @@ import { Modal, Button, Form } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../../../hooks/useAuth'; 
 import { useEffect } from 'react';
-import { useApi } from '../../../hooks/useApi'; 
 import type { TareaOcurrencia } from '../types';
-import type { InsumoQuimico } from '../../InsumosQuimicos/types';
 import { mostrarAlertaError, mostrarAlertaExito } from '../../../libs/alertas';
 
 interface CompletarTareaModalProps {
@@ -23,15 +21,13 @@ interface CompletarTareaFormData {
 export function CompletarTareaModal({ tarea, onHide, onCompleted }: CompletarTareaModalProps) {
     const { api, currentUser } = useAuth();
     const esEdicion = tarea?.estado === 'Completada';
-    
-    const { data: insumos } = useApi<InsumoQuimico[]>("/insumos-quimicos/");
-    const insumosActivos = insumos?.filter(insumo => insumo.activo) || [];        // Sirve para filtrar y mostrar los insumos quimicos que esten activos
+
 
     const [fotoBase64, setFotoBase64] = useState<string | null>(null);      // Lo usamos para guardar la foto en formato texto
     const [fotoError, setFotoError] = useState<string | null>(null);        // Lo usamos para guardar el texto de error si no subio la foto y era obligatoria     
     const [cargando, setCargando] = useState(false);        // Sirve para controlar que el usuario no mande que realizo la tarea muchas veces en poco tiempo
 
-    const { register, handleSubmit, watch, formState: { errors }, reset } = useForm<CompletarTareaFormData>({
+    const { register, handleSubmit, formState: { errors }, reset } = useForm<CompletarTareaFormData>({
         defaultValues: {
             insumo_quimico_id: "",
             cantidad_consumida: "",
@@ -48,8 +44,6 @@ export function CompletarTareaModal({ tarea, onHide, onCompleted }: CompletarTar
             });
         }
     }, [tarea, reset]);
-
-    const insumoSeleccionado = watch("insumo_quimico_id");      // El watch sirve para ver el valor constantemente de InsumoSeleccionado, en el caso de que tenga valor se muestra la opcion de cuanta cantidad uso del insumo
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {      // Las imagenes las tenemos que manejar con useState
         setFotoError(null);
