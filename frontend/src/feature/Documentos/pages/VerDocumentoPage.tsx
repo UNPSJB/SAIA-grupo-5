@@ -4,15 +4,19 @@ import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 import type { Documento } from "../types";
 import { useAuth } from '../../../hooks';
+import type { VersionDocumento } from "../../VersionesDocumentos/types"; 
 
 export function VerDocumentoPage() {
     const navigate = useNavigate();
     const { id } = useParams(); 
     const { data: tipos } = useApi('/tipos-documentos/');
     const { currentUser } = useAuth();
-    const isAdmin = Boolean(currentUser?.administrar);
-
     const { data: documento, isLoading, error } = useApi<Documento>(`/documentos/${id}`);
+
+    const isAdmin = Boolean(currentUser?.administrar);
+    const { data: versiones } = useApi<VersionDocumento[]>(isAdmin ? null : `/versiones-documentos/documento/${id}` );
+    const versionVigente = versiones?.find(v => v.vigente);
+
 
     if (isLoading) return (
         <>
@@ -69,16 +73,28 @@ export function VerDocumentoPage() {
                                 <Col sm={4} className="fw-bold text-secondary">Tipo de Documento</Col>
                                 <Col sm={8}>{documento.tipo.nombre}</Col>
                             </Row>
-
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
                                 <Col sm={4} className="fw-bold text-secondary">Versiones</Col>
                                 <Col sm={8}>
-                                    <Button variant="outline-info" size="sm" disabled={!documento.activo} onClick={() => navigate(`/versiones-documentos/documento/${documento.id}`)}>
-                                        <i className="bi bi-box-arrow-up-right me-2"></i>Ver
+                                    <Button
+                                        variant="outline-info"
+                                        size="sm"
+                                        disabled={!documento.activo || (!isAdmin && !versionVigente)}
+                                        onClick={() =>
+                                            navigate(
+                                                isAdmin
+                                                    ? `/versiones-documentos/documento/${documento.id}`
+                                                    : `/versiones-documentos/version/${versionVigente?.id}`
+                                            )
+                                        }
+                                    >
+                                        <i className="bi bi-eye me-2"></i>Ver
                                     </Button>
+                                    {!isAdmin && !versionVigente && (
+                                        <span className="text-muted small ms-2">Sin versión vigente</span>
+                                    )}
                                 </Col>
                             </Row>
-
                             <Row className="mb-2 align-items-center">
                                 <Col sm={4} className="fw-bold text-secondary">Estado Actual</Col>
                                 <Col sm={8}>
