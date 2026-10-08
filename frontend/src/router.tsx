@@ -72,6 +72,11 @@ import { EditarVencimientoPersonalPage } from './feature/VencimientoPersonal/pag
 import { NuevoVencimientoPersonalPage } from './feature/VencimientoPersonal/pages/NuevoVencimientoPersonalPage.tsx'
 import { VerVencimientoPersonalPage } from './feature/VencimientoPersonal/pages/VerVencimientoPersonalPage.tsx'
 
+import { ListPage as TipoIncidenteListPage } from './feature/TiposIncidentes/pages/ListPage.tsx'
+import { EditarTipoIncidentePage } from './feature/TiposIncidentes/pages/EditarTipoIncidentePage.tsx'
+import { NuevoTipoIncidentePage } from './feature/TiposIncidentes/pages/NuevoTipoIncidentePage.tsx'
+import { VerTipoIncidentePage } from './feature/TiposIncidentes/pages/VerTipoIncidentePage.tsx'
+
 
 import { Login, NoAutorizado } from './feature/auth'
 import AuthLayout from './layouts/AuthLayout.tsx'
@@ -262,6 +267,16 @@ const router = createBrowserRouter([
             children: [
               { path: ':id', element: <VerVencimientoPersonalPage /> },
               { path: ':id/edit', element: <EditarVencimientoPersonalPage /> },
+            ],
+          },
+          {
+            path: 'tipos-incidentes',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <TipoIncidenteListPage /> },
+              { path: 'new', element: <NuevoTipoIncidentePage /> },
+              { path: ':id', element: <VerTipoIncidentePage /> },
+              { path: ':id/edit', element: <EditarTipoIncidentePage /> },
             ],
           },
           { path: '*', element: <Page404 /> },
