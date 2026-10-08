@@ -98,5 +98,3 @@ app.include_router(tipos_vencimientos_router)
 app.include_router(vencimiento_personal_router)
 app.include_router(configuracion_sistema_router)
 app.include_router(notificaciones_router)
-
-

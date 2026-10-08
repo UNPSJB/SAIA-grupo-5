@@ -75,6 +75,8 @@ import { VencimientoConsolidadoPage } from './feature/VencimientoPersonal/pages/
 
 import { ConfiguracionSistemaPage } from './feature/ConfiguracionSistema/pages/ConfiguracionSistemaPage.tsx'
 
+import { VencimientosConsolidadosPage } from './feature/VencimientosConsolidados/pages/VencimientosConsolidadosPage.tsx'
+
 import { PlanesCalibracionPage } from './feature/PlanesCalibracion/pages/PlanesCalibracionPage.tsx'
 import { NuevoPlanCalibracionPage } from './feature/PlanesCalibracion/pages/NuevoPlanCalibracionPage.tsx'
 import { EditarPlanCalibracionPage } from './feature/PlanesCalibracion/pages/EditarPlanCalibracionPage.tsx'
@@ -284,6 +286,13 @@ const router = createBrowserRouter([
             element: <ProtectedRoute requireAdmin />,
             children: [
               { index: true, element: <ConfiguracionSistemaPage /> },
+            ],
+          },
+          {
+            path: 'vencimientos',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <VencimientosConsolidadosPage /> },
             ],
           },
           { path: '*', element: <Page404 /> },
