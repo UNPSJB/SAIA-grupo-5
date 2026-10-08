@@ -1,5 +1,5 @@
 import { ESTADO_VENCIMIENTOS_LABELS } from "../../VencimientoPersonal/types"
-import { ESTADO_VENCIMIENTOS_ESTILOS, type EstadoVencimientos } from "../lib/estado"
+import { ESTADO_VENCIMIENTOS_ESTILOS, type EstadoVencimientos } from "../utils/estado"
 
 export function EstadoVencimiento({ estado }: { estado: EstadoVencimientos }) {
     const estilo = ESTADO_VENCIMIENTOS_ESTILOS[estado]
