@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from src.tipo_incidente.models import TipoIncidente
     from src.personal.models import Persona
     from src.sector.models import Sector
+    from src.accion_correctiva.models import AccionCorrectiva
 
 def _valores_estado(enum_cls):
     valores = []
@@ -38,5 +39,6 @@ class Incidente(ModeloBase):
     sector_id: Mapped[int | None] = mapped_column(ForeignKey("sectores.id"), nullable=True)
 
     tipo: Mapped["TipoIncidente"] = relationship(back_populates="incidentes")
-    operario: Mapped["Persona"] = relationship()   
+    operario: Mapped["Persona"] = relationship()
     sector: Mapped["Sector | None"] = relationship()
+    acciones_correctivas: Mapped[list["AccionCorrectiva"]] = relationship(back_populates="incidente")

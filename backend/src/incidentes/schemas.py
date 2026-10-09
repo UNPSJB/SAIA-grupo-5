@@ -2,11 +2,8 @@ from pydantic import BaseModel, ConfigDict, Field
 from typing import Annotated
 from datetime import datetime
 from src.incidentes.constants import EstadoIncidente
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from src.tipo_incidente.schemas import TipoIncidente
-    from src.sector.schemas import Sector
+from src.tipo_incidente.schemas import TipoIncidente
+from src.sector.schemas import Sector
 
 class PersonaBasica(BaseModel):
     nombre: str
