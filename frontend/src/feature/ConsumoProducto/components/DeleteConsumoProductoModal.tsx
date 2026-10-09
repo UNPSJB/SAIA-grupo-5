@@ -1,51 +1,48 @@
-import { Button, Modal, Form, Alert } from "react-bootstrap";
+import { ConfirmarModal } from "../../../components/ConfirmarModal";
 import { api } from "../../../libs/axios";
-import { useState } from "react";
-import type { ConsumoProducto } from "../types";
 import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
+import type { ConsumoProducto } from "../types";
 
 interface DeleteConsumoProductoModalProps {
     consumoProducto: ConsumoProducto | null;
     onHide: () => void;
-    onDeleted: () => void;
+    onDeleted: () => void | Promise<unknown>;
 }
 
 export function DeleteConsumoProductoModal({ consumoProducto, onHide, onDeleted }: DeleteConsumoProductoModalProps) {
+    const estaActivo = consumoProducto?.estado ?? true;
+    const accion = estaActivo ? "dar de baja" : "dar de alta";
+
     const handleCambiarEstado = async () => {
         if (!consumoProducto) return;
 
-        const estabaActivo = consumoProducto.estado;
+        const nombre = consumoProducto.insumo.nombre;
 
         try {
             await api.patch<ConsumoProducto>(`/consumos-productos/${consumoProducto.id}/estado`);
-            mostrarAlertaExito(`El consumo de '${consumoProducto.insumo.nombre}' se dio de ${estabaActivo ? 'baja' : 'alta'} correctamente.`);
-            onDeleted();
-        } catch (error: any){
-            const mensajeBackend = error.response?.data?.detail;
-            const mensajeFinal = mensajeBackend || `No se pudo ${estabaActivo ? 'dar de baja' : 'dar de alta'} el consumo de '${consumoProducto.insumo.nombre}'.`;
-            mostrarAlertaError(mensajeFinal);
+            mostrarAlertaExito(`El consumo de '${nombre}' se dio de ${estaActivo ? "baja" : "alta"} correctamente.`);
+        } catch (error: any) {
+            mostrarAlertaError(
+                error.response?.data?.detail || `No se pudo ${accion} el consumo de '${nombre}'.`
+            );
             console.log(error);
-        } finally{
-            onHide();
+            return; // el modal se cierra igual y no se recarga nada
         }
+
+        await onDeleted();
     };
 
-    const estaActivo = consumoProducto?.estado ?? true;
-
     return (
-        <Modal show={consumoProducto !== null} onHide={onHide}>
-            <Modal.Header closeButton>
-                <Modal.Title>{estaActivo ? 'Dar de baja' : 'Dar de alta'} consumo</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-                ¿Estás seguro que querés {estaActivo ? 'dar de baja' : 'dar de alta'} el consumo <strong>{consumoProducto?.insumo.nombre}</strong>?
-            </Modal.Body>
-            <Modal.Footer>
-                <Button variant="secondary" onClick={onHide}>Cancelar</Button>
-                <Button variant={estaActivo ? "danger" : "success"} onClick={handleCambiarEstado}>
-                    {estaActivo ? 'Dar de baja' : 'Dar de alta'}
-                </Button>
-            </Modal.Footer>
-        </Modal>
+        <ConfirmarModal
+            show={consumoProducto !== null}
+            title={`${estaActivo ? "Dar de baja" : "Dar de alta"} consumo`}
+            confirmLabel={estaActivo ? "Dar de baja" : "Dar de alta"}
+            loadingLabel={estaActivo ? "Dando de baja..." : "Dando de alta..."}
+            variant={estaActivo ? "danger" : "success"}
+            onHide={onHide}
+            onConfirm={handleCambiarEstado}
+        >
+            ¿Estás seguro que querés {accion} el consumo <strong>{consumoProducto?.insumo.nombre}</strong>?
+        </ConfirmarModal>
     );
 }

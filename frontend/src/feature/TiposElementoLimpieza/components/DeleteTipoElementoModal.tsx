@@ -1,26 +1,30 @@
-import { Button, Modal } from "react-bootstrap";
+import { ConfirmarModal } from "../../../components/ConfirmarModal";
 import { api } from "../../../libs/axios";
-import type { TipoElementoLimpieza } from "../types";
 import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
 import { getErrorMessage } from "../../../libs/errors";
+import type { TipoElementoLimpieza } from "../types";
 
 interface EstadoTipoElementoModalProps {
     tipoElementoLimpieza: TipoElementoLimpieza | null;
     onHide: () => void;
-    onDeleted: () => void;
+    onDeleted: () => void | Promise<unknown>;
 }
 
 export function EstadoTipoElementoModal({ tipoElementoLimpieza, onHide, onDeleted }: EstadoTipoElementoModalProps) {
+    const estaActivo = tipoElementoLimpieza?.estado ?? true;
+    const accion = estaActivo ? "dar de baja" : "dar de alta";
+
     const cambiarEstado = async () => {
         if (!tipoElementoLimpieza) return;
 
-        const accion = tipoElementoLimpieza.estado ? "dar de baja" : "dar de alta";
-
         try {
-            await api.patch<TipoElementoLimpieza>(`/elementos-limpieza/tipos/${tipoElementoLimpieza.id}/estado`);
-            mostrarAlertaExito(`El tipo de elemento '${tipoElementoLimpieza.nombre}' se ${tipoElementoLimpieza.estado ? "dio de baja" : "dio de alta"} correctamente.`);
-            onDeleted();
-        } catch (error: any){
+            await api.patch<TipoElementoLimpieza>(
+                `/elementos-limpieza/tipos/${tipoElementoLimpieza.id}/estado`
+            );
+            mostrarAlertaExito(
+                `El tipo de elemento '${tipoElementoLimpieza.nombre}' se ${estaActivo ? "dio de baja" : "dio de alta"} correctamente.`
+            );
+        } catch (error: any) {
             mostrarAlertaError(
                 getErrorMessage(
                     error,
@@ -28,31 +32,23 @@ export function EstadoTipoElementoModal({ tipoElementoLimpieza, onHide, onDelete
                 )
             );
             console.log(error);
-        } finally{
-            onHide();
+            return; // el modal se cierra igual y no se recarga nada
         }
+
+        await onDeleted();
     };
 
-    if (!tipoElementoLimpieza) return null;
-
-    const estaActivo = tipoElementoLimpieza.estado;
-
     return (
-        <Modal show={true} onHide={onHide}>
-            <Modal.Header closeButton>
-                <Modal.Title>
-                    {estaActivo ? "Dar de baja tipo de elemento" : "Dar de alta tipo de elemento"}
-                </Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-                ¿Estás seguro que querés {estaActivo ? "dar de baja" : "dar de alta"} el tipo de elemento <strong>{tipoElementoLimpieza.nombre}</strong>?
-            </Modal.Body>
-            <Modal.Footer>
-                <Button variant="secondary" onClick={onHide}>Cancelar</Button>
-                <Button variant={estaActivo ? "danger" : "success"} onClick={cambiarEstado}>
-                    {estaActivo ? "Dar de baja" : "Dar de alta"}
-                </Button>
-            </Modal.Footer>
-        </Modal>
+        <ConfirmarModal
+            show={tipoElementoLimpieza !== null}
+            title={`${estaActivo ? "Dar de baja" : "Dar de alta"} tipo de elemento`}
+            confirmLabel={estaActivo ? "Dar de baja" : "Dar de alta"}
+            loadingLabel={estaActivo ? "Dando de baja..." : "Dando de alta..."}
+            variant={estaActivo ? "danger" : "success"}
+            onHide={onHide}
+            onConfirm={cambiarEstado}
+        >
+            ¿Estás seguro que querés {accion} el tipo de elemento <strong>{tipoElementoLimpieza?.nombre}</strong>?
+        </ConfirmarModal>
     );
 }

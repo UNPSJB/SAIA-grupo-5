@@ -1,4 +1,4 @@
-import { Button, Modal } from "react-bootstrap";
+import { ConfirmarModal } from "../../../components/ConfirmarModal";
 import { api } from "../../../libs/axios";
 import { getErrorMessage } from "../../../libs/errors";
 import type { Tarea } from "../types";
@@ -6,33 +6,29 @@ import type { Tarea } from "../types";
 interface DeleteTareaModalProps {
     tarea: Tarea | null;
     onHide: () => void;
-    onDeleted: () => void;
+    onDeleted: () => void | Promise<unknown>;
 }
 
 export function DeleteTareaModal({ tarea, onHide, onDeleted }: DeleteTareaModalProps) {
-    const handleDelete = async () => {
-        if (!tarea) return;
-        try {
-            await api.delete(`/tareas/${tarea.id}`);
-            onDeleted();
-            onHide();
-        } catch (error) {
-            alert(getErrorMessage(error, "No se pudo eliminar la tarea."));
-        }
-    };
-
     return (
-        <Modal show={tarea !== null} onHide={onHide}>
-            <Modal.Header closeButton>
-                <Modal.Title>Eliminar tarea</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-                ¿Estás seguro que querés eliminar la tarea <strong>{tarea?.nombre}</strong>?
-            </Modal.Body>
-            <Modal.Footer>
-                <Button variant="secondary" onClick={onHide}>Cancelar</Button>
-                <Button variant="danger" onClick={handleDelete}>Eliminar</Button>
-            </Modal.Footer>
-        </Modal>
+        <ConfirmarModal
+            show={tarea !== null}
+            title="Eliminar tarea"
+            confirmLabel="Eliminar"
+            loadingLabel="Eliminando..."
+            variant="danger"
+            onHide={onHide}
+            onConfirm={async () => {
+                if (!tarea) return;
+                try {
+                    await api.delete(`/tareas/${tarea.id}`);
+                } catch (error) {
+                    throw new Error(getErrorMessage(error, "No se pudo eliminar la tarea."));
+                }
+                await onDeleted();
+            }}
+        >
+            ¿Estás seguro que querés eliminar la tarea <strong>{tarea?.nombre}</strong>?
+        </ConfirmarModal>
     );
 }

@@ -1,53 +1,52 @@
-import { Button, Modal } from "react-bootstrap";
+import { ConfirmarModal } from "../../../components/ConfirmarModal";
 import { api } from "../../../libs/axios";
-import type { TipoVencimiento } from "../types";
 import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
+import { getErrorMessage } from "../../../libs/errors";
+import type { TipoVencimiento } from "../types";
 
 interface DeleteTipoVencimientoModalProps {
     tipoVencimiento: TipoVencimiento | null;
     onHide: () => void;
-    onDeleted: () => void;
+    onDeleted: () => void | Promise<unknown>;
 }
 
 export function DeleteTipoVencimientoModal({ tipoVencimiento, onHide, onDeleted }: DeleteTipoVencimientoModalProps) {
+    const estaActivo = tipoVencimiento?.activo ?? true;
+    const accion = estaActivo ? "dar de baja" : "dar de alta";
+
     const handleCambiarEstado = async () => {
         if (!tipoVencimiento) return;
 
-        const estabaActivo = tipoVencimiento.activo;
-
         try {
             await api.patch<TipoVencimiento>(`/tipos-vencimientos/${tipoVencimiento.id}/estado`);
-            mostrarAlertaExito(`El tipo vencimiento '${tipoVencimiento.nombre}' se dio de ${estabaActivo ? 'baja' : 'alta'} correctamente.`);
-            onDeleted();
-        } catch (error: any){
-            let mensajeFinal = `No se pudo ${estabaActivo ? 'dar de baja' : 'dar de alta'} el tipo vencimiento '${tipoVencimiento.nombre}'.`
-            if (error.response?.data?.detail){      
-                const detail = error.response.data.detail;
-                mensajeFinal = Array.isArray(detail) ? detail[0].msg : detail;
-            }
-            mostrarAlertaError(mensajeFinal);
+            mostrarAlertaExito(
+                `El tipo vencimiento '${tipoVencimiento.nombre}' se dio de ${estaActivo ? "baja" : "alta"} correctamente.`
+            );
+        } catch (error: any) {
+            mostrarAlertaError(
+                getErrorMessage(
+                    error,
+                    `No se pudo ${accion} el tipo vencimiento '${tipoVencimiento.nombre}'.`
+                )
+            );
             console.log(error);
-        } finally {
-            onHide();
+            return; // el modal se cierra igual y no se recarga nada
         }
+
+        await onDeleted();
     };
 
-    const estaActivo = tipoVencimiento?.activo ?? true;
-
     return (
-        <Modal show={tipoVencimiento !== null} onHide={onHide}>
-            <Modal.Header closeButton>
-                <Modal.Title>{estaActivo ? 'Dar de baja' : 'Dar de alta'} tipo vencimiento</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-                ¿Estás seguro que querés {estaActivo ? 'dar de baja' : 'dar de alta'} el tipo vencimiento <strong>{tipoVencimiento?.nombre}</strong>?
-            </Modal.Body>
-            <Modal.Footer>
-                <Button variant="secondary" onClick={onHide}>Cancelar</Button>
-                <Button variant={estaActivo ? "danger" : "success"} onClick={handleCambiarEstado}>
-                    {estaActivo ? 'Dar de baja' : 'Dar de alta'}
-                </Button>
-            </Modal.Footer>
-        </Modal>
+        <ConfirmarModal
+            show={tipoVencimiento !== null}
+            title={`${estaActivo ? "Dar de baja" : "Dar de alta"} tipo vencimiento`}
+            confirmLabel={estaActivo ? "Dar de baja" : "Dar de alta"}
+            loadingLabel={estaActivo ? "Dando de baja..." : "Dando de alta..."}
+            variant={estaActivo ? "danger" : "success"}
+            onHide={onHide}
+            onConfirm={handleCambiarEstado}
+        >
+            ¿Estás seguro que querés {accion} el tipo vencimiento <strong>{tipoVencimiento?.nombre}</strong>?
+        </ConfirmarModal>
     );
 }

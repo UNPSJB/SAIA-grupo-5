@@ -1,53 +1,52 @@
-import { Button, Modal } from "react-bootstrap";
+import { ConfirmarModal } from "../../../components/ConfirmarModal";
 import { api } from "../../../libs/axios";
-import type { InsumoQuimico } from "../types";
 import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
+import { getErrorMessage } from "../../../libs/errors";
+import type { InsumoQuimico } from "../types";
 
 interface DeleteInsumoQuimicoModalProps {
     insumoQuimico: InsumoQuimico | null;
     onHide: () => void;
-    onDeleted: () => void;
+    onDeleted: () => void | Promise<unknown>;
 }
 
 export function DeleteInsumoQuimicoModal({ insumoQuimico, onHide, onDeleted }: DeleteInsumoQuimicoModalProps) {
+    const estaActivo = insumoQuimico?.activo ?? true;
+    const accion = estaActivo ? "dar de baja" : "dar de alta";
+
     const handleCambiarEstado = async () => {
         if (!insumoQuimico) return;
 
-        const estabaActivo = insumoQuimico.activo;
-
         try {
             await api.patch<InsumoQuimico>(`/insumos-quimicos/${insumoQuimico.id}/estado`);
-            mostrarAlertaExito(`El insumo químico '${insumoQuimico.nombre}' se dio de ${estabaActivo ? 'baja' : 'alta'} correctamente.`);
-            onDeleted();
-        } catch (error: any){
-            let mensajeFinal = `No se pudo ${estabaActivo ? 'dar de baja' : 'dar de alta'} el insumo químico '${insumoQuimico.nombre}'.`;
-            if (error.response?.data?.detail){
-                const detail = error.response.data.detail;
-                mensajeFinal = Array.isArray(detail) ? detail[0].msg : detail;
-            }
-            mostrarAlertaError(mensajeFinal);
+            mostrarAlertaExito(
+                `El insumo químico '${insumoQuimico.nombre}' se dio de ${estaActivo ? "baja" : "alta"} correctamente.`
+            );
+        } catch (error: any) {
+            mostrarAlertaError(
+                getErrorMessage(
+                    error,
+                    `No se pudo ${accion} el insumo químico '${insumoQuimico.nombre}'.`
+                )
+            );
             console.log(error);
-        } finally{
-            onHide();
+            return; // el modal se cierra igual y no se recarga nada
         }
+
+        await onDeleted();
     };
 
-    const estaActivo = insumoQuimico?.activo ?? true;
-
     return (
-        <Modal show={insumoQuimico !== null} onHide={onHide}>
-            <Modal.Header closeButton>
-                <Modal.Title>{estaActivo ? 'Dar de baja' : 'Dar de alta'} insumo químico</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-                ¿Estás seguro que querés {estaActivo ? 'dar de baja' : 'dar de alta'} el insumo químico <strong>{insumoQuimico?.nombre}</strong>?
-            </Modal.Body>
-            <Modal.Footer>
-                <Button variant="secondary" onClick={onHide}>Cancelar</Button>
-                <Button variant={estaActivo ? "danger" : "success"} onClick={handleCambiarEstado}>
-                    {estaActivo ? 'Dar de baja' : 'Dar de alta'}
-                </Button>
-            </Modal.Footer>
-        </Modal>
+        <ConfirmarModal
+            show={insumoQuimico !== null}
+            title={`${estaActivo ? "Dar de baja" : "Dar de alta"} insumo químico`}
+            confirmLabel={estaActivo ? "Dar de baja" : "Dar de alta"}
+            loadingLabel={estaActivo ? "Dando de baja..." : "Dando de alta..."}
+            variant={estaActivo ? "danger" : "success"}
+            onHide={onHide}
+            onConfirm={handleCambiarEstado}
+        >
+            ¿Estás seguro que querés {accion} el insumo químico <strong>{insumoQuimico?.nombre}</strong>?
+        </ConfirmarModal>
     );
 }
