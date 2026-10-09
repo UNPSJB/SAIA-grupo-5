@@ -1,13 +1,14 @@
-import { Container, Alert, Col, Row } from "react-bootstrap";
+import { Container } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { mutate } from "swr";
 import { PageHeader } from "../../../components/PageHeader";
-import { IncidenteForm } from "../components/IncidenteForm"; 
+import { IncidenteForm } from "../components/IncidenteForm";
 import { api } from "../../../libs/axios";
 import { useApi } from "../../../hooks/useApi";
-import type { Incidente, NewIncidente } from "../types";
+import type { EditarIncidente, Incidente } from "../types";
 import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
 import { PageLoading } from "../../../components/PageLoading";
+import { PageError } from "../../../components/PageError";
 
 
 export function EditarIncidentePage(){
@@ -37,25 +38,11 @@ export function EditarIncidentePage(){
     if (isLoading) return <PageLoading title="Editar Incidente" />;
 
     if (!incidente) return (
-        <Container>
-            <PageHeader title="Incidente no encontrado" />
-            <Row className="justify-content-center">
-                <Col md={6}>
-                    <Alert variant="danger">El Incidente ingresado no existe.</Alert>
-                </Col>
-            </Row>
-        </Container>
+        <PageError title="Incidente no encontrado" message="El Incidente ingresado no existe." />
     )
 
     if (error) return (
-        <Container>
-            <PageHeader title="Editar Incidente" />
-            <Row className="justify-content-center">
-                <Col md={6}>
-                    <Alert variant="danger">Ocurrió un error al cargar el Incidente.</Alert>
-                </Col>
-            </Row>
-        </Container>
+        <PageError title="Editar Incidente" message="Ocurrió un error al cargar el Incidente." />
     )
 
     return(
@@ -65,6 +52,7 @@ export function EditarIncidentePage(){
             <Container>
                 <IncidenteForm textoBoton="Editar Incidente"
                     onSubmit={actualizarIncidente}
+                    soloLectura
                     valoresIniciales={{
                         nombre: incidente.nombre,
                         descripcion: incidente.descripcion,

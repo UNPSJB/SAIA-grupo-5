@@ -3,6 +3,8 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { useApi } from '../../../hooks/useApi';
 import React, { useState } from 'react';
+import type { TipoIncidente } from '../../TiposIncidentes/types';
+import type { Sector } from '../../Sectores/types';
 
 interface IncidenteFormProps {
     textoBoton: string;
@@ -18,9 +20,9 @@ export function IncidenteForm({ textoBoton, onSubmit, valoresIniciales, soloLect
     const navigate = useNavigate();
     const [fotoBase64, setFotoBase64] = useState<string | null>(null);
     const [fotoError, setFotoError] = useState<string | null>(null);
-    const { data: tipos } = useApi('/tipos-incidentes/');
+    const { data: tipos } = useApi<TipoIncidente[]>('/tipos-incidentes/');
     const [tipoIncidenteId, setTipoIncidenteId] = useState(valoresIniciales?.tipo_id?.toString() || "");
-    const { data: sectores } = useApi('/sectores/');
+    const { data: sectores } = useApi<Sector[]>('/sectores/');
     const [sectorId, setSectorId] = useState(valoresIniciales?.sector_id?.toString() || "");
 
 
@@ -93,6 +95,7 @@ export function IncidenteForm({ textoBoton, onSubmit, valoresIniciales, soloLect
                     value={tipoIncidenteId}
                     onChange={(e) => setTipoIncidenteId(e.target.value)}
                     isInvalid={!!errors.tipo_id}
+                    disabled={soloLectura}
                 >
                     <option value="">Seleccione un tipo</option>
 
@@ -149,6 +152,7 @@ export function IncidenteForm({ textoBoton, onSubmit, valoresIniciales, soloLect
                 <Form.Select
                     value={sectorId}
                     onChange={(e) => setSectorId(e.target.value)}
+                    disabled={soloLectura}
                 >
                     <option value="">Seleccione un sector</option>
 

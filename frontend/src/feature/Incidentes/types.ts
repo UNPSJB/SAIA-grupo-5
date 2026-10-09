@@ -1,4 +1,4 @@
-import type { Sector } from "../Sector/types"
+import type { Sector } from "../Sectores/types"
 import type { TipoIncidente } from "../TiposIncidentes/types"
 
 export type EstadoIncidente = 'Abierto' | 'Cerrado'; 
@@ -35,7 +35,7 @@ export type NewIncidente = {
     sector_id?: number | null
 }
 
-type EditarIncidente = {
+export type EditarIncidente = {
     nombre: string;
     descripcion: string;
     foto_opcional: string | null;
