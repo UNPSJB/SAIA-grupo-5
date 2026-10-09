@@ -176,12 +176,22 @@ export function VerVersionDocumentoPage() {
                         </Card.Body>
 
                         <Card.Footer className="bg-light border-top p-3 d-flex justify-content-end gap-2">
+                            {isAdmin && (
                             <Button 
                                 variant="outline-secondary" 
                                 onClick={() => navigate(`/versiones-documentos/documento/${version.documento_id}`)}
                             >
                                 <i className="bi bi-arrow-left me-1"></i>Volver a la lista
                             </Button>
+                            )}
+                            {!isAdmin && (
+                            <Button 
+                                variant="outline-secondary" 
+                                onClick={() => navigate(`/documentos/`)}
+                            >
+                                <i className="bi bi-arrow-left me-1"></i>Volver a la lista
+                            </Button>
+                            )}
                             {isAdmin && !version.fecha_hasta_vigencia &&(
                                 <Button 
                                     variant="primary" 
