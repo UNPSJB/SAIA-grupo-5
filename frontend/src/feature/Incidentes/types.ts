@@ -1,13 +1,7 @@
 import type { Sector } from "../Sectores/types"
+import type { TipoIncidente } from "../TiposIncidentes/types"
 
-export type EstadoIncidente = "Abierto" | "Cerrado"
-
-export type TipoIncidente = {
-    id: number
-    nombre: string
-    descripcion: string | null
-    activo: boolean
-}
+export type EstadoIncidente = 'Abierto' | 'Cerrado'; 
 
 export type PersonaBasica = {
     nombre: string
@@ -23,13 +17,29 @@ export type Incidente = {
     fecha_cierre: string | null
     estado: EstadoIncidente
     activo: boolean
-    operario_id: number
-    operario: PersonaBasica
+
     tipo_id: number
-    tipo: TipoIncidente
+    operario_id: number
     sector_id: number | null
+
+    tipo: TipoIncidente
     sector: Sector | null
+    operario: PersonaBasica
 }
+
+export type NewIncidente = {
+    nombre: string
+    descripcion: string
+    foto_opcional?: string | null
+    tipo_id: number
+    sector_id?: number | null
+}
+
+export type EditarIncidente = {
+    nombre: string;
+    descripcion: string;
+    foto_opcional: string | null;
+};
 
 export type NewAccionCorrectiva = {
     incidente_id: number

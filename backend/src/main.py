@@ -110,7 +110,6 @@ app.include_router(vencimiento_personal_router)
 app.include_router(configuracion_sistema_router)
 app.include_router(notificaciones_router)
 
-
 app.include_router(documentos_router)
 app.include_router(tipo_documento_router)
 app.include_router(version_documento_router)
