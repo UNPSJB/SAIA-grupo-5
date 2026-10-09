@@ -56,17 +56,6 @@ export function ListPage() {
     )
   }, [])
 
-  const cambiarEstado = async (persona: Persona) => {
-    try {
-      await api.patch<Persona>(`/personal/${persona.id}/estado`)
-      await mutate('/personal/')
-    } catch (err: any) {
-      const detail = err.response?.data?.detail || `No se pudo ${persona.activo ? 'dar de baja' : 'dar de alta'} la persona.`
-      alert(detail)
-      console.log(err)
-    }
-  }
-
   if (isLoading) {
     return <PageLoading title="Listado de Personal" />
   }
@@ -170,6 +159,13 @@ export function ListPage() {
         cell: (row) => (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <ActionButton
+              variant="outline-info"
+              size="sm"
+              tooltip="Ver"
+              icon="bi bi-eye"
+              onClick={() => navigate(`/personal/${row.id}`)}
+            />
+            <ActionButton
               variant="outline-warning"
               size="sm"
               tooltip="Ver vencimientos"
@@ -198,7 +194,7 @@ export function ListPage() {
                 size="sm"
                 tooltip="Dar de alta"
                 icon="bi-check-circle"
-                onClick={() => cambiarEstado(row)}
+                onClick={() => setPersonaToDelete(row)}
               />
             )}
           </div>

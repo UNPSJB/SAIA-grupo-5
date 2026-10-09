@@ -18,6 +18,7 @@ import { NuevoSectorPage } from './feature/Sectores/pages/NuevoSectorPage.tsx';
 import { ListPage as PersonalListPage } from './feature/Personal/pages/ListPage.tsx'
 import { EditarPersonaPage } from './feature/Personal/pages/EditarPersonaPage.tsx'
 import { NuevaPersonaPage } from './feature/Personal/pages/NuevaPersonaPage.tsx'
+import { VerPersonalPage } from './feature/Personal/pages/VerPersonalPage.tsx'
 
 import { ElementosLimpiezaPage } from './feature/ElementosLimpieza/pages/ListPage.tsx';
 import { NuevoElementoPage } from "./feature/ElementosLimpieza/pages/NuevoElementoPage";
@@ -193,6 +194,7 @@ const router = createBrowserRouter([
               { path: ':id/edit', element: <EditarPersonaPage /> },
               { path: ':personaId/vencimientos', element: <VencimientoPersonalListPage /> },
               { path: ':personaId/vencimientos/new', element: <NuevoVencimientoPersonalPage /> },
+              { path: ':id', element: <VerPersonalPage />},
             ],
           },
           {
