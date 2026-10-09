@@ -217,7 +217,15 @@ export function ListPage() {
           {subHeaderComponentMemo}
         </Col>
         {currentUser?.administrar && (
-          <Col xs="auto" className="d-flex justify-content-end">
+          <Col xs="auto" className="d-flex justify-content-end gap-2">
+            <Button
+              variant="warning"
+              size="sm"
+              onClick={() => navigate('/vencimiento-personal')}
+              style={{ whiteSpace: 'nowrap' }}
+            >
+              <i className="bi-calendar-check me-1"></i>Ver Vencimientos
+            </Button>
             <Button
               variant="primary"
               size="sm"
