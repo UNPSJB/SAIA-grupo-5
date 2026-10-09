@@ -14,87 +14,79 @@ import {
     YAxis,
 } from "recharts";
 import { useApi } from "../../hooks/useApi";
-import { useAuth } from "../../hooks/useAuth";
 import type { ElementoLimpieza } from "../ElementosLimpieza/types";
-import type { InsumoQuimico } from "../InsumosQuimicos/types";
-import type { Sector } from "../Sectores/types";
 import type { TareaOcurrencia } from "../TareasOcurrencias/types";
+import { calcularEstadoVencimientos, type VencimientoPersonal } from "../VencimientoPersonal/types";
+import type { ConfiguracionSistema } from "../ConfiguracionSistema/types";
+import type { PlanCalibracion } from "../PlanesCalibracion/types";
 import { getEstadoHistorial } from "../Historial/types";
+import { clasificarPorDiasRestantes } from "../VencimientosConsolidados/utils/estado";
+import { toDateKey, dateFromKey } from "../../libs/date";
+import { MetricCard } from "./components/MetricCard";
+import { SEAFOAM } from "./constants";
 import "./HomePage.css";
-
-const SEAFOAM = {
-    primary: "#06794f",
-    secondary: "#0fa28b",
-    success: "#3ac97c",
-    danger: "#d73f30",
-    warning: "#ebb20c",
-    info: "#9d46cd",
-};
-
-function toDateKey(date: Date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-}
-
-function dateFromKey(key: string) {
-    return new Date(`${key}T00:00:00`);
-}
-
-function MetricCard({
-    label,
-    value,
-    icon,
-    tone,
-    detail,
-}: {
-    label: string;
-    value: number | string;
-    icon: string;
-    tone: string;
-    detail?: string;
-}) {
-    return (
-        <Card className="dashboard-metric h-100">
-            <Card.Body>
-                <div className="d-flex align-items-start justify-content-between gap-2">
-                    <div>
-                        <div className="dashboard-metric-label">{label}</div>
-                        <div className="dashboard-metric-value">{value}</div>
-                    </div>
-                    <span className="dashboard-metric-icon" style={{ color: tone, backgroundColor: `${tone}18` }}>
-                        <i className={`bi ${icon}`} aria-hidden="true" />
-                    </span>
-                </div>
-                {detail && <div className="dashboard-metric-detail">{detail}</div>}
-            </Card.Body>
-        </Card>
-    );
-}
+import { useAuth } from "../../hooks";
 
 export function HomePage() {
     const { currentUser } = useAuth();
+
     const today = useMemo(() => new Date(), []);
     const fromDate = useMemo(() => {
         const date = new Date();
         date.setDate(date.getDate() - 29);
         return date;
     }, []);
-    const historyUrl = `/tareas-ocurrencia/historial?fecha_desde=${toDateKey(fromDate)}&fecha_hasta=${toDateKey(today)}`;
 
+    const historyUrl = `/tareas-ocurrencia/historial?fecha_desde=${toDateKey(fromDate)}&fecha_hasta=${toDateKey(today)}`;
     const { data: history, error: historyError, isLoading: historyLoading } = useApi<TareaOcurrencia[]>(historyUrl);
+    const occurrences = useMemo(() => history ?? [], [history]);
+
     const { data: elements, error: elementsError, isLoading: elementsLoading } = useApi<ElementoLimpieza[]>("/elementos-limpieza/");
-    const { data: chemicals, error: chemicalsError, isLoading: chemicalsLoading } = useApi<InsumoQuimico[]>("/insumos-quimicos/");
-    const { data: sectors, error: sectorsError, isLoading: sectorsLoading } = useApi<Sector[]>(
-        currentUser?.administrar ? "/sectores/" : null,
+
+    const { data: vencimientosPersonal, error: vencimientosPersonalError, isLoading: vencimientosPersonalLoading } = useApi<VencimientoPersonal[]>(
+        currentUser?.administrar ? "/vencimiento-personal/" : null,
     );
 
-    const occurrences = useMemo(() => history ?? [], [history]);
+    const { data: configuracion } = useApi<ConfiguracionSistema>(
+        currentUser?.administrar ? "/configuracion-sistema/" : null,
+    );
+    const diasAntelacionVencimiento = configuracion?.dias_antelacion_vencimiento ?? 15;
+    const diasAntelacionElementos = configuracion?.dias_antelacion_elementos ?? 15;
+
     const activeElements = (elements ?? []).filter((element) => element.estado);
-    const overdueElements = activeElements.filter((element) => element.dias_restantes !== null && element.dias_restantes < 0);
-    const dueSoonElements = activeElements.filter((element) => element.dias_restantes !== null && element.dias_restantes >= 0 && element.dias_restantes <= 7);
-    const activeChemicals = (chemicals ?? []).filter((chemical) => chemical.activo);
+    const overdueElements = activeElements.filter((element) =>
+        element.dias_restantes !== null
+        && element.dias_restantes < 0);
+    const dueSoonElements = activeElements.filter((element) =>
+        element.dias_restantes !== null
+        && element.dias_restantes >= 0
+        && element.dias_restantes <= diasAntelacionElementos);
+
+    const { data: planesCalibracion, error: planesCalibracionError, isLoading: planesCalibracionLoading } = useApi<PlanCalibracion[]>(
+        currentUser?.administrar ? "/planes-calibracion/" : null,
+    );
+    const planesCalibracionActivos = (planesCalibracion ?? []).filter((plan) => plan.estado);
+    const planesCalibracionVencidosOProximos = planesCalibracionActivos.filter((plan) => {
+        const estado = clasificarPorDiasRestantes(plan.dias_restantes, diasAntelacionVencimiento);
+        return estado === "vencido" || estado === "proximo";
+    });
+    const estadosPorPersona = useMemo(() => {
+        const porPersona = new Map<number, VencimientoPersonal[]>();
+        (vencimientosPersonal ?? []).forEach((vencimiento) => {
+            const lista = porPersona.get(vencimiento.persona_id) ?? [];
+            lista.push(vencimiento);
+            porPersona.set(vencimiento.persona_id, lista);
+        });
+        return Array.from(porPersona.values()).map((lista) => calcularEstadoVencimientos(lista, diasAntelacionVencimiento));
+    }, [vencimientosPersonal, diasAntelacionVencimiento]);
+    const vencimientosPersonalVencidos = estadosPorPersona.filter((estado) => estado === "vencido");
+    const vencimientosPersonalProximos = estadosPorPersona.filter((estado) => estado === "proximo");
+    const vencimientosConsolidadosTotal = overdueElements.length + dueSoonElements.length
+        + vencimientosPersonalVencidos.length + vencimientosPersonalProximos.length
+        + planesCalibracionVencidosOProximos.length;
+
+    const vencimientosConsolidadosLoading = elementsLoading || vencimientosPersonalLoading || planesCalibracionLoading;
+    const vencimientosConsolidadosError = Boolean(elementsError) || Boolean(vencimientosPersonalError) || Boolean(planesCalibracionError);
 
     const { completed, overdueTasks, pendingTasks, compliance, activityByDay } = useMemo(() => {
         const completedTasks = occurrences.filter((occurrence) => occurrence.estado === "Completada").length;
@@ -136,14 +128,14 @@ export function HomePage() {
         const onTrack = activeElements.length - overdueElements.length - dueSoonElements.length - withoutSchedule;
         return [
             { name: "Al día", value: onTrack, color: SEAFOAM.primary },
-            { name: "Por vencer · 7 días", value: dueSoonElements.length, color: SEAFOAM.warning },
+            { name: `Por vencer · ${diasAntelacionElementos} días`, value: dueSoonElements.length, color: SEAFOAM.warning },
             { name: "Vencidos", value: overdueElements.length, color: SEAFOAM.danger },
             { name: "Sin frecuencia", value: withoutSchedule, color: "#a7b1ba" },
         ].filter((item) => item.value > 0);
-    }, [activeElements, dueSoonElements.length, overdueElements.length]);
+    }, [activeElements, dueSoonElements.length, overdueElements.length, diasAntelacionElementos]);
 
     const historyHasError = Boolean(historyError);
-    const inventoryHasError = Boolean(elementsError || chemicalsError);
+    const inventoryHasError = Boolean(elementsError);
     const formatMetric = (loading: boolean, error: boolean, value: number | string) =>
         loading ? "…" : error ? "—" : value;
 
@@ -158,7 +150,7 @@ export function HomePage() {
                 <span className="dashboard-period"><i className="bi bi-calendar3 me-2" />Últimos 30 días</span>
             </div>
 
-            {(historyHasError || inventoryHasError || (currentUser?.administrar && sectorsError)) && (
+            {(historyHasError || inventoryHasError) && (
                 <Alert variant="warning" className="dashboard-alert">
                     No se pudieron cargar algunos indicadores. Los datos disponibles siguen visibles.
                 </Alert>
@@ -166,7 +158,10 @@ export function HomePage() {
 
             <section aria-label="Indicadores de checklists" className="mb-4">
                 <div className="dashboard-section-heading">
-                    <div><h2>Checklists</h2><span>Seguimiento de tareas programadas</span></div>
+                    <div>
+                        <h2>Checklists</h2>
+                        <span>Seguimiento de tareas programadas</span>
+                    </div>
                     {historyLoading && <Spinner animation="border" size="sm" variant="success" aria-label="Cargando historial" />}
                 </div>
                 <Row className="g-3">
@@ -179,15 +174,63 @@ export function HomePage() {
 
             <section aria-label="Indicadores de inventario" className="mb-4">
                 <div className="dashboard-section-heading">
-                    <div><h2>Inventario y recambios</h2><span>Elementos activos y fechas de recambio</span></div>
-                    {(elementsLoading || chemicalsLoading) && <Spinner animation="border" size="sm" variant="success" aria-label="Cargando inventario" />}
+                    <div>
+                        <h2>Inventario, recambios y vencimientos</h2>
+                        <span>Elementos activos, fechas de recambio y vencimientos de personal</span>
+                    </div>
+                    {(elementsLoading || vencimientosPersonalLoading || planesCalibracionLoading) && <Spinner animation="border" size="sm" variant="success" aria-label="Cargando inventario" />}
                 </div>
                 <Row className="g-3">
-                    <Col xs={6} md={4} xl={3}><MetricCard label="Elementos de limpieza" value={formatMetric(elementsLoading, Boolean(elementsError), activeElements.length)} icon="bi-bucket" tone={SEAFOAM.primary} detail="Activos" /></Col>
-                    <Col xs={6} md={4} xl={3}><MetricCard label="Sectores" value={currentUser?.administrar ? formatMetric(sectorsLoading, Boolean(sectorsError), (sectors ?? []).filter((sector) => sector.activo).length) : "—"} icon="bi-geo-alt" tone={SEAFOAM.info} detail={currentUser?.administrar ? "Activos" : "Solo administración"} /></Col>
-                    <Col xs={6} md={4} xl={3}><MetricCard label="Químicos" value={formatMetric(chemicalsLoading, Boolean(chemicalsError), activeChemicals.length)} icon="bi-droplet-half" tone={SEAFOAM.secondary} detail="Activos" /></Col>
-                    <Col xs={6} md={4} xl={3}><MetricCard label="Elementos vencidos" value={formatMetric(elementsLoading, Boolean(elementsError), overdueElements.length)} icon="bi-calendar-x" tone={SEAFOAM.danger} detail="Requieren recambio" /></Col>
-                    <Col xs={6} md={4} xl={3}><MetricCard label="Por vencer" value={formatMetric(elementsLoading, Boolean(elementsError), dueSoonElements.length)} icon="bi-calendar2-week" tone={SEAFOAM.warning} detail="Dentro de los próximos 7 días" /></Col>
+                    <Col xs={6} md={4} xl={3}>
+                        <MetricCard
+                            label="Elementos vencidos"
+                            value={formatMetric(elementsLoading, Boolean(elementsError), overdueElements.length)}
+                            icon="bi-calendar-x" tone={SEAFOAM.danger}
+                            detail="Requieren recambio"
+                            to="/vencimientos?default=elementos"
+                        />
+                    </Col>
+                    <Col xs={6} md={4} xl={3}>
+                        <MetricCard
+                            label="Elementos Por vencer"
+                            value={formatMetric(elementsLoading, Boolean(elementsError), dueSoonElements.length)}
+                            icon="bi-calendar2-week"
+                            tone={SEAFOAM.warning}
+                            detail={`Dentro de los próximos ${diasAntelacionElementos} días`}
+                            to="/vencimientos?default=elementos"
+                        />
+                    </Col>
+                    <Col xs={6} md={4} xl={3}>
+                        <MetricCard
+                            label="Personal vencidos"
+                            value={currentUser?.administrar ? formatMetric(vencimientosPersonalLoading,
+                                Boolean(vencimientosPersonalError), vencimientosPersonalVencidos.length) : "—"}
+                            icon="bi-person-x"
+                            tone={SEAFOAM.danger}
+                            detail={currentUser?.administrar ? "Vencimientos de personal" : "Solo administración"}
+                            to={currentUser?.administrar ? "/vencimientos?default=personal" : undefined}
+                        />
+                    </Col>
+                    <Col xs={6} md={4} xl={3}>
+                        <MetricCard
+                            label="Personal por vencer"
+                            value={currentUser?.administrar ? formatMetric(vencimientosPersonalLoading, Boolean(vencimientosPersonalError), vencimientosPersonalProximos.length) : "—"}
+                            icon="bi-person-exclamation"
+                            tone={SEAFOAM.warning}
+                            detail={currentUser?.administrar ? "Dentro de la antelación configurada" : "Solo administración"}
+                            to={currentUser?.administrar ? "/vencimientos?default=personal" : undefined}
+                        />
+                    </Col>
+                    <Col xs={6} md={4} xl={3}>
+                        <MetricCard
+                            label="Vencimientos consolidados"
+                            value={currentUser?.administrar ? formatMetric(vencimientosConsolidadosLoading, vencimientosConsolidadosError, vencimientosConsolidadosTotal) : "—"}
+                            icon="bi-calendar-x"
+                            tone={SEAFOAM.info}
+                            detail={currentUser?.administrar ? "Personal, elementos y equipos" : "Solo administración"}
+                            to={currentUser?.administrar ? "/vencimientos" : undefined}
+                        />
+                    </Col>
                 </Row>
             </section>
 
@@ -196,7 +239,10 @@ export function HomePage() {
                     <Card className="dashboard-chart-card h-100">
                         <Card.Body>
                             <div className="dashboard-chart-heading">
-                                <div><h2>Actividad de tareas</h2><p>Resultado diario de los últimos 7 días</p></div>
+                                <div>
+                                    <h2>Actividad de tareas</h2>
+                                    <p>Resultado diario de los últimos 7 días</p>
+                                </div>
                                 <span className="dashboard-chart-icon"><i className="bi bi-bar-chart-line" /></span>
                             </div>
                             <div className="dashboard-chart-area" role="img" aria-label="Gráfico de tareas completadas, incumplidas y pendientes por día">
@@ -222,7 +268,10 @@ export function HomePage() {
                     <Card className="dashboard-chart-card h-100">
                         <Card.Body>
                             <div className="dashboard-chart-heading">
-                                <div><h2>Estado de recambios</h2><p>Estado de los elementos activos</p></div>
+                                <div>
+                                    <h2>Estado de recambios</h2>
+                                    <p>Estado de los elementos activos</p>
+                                </div>
                                 <span className="dashboard-chart-icon"><i className="bi bi-arrow-repeat" /></span>
                             </div>
                             <div className="dashboard-donut-area" role="img" aria-label="Distribución de elementos al día, por vencer, vencidos y sin frecuencia">

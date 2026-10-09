@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { type TableColumn } from 'react-data-table-component';
 import { ActionButton } from '../../../components/ActionButton';
 
-import { AppTable } from '../../../components/AppTable'; 
+import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader'; 
 import { useApi } from '../../../hooks'; 
 import { useAuth } from '../../../hooks';
@@ -15,15 +15,15 @@ import type { TipoVencimiento } from '../types';
 
 
 export function ListPage() {
-    const navigate = useNavigate();     // Esto se usa para cambiar de pagina cuando cree el insumo
+    const navigate = useNavigate();     
     const { currentUser } = useAuth();
     const [search, setSearch] = useState('');
     const { data: tiposVencimientos, error, isLoading } = useApi<TipoVencimiento[]>("/tipos-vencimientos/")    
     const [tipoVencimientoToDelete, setTipoVencimientoToDelete] = useState<TipoVencimiento | null>(null);
 
-    // useMemo infiere que retorna un array de tipo Insumo[]
+
     const filteredTiposVencimientos = useMemo(() => {
-        if (!Array.isArray(tiposVencimientos)) return [];     // Se agrego una validacion para preguntar si insumos es un array
+        if (!Array.isArray(tiposVencimientos)) return [];     
         return (tiposVencimientos ?? []).filter((tipoVencimiento) => {
             return (
                 tipoVencimiento.nombre.toLowerCase().includes(search.toLowerCase())
@@ -124,7 +124,7 @@ export function ListPage() {
                                 icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
                                 onClick={() => setTipoVencimientoToDelete(row)}
                             />
-                        </>  
+                        </>
                     )}
                 </div>
             )

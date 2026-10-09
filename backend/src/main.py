@@ -17,8 +17,11 @@ from src.recambiosElementosLimpieza.models import RecambioElementoLimpieza
 from src.insumo_quimico.models import InsumoQuimico
 from src.tipo_quimico.models import TipoQuimico
 from src.consumo_producto.models import ConsumoProducto
+from src.planesCalibracion.models import PlanCalibracion
+from src.registrosCalibracion.models import RegistroCalibracion
 from src.tipos_vencimientos.models import TipoVencimiento
 from src.vencimiento_personal.models import VencimientoPersonal
+from src.configuracion_sistema.models import ConfiguracionSistema
 from src.notificaciones.models import Notificacion
 
 # Importamos la configuración validada por Pydantic
@@ -44,8 +47,14 @@ from src.tipo_quimico.router import router as tipo_quimico_router
 from src.elementosLimpieza.router import router as elementos_limpieza_router
 from src.recambiosElementosLimpieza.router import router as recambios_elementos_limpieza_router
 from src.consumo_producto.router import router as consumos_router
+from src.documentos.router import router as documentos_router
+from src.tipo_documento.router import router as tipo_documento_router
+from src.version_documento.router import router as version_documento_router
+from src.planesCalibracion.router import router as planes_calibracion_router
+from src.registrosCalibracion.router import router as registros_calibracion_router
 from src.tipos_vencimientos.router import router as tipos_vencimientos_router
 from src.vencimiento_personal.router import router as vencimiento_personal_router
+from src.configuracion_sistema.router import router as configuracion_sistema_router
 from src.notificaciones.router import router as notificaciones_router
 from src.tipo_incidente.router import router as tipos_incidentes_router
 from src.incidentes.router import router as incidentes_router
@@ -67,7 +76,7 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -89,10 +98,17 @@ app.include_router(tipo_quimico_router)
 app.include_router(elementos_limpieza_router)
 app.include_router(recambios_elementos_limpieza_router)
 app.include_router(consumos_router)
+app.include_router(planes_calibracion_router)
+app.include_router(registros_calibracion_router)
 app.include_router(tipos_vencimientos_router)
 app.include_router(vencimiento_personal_router)
+app.include_router(configuracion_sistema_router)
 app.include_router(notificaciones_router)
 app.include_router(tipos_incidentes_router)
 app.include_router(incidentes_router)
 
+
+app.include_router(documentos_router)
+app.include_router(tipo_documento_router)
+app.include_router(version_documento_router)
 
