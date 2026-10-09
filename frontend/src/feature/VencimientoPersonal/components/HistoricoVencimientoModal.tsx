@@ -3,6 +3,7 @@ import { type TableColumn } from 'react-data-table-component';
 import { AppTable } from '../../../components/AppTable';
 import { useApi } from '../../../hooks/useApi';
 import type { VencimientoPersonal } from '../types';
+import { ActionButton } from '../../../components/ActionButton';
 
 interface HistoricoVencimientoModalProps {
     vencimiento: VencimientoPersonal | null;
@@ -63,15 +64,16 @@ export function HistoricoVencimientoModal({ vencimiento, onHide }: HistoricoVenc
             grow: 1.1,
             cell: (row) =>
                 row.archivo_adjunto ? (
-                    <a
+                    <ActionButton
+                        variant="outline-primary"
+                        size="sm"
+                        tooltip="Descargar archivo"
+                        icon="bi-download"
                         href={row.archivo_adjunto}
-                        download={`comprobante_${row.id}`}
-                        className="btn btn-outline-primary btn-sm"
-                    >
-                        <i className="bi bi-download me-1"></i>Descargar
-                    </a>
+                        download={`vencimiento_${row.persona.apellido}_${row.tipo_vencimiento.nombre}_${row.fecha_desde.split("-").reverse().join("/")}`}
+                    />
                 ) : (
-                    <span>-</span>
+                    <>-</>
                 ),
         },
     ];

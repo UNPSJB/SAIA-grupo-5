@@ -12,18 +12,22 @@ import { useAuth } from '../../../hooks/useAuth';
 
 import type { VencimientoPersonal } from '../types';
 import type { Persona } from '../../Personal/types';
+import type { ConfiguracionSistema } from '../../ConfiguracionSistema/types';
 import { RenovarVencimientoModal } from '../components/RenovarVencimientoModal';
 import { HistoricoVencimientoModal } from '../components/HistoricoVencimientoModal';
 
 
 export function ListPage() {
-    const navigate = useNavigate();     // Esto se usa para cambiar de pagina cuando cree el insumo
+    const navigate = useNavigate();    
     const { currentUser } = useAuth();
     const { personaId } = useParams();
     const [search, setSearch] = useState('');
 
-    const { data: persona } = useApi<Persona>(`/personal/${personaId}`);    
+    const { data: persona } = useApi<Persona>(`/personal/${personaId}`);
     const { data: vencimientos, error, isLoading } = useApi<VencimientoPersonal[]>(`/vencimiento-personal/persona/${personaId}`);
+
+    const { data: configuracion } = useApi<ConfiguracionSistema>(currentUser?.administrar ? '/configuracion-sistema/' : null);
+    const diasAntelacion = configuracion?.dias_antelacion_vencimiento ?? 15;
 
     const [vencimientoToRenovar, setVencimientoToRenovar] = useState<VencimientoPersonal | null>(null);
     const [vencimientoHistorico, setVencimientoHistorico] = useState<VencimientoPersonal | null>(null);
@@ -76,15 +80,15 @@ export function ListPage() {
             selector: row => row.tipo_vencimiento.nombre,
             sortable: true,
             center: true,
-            grow: 2,
+            grow: 1.2,
             cell: row => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div
                         style={{
                             padding: '4px 12px',
                             borderRadius: '16px',
-                            background: '#ffaaed',
-                            color: '#ff27db',
+                            background: '#00d9ff5b',
+                            color: '#000294',
                             fontWeight: 700,
                             display: 'flex',
                             alignItems: 'center',
@@ -102,12 +106,14 @@ export function ListPage() {
             selector: row => row.fecha_desde.split("-").reverse().join("/"),
             sortable: true,
             center: true,
+            grow: 0.6,
         },
         {
-            name: 'Vencimiento',
+            name: 'Fecha Hasta',
             selector: row => row.fecha_hasta.split("-").reverse().join("/"),
             sortable: true,
             center: true,
+            grow: 0.6,
         },
         {
             name: 'Estado',
@@ -115,15 +121,16 @@ export function ListPage() {
             sortable: true,
             center: true,
             minWidth: '190px',
+            grow: 1,
             cell: row => {
                 const vencido = row.dias_restantes <= 0;
-                const proximo = row.dias_restantes > 0 && row.dias_restantes <= 15;
+                const proximo = row.dias_restantes > 0 && row.dias_restantes <= diasAntelacion;
                 const badge = vencido ? '#fee2e2' : proximo ? '#fef3c7' : '#dcfce7';
                 const color = vencido ? '#991b1b' : proximo ? '#92400e' : '#166534';
                 const texto = vencido
                     ? `Vencido (${Math.abs(row.dias_restantes)} dias)`
                     : proximo
-                    ? `Proximo a vencer (${row.dias_restantes} d)`
+                    ? `Proximo a vencer (${row.dias_restantes} dias)`
                     : `Vigente (${row.dias_restantes} dias)`;
 
                 return (
@@ -160,7 +167,6 @@ export function ListPage() {
                         icon="bi bi-eye"
                         onClick={() => navigate (`/vencimiento-personal/${row.id}`)}
                     />
-
 
                     <ActionButton
                         variant="outline-warning"
@@ -207,7 +213,9 @@ export function ListPage() {
                     </Button>               
                 </Col>
                 <Col>
-                    <PageHeader title={tituloPagina} />
+                    <div style={{ fontSize: "0.85rem", whiteSpace: "nowrap" }}>
+                        <PageHeader title={tituloPagina} />
+                    </div>
                 </Col>
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}

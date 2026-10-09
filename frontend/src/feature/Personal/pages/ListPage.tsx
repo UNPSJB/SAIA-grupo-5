@@ -77,13 +77,6 @@ export function ListPage() {
 
   const baseColumns: TableColumn<Persona>[] = [
     {
-      name: 'ID',
-      selector: (row) => row.id,
-      sortable: true,
-      center: true,
-      maxWidth: '80px',
-    },
-    {
       name: 'Nombre y Apellido',
       selector: (row) => `${row.nombre} ${row.apellido || ''}`.trim(),
       sortable: true,
@@ -173,9 +166,16 @@ export function ListPage() {
       {
         name: 'Acciones',
         center: true,
-        minWidth: '220px',
+        minWidth: '260px',
         cell: (row) => (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <ActionButton
+              variant="outline-warning"
+              size="sm"
+              tooltip="Ver vencimientos"
+              icon="bi-calendar-check"
+              onClick={() => navigate(`/personal/${row.id}/vencimientos`)}
+            />
             <ActionButton
               variant="outline-primary"
               size="sm"
@@ -183,13 +183,6 @@ export function ListPage() {
               icon="bi-pencil"
               disabled={!row.activo}
               onClick={() => navigate(`/personal/${row.id}/edit`)}
-            />
-            <ActionButton
-              variant="outline-warning"
-              size="sm"
-              tooltip="Vencimientos"
-              icon="bi-calendar-check"
-              onClick={() => navigate(`/personal/${row.id}/vencimientos`)}
             />
             {row.activo ? (
               <ActionButton
@@ -224,7 +217,15 @@ export function ListPage() {
           {subHeaderComponentMemo}
         </Col>
         {currentUser?.administrar && (
-          <Col xs="auto" className="d-flex justify-content-end">
+          <Col xs="auto" className="d-flex justify-content-end gap-2">
+            <Button
+              variant="warning"
+              size="sm"
+              onClick={() => navigate('/vencimiento-personal')}
+              style={{ whiteSpace: 'nowrap' }}
+            >
+              <i className="bi-calendar-check me-1"></i>Ver Vencimientos
+            </Button>
             <Button
               variant="primary"
               size="sm"

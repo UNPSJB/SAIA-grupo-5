@@ -87,7 +87,15 @@ import { ListPage as VencimientoPersonalListPage } from './feature/VencimientoPe
 import { EditarVencimientoPersonalPage } from './feature/VencimientoPersonal/pages/EditarVencimientoPersonalPage.tsx'
 import { NuevoVencimientoPersonalPage } from './feature/VencimientoPersonal/pages/NuevoVencimientoPersonalPage.tsx'
 import { VerVencimientoPersonalPage } from './feature/VencimientoPersonal/pages/VerVencimientoPersonalPage.tsx'
+import { VencimientoConsolidadoPage } from './feature/VencimientoPersonal/pages/ListadoConsolidadoVencimientoPersonal.tsx'
 
+import { ConfiguracionSistemaPage } from './feature/ConfiguracionSistema/pages/ConfiguracionSistemaPage.tsx'
+
+import { VencimientosConsolidadosPage } from './feature/VencimientosConsolidados/pages/VencimientosConsolidadosPage.tsx'
+
+import { PlanesCalibracionPage } from './feature/PlanesCalibracion/pages/PlanesCalibracionPage.tsx'
+import { NuevoPlanCalibracionPage } from './feature/PlanesCalibracion/pages/NuevoPlanCalibracionPage.tsx'
+import { EditarPlanCalibracionPage } from './feature/PlanesCalibracion/pages/EditarPlanCalibracionPage.tsx'
 
 import { Login, NoAutorizado } from './feature/auth'
 import AuthLayout from './layouts/AuthLayout.tsx'
@@ -240,6 +248,14 @@ const router = createBrowserRouter([
                 { path: ":id", element: <VerRecambioElementoLimpiezaPage /> },
             ],
           },
+          {
+            path: 'planes-calibracion',
+            children: [
+                { index: true, element: <PlanesCalibracionPage /> },
+                { path: 'new', element: <NuevoPlanCalibracionPage/>},
+                { path: ':id/edit', element: <EditarPlanCalibracionPage/>},
+            ],
+          },
           { path: 'tareas', element: <TareasPage /> },
           {
             path: 'notificaciones',
@@ -318,8 +334,23 @@ const router = createBrowserRouter([
             path: 'vencimiento-personal',
             element: <ProtectedRoute requireAdmin />,
             children: [
+              { index: true, element: <VencimientoConsolidadoPage />},
               { path: ':id', element: <VerVencimientoPersonalPage /> },
               { path: ':id/edit', element: <EditarVencimientoPersonalPage /> },
+            ],
+          },
+          {
+            path: 'configuracion-sistema',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <ConfiguracionSistemaPage /> },
+            ],
+          },
+          {
+            path: 'vencimientos',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <VencimientosConsolidadosPage /> },
             ],
           },
           { path: '*', element: <Page404 /> },

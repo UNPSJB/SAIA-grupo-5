@@ -1,4 +1,4 @@
-import { Container, Spinner, Alert, Col, Row } from "react-bootstrap";
+import { Container, Alert, Col, Row } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { mutate } from "swr";
 import { PageHeader } from "../../../components/PageHeader";
@@ -7,6 +7,8 @@ import { api } from "../../../libs/axios";
 import { useApi } from "../../../hooks/useApi";
 import type { TipoDocumento, NewTipoDocumento } from "../types";
 import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
+import { PageLoading } from "../../../components/PageLoading";
+
 
 export function EditarTipoDocumentoPage(){
     const navigate = useNavigate();    
@@ -32,14 +34,8 @@ export function EditarTipoDocumentoPage(){
         }
     };
 
-    if (isLoading) return (
-        <>
-            <PageHeader title="Editar Tipo Documento" />
-            <Spinner animation="border" role="status">
-                <span className="visually-hidden">Cargando...</span>
-            </Spinner>
-        </>
-    )
+    if (isLoading) return <PageLoading title="Editar Tipo Documento" />;
+
     if (!tipoDocumento) return (
         <Container>
             <PageHeader title="Tipo Documento no encontrado" />
