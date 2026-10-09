@@ -91,6 +91,15 @@ import { NuevoVencimientoPersonalPage } from './feature/VencimientoPersonal/page
 import { VerVencimientoPersonalPage } from './feature/VencimientoPersonal/pages/VerVencimientoPersonalPage.tsx'
 import { VencimientoConsolidadoPage } from './feature/VencimientoPersonal/pages/ListadoConsolidadoVencimientoPersonal.tsx'
 
+import { ListPage as TipoIncidenteListPage } from './feature/TiposIncidentes/pages/ListPage.tsx'
+import { EditarTipoIncidentePage } from './feature/TiposIncidentes/pages/EditarTipoIncidentePage.tsx'
+import { NuevoTipoIncidentePage } from './feature/TiposIncidentes/pages/NuevoTipoIncidentePage.tsx'
+import { VerTipoIncidentePage } from './feature/TiposIncidentes/pages/VerTipoIncidentePage.tsx'
+
+import { EditarIncidentePage } from './feature/Incidentes/pages/EditarIncidentePage.tsx'
+import { NuevoIncidentePage } from './feature/Incidentes/pages/NuevoIncidentePage.tsx'
+import { VerIncidentePage } from './feature/Incidentes/pages/VerIncidentePage.tsx'
+
 import { ConfiguracionSistemaPage } from './feature/ConfiguracionSistema/pages/ConfiguracionSistemaPage.tsx'
 
 import { VencimientosConsolidadosPage } from './feature/VencimientosConsolidados/pages/VencimientosConsolidadosPage.tsx'
@@ -341,6 +350,25 @@ const router = createBrowserRouter([
               { index: true, element: <VencimientoConsolidadoPage />},
               { path: ':id', element: <VerVencimientoPersonalPage /> },
               { path: ':id/edit', element: <EditarVencimientoPersonalPage /> },
+            ],
+          },
+          {
+            path: 'tipos-incidentes',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <TipoIncidenteListPage /> },
+              { path: 'new', element: <NuevoTipoIncidentePage /> },
+              { path: ':id', element: <VerTipoIncidentePage /> },
+              { path: ':id/edit', element: <EditarTipoIncidentePage /> },
+            ],
+          },
+          {
+            path: 'incidentes',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { path: 'new', element: <NuevoIncidentePage /> },
+              { path: ':id', element: <VerIncidentePage /> },
+              { path: ':id/edit', element: <EditarIncidentePage /> },
             ],
           },
           {
