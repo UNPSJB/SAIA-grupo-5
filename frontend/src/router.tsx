@@ -6,6 +6,7 @@ import { Page404 } from './feature/NotFound/Page404.tsx'
 import { ListPage as InsumosListPage } from './feature/Insumos/pages/ListPage.tsx'
 import { NuevoInsumoPage } from './feature/Insumos/pages/NuevoInsumoPage.tsx'
 import { EditarInsumoPage } from './feature/Insumos/pages/EditarInsumoPage.tsx'
+import { VerInsumoPage } from './feature/Insumos/pages/VerInsumoPage.tsx'
 
 import { EquiposPage } from './feature/Equipos/pages/ListPage.tsx'
 import { EditarEquipoPage } from './feature/Equipos/pages/EditarEquipoPage.tsx'
@@ -152,6 +153,7 @@ const router = createBrowserRouter([
                 children: [
                   { path: 'new', element: <NuevoInsumoPage /> },
                   { path: ':id/edit', element: <EditarInsumoPage /> },
+                  { path: ':id', element: <VerInsumoPage />},
                 ],
               },
             ],

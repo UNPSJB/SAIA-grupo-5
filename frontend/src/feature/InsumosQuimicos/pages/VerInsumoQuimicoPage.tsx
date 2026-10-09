@@ -3,10 +3,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 import type { InsumoQuimico } from "../types";
+import { useAuth } from "../../../hooks";
 
 export function VerInsumoQuimicoPage() {
     const navigate = useNavigate();
     const { id } = useParams(); 
+    const { currentUser } = useAuth();
 
     const { data: insumoQuimico, isLoading, error } = useApi<InsumoQuimico>(`/insumos-quimicos/${id}`);
 
@@ -97,7 +99,7 @@ export function VerInsumoQuimicoPage() {
                             >
                                 <i className="bi bi-arrow-left me-1"></i>Volver a la lista
                             </Button>
-                            
+                            {currentUser?.administrar && (
                             <Button 
                                 variant="primary" 
                                 disabled={!insumoQuimico.activo}
@@ -105,6 +107,7 @@ export function VerInsumoQuimicoPage() {
                             >
                                 <i className="bi bi-pencil me-1"></i>Editar Insumo Químico
                             </Button>
+                            )}
                         </Card.Footer>
                     </Card>
                 </Col>
