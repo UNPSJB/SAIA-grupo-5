@@ -34,6 +34,7 @@ def crear_accion_correctiva(db: Session, accion_correctiva: schemas.AccionCorrec
         incidente_id=db_incidente.id,
         tipo_evento=TipoEvento.CERRADO,
         usuario_id=persona.id,
+        descripcion=_accion_correctiva.descripcion,
         accion_correctiva_id=_accion_correctiva.id,
     )
 

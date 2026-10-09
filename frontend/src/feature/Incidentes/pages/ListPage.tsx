@@ -11,12 +11,16 @@ import { ActionButton } from "../../../components/ActionButton";
 import { useApi } from "../../../hooks/useApi";
 import { useAuth } from "../../../hooks/useAuth";
 import { AccionCorrectivaModal } from "../components/AccionCorrectivaModal";
+import { ReabrirIncidenteModal } from "../components/ReabrirIncidenteModal";
+import { HistorialIncidenteModal } from "../components/HistorialIncidenteModal";
 import type { Incidente } from "../types";
 
 export function ListPage() {
     const { currentUser } = useAuth();
     const [search, setSearch] = useState("");
     const [incidenteParaAccionCorrectiva, setIncidenteParaAccionCorrectiva] = useState<Incidente | null>(null);
+    const [incidenteParaReabrir, setIncidenteParaReabrir] = useState<Incidente | null>(null);
+    const [incidenteParaHistorial, setIncidenteParaHistorial] = useState<Incidente | null>(null);
 
     const { data: incidentes, error, isLoading } = useApi<Incidente[]>("/incidentes/");
 
@@ -112,15 +116,32 @@ export function ListPage() {
             minWidth: "120px",
             cell: (row) => (
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                    <ActionButton
+                        variant="outline-secondary"
+                        size="sm"
+                        tooltip="Ver historial"
+                        icon="bi-clock-history"
+                        onClick={() => setIncidenteParaHistorial(row)}
+                    />
                     {currentUser?.administrar && (
-                        <ActionButton
-                            variant="outline-success"
-                            size="sm"
-                            tooltip="Acción correctiva"
-                            icon="bi-clipboard-check"
-                            disabled={row.estado === "Cerrado"}
-                            onClick={() => setIncidenteParaAccionCorrectiva(row)}
-                        />
+                        <>
+                            <ActionButton
+                                variant="outline-success"
+                                size="sm"
+                                tooltip="Acción correctiva"
+                                icon="bi-clipboard-check"
+                                disabled={row.estado === "Cerrado"}
+                                onClick={() => setIncidenteParaAccionCorrectiva(row)}
+                            />
+                            <ActionButton
+                                variant="outline-warning"
+                                size="sm"
+                                tooltip="Reabrir incidente"
+                                icon="bi-arrow-counterclockwise"
+                                disabled={row.estado === "Abierto"}
+                                onClick={() => setIncidenteParaReabrir(row)}
+                            />
+                        </>
                     )}
                 </div>
             ),
@@ -144,6 +165,17 @@ export function ListPage() {
                 incidente={incidenteParaAccionCorrectiva}
                 onHide={() => setIncidenteParaAccionCorrectiva(null)}
                 onRegistrada={() => mutate("/incidentes/")}
+            />
+
+            <ReabrirIncidenteModal
+                incidente={incidenteParaReabrir}
+                onHide={() => setIncidenteParaReabrir(null)}
+                onReabierto={() => mutate("/incidentes/")}
+            />
+
+            <HistorialIncidenteModal
+                incidente={incidenteParaHistorial}
+                onHide={() => setIncidenteParaHistorial(null)}
             />
         </Container>
     );

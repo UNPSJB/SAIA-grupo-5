@@ -78,7 +78,7 @@ import { NuevaVersionDocumentoPage } from './feature/VersionesDocumentos/pages/N
 import { VerVersionDocumentoPage } from './feature/VersionesDocumentos/pages/VerVersionDocumentoPage.tsx'
 
 
-import { VerDetalleTareaOcurrenciaPage } from './feature/Historial/pages/VerDetalleTareaOcurrenciaPage.tsx' 
+import { VerDetalleTareaOcurrenciaPage } from './feature/Historial/pages/VerDetalleTareaOcurrenciaPage.tsx'
 import { NotificacionesPage } from './feature/Notificaciones/pages/ListPage.tsx'
 
 import { ListPage as TipoVencimientoListPage } from './feature/TiposVencimientos/pages/ListPage.tsx'
@@ -164,7 +164,7 @@ const router = createBrowserRouter([
                 children: [
                   { path: 'new', element: <NuevoInsumoPage /> },
                   { path: ':id/edit', element: <EditarInsumoPage /> },
-                  { path: ':id', element: <VerInsumoPage />},
+                  { path: ':id', element: <VerInsumoPage /> },
                 ],
               },
             ],
@@ -206,7 +206,7 @@ const router = createBrowserRouter([
               { path: ':id/edit', element: <EditarPersonaPage /> },
               { path: ':personaId/vencimientos', element: <VencimientoPersonalListPage /> },
               { path: ':personaId/vencimientos/new', element: <NuevoVencimientoPersonalPage /> },
-              { path: ':id', element: <VerPersonalPage />},
+              { path: ':id', element: <VerPersonalPage /> },
             ],
           },
           {
@@ -239,35 +239,35 @@ const router = createBrowserRouter([
           {
             path: 'elementos-limpieza',
             children: [
-                { index: true, element: <ElementosLimpiezaPage /> },
-                { path: 'new', element: <NuevoElementoPage/>},
-                { path: ':id/edit', element: <EditarElementoPage/>},
-                { path: ':id', element: <VerElementoPage/>},
+              { index: true, element: <ElementosLimpiezaPage /> },
+              { path: 'new', element: <NuevoElementoPage /> },
+              { path: ':id/edit', element: <EditarElementoPage /> },
+              { path: ':id', element: <VerElementoPage /> },
             ],
           },
           {
             path: "tipos-elementos-limpieza",
             children: [
-                { index: true, element: <TiposElementoLimpiezaPage /> },
-                { path: "new", element: <NuevoTipoElementoPage /> },
-                { path: ":id/edit", element: <EditarTipoElementoPage /> },
+              { index: true, element: <TiposElementoLimpiezaPage /> },
+              { path: "new", element: <NuevoTipoElementoPage /> },
+              { path: ":id/edit", element: <EditarTipoElementoPage /> },
             ],
           },
           {
             path: "recambios-elementos-limpieza",
             children: [
-                { index: true, element: <RecambiosElementoLimpiezaPage /> },
-                { path: "new", element: <NuevoRecambioElementoLimpiezaPage /> },
-                { path: "new/:elementoId", element: <NuevoRecambioElementoLimpiezaPage /> },
-                { path: ":id", element: <VerRecambioElementoLimpiezaPage /> },
+              { index: true, element: <RecambiosElementoLimpiezaPage /> },
+              { path: "new", element: <NuevoRecambioElementoLimpiezaPage /> },
+              { path: "new/:elementoId", element: <NuevoRecambioElementoLimpiezaPage /> },
+              { path: ":id", element: <VerRecambioElementoLimpiezaPage /> },
             ],
           },
           {
             path: 'planes-calibracion',
             children: [
-                { index: true, element: <PlanesCalibracionPage /> },
-                { path: 'new', element: <NuevoPlanCalibracionPage/>},
-                { path: ':id/edit', element: <EditarPlanCalibracionPage/>},
+              { index: true, element: <PlanesCalibracionPage /> },
+              { path: 'new', element: <NuevoPlanCalibracionPage /> },
+              { path: ':id/edit', element: <EditarPlanCalibracionPage /> },
             ],
           },
           { path: 'tareas', element: <TareasPage /> },
@@ -289,7 +289,7 @@ const router = createBrowserRouter([
             path: 'tareas-ocurrencia',
             element: <ProtectedRoute requireAdmin />,
             children: [
-              { path: ':id', element: <VerDetalleTareaOcurrenciaPage />}
+              { path: ':id', element: <VerDetalleTareaOcurrenciaPage /> }
             ]
           },
           {
@@ -348,7 +348,7 @@ const router = createBrowserRouter([
             path: 'vencimiento-personal',
             element: <ProtectedRoute requireAdmin />,
             children: [
-              { index: true, element: <VencimientoConsolidadoPage />},
+              { index: true, element: <VencimientoConsolidadoPage /> },
               { path: ':id', element: <VerVencimientoPersonalPage /> },
               { path: ':id/edit', element: <EditarVencimientoPersonalPage /> },
             ],
@@ -367,6 +367,7 @@ const router = createBrowserRouter([
             path: 'incidentes',
             element: <ProtectedRoute requireAdmin />,
             children: [
+              { index: true, element: <IncidentesListPage /> },
               { path: 'new', element: <NuevoIncidentePage /> },
               { path: ':id', element: <VerIncidentePage /> },
               { path: ':id/edit', element: <EditarIncidentePage /> },
@@ -389,9 +390,6 @@ const router = createBrowserRouter([
           { path: '*', element: <Page404 /> },
           {
             path: 'checklist', element: <ChecklistListPage />
-          },
-          {
-            path: 'incidentes', element: <IncidentesListPage />
           }
         ],
       },
