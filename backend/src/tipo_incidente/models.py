@@ -6,7 +6,7 @@ from typing import List, TYPE_CHECKING
 if TYPE_CHECKING:
     from src.incidentes.models import Incidente
 
-class TipoQuimico(ModeloBase):
+class TipoIncidente(ModeloBase):
     __tablename__ = "tipos_incidentes"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)

@@ -33,7 +33,7 @@ class Incidente(ModeloBase):
                 default=EstadoIncidente.ABIERTO,
     )
     
-    tipo_id: Mapped[int] = mapped_column(ForeignKey("tipo_incidente.id"), index=True, nullable=False)
+    tipo_id: Mapped[int] = mapped_column(ForeignKey("tipos_incidentes.id"), index=True, nullable=False)
     operario_id: Mapped[int] = mapped_column(ForeignKey("personal.id"), nullable=False)
     sector_id: Mapped[int | None] = mapped_column(ForeignKey("sectores.id"), nullable=True)
 

@@ -18,3 +18,4 @@ from src.consumo_producto.models import ConsumoProducto
 from src.tipo_quimico.models import TipoQuimico
 from src.notificaciones.models import Notificacion
 from src.tipo_incidente.models import TipoIncidente
+from src.incidentes.models import Incidente

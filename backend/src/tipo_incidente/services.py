@@ -19,7 +19,7 @@ def crear_tipo_incidente(db: Session, tipo_incidente: schemas.TipoIncidenteCreat
     db.refresh(_tipo_incidente)
     return _tipo_incidente
 
-def listar_tipos_incidente(db: Session) -> List[schemas.TipoIncidente]:
+def listar_tipos_incidentes(db: Session) -> List[schemas.TipoIncidente]:
     return db.scalars(select(TipoIncidente)).all()
 
 def leer_tipo_incidente(db: Session, tipo_incidente_id: int) -> schemas.TipoIncidente:

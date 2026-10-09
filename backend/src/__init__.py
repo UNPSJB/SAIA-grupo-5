@@ -7,5 +7,6 @@ from src.consumo_producto.models import ConsumoProducto# noqa: F401
 from src.tipos_vencimientos.models import TipoVencimiento  # noqa: F401
 from src.vencimiento_personal.models import VencimientoPersonal  # noqa: F401
 from src.notificaciones.models import Notificacion  # noqa: F401
-from src.tipos_incidentes.models import TipoIncidente  # noqa: F401
+from src.tipo_incidente.models import TipoIncidente  # noqa: F401
+from src.incidentes.models import Incidente  # noqa: F401
 

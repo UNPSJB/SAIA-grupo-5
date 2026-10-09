@@ -48,6 +48,7 @@ from src.tipos_vencimientos.router import router as tipos_vencimientos_router
 from src.vencimiento_personal.router import router as vencimiento_personal_router
 from src.notificaciones.router import router as notificaciones_router
 from src.tipo_incidente.router import router as tipos_incidentes_router
+from src.incidentes.router import router as incidentes_router
 
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -92,5 +93,6 @@ app.include_router(tipos_vencimientos_router)
 app.include_router(vencimiento_personal_router)
 app.include_router(notificaciones_router)
 app.include_router(tipos_incidentes_router)
+app.include_router(incidentes_router)
 
 
