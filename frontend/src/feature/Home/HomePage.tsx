@@ -20,7 +20,7 @@ import { calcularEstadoVencimientos, type VencimientoPersonal } from "../Vencimi
 import type { ConfiguracionSistema } from "../ConfiguracionSistema/types";
 import type { PlanCalibracion } from "../PlanesCalibracion/types";
 import { getEstadoHistorial } from "../Historial/types";
-import { clasificarPorDiasRestantes } from "../VencimientosConsolidados/lib/estado";
+import { clasificarPorDiasRestantes } from "../VencimientosConsolidados/utils/estado";
 import { toDateKey, dateFromKey } from "../../libs/date";
 import { MetricCard } from "./components/MetricCard";
 import { SEAFOAM } from "./constants";

@@ -47,6 +47,9 @@ from src.tipo_quimico.router import router as tipo_quimico_router
 from src.elementosLimpieza.router import router as elementos_limpieza_router
 from src.recambiosElementosLimpieza.router import router as recambios_elementos_limpieza_router
 from src.consumo_producto.router import router as consumos_router
+from src.documentos.router import router as documentos_router
+from src.tipo_documento.router import router as tipo_documento_router
+from src.version_documento.router import router as version_documento_router
 from src.planesCalibracion.router import router as planes_calibracion_router
 from src.registrosCalibracion.router import router as registros_calibracion_router
 from src.tipos_vencimientos.router import router as tipos_vencimientos_router
@@ -98,3 +101,9 @@ app.include_router(tipos_vencimientos_router)
 app.include_router(vencimiento_personal_router)
 app.include_router(configuracion_sistema_router)
 app.include_router(notificaciones_router)
+
+
+app.include_router(documentos_router)
+app.include_router(tipo_documento_router)
+app.include_router(version_documento_router)
+

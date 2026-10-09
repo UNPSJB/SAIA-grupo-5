@@ -9,7 +9,7 @@ import { useApi } from "../../../hooks/useApi"
 import { useAuth } from "../../../hooks/useAuth"
 import type { Equipo } from "../../Equipos/types"
 import type { PlanCalibracion } from "../../PlanesCalibracion/types"
-import { clasificarPorDiasRestantes, ESTADO_VENCIMIENTOS_ORDEN, type EstadoVencimientos } from "../lib/estado"
+import { clasificarPorDiasRestantes, ESTADO_VENCIMIENTOS_ORDEN, type EstadoVencimientos } from "../utils/estado"
 import { EstadoVencimiento } from "./EstadoVencimiento"
 
 type FilaEquipo = {
