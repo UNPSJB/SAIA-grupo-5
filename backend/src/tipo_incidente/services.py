@@ -3,8 +3,10 @@ from typing import List
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-from src.tipo_incidente.models import TipoIncidente
 from src.tipo_incidente import schemas, exceptions
+from src.tipo_incidente.models import TipoIncidente
+from src.incidentes.models import Incidente
+
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +42,13 @@ def cambiar_estado_tipo_incidente(db: Session, tipo_incidente_id: int) -> schema
     db_tipo_incidente = leer_tipo_incidente(db, tipo_incidente_id)
     if db_tipo_incidente is None:
         raise exceptions.TipoIncidenteNoEncontrado()
+
+    if db_tipo_incidente.activo:
+        incidente_asociado = db.scalars(select(Incidente).where(
+            Incidente.tipo_id == tipo_incidente_id,
+            Incidente.activo == True)).first()
+        if incidente_asociado:
+            raise exceptions.TipoIncidenteUtilizado()
 
     db_tipo_incidente.activo = not db_tipo_incidente.activo
     db.commit()

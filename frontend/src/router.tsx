@@ -77,6 +77,9 @@ import { EditarTipoIncidentePage } from './feature/TiposIncidentes/pages/EditarT
 import { NuevoTipoIncidentePage } from './feature/TiposIncidentes/pages/NuevoTipoIncidentePage.tsx'
 import { VerTipoIncidentePage } from './feature/TiposIncidentes/pages/VerTipoIncidentePage.tsx'
 
+import { EditarIncidentePage } from './feature/Incidentes/pages/EditarIncidentePage.tsx'
+import { NuevoIncidentePage } from './feature/Incidentes/pages/NuevoIncidentePage.tsx'
+import { VerIncidentePage } from './feature/Incidentes/pages/VerIncidentePage.tsx'
 
 import { Login, NoAutorizado } from './feature/auth'
 import AuthLayout from './layouts/AuthLayout.tsx'
@@ -277,6 +280,15 @@ const router = createBrowserRouter([
               { path: 'new', element: <NuevoTipoIncidentePage /> },
               { path: ':id', element: <VerTipoIncidentePage /> },
               { path: ':id/edit', element: <EditarTipoIncidentePage /> },
+            ],
+          },
+          {
+            path: 'incidentes',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { path: 'new', element: <NuevoIncidentePage /> },
+              { path: ':id', element: <VerIncidentePage /> },
+              { path: ':id/edit', element: <EditarIncidentePage /> },
             ],
           },
           { path: '*', element: <Page404 /> },

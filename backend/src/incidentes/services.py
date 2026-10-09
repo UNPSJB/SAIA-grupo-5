@@ -31,7 +31,6 @@ def modificar_incidente(db: Session, incidente_id: int, incidente: schemas.Incid
     db_incidente = leer_incidente(db, incidente_id)
     db_incidente.nombre = incidente.nombre
     db_incidente.descripcion = incidente.descripcion
-    db_incidente.foto_opcional = incidente.foto_opcional
     
     db.commit()
     db.refresh(db_incidente)

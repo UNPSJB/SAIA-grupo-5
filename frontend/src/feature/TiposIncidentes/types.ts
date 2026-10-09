@@ -2,7 +2,7 @@ export type TipoIncidente = {
     id: number
     nombre: string
     descripcion: string
-    estado: boolean
+    activo: boolean
 }
 
 export type NewTipoIncidente = {
