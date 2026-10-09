@@ -56,6 +56,13 @@ export function VerIncidentePage() {
                             </Row>
 
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
+                                <Col sm={4} className="fw-bold text-secondary">Reportado por</Col>
+                                <Col sm={8}>
+                                    {incidente.operario?.nombre || "Sin sector asignado"}
+                                </Col>
+                            </Row>
+
+                            <Row className="mb-3 border-bottom pb-3 align-items-center">
                                 <Col sm={4} className="fw-bold text-secondary">Descripción</Col>
                                 <Col sm={8}>{incidente.descripcion}</Col>
                             </Row>
