@@ -14,6 +14,7 @@ from scripts import (
     seed_equipos,
     seed_tareas,
     seed_elementos_limpieza,
+    seed_incidentes,
    # seed_tareas_ocurrencia, para probar generador automatico
 )
 
@@ -26,6 +27,7 @@ ORDEN = [
     seed_equipos,             # requiere seed_sectores
     seed_tareas,              # requiere seed_planes_limpieza, seed_sectores, seed_superficies, seed_equipos
     seed_elementos_limpieza,  # requiere nada
+    seed_incidentes,          # requiere seed_personal (sectores es opcional)
     # seed_tareas_ocurrencia,  # requiere seed_tareas
 ]
 

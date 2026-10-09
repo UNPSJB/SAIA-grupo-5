@@ -35,6 +35,7 @@ import { NuevoRecambioElementoLimpiezaPage } from './feature/RecambiosElementosL
 import { VerRecambioElementoLimpiezaPage } from './feature/RecambiosElementosLimpieza/pages/VerRecambioElementoLimpiezaPage.tsx'
 
 import { ListPage as ChecklistListPage } from './feature/Checklist/pages/ListPage.tsx'
+import { ListPage as IncidentesListPage } from './feature/Incidentes/pages/ListPage.tsx'
 import { SuperficiesPage } from './feature/Superficies/pages/ListPage.tsx';
 import { NuevaSuperficiePage } from './feature/Superficies/pages/NuevoSuperficiePage.tsx';
 import { EditarSuperficiePage } from './feature/Superficies/pages/EditarSuperficiePage.tsx';
@@ -360,6 +361,9 @@ const router = createBrowserRouter([
           { path: '*', element: <Page404 /> },
           {
             path: 'checklist', element: <ChecklistListPage />
+          },
+          {
+            path: 'incidentes', element: <IncidentesListPage />
           }
         ],
       },

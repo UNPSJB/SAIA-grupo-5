@@ -44,6 +44,14 @@ export const navGroups: NavGroup[] = [
         ],
     },
     {
+        id: 'incidentes',
+        label: 'No conformidades',
+        icon: 'bi-exclamation-triangle',
+        items: [
+            { label: 'Incidentes', to: '/incidentes', icon: 'bi-exclamation-triangle-fill' },
+        ]
+    },
+    {
         id: 'datos-maestros',
         label: 'Datos maestros',
         icon: 'bi-database',
