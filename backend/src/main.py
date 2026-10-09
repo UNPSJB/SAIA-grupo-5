@@ -23,6 +23,7 @@ from src.tipos_vencimientos.models import TipoVencimiento
 from src.vencimiento_personal.models import VencimientoPersonal
 from src.configuracion_sistema.models import ConfiguracionSistema
 from src.notificaciones.models import Notificacion
+from src.incidentes.models import AccionCorrectiva, Incidente, TipoIncidente
 
 # Importamos la configuración validada por Pydantic
 from src.config import settings
@@ -56,6 +57,7 @@ from src.tipos_vencimientos.router import router as tipos_vencimientos_router
 from src.vencimiento_personal.router import router as vencimiento_personal_router
 from src.configuracion_sistema.router import router as configuracion_sistema_router
 from src.notificaciones.router import router as notificaciones_router
+from src.incidentes.router import router as incidentes_router
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -101,6 +103,7 @@ app.include_router(tipos_vencimientos_router)
 app.include_router(vencimiento_personal_router)
 app.include_router(configuracion_sistema_router)
 app.include_router(notificaciones_router)
+app.include_router(incidentes_router)
 
 
 app.include_router(documentos_router)

@@ -25,3 +25,4 @@ from src.planesCalibracion.models import PlanCalibracion
 from src.registrosCalibracion.models import RegistroCalibracion
 from src.configuracion_sistema.models import ConfiguracionSistema
 from src.notificaciones.models import Notificacion
+from src.incidentes.models import AccionCorrectiva, Incidente, TipoIncidente

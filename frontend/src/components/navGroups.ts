@@ -22,6 +22,7 @@ export const navGroups: NavGroup[] = [
             { label: 'Tareas', to: '/tareas', icon: 'bi-list-check' },
             { label: 'Checklist', to: '/checklist', icon: 'bi-check2-square' },
             { label: 'Historial', to: '/historial', icon: 'bi-clock-history', adminOnly: true },
+            { label: 'Incidentes', to: '/incidentes', icon: 'bi-exclamation-diamond', adminOnly: true },
         ],
     },
     {
