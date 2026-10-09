@@ -11,16 +11,26 @@ import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
 
 import { DeleteVersionDocumentoModal } from '../components/DeleteVersionDocumentoModal'; 
+import { MarcarVigenteModal } from '../components/MarcarVigenteModal';
 import type { VersionDocumento } from '../types';
+import { ActionButton } from '../../../components/ActionButton';
 
 export function ListPage() {
     const navigate = useNavigate();  
     const { documentoId } = useParams();
     const { currentUser } = useAuth();
     const [search, setSearch] = useState('');
-    const { data: versiones, error, isLoading } = useApi<VersionDocumento[]>(`/versiones-documentos/documento/${documentoId}`)
+    const [incluirHistoricas, setIncluirHistoricas] = useState(false);
+    const urlBase = `/versiones-documentos/documento/${documentoId}`;
+    const { data: versiones, error, isLoading } = useApi<VersionDocumento[]>(
+        incluirHistoricas ? `${urlBase}?incluir_historicas=true` : urlBase
+    );
     const [versionDocumentoToDelete, setVersionDocumentoToDelete] = useState<VersionDocumento | null>(null);
-    
+    const [versionAMarcar, setVersionAMarcar] = useState<VersionDocumento | null>(null);
+    const recargar = () => Promise.all([
+        mutate(urlBase),
+        mutate(`${urlBase}?incluir_historicas=true`),
+    ]);
     const filteredVersionesDocumentos = useMemo(() => {
         if (!Array.isArray(versiones)) return [];     
         return (versiones ?? []).filter((version) => {
@@ -70,30 +80,37 @@ export function ListPage() {
             minWidth: '160px',
         },
         {
-            name: 'Vigente',
-            selector: row => row.vigente ? 'Vigente' : 'No vigente',
+            name: 'Vigencia',
+            selector: row => row.vigente ? 'Vigente' : row.fecha_hasta_vigencia ? 'Histórica' : 'Sin vigencia',
             sortable: true,
             center: true,
-            cell: row => (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10}}>
-                    <div
-                        style={{
-                            padding: '4px 12px',
-                            borderRadius: '16px',
-                            background: row.vigente ? '#dcf2fc' : '#fee2e2',
-                            color: row.vigente ? '#163b65' : '#991b1b',
-                            fontWeight: 700,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            whiteSpace: 'nowrap',
-                        }}
-                    >
-                        {row.vigente ? 'Vigente' : 'No vigente'}
+            cell: row => {
+                const estado = row.vigente
+                    ? { label: 'Vigente',      fondo: '#dcf2fc', texto: '#163b65' }
+                    : row.fecha_hasta_vigencia
+                        ? { label: 'Histórica',    fondo: '#e5e7eb', texto: '#374151' }
+                        : { label: 'Sin vigencia', fondo: '#fef3c7', texto: '#92400e' };
+                return (
+                    <div style={{
+                        padding: '4px 12px', borderRadius: '16px', background: estado.fondo,
+                        color: estado.texto, fontWeight: 700, whiteSpace: 'nowrap',
+                    }}>
+                        {estado.label}
                     </div>
-                </div>
-            )
+                );
+            },
         },
+        {
+            name: 'Vigente desde',
+            selector: row => row.fecha_desde_vigencia ?? '',
+            sortable: true,
+            center: true,
+            minWidth: '170px',
+            cell: row => row.fecha_desde_vigencia
+                ? new Date(row.fecha_desde_vigencia).toLocaleString('es-AR')
+                : '-',
+        },
+
         {
             name: 'Estado',
             selector: row => row.activo ? 'Activo' : 'Inactivo',
@@ -125,32 +142,49 @@ export function ListPage() {
             minWidth: '260px',
             cell: (row) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <Button
+                    <ActionButton
                         variant="outline-info"
                         size="sm"
+                        tooltip="Ver"
+                        icon = "bi-eye"
                         onClick={() => navigate(`/versiones-documentos/version/${row.id}`)}
                     >
-                        <i className="bi bi-eye me-1"></i>Ver
-                    </Button>
+                    </ActionButton>
 
                     {currentUser?.administrar && (
                         <>
-                            <Button
+                        {!row.fecha_hasta_vigencia &&(
+                            <ActionButton
                                 variant="outline-primary"
                                 size="sm"
+                                tooltip="Editar"
+                                icon = "bi-pencil"
                                 disabled={!row.activo}      // Si no esta activo se muestra en gris y no se puede editar
                                 onClick={() => navigate(`/versiones-documentos/version/${row.id}/edit`)}
                             >
-                                <i className="bi bi-pencil me-1"></i>Editar
-                            </Button>
-                            <Button
+                            </ActionButton>
+                        )}
+                            {row.activo && !row.vigente && !row.fecha_hasta_vigencia &&(
+                                <ActionButton
+                                    variant="outline-success"
+                                    size="sm"
+                                    tooltip="Marcar vigente"
+                                    icon="bi-patch-check"
+                                    onClick={() => setVersionAMarcar(row)}
+                                >
+                                </ActionButton>
+                            )}
+                            {!row.fecha_hasta_vigencia &&(
+                            <ActionButton
                                 variant={row.activo ? 'outline-danger' : 'outline-success'}
                                 size="sm"
+                                tooltip={row.activo ? 'Dar de baja' : 'Dar de alta'}
+                                icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
+                                disabled={row.vigente && row.activo}
                                 onClick={() => setVersionDocumentoToDelete(row)}
                             >
-                                <i className={`bi ${row.activo ? 'bi-dash-circle' : 'bi-check-circle'} me-1`}></i>
-                                {row.activo ? 'Dar de baja' : 'Dar de alta'}
-                            </Button>
+                            </ActionButton>
+                            )}
                         </>  
                     )}
                 </div>
@@ -166,6 +200,15 @@ export function ListPage() {
                 </Col>
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
+                </Col>
+                <Col xs="auto" className="align-self-center">
+                    <Form.Check
+                        type="switch"
+                        id="switch-historicas"
+                        label="Ver históricas"
+                        checked={incluirHistoricas}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setIncluirHistoricas(e.target.checked)}
+                    />
                 </Col>
                 <Col xs="auto" className="d-flex justify-content-end">
                     <Button
@@ -195,7 +238,13 @@ export function ListPage() {
             <DeleteVersionDocumentoModal
                 version={versionDocumentoToDelete}
                 onHide={() => setVersionDocumentoToDelete(null)}
-                onDeleted={() => mutate(`/versiones-documentos/documento/${documentoId}`)}
+                onDeleted={recargar}
+            />
+            <MarcarVigenteModal
+                version={versionAMarcar}
+                versionVigenteActual={versiones.find(v => v.vigente)}
+                onHide={() => setVersionAMarcar(null)}
+                onMarked={recargar}
             />
         </Container>
     );

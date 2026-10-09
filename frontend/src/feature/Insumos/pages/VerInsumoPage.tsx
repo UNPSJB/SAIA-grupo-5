@@ -2,27 +2,29 @@ import { Container, Alert, Row, Col, Card, Button } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
-import type { TipoVencimiento } from "../types";
+import type { Insumo } from "../types";
 import { PageLoading } from "../../../components/PageLoading";
+import { useAuth } from "../../../hooks";
 
-export function VerTipoVencimientoPage() {
+export function VerInsumoPage() {
     const navigate = useNavigate();
     const { id } = useParams(); 
+    const { currentUser } = useAuth();
 
-    const { data: tipoVencimiento, isLoading, error } = useApi<TipoVencimiento>(`/tipos-vencimientos/${id}`);
+    const { data: insumo, isLoading, error } = useApi<Insumo>(`/insumos/${id}`);
 
-    const tituloPagina = "Detalle del Tipo Vencimiento";
+    const tituloPagina = "Detalle del Insumo";
 
-    if (isLoading) return <PageLoading title={tituloPagina} />;
+    if (isLoading) return  <PageLoading title={tituloPagina} />;
 
-    if (!tipoVencimiento || error) return (
+    if (!insumo || error) return (
         <Container>
-            <PageHeader title="Tipo Vencimiento no encontrado." />
+            <PageHeader title="Insumo no encontrado." />
             <Row className="justify-content-center mt-4">
                 <Col md={6}>
                     <Alert variant="danger" className="text-center shadow-sm">
                         <i className="bi bi-exclamation-triangle-fill me-2"></i>
-                        {error ? "Ocurrio un error al cargar los datos." : "El Tipo Vencimiento ingresado no existe."}
+                        {error ? "Ocurrio un error al cargar los datos." : "El Insumo ingresado no existe."}
                     </Alert>
                 </Col>
             </Row>
@@ -39,14 +41,29 @@ export function VerTipoVencimientoPage() {
                         <Card.Body className="p-4">
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
                                 <Col sm={4} className="fw-bold text-secondary">Nombre</Col>
-                                <Col sm={8} className="fs-6">{tipoVencimiento.nombre}</Col>
+                                <Col sm={8} className="fs-5">{insumo.nombre}</Col>
                             </Row>
 
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Descripcion</Col>
+                                <Col sm={4} className="fw-bold text-secondary">Unidad de Medida</Col>
                                 <Col sm={8}>
-                                    {tipoVencimiento.descripcion ? (
-                                        <span>{tipoVencimiento.descripcion}</span>) : (<span className="text-muted fst-italic">Sin descripcion detallada</span>)}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                        <div
+                                            style={{
+                                            padding: '4px 12px',
+                                            borderRadius: '16px',
+                                            background: '#dbeafe',
+                                            color: '#1d4ed8',
+                                            fontWeight: 700,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            whiteSpace: 'nowrap',
+                                        }}
+                                    >
+                                        {insumo.unidad_medida}
+                                    </div>
+                                </div>
                                 </Col>
                             </Row>
 
@@ -57,16 +74,16 @@ export function VerTipoVencimientoPage() {
                                         style={{
                                             padding: '6px 16px',
                                             borderRadius: '20px',
-                                            background: tipoVencimiento.activo ? '#dcfce7' : '#fee2e2',
-                                            color: tipoVencimiento.activo ? '#166534' : '#991b1b',
+                                            background: insumo.activo ? '#dcfce7' : '#fee2e2',
+                                            color: insumo.activo ? '#166534' : '#991b1b',
                                             fontWeight: 700,
                                             display: 'inline-flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                         }}
                                     >
-                                        <i className={`bi ${tipoVencimiento.activo ? 'bi-check-circle-fill' : 'bi-x-circle-fill'} me-2`}></i>
-                                        {tipoVencimiento.activo ? 'Activo' : 'Inactivo'}
+                                        <i className={`bi ${insumo.activo ? 'bi-check-circle-fill' : 'bi-x-circle-fill'} me-2`}></i>
+                                        {insumo.activo ? 'Activo' : 'Inactivo'}
                                     </div>
                                 </Col>
                             </Row>
@@ -75,19 +92,20 @@ export function VerTipoVencimientoPage() {
                         <Card.Footer className="bg-light border-top p-3 d-flex justify-content-end gap-2">
                             <Button 
                                 variant="outline-secondary" 
-                                onClick={() => navigate('/tipos-vencimientos')}
+                                onClick={() => navigate('/insumos')}
                             >
                                 <i className="bi bi-arrow-left me-1"></i>Volver a la lista
                             </Button>
-                            
-                            <Button 
-                                variant="primary" 
-                                disabled={!tipoVencimiento.activo}
-                                onClick={() => navigate(`/tipos-vencimientos/${tipoVencimiento.id}/edit`)}
-                            >
-                                <i className="bi bi-pencil me-1"></i>Editar Tipo Vencimiento   
+                            {currentUser?.administrar && (
+                                <Button 
+                                    variant="primary" 
+                                    disabled={!insumo.activo}
+                                    onClick={() => navigate(`/insumos/${insumo.id}/edit`)}
+                                >
+                                    <i className="bi bi-pencil me-1"></i>Editar Insumo   
 
-                            </Button>
+                                </Button>
+                            )}
                         </Card.Footer>
                     </Card>
                 </Col>
