@@ -1,4 +1,4 @@
-import { Container, Spinner, Alert, Col, Row } from "react-bootstrap";
+import { Container, Alert, Col, Row } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { mutate } from "swr";
 import { PageHeader } from "../../../components/PageHeader";
@@ -7,6 +7,8 @@ import { api } from "../../../libs/axios";
 import { useApi } from "../../../hooks/useApi";
 import type { VersionDocumento, NewVersionDocumento } from "../types";
 import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
+import { PageLoading } from "../../../components/PageLoading";
+
 
 export function EditarVersionDocumentoPage(){
     const navigate = useNavigate();    
@@ -17,10 +19,10 @@ export function EditarVersionDocumentoPage(){
     const actualizarVersionDocumento = async (datos: NewVersionDocumento) => {
         try{
             await api.put(`/versiones-documentos/${id}`, datos);
-            await mutate(`/versiones-documentos/documento/${version.documento_id}`);
+            await mutate(`/versiones-documentos/documento/${version?.documento_id}`);
             await mutate(`/versiones-documentos/${id}`);
             mostrarAlertaExito("La versión del documento se edito correctamente.");
-            navigate(`/versiones-documentos/documento/${version.documento_id}`);
+            navigate(`/versiones-documentos/documento/${version?.documento_id}`);
 
         } catch (error: any){
             let mensajeFinal = "No se pudo editar la versión del documento.";        
@@ -33,14 +35,8 @@ export function EditarVersionDocumentoPage(){
         }
     };
 
-    if (isLoading) return (
-        <>
-            <PageHeader title="Editar Versión" />
-            <Spinner animation="border" role="status">
-                <span className="visually-hidden">Cargando...</span>
-            </Spinner>
-        </>
-    )
+    if (isLoading) return <PageLoading title="Editar Versión" />;
+
     if (!version) return (
         <Container>
             <PageHeader title="Versión no encontrada" />
@@ -70,8 +66,8 @@ export function EditarVersionDocumentoPage(){
             <Container>
                 <VersionDocumentoForm textoBoton="Editar Versión"
                     onSubmit={actualizarVersionDocumento}
-                    valoresIniciales={{ 
-                    documento_id: version.documento_id || "",
+                    valoresIniciales={{
+                    documento_id: version.documento_id,
                     observacion: version.observacion,
                     archivo: version.archivo,
                     fecha_subida: version.fecha_subida }}/>

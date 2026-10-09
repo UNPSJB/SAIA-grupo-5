@@ -1,4 +1,4 @@
-import { Container, Spinner, Alert, Col, Row } from "react-bootstrap";
+import { Container, Alert, Col, Row } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { mutate } from "swr";
 import { PageHeader } from "../../../components/PageHeader";
@@ -7,6 +7,7 @@ import { api } from "../../../libs/axios";
 import { useApi } from "../../../hooks/useApi";
 import type { Documento, NewDocumento } from "../types";
 import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
+import { PageLoading } from "../../../components/PageLoading";
 
 export function EditarDocumentoPage(){
     const navigate = useNavigate();    
@@ -32,14 +33,8 @@ export function EditarDocumentoPage(){
         }
     };
 
-    if (isLoading) return (
-        <>
-            <PageHeader title="Editar Documento" />
-            <Spinner animation="border" role="status">
-                <span className="visually-hidden">Cargando...</span>
-            </Spinner>
-        </>
-    )
+    if (isLoading) return <PageLoading title="Editar Documento" />;
+
     if (!documento) return (
         <Container>
             <PageHeader title="Documento no encontrado" />
@@ -70,9 +65,9 @@ export function EditarDocumentoPage(){
             <Container>
                 <DocumentoForm textoBoton="Editar Documento"
                     onSubmit={actualizarDocumento}
-                    valoresIniciales={{ nombre: documento.nombre, 
-                    descripcion: documento.descripcion, 
-                    tipo_id: documento.tipo_id || ""}}/>
+                    valoresIniciales={{ nombre: documento.nombre,
+                    descripcion: documento.descripcion,
+                    tipo_id: documento.tipo_id}}/>
             </Container>
         </>
     )

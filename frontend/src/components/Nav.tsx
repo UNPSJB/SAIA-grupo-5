@@ -10,7 +10,6 @@ import { navGroups } from './navGroups';
 import { Breadcrumbs } from './Breadcrumbs';
 import './Nav.css';
 
-
 function isPathActive(pathname: string, to: string) {
     return pathname === to || pathname.startsWith(`${to}/`);
 }

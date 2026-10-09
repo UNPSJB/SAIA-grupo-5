@@ -2,6 +2,7 @@ import { Button, Form } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { useApi } from '../../../hooks/useApi';
+import type { TipoDocumento } from '../../TiposDocumentos/types';
 
 interface DocumentoFormProps {
     textoBoton: string;
@@ -13,7 +14,7 @@ interface DocumentoFormData { nombre: string; descripcion: string; tipo_id: numb
 
 export function DocumentoForm({ textoBoton, onSubmit, valoresIniciales }: DocumentoFormProps) {
     const navigate = useNavigate();
-    const { data: tipos } = useApi('/tipos-documentos/');
+    const { data: tipos } = useApi<TipoDocumento[]>('/tipos-documentos/');
 
     const {register, handleSubmit, formState: { errors }, } = useForm<DocumentoFormData> ({
         defaultValues: {

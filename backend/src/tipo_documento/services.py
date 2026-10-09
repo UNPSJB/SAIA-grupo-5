@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from src.tipo_documento.models import TipoDocumento
 from src.tipo_documento import schemas, exceptions
+from src.documentos.models import Documento
 
 logger = logging.getLogger(__name__)
 
@@ -38,8 +39,13 @@ def modificar_tipo_documento(db: Session, tipo_documento_id: int, tipo_documento
 
 def cambiar_estado_tipo_documento(db: Session, tipo_documento_id: int) -> schemas.TipoDocumento:
     db_tipo_documento = leer_tipo_documento(db, tipo_documento_id)
-    if db_tipo_documento is None:
-        raise exceptions.TipoDocumentoNoEncontrado()
+
+    if db_tipo_documento.activo:
+        documento_asociado = db.scalars(select(Documento).where(
+            Documento.tipo_id == tipo_documento_id,
+            Documento.activo == True)).first()
+        if documento_asociado:
+            raise exceptions.TipoDocumentoEnUso()
 
     db_tipo_documento.activo = not db_tipo_documento.activo
     db.commit()

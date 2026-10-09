@@ -19,12 +19,14 @@ export function ConfiguracionSistemaPage() {
     const { data: configuracion, error, isLoading } = useApi<ConfiguracionSistema>(CONFIGURACION_URL);
 
     const [diasAntelacion, setDiasAntelacion] = useState(15);
+    const [diasAntelacionElementos, setDiasAntelacionElementos] = useState(15);
     const [horaGeneracion, setHoraGeneracion] = useState("07:00");
     const [guardando, setGuardando] = useState(false);
 
     useEffect(() => {
         if (!configuracion) return;
         setDiasAntelacion(configuracion.dias_antelacion_vencimiento);
+        setDiasAntelacionElementos(configuracion.dias_antelacion_elementos);
         setHoraGeneracion(aHoraMinuto(configuracion.hora_generacion_checklists, configuracion.minuto_generacion_checklists));
     }, [configuracion]);
 
@@ -37,6 +39,7 @@ export function ConfiguracionSistemaPage() {
         try {
             await api.put(CONFIGURACION_URL, {
                 dias_antelacion_vencimiento: diasAntelacion,
+                dias_antelacion_elementos: diasAntelacionElementos,
                 hora_generacion_checklists: hora,
                 minuto_generacion_checklists: minuto,
             });
@@ -86,6 +89,22 @@ export function ConfiguracionSistemaPage() {
                                     />
                                     <Form.Text className="text-muted">
                                         Con cuántos días de anticipación se avisa que un vencimiento de personal está por vencer.
+                                    </Form.Text>
+                                </Form.Group>
+
+                                <Form.Group className="mb-3 text-start" controlId="formDiasAntelacion">
+                                    <Form.Label className="p-1 fw-bold">
+                                        Antelación de alerta de vencimientos de elementos de limpieza (días)
+                                    </Form.Label>
+                                    <Form.Control
+                                        required
+                                        type="number"
+                                        min={0}
+                                        value={diasAntelacionElementos}
+                                        onChange={(e) => setDiasAntelacionElementos(Number(e.target.value))}
+                                    />
+                                    <Form.Text className="text-muted">
+                                        Con cuántos días de anticipación se avisa que un vencimiento de elementos está por vencer.
                                     </Form.Text>
                                 </Form.Group>
 
