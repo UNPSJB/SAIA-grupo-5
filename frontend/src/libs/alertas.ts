@@ -9,6 +9,7 @@ export const mostrarAlertaExito = (mensaje: string) => {
         theme: "bootstrap-5-light",
         confirmButtonText: "Aceptar",
         customClass: {
+            confirmButton: 'btn btn-success px-4',
             actions: "justify-content-center"
         }
 });

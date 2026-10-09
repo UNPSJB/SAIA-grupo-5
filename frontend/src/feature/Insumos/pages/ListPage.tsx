@@ -49,14 +49,7 @@ export function ListPage() {
         <PageError title="Listado de Insumos" message="Ocurrió un error al cargar Insumos" />
     );
 
-    const baseColumns: TableColumn<Insumo>[] = [
-        {
-            name: "ID",
-            selector: row => row.id,
-            sortable: true,
-            center: true,
-            maxWidth: '160px'
-        },
+    const columns: TableColumn<Insumo>[] = [
         {
             name: 'Nombre',
             selector: row => row.nombre,
@@ -115,38 +108,45 @@ export function ListPage() {
                 </div>
             )
         },
-    ];
+        {
+            name: "Acciones",
+            center: true,
+            grow: 1.25,
+            minWidth: '220px',
+            cell: (row) => (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center' }}>
+                    
+                    <ActionButton
+                        variant="outline-info"
+                        size="sm"
+                        tooltip="Ver"
+                        icon="bi bi-eye"
+                        onClick={() => navigate(`/insumos/${row.id}`)}
+                    />
 
-    const columns: TableColumn<Insumo>[] = currentUser?.administrar
-        ? [
-            ...baseColumns,
-            {
-                name: "Acciones",
-                center: true,
-                cell: (row) => (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <ActionButton
-                            variant="outline-primary"
-                            size="sm"
-                            tooltip="Editar"
-                            icon="bi-pencil"
-                            disabled={!row.activo}
-                            onClick={() => navigate(`/insumos/${row.id}/edit`)}
-                        />
-                        {row.activo && (
+                    {currentUser?.administrar && (
+                        <>
                             <ActionButton
-                                variant="outline-danger"
+                                variant="outline-primary"
                                 size="sm"
-                                tooltip="Dar de baja"
-                                icon="bi-dash-circle"
+                                tooltip="Editar"
+                                icon="bi bi-pencil"
+                                disabled={!row.activo}
+                                onClick={() => navigate(`/insumos/${row.id}/edit`)}
+                            />
+                            <ActionButton
+                                variant={row.activo ? 'outline-danger' : 'outline-success'}
+                                size="sm"
+                                tooltip={row.activo ? 'Dar de baja' : 'Dar de alta'}
+                                icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
                                 onClick={() => setInsumoToDelete(row)}
                             />
-                        )}
-                    </div>
-                )
-            }
-        ]
-        : baseColumns;
+                        </>
+                    )}
+                </div>
+            )
+        }
+    ];
 
     return (
         <Container>
