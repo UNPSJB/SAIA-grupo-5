@@ -29,3 +29,4 @@ from src.notificaciones.models import Notificacion
 from src.tipo_incidente.models import TipoIncidente
 from src.incidentes.models import Incidente
 from src.accion_correctiva.models import AccionCorrectiva
+from src.historial_incidente.models import HistorialIncidente

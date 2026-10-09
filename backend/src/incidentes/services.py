@@ -6,20 +6,48 @@ from datetime import datetime
 from src.incidentes.models import Incidente
 from src.incidentes import exceptions, schemas
 from src.incidentes.constants import EstadoIncidente
+from src.historial_incidente import services as historial_services
+from src.historial_incidente.constants import TipoEvento
 
 logger = logging.getLogger(__name__)
 
 
-def crear_incidente(db: Session, incidente: schemas.IncidenteCreate, persona) -> schemas.Incidente:    
+def crear_incidente(db: Session, incidente: schemas.IncidenteCreate, persona) -> schemas.Incidente:
     datos = incidente.model_dump()
     datos["operario_id"] = persona.id
     datos["fecha_abierto"] = datetime.now()
-    
+
     _incidente = Incidente(**datos)
     db.add(_incidente)
+    db.flush()  # pra obtener el id del incidente para el historial
+
+    historial_services.registrar_evento_historial(
+        db,
+        incidente_id=_incidente.id,
+        tipo_evento=TipoEvento.CREADO,
+        usuario_id=persona.id,
+    )
+
     db.commit()
     db.refresh(_incidente)
     return _incidente
+
+
+def reabrir_incidente(db: Session, incidente_id: int, motivo: str, persona) -> schemas.Incidente:
+    db_incidente = leer_incidente(db, incidente_id)
+    db_incidente.estado = EstadoIncidente.ABIERTO
+
+    historial_services.registrar_evento_historial(
+        db,
+        incidente_id=db_incidente.id,
+        tipo_evento=TipoEvento.REABIERTO,
+        usuario_id=persona.id,
+        descripcion=motivo,
+    )
+
+    db.commit()
+    db.refresh(db_incidente)
+    return db_incidente
 
 def leer_incidente(db: Session, incidente_id: int) -> schemas.Incidente:
     db_incidente = db.scalar(select(Incidente).where(Incidente.id == incidente_id).options(joinedload(Incidente.tipo)))       

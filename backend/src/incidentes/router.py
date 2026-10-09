@@ -26,6 +26,15 @@ def update_incidente(incidente_id: int, incidente: schemas.IncidenteUpdate, db: 
 def cambiar_estado_incidente(incidente_id: int, db: Session = Depends(get_db)):
     return services.cambiar_estado_incidente(db, incidente_id)
 
+@router.post("/{incidente_id}/reabrir", response_model=schemas.Incidente)
+def reabrir_incidente(
+    incidente_id: int,
+    datos: schemas.IncidenteReabrir,
+    db: Session = Depends(get_db),
+    persona = Depends(get_current_persona),
+):
+    return services.reabrir_incidente(db, incidente_id, datos.motivo, persona)
+
 #lista todos los incidentes
 @router.get("/", response_model=list[schemas.Incidente])
 def read_incidentes(db: Session = Depends(get_db)):

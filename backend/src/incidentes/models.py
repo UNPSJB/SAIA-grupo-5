@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from src.personal.models import Persona
     from src.sector.models import Sector
     from src.accion_correctiva.models import AccionCorrectiva
+    from src.historial_incidente.models import HistorialIncidente
 
 def _valores_estado(enum_cls):
     valores = []
@@ -42,3 +43,4 @@ class Incidente(ModeloBase):
     operario: Mapped["Persona"] = relationship()
     sector: Mapped["Sector | None"] = relationship()
     acciones_correctivas: Mapped[list["AccionCorrectiva"]] = relationship(back_populates="incidente")
+    historial: Mapped[list["HistorialIncidente"]] = relationship(back_populates="incidente")

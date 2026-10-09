@@ -8,6 +8,8 @@ from src.accion_correctiva import exceptions, schemas
 from src.incidentes.models import Incidente
 from src.incidentes import exceptions as incidente_exceptions
 from src.incidentes.constants import EstadoIncidente
+from src.historial_incidente import services as historial_services
+from src.historial_incidente.constants import TipoEvento
 
 logger = logging.getLogger(__name__)
 
@@ -23,8 +25,17 @@ def crear_accion_correctiva(db: Session, accion_correctiva: schemas.AccionCorrec
 
     _accion_correctiva = AccionCorrectiva(**datos)
     db.add(_accion_correctiva)
+    db.flush()  # necesitamos el id de la accion correctiva para el evento de historial
 
     db_incidente.estado = EstadoIncidente.CERRADO
+
+    historial_services.registrar_evento_historial(
+        db,
+        incidente_id=db_incidente.id,
+        tipo_evento=TipoEvento.CERRADO,
+        usuario_id=persona.id,
+        accion_correctiva_id=_accion_correctiva.id,
+    )
 
     db.commit()
     db.refresh(_accion_correctiva)
