@@ -33,6 +33,7 @@ export const navGroups: NavGroup[] = [
             { label: 'Insumos químicos', to: '/insumos-quimicos', icon: 'bi-droplet' },
             { label: 'Equipos', to: '/equipos', icon: 'bi-tools' },
             { label: 'Elementos de limpieza', to: '/elementos-limpieza', icon: 'bi-bucket' },
+            { label: 'Documentos', to: '/documentos', icon: 'bi-file-text' },
             { label: 'Recambios', to: '/recambios-elementos-limpieza', icon: 'bi-arrow-repeat' },
             { label: 'Planes de calibracion', to: '/planes-calibracion', icon: 'bi-tools' },
             { label: 'Planes de limpieza', to: '/planes-limpieza', icon: 'bi-clipboard-check' },

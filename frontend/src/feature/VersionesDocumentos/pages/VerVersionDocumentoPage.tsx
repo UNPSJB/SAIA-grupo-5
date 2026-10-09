@@ -1,10 +1,17 @@
 import { Container, Alert, Row, Col, Card, Button } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
+import { mutate } from "swr";
+import { useState } from "react";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 import type { VersionDocumento } from "../types";
+import { MarcarVigenteModal } from "../components/MarcarVigenteModal";
 import { useAuth } from '../../../hooks';
 import { PageLoading } from "../../../components/PageLoading";
+
+
+const formatearFechaHora = (fecha?: string | null) =>
+    fecha ? new Date(fecha).toLocaleString('es-AR') : '-';
 
 
 export function VerVersionDocumentoPage() {
@@ -12,6 +19,10 @@ export function VerVersionDocumentoPage() {
     const { id } = useParams(); 
     const { data: version, isLoading, error } = useApi<VersionDocumento>(`/versiones-documentos/${id}`);
     const { data: documento } = useApi<{ nombre: string }>( version ? `/documentos/${version.documento_id}` : "");
+    const { data: versionesDelDocumento } = useApi<VersionDocumento[]>(
+        version ? `/versiones-documentos/documento/${version.documento_id}` : ""
+    );
+    const [versionAMarcar, setVersionAMarcar] = useState<VersionDocumento | null>(null);
     const { currentUser } = useAuth();
     const isAdmin = Boolean(currentUser?.administrar);
 
@@ -31,6 +42,18 @@ export function VerVersionDocumentoPage() {
             </Row>
         </Container>
     );
+
+    const estadoVigencia = version.vigente
+    ? { label: 'Vigente',      fondo: '#dcf2fc', texto: '#163b65', icono: 'bi-check-circle-fill' }
+    : version.fecha_hasta_vigencia
+        ? { label: 'Histórica',    fondo: '#e5e7eb', texto: '#374151', icono: 'bi-clock-history' }
+        : { label: 'Sin vigencia', fondo: '#fef3c7', texto: '#92400e', icono: 'bi-dash-circle-fill' };
+
+
+    const recargar = () => Promise.all([
+        mutate(`/versiones-documentos/${id}`),
+        mutate(`/versiones-documentos/documento/${version.documento_id}`),
+    ]);
 
     return (
         <Container>
@@ -71,25 +94,47 @@ export function VerVersionDocumentoPage() {
                             </Row>
 
                             <Row className="mb-2 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Vigente</Col>
+                                <Col sm={4} className="fw-bold text-secondary">Vigencia</Col>
                                 <Col sm={8}>
                                     <div
                                         style={{
                                             padding: '6px 16px',
                                             borderRadius: '20px',
-                                            background: version.vigente ? '#dcf2fc' : '#fee2e2',
-                                            color: version.vigente ? '#163b65' : '#991b1b',
+                                            background: estadoVigencia.fondo,
+                                            color: estadoVigencia.texto,
                                             fontWeight: 700,
                                             display: 'inline-flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                         }}
                                     >
-                                        <i className={`bi ${version.vigente ? 'bi-check-circle-fill' : 'bi-x-circle-fill'} me-2`}></i>
-                                        {version.vigente? 'Vigente' : 'No vigente'}
+                                        <i className={`bi ${estadoVigencia.icono} me-2`}></i>
+                                        {estadoVigencia.label}
                                     </div>
                                 </Col>
                             </Row>
+
+                            <Row className="mb-2 border-bottom pb-3 align-items-center">
+                                <Col sm={4} className="fw-bold text-secondary">Vigente desde</Col>
+                                <Col sm={8}>{formatearFechaHora(version.fecha_desde_vigencia)}</Col>
+                            </Row>
+
+                            {version.fecha_hasta_vigencia && (
+                                <Row className="mb-2 border-bottom pb-3 align-items-center">
+                                    <Col sm={4} className="fw-bold text-secondary">Vigente hasta</Col>
+                                    <Col sm={8}>{formatearFechaHora(version.fecha_hasta_vigencia)}</Col>
+                                </Row>
+                            )}
+
+                            <Row className="mb-2 border-bottom pb-3 align-items-center">
+                                <Col sm={4} className="fw-bold text-secondary">Marcada vigente por</Col>
+                                <Col sm={8}>
+                                    {version.aprobador
+                                        ? `${version.aprobador.nombre} ${version.aprobador.apellido}`
+                                        : <span className="text-muted fst-italic">-</span>}
+                                </Col>
+                            </Row>
+
 
                             <Row className="mb-2 align-items-center">
                                 <Col sm={4} className="fw-bold text-secondary">Estado Actual</Col>
@@ -133,7 +178,7 @@ export function VerVersionDocumentoPage() {
                             >
                                 <i className="bi bi-arrow-left me-1"></i>Volver a la lista
                             </Button>
-                            {isAdmin && (
+                            {isAdmin && !version.fecha_hasta_vigencia &&(
                                 <Button 
                                     variant="primary" 
                                     disabled={!version.activo}
@@ -142,11 +187,30 @@ export function VerVersionDocumentoPage() {
                                     <i className="bi bi-pencil me-1"></i>Editar Version   
 
                                 </Button>
+                                
+                            )}
+                            {isAdmin && !version.vigente && !version.fecha_hasta_vigencia &&(
+                                <Button 
+                                    variant="success" 
+                                    disabled={!version.activo}
+                                    onClick={() => setVersionAMarcar(version)}
+                                >
+                                    <i className="bi bi-patch-check me-1"></i>Marcar Vigente  
+
+                                </Button>
+                                
                             )}
                         </Card.Footer>
                     </Card>
                 </Col>
             </Row>
+
+            <MarcarVigenteModal
+                version={versionAMarcar}
+                versionVigenteActual={versionesDelDocumento?.find(v => v.vigente)}
+                onHide={() => setVersionAMarcar(null)}
+                onMarked={recargar}
+            />
         </Container>
     );
 }

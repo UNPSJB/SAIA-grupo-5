@@ -12,6 +12,8 @@ export type VersionDocumento = {
     documento: Documento
     fecha_desde_vigencia: string | null
     fecha_hasta_vigencia: string | null
+    aprobador: { nombre: string; apellido: string } | null
+    fecha_aprobacion: string | null
 }
 
 export type NewVersionDocumento = {
