@@ -383,8 +383,8 @@ const router = createBrowserRouter([
             element: <ProtectedRoute requireAdmin />,
             children: [
               { index: true, element: <VencimientosConsolidadosPage /> },
-          ]}
-          
+            ],
+          },
           { path: '*', element: <Page404 /> },
           {
             path: 'checklist', element: <ChecklistListPage />
