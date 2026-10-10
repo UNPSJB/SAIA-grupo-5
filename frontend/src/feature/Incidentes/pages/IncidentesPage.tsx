@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
-import { Alert, Badge, Button, Card, Form, InputGroup, Modal, Spinner, Table } from 'react-bootstrap';
+import { Alert, Badge, Button, Card, Form, InputGroup, Modal, Spinner } from 'react-bootstrap';
+import { type TableColumn } from 'react-data-table-component';
+import { AppTable } from '../../../components/AppTable';
 import { useLocation } from 'react-router-dom';
 import { useApi } from '../../../hooks/useApi';
 import type { EstadoIncidente, Incidente } from '../types';
@@ -36,6 +38,76 @@ export function IncidentesPage() {
                 .toLocaleLowerCase('es').includes(texto),
         );
     }, [busqueda, incidentes]);
+
+    const columnas: TableColumn<Incidente>[] = [
+        {
+            name: 'Incidente',
+            selector: (incidente) => incidente.nombre,
+            sortable: true,
+            grow: 2,
+            minWidth: '220px',
+            cell: (incidente) => (
+                <div className="incident-name-cell">
+                    <strong>{incidente.nombre}</strong>
+                    <div className="small text-muted mt-1 incident-description">{incidente.descripcion}</div>
+                </div>
+            ),
+        },
+        {
+            name: 'Tipo',
+            selector: (incidente) => incidente.tipo.nombre,
+            sortable: true,
+            minWidth: '130px',
+            cell: (incidente) => <Badge bg="light" text="dark" className="incident-type">{incidente.tipo.nombre}</Badge>,
+        },
+        {
+            name: 'Fecha',
+            selector: (incidente) => incidente.fecha,
+            sortable: true,
+            minWidth: '170px',
+            cell: (incidente) => <span className="text-nowrap">{formatDate(incidente.fecha)}</span>,
+        },
+        {
+            name: 'Reportado por',
+            selector: (incidente) => incidente.reportado_por,
+            sortable: true,
+            minWidth: '160px',
+            wrap: true,
+        },
+        {
+            name: 'Días abierto',
+            selector: (incidente) => incidente.dias_abierto,
+            sortable: true,
+            minWidth: '130px',
+            cell: (incidente) => (
+                <div>
+                    <span className={`incident-days${incidente.nivel_demora === 'demorado' ? ' is-delayed' : ''}`}>
+                        {incidente.nivel_demora === 'demorado' && <i className="bi bi-exclamation-triangle-fill" aria-label="Demorado" />}
+                        {incidente.dias_abierto} {incidente.dias_abierto === 1 ? 'día' : 'días'}
+                    </span>
+                    {incidente.nivel_demora === 'demorado' && <div><Badge bg="danger" className="mt-1">Demorado</Badge></div>}
+                </div>
+            ),
+        },
+        {
+            name: 'Estado',
+            selector: (incidente) => incidente.estado,
+            sortable: true,
+            minWidth: '110px',
+            cell: (incidente) => <Badge bg={incidente.estado === 'abierto' ? 'warning' : 'success'} text={incidente.estado === 'abierto' ? 'dark' : undefined}>{incidente.estado === 'abierto' ? 'Abierto' : 'Cerrado'}</Badge>,
+        },
+        {
+            name: 'Detalle',
+            button: true,
+            minWidth: '100px',
+            cell: (incidente) => (
+                <Button variant="outline-primary" size="sm" onClick={() => setIncidenteDetalle(incidente)} aria-label={`Ver detalle de ${incidente.nombre}`}>
+                    {incidente.foto_url ? <i className="bi bi-image me-1" aria-hidden="true" /> : <i className="bi bi-card-text me-1" aria-hidden="true" />}
+                    Ver
+                </Button>
+            ),
+        },
+    ];
 
     const demorados = (incidentes ?? []).filter((incidente) => incidente.nivel_demora === 'demorado').length;
     const abiertos = estado === 'abierto';
@@ -88,44 +160,25 @@ export function IncidentesPage() {
                             </div>
                         </div>
 
-                        {incidentesFiltrados.length === 0 ? (
-                            <div className="incident-empty-state">
-                                <i className={`bi ${abiertos ? 'bi-check2-circle' : 'bi-search'}`} aria-hidden="true" />
-                                <strong>{abiertos && !busqueda ? 'No hay incidentes abiertos pendientes' : 'No se encontraron incidentes'}</strong>
-                                <span>{abiertos && !busqueda ? 'Los incidentes abiertos sin acción correctiva aparecerán acá.' : 'Probá cambiar el filtro o el término de búsqueda.'}</span>
-                            </div>
-                        ) : (
-                            <Table responsive hover className="align-middle mb-0 incident-table">
-                                <thead><tr><th>Incidente</th><th>Tipo</th><th>Fecha</th><th>Reportado por</th><th>Días abierto</th><th>Estado</th><th>Detalle</th></tr></thead>
-                                <tbody>
-                                    {incidentesFiltrados.map((incidente) => (
-                                        <tr key={incidente.id} className={incidente.nivel_demora === 'demorado' ? 'incident-row-delayed' : undefined}>
-                                            <td>
-                                                <strong>{incidente.nombre}</strong>
-                                                <div className="small text-muted mt-1 incident-description">{incidente.descripcion}</div>
-                                            </td>
-                                            <td><Badge bg="light" text="dark" className="incident-type">{incidente.tipo.nombre}</Badge></td>
-                                            <td className="text-nowrap">{formatDate(incidente.fecha)}</td>
-                                            <td className="text-nowrap">{incidente.reportado_por}</td>
-                                            <td>
-                                                <span className={`incident-days${incidente.nivel_demora === 'demorado' ? ' is-delayed' : ''}`}>
-                                                    {incidente.nivel_demora === 'demorado' && <i className="bi bi-exclamation-triangle-fill" aria-label="Demorado" />}
-                                                    {incidente.dias_abierto} {incidente.dias_abierto === 1 ? 'día' : 'días'}
-                                                </span>
-                                                {incidente.nivel_demora === 'demorado' && <div><Badge bg="danger" className="mt-1">Demorado</Badge></div>}
-                                            </td>
-                                            <td><Badge bg={incidente.estado === 'abierto' ? 'warning' : 'success'} text={incidente.estado === 'abierto' ? 'dark' : undefined}>{incidente.estado === 'abierto' ? 'Abierto' : 'Cerrado'}</Badge></td>
-                                            <td>
-                                                <Button variant="outline-primary" size="sm" onClick={() => setIncidenteDetalle(incidente)} aria-label={`Ver detalle de ${incidente.nombre}`}>
-                                                    {incidente.foto_url ? <i className="bi bi-image me-1" aria-hidden="true" /> : <i className="bi bi-card-text me-1" aria-hidden="true" />}
-                                                    Ver
-                                                </Button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </Table>
-                        )}
+                        <div className="incident-table">
+                            <AppTable
+                                columns={columnas}
+                                data={incidentesFiltrados}
+                                pagination={incidentesFiltrados.length > 0}
+                                conditionalRowStyles={[{
+                                    when: (incidente) => incidente.nivel_demora === 'demorado',
+                                    style: { backgroundColor: '#fff8f6' },
+                                    classNames: ['incident-row-delayed'],
+                                }]}
+                                noDataComponent={(
+                                    <div className="incident-empty-state">
+                                        <i className={`bi ${abiertos ? 'bi-check2-circle' : 'bi-search'}`} aria-hidden="true" />
+                                        <strong>{abiertos && !busqueda ? 'No hay incidentes abiertos pendientes' : 'No se encontraron incidentes'}</strong>
+                                        <span>{abiertos && !busqueda ? 'Los incidentes abiertos sin acción correctiva aparecerán acá.' : 'Probá cambiar el filtro o el término de búsqueda.'}</span>
+                                    </div>
+                                )}
+                            />
+                        </div>
                     </Card.Body>
                 </Card>
             )}

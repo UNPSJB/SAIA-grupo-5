@@ -1,0 +1,50 @@
+.rdt_Table {
+    min-width: 100%;
+}
+
+.rdt_TableHeadRow {
+    align-items: stretch;
+}
+
+.rdt_cellBaseHead {
+    padding: .8rem .75rem;
+    color: #748188;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .035em;
+    text-transform: uppercase;
+}
+
+.rdt_TableCell {
+    padding: .9rem .75rem;
+    color: #47565c;
+    font-size: .86rem;
+}
+
+.rdt_TableRow {
+    min-height: 58px;
+}
+
+.rdt_TableRow:last-child .rdt_TableCell {
+    border-bottom: 0;
+}
+
+.incident-name-cell {
+    padding: .55rem 0;
+}
+
+.incident-name-cell strong {
+    color: #344349;
+}
+
+.incident-row-delayed {
+    box-shadow: inset 3px 0 #d73f30;
+}
+
+.notification-table .rdt_TableCell {
+    color: #435158;
+}
+
+.notification-table .rdt_TableRow.notification-row-unread {
+    background-color: #f4faf7;
+}

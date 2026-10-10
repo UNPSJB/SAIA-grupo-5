@@ -1,4 +1,6 @@
-import { Alert, Col, Container, Row, Spinner, Table } from "react-bootstrap";
+import { Alert, Col, Container, Row, Spinner } from "react-bootstrap";
+import { type TableColumn } from "react-data-table-component";
+import { AppTable } from "../../components/AppTable";
 import { PageHeader } from "../../components/PageHeader";
 import { useApi } from "../../hooks/useApi";
 import type { Insumo } from "./types";
@@ -25,30 +27,32 @@ export function InsumosPage() {
         </Container>
     )
 
-    console.log(data)
+    const columns: TableColumn<Insumo>[] = [
+        {
+            name: "#",
+            selector: (_insumo, rowIndex) => (rowIndex ?? 0) + 1,
+            sortable: true,
+            center: true,
+            maxWidth: "100px",
+        },
+        {
+            name: "Nombre",
+            selector: (insumo) => insumo.nombre,
+            sortable: true,
+            grow: 2,
+        },
+        {
+            name: "Unidad de medida",
+            selector: (insumo) => insumo.unidad_medida,
+            sortable: true,
+        },
+    ];
 
     return (
         <>
             <PageHeader title="Listado de Insumos" />
-            <Container >
-                <Table striped bordered hover>
-                    <thead>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">Nombre</th>
-                            <th scope="col">Unidad de medida</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {data?.map((insumo: Insumo, i) => (
-                            <tr key={insumo.id}>
-                                <th scope="row">{i + 1}</th>
-                                <td>{insumo.nombre}</td>
-                                <td>{insumo.unidad_medida}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </Table>
+            <Container>
+                <AppTable columns={columns} data={data ?? []} />
             </Container>
         </>
     )

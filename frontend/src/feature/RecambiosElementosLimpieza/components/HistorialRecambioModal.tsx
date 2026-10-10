@@ -1,4 +1,6 @@
-import { Button, Modal, Table } from "react-bootstrap";
+import { Button, Modal } from "react-bootstrap";
+import { type TableColumn } from "react-data-table-component";
+import { AppTable } from "../../../components/AppTable";
 import type { RecambioElementoLimpieza } from "../types";
 
 interface HistorialRecambiosModalProps {
@@ -8,6 +10,20 @@ interface HistorialRecambiosModalProps {
 }
 
 export function HistorialRecambiosModal({ show, onHide, recambios }: HistorialRecambiosModalProps) {
+    const columns: TableColumn<RecambioElementoLimpieza>[] = [
+        {
+            name: "Fecha",
+            selector: (recambio) => recambio.fecha,
+            sortable: true,
+            minWidth: "160px",
+        },
+        {
+            name: "Observación",
+            selector: (recambio) => recambio.observacion ?? "-",
+            wrap: true,
+        },
+    ];
+
     return (
         <Modal show={show} onHide={onHide} centered size="lg">
             <Modal.Header closeButton>
@@ -23,26 +39,7 @@ export function HistorialRecambiosModal({ show, onHide, recambios }: HistorialRe
                         Este elemento todavía no tiene recambios registrados.
                     </p>
                 ) : (
-                    <Table hover responsive className="mb-0">
-                        <thead>
-                            <tr>
-                                <th>Fecha</th>
-                                <th>Observación</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {recambios.map((recambio) => (
-                                <tr key={recambio.id}>
-                                    <td style={{ whiteSpace: "nowrap" }}>
-                                        {recambio.fecha}
-                                    </td>
-                                    <td>
-                                        {recambio.observacion ?? "-"}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </Table>
+                    <AppTable columns={columns} data={recambios} pagination={false} />
                 )}
             </Modal.Body>
 
