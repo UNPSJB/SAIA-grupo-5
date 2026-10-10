@@ -235,7 +235,11 @@ export function ElementosLimpiezaPage() {
         <Container>
             <Row className="p-2 align-items-center">
                 <Col>
-                    <PageHeader title="Elementos de Limpieza" />
+                    <PageHeader
+                        eyebrow="GESTIÓN"
+                        title="Elementos de Limpieza"
+                        subtitle="Revisá el Elementos de Limpieza creados hasta la fecha."
+                    />
                 </Col>
 
                 <Col xs="auto" className="align-self-center">

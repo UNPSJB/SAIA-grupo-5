@@ -8,19 +8,19 @@ import { useApi } from '../../../hooks/useApi';
 import type { ConsumoAcumuladoProducto } from "../types";
 
 export function ConsumoAcumuladoPage() {
- 
+
     const [fecha_desde, setFechaDesde] = useState("");
     const [fecha_hasta, setFechaHasta] = useState("");
-    const [fecha_desde_consultada, setFechaDesdeConsultada] = useState("");     
-    const [fecha_hasta_consultada, setFechaHastaConsultada] = useState("");    
+    const [fecha_desde_consultada, setFechaDesdeConsultada] = useState("");
+    const [fecha_hasta_consultada, setFechaHastaConsultada] = useState("");
 
-    const { data: consumos, error, isLoading } = useApi<ConsumoAcumuladoProducto[]>( 
+    const { data: consumos, error, isLoading } = useApi<ConsumoAcumuladoProducto[]>(
         fecha_desde_consultada || fecha_hasta_consultada
-        ? `/consumos-productos/acumulado?` + 
-        `${fecha_desde_consultada ? `fecha_desde=${fecha_desde_consultada}` : ""}` +
-        `${fecha_hasta_consultada ? `${fecha_desde_consultada ? "&" : ""}fecha_hasta=${fecha_hasta_consultada}` : ""}`
-        : null
-    ); 
+            ? `/consumos-productos/acumulado?` +
+            `${fecha_desde_consultada ? `fecha_desde=${fecha_desde_consultada}` : ""}` +
+            `${fecha_hasta_consultada ? `${fecha_desde_consultada ? "&" : ""}fecha_hasta=${fecha_hasta_consultada}` : ""}`
+            : null
+    );
 
     if (isLoading) return (
         <>
@@ -73,7 +73,7 @@ export function ConsumoAcumuladoPage() {
                             alignItems: 'center',
                             justifyContent: 'center',
                             whiteSpace: 'nowrap',
-                        }}     
+                        }}
                     >
                         {row.unidad_medida}
                     </div>
@@ -86,7 +86,11 @@ export function ConsumoAcumuladoPage() {
         <Container>
             <Row className="p-2 align-items-center">
                 <Col>
-                    <PageHeader title="Consulta de Consumo Acumulado por Producto Quimico" />
+                    <PageHeader
+                        eyebrow="GESTIÓN"
+                        title="Consumo Acumulado por Producto Quimico"
+                        subtitle="Revisá el Consumo Acumulado por Producto Quimico."
+                    />
                 </Col>
             </Row>
             <Row className="p-2 align-items-end">
@@ -105,14 +109,14 @@ export function ConsumoAcumuladoPage() {
                         <Form.Label className="p-1 fw-bold">Fecha hasta: </Form.Label>
                         <Form.Control
                             type="date"
-                            value={fecha_hasta} 
+                            value={fecha_hasta}
                             onChange={(e) => setFechaHasta(e.target.value)}
                         />
                     </Form.Group>
                 </Col>
                 <Col xs="auto">
-                    <Button className="ms-2" variant="primary" 
-                        onClick={() => {setFechaDesdeConsultada(fecha_desde); setFechaHastaConsultada(fecha_hasta); }}
+                    <Button className="ms-2" variant="primary"
+                        onClick={() => { setFechaDesdeConsultada(fecha_desde); setFechaHastaConsultada(fecha_hasta); }}
                     >
                         <i className="bi bi-search me-1"></i> Consultar
                     </Button>

@@ -4,10 +4,10 @@ from src.database import engine
 from src.models import ModeloBase
 
 # Registra todos los modelos antes de armar las relaciones entre ellos.
-from src.insumos.models import Insumo  
-from src.personal.models import Persona  
-from src.equipos.models import Equipo  
-from src.sector.models import Sector  
+from src.insumos.models import Insumo
+from src.personal.models import Persona
+from src.equipos.models import Equipo
+from src.sector.models import Sector
 from src.plan_limpieza.models import PlanLimpieza
 from src.tarea.models import Tarea
 from src.tareas_ocurrencia.models import TareaOcurrencia
@@ -23,11 +23,10 @@ from src.tipos_vencimientos.models import TipoVencimiento
 from src.vencimiento_personal.models import VencimientoPersonal
 from src.configuracion_sistema.models import ConfiguracionSistema
 from src.notificaciones.models import Notificacion
+from src.tipo_incidente.models import TipoIncidente
+from src.incidentes.models import AccionCorrectiva, Incidente
 
-# Importamos la configuración validada por Pydantic
 from src.config import settings
-
-# Importamos configuracion de logger
 from src.settings import ROOT_PATH
 from src.logger import setup_logging
 from src.lifespan import db_creation_lifespan
@@ -59,11 +58,9 @@ from src.notificaciones.router import router as notificaciones_router
 from src.tipo_incidente.router import router as tipos_incidentes_router
 from src.incidentes.router import router as incidentes_router
 
-
 from fastapi.middleware.cors import CORSMiddleware
 
 setup_logging()
-
 
 app = FastAPI(root_path=ROOT_PATH, lifespan=db_creation_lifespan)
 
@@ -87,7 +84,6 @@ app.include_router(auth_router)
 app.include_router(personal_router)
 app.include_router(insumos_router)
 app.include_router(equipos_router)
-
 app.include_router(sector_router)
 app.include_router(plan_limpieza_router)
 app.include_router(tarea_router)
@@ -106,9 +102,6 @@ app.include_router(configuracion_sistema_router)
 app.include_router(notificaciones_router)
 app.include_router(tipos_incidentes_router)
 app.include_router(incidentes_router)
-
-
 app.include_router(documentos_router)
 app.include_router(tipo_documento_router)
 app.include_router(version_documento_router)
-

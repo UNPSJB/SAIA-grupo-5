@@ -222,7 +222,11 @@ export function PlanesCalibracionPage() {
         <Container>
             <Row className="p-2 align-items-center">
                 <Col>
-                    <PageHeader title="Planes de Calibración" />
+                    <PageHeader
+                        eyebrow="GESTIÓN"
+                        title="Planes de Calibración"
+                        subtitle="Revisá los Planes de Calibración y crea nuevos."
+                    />
                 </Col>
 
                 <Col xs="auto" className="align-self-center">

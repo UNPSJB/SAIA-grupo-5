@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom'
 
 import { HomePage } from './feature/Home/HomePage.tsx'
+import { IncidentesPage } from './feature/Incidentes/pages/IncidentesPage.tsx'
 import { Page404 } from './feature/NotFound/Page404.tsx'
 
 import { ListPage as InsumosListPage } from './feature/Insumos/pages/ListPage.tsx'
@@ -133,6 +134,14 @@ const router = createBrowserRouter([
         element: <App />,
         children: [
           { index: true, element: <HomePage /> },
+          {
+            path: 'incidentes',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <IncidentesPage /> },
+              { path: 'abiertos', element: <IncidentesPage /> },
+            ],
+          },
           {
             path: 'equipos',
             children: [

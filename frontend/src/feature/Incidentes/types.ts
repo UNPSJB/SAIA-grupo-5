@@ -1,39 +1,62 @@
-import type { Sector } from "../Sectores/types"
-import type { TipoIncidente } from "../TiposIncidentes/types"
+import type { Sector } from "../Sectores/types";
+import type { TipoIncidente } from "../TiposIncidentes/types";
 
-export type EstadoIncidente = 'Abierto' | 'Cerrado'; 
+export type EstadoIncidente = 'Abierto' | 'Cerrado';
+export type EstadoSeguimientoIncidente = EstadoIncidente;
+export type NivelDemora = 'normal' | 'demorado';
 
 export type PersonaBasica = {
-    nombre: string
-    apellido: string
-}
+    nombre: string;
+    apellido: string;
+};
 
 export type Incidente = {
-    id: number
-    nombre: string
-    descripcion: string
-    foto_opcional: string | null
-    fecha_abierto: string
-    fecha_cierre: string | null
-    estado: EstadoIncidente
-    activo: boolean
+    id: number;
+    nombre: string;
+    descripcion: string;
+    foto_opcional: string | null;
+    fecha_abierto: string;
+    fecha_cierre: string | null;
+    estado: EstadoIncidente;
+    activo: boolean;
+    tipo_id: number;
+    operario_id: number | null;
+    sector_id: number | null;
+    tipo: TipoIncidente;
+    sector: Sector | null;
+    operario: PersonaBasica | null;
+};
 
-    tipo_id: number
-    operario_id: number
-    sector_id: number | null
+export type IncidenteSeguimiento = {
+    id: number;
+    nombre: string;
+    descripcion: string;
+    estado: EstadoSeguimientoIncidente;
+    fecha: string;
+    fecha_abierto: string;
+    fecha_cierre: string | null;
+    foto_url: string | null;
+    reportado_por: string;
+    activo: boolean;
+    tipo_id: number;
+    tipo: { id: number; nombre: string };
+    dias_abierto: number;
+    nivel_demora: NivelDemora;
+};
 
-    tipo: TipoIncidente
-    sector: Sector | null
-    operario: PersonaBasica
-}
+export type IncidentesAbiertosPorTipo = {
+    tipo_id: number;
+    tipo: string;
+    cantidad: number;
+};
 
 export type NewIncidente = {
-    nombre: string
-    descripcion: string
-    foto_opcional?: string | null
-    tipo_id: number
-    sector_id?: number | null
-}
+    nombre: string;
+    descripcion: string;
+    foto_opcional?: string | null;
+    tipo_id: number;
+    sector_id?: number | null;
+};
 
 export type EditarIncidente = {
     nombre: string;
