@@ -36,6 +36,8 @@ class IncidenteCreate(IncidenteBase):
 class IncidenteUpdate(IncidenteBase):
     pass
 
+class IncidenteReabrir(BaseModel):
+    motivo: Annotated[str, Field(min_length=1, max_length=500)]
 
 class Incidente(IncidenteBase):
     id: int

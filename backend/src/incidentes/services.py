@@ -6,9 +6,13 @@ from sqlalchemy.orm import Session, joinedload, selectinload
 
 from src.incidentes import exceptions, schemas
 from src.incidentes.constants import DIAS_UMBRAL_INCIDENTE_DEMORADO, EstadoIncidente
-from src.incidentes.models import AccionCorrectiva, Incidente, TipoIncidente
+from src.incidentes.models import Incidente
+from src.accion_correctiva.models import AccionCorrectiva
+from src.tipo_incidente.models import TipoIncidente
 from src.incidentes.schemas import IncidentesAbiertosPorTipo
 from src.personal.models import Persona
+from src.historial_incidente import services as historial_services
+from src.historial_incidente.constants import TipoEvento
 
 
 def _dias_abierto(incidente: Incidente, estado: str, hoy: date | None = None) -> int:
@@ -54,9 +58,39 @@ def crear_incidente(db: Session, incidente: schemas.IncidenteCreate, persona: Pe
     datos["fecha_abierto"] = datetime.now()
     nuevo_incidente = Incidente(**datos)
     db.add(nuevo_incidente)
+    db.flush()  # para obtener el id del incidente antes de registrar el evento de historial
+
+    historial_services.registrar_evento_historial(
+        db,
+        incidente_id=nuevo_incidente.id,
+        tipo_evento=TipoEvento.CREADO,
+        usuario_id=persona.id,
+    )
+
     db.commit()
     db.refresh(nuevo_incidente)
     return nuevo_incidente
+
+
+def reabrir_incidente(db: Session, incidente_id: int, motivo: str, persona) -> Incidente:
+    db_incidente = leer_incidente(db, incidente_id)
+    db_incidente.estado = EstadoIncidente.ABIERTO
+
+    for accion_correctiva in db_incidente.acciones_correctivas:
+        if accion_correctiva.activo:
+            accion_correctiva.activo = False
+
+    historial_services.registrar_evento_historial(
+        db,
+        incidente_id=db_incidente.id,
+        tipo_evento=TipoEvento.REABIERTO,
+        usuario_id=persona.id,
+        descripcion=motivo,
+    )
+
+    db.commit()
+    db.refresh(db_incidente)
+    return db_incidente
 
 
 def leer_incidente(db: Session, incidente_id: int) -> Incidente:
@@ -105,7 +139,6 @@ def listar_incidentes(
             selectinload(Incidente.sector),
             selectinload(Incidente.acciones_correctivas),
         )
-        .where(Incidente.activo.is_(True))
     )
     if estado in ("abierto", EstadoIncidente.ABIERTO.value):
         consulta = consulta.where(~accion_registrada)

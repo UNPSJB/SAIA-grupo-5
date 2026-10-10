@@ -1,13 +1,18 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.incidentes.constants import EstadoIncidente
 from src.models import ModeloBase
-from src.personal.models import Persona
-from src.sector.models import Sector
-from src.tipo_incidente.models import TipoIncidente
+
+if TYPE_CHECKING:
+    from src.tipo_incidente.models import TipoIncidente
+    from src.personal.models import Persona
+    from src.sector.models import Sector
+    from src.accion_correctiva.models import AccionCorrectiva
+    from src.historial_incidente.models import HistorialIncidente
 
 
 def _valores_estado(enum_cls):
@@ -34,19 +39,8 @@ class Incidente(ModeloBase):
     operario_id: Mapped[int | None] = mapped_column(ForeignKey("personal.id"), nullable=True)
     sector_id: Mapped[int | None] = mapped_column(ForeignKey("sectores.id"), nullable=True)
 
-    tipo: Mapped[TipoIncidente] = relationship(back_populates="incidentes")
-    operario: Mapped[Persona | None] = relationship()
-    sector: Mapped[Sector | None] = relationship()
+    tipo: Mapped["TipoIncidente"] = relationship(back_populates="incidentes")
+    operario: Mapped["Persona"] = relationship()
+    sector: Mapped["Sector | None"] = relationship()
     acciones_correctivas: Mapped[list["AccionCorrectiva"]] = relationship(back_populates="incidente")
-
-
-class AccionCorrectiva(ModeloBase):
-    __tablename__ = "acciones_correctivas"
-
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    nombre: Mapped[str] = mapped_column(String(200), nullable=False)
-    descripcion: Mapped[str | None] = mapped_column(Text, nullable=True)
-    activo: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-    incidente_id: Mapped[int] = mapped_column(ForeignKey("incidentes.id"), nullable=False, index=True)
-
-    incidente: Mapped[Incidente] = relationship(back_populates="acciones_correctivas")
+    historial: Mapped[list["HistorialIncidente"]] = relationship(back_populates="incidente")

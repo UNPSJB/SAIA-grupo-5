@@ -63,3 +63,24 @@ export type EditarIncidente = {
     descripcion: string;
     foto_opcional: string | null;
 };
+
+export type NewAccionCorrectiva = {
+    incidente_id: number
+    descripcion: string
+}
+
+export type ReabrirIncidente = {
+    motivo: string
+}
+
+export type TipoEventoHistorial = "CREADO" | "CERRADO" | "REABIERTO"
+
+export type HistorialIncidente = {
+    id: number
+    incidente_id: number
+    tipo_evento: TipoEventoHistorial
+    fecha_evento: string
+    usuario_id: number
+    descripcion: string | null
+    accion_correctiva_id: number | null
+}

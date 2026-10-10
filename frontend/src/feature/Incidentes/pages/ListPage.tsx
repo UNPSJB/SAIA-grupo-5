@@ -1,12 +1,19 @@
 import { useMemo, useState } from 'react';
-import { Alert, Badge, Button, Card, Form, InputGroup, Modal, Spinner } from 'react-bootstrap';
+import { Alert, Badge, Button, Card, Form, InputGroup, Spinner } from 'react-bootstrap';
 import { type TableColumn } from 'react-data-table-component';
+import { mutate } from 'swr';
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
-import { useLocation } from 'react-router-dom';
+import { ActionButton } from '../../../components/ActionButton';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useApi } from '../../../hooks/useApi';
+import { useAuth } from '../../../hooks/useAuth';
+import { DeleteIncidenteModal } from '../components/DeleteIncidenteModal';
+import { AccionCorrectivaModal } from '../components/AccionCorrectivaModal';
+import { ReabrirIncidenteModal } from '../components/ReabrirIncidenteModal';
+import { HistorialIncidenteModal } from '../components/HistorialIncidenteModal';
 import type { IncidenteSeguimiento } from '../types';
-import './IncidentesPage.css';
+import './ListPage.css';
 
 type FiltroEstado = 'todos' | 'Abierto' | 'Cerrado';
 
@@ -14,7 +21,9 @@ function formatDate(value: string) {
     return new Intl.DateTimeFormat('es-AR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
 }
 
-export function IncidentesPage() {
+export function ListPage() {
+    const navigate = useNavigate();
+    const { currentUser } = useAuth();
     const { pathname } = useLocation();
     const [estadoSeleccionado, setEstadoSeleccionado] = useState<{ pathname: string; value: FiltroEstado }>({
         pathname,
@@ -25,7 +34,10 @@ export function IncidentesPage() {
         : pathname.startsWith('/incidentes/abiertos') ? 'Abierto' : 'todos';
     const setEstado = (value: FiltroEstado) => setEstadoSeleccionado({ pathname, value });
     const [busqueda, setBusqueda] = useState('');
-    const [incidenteDetalle, setIncidenteDetalle] = useState<IncidenteSeguimiento | null>(null);
+    const [incidenteToDelete, setIncidenteToDelete] = useState<IncidenteSeguimiento | null>(null);
+    const [incidenteParaAccionCorrectiva, setIncidenteParaAccionCorrectiva] = useState<IncidenteSeguimiento | null>(null);
+    const [incidenteParaReabrir, setIncidenteParaReabrir] = useState<IncidenteSeguimiento | null>(null);
+    const [incidenteParaHistorial, setIncidenteParaHistorial] = useState<IncidenteSeguimiento | null>(null);
     const estadoSeguimiento = estado === 'Abierto' ? 'abierto' : estado === 'Cerrado' ? 'cerrado' : 'todos';
     const orden = estadoSeguimiento === 'abierto' ? 'asc' : 'desc';
     const endpoint = estadoSeguimiento === 'todos'
@@ -98,14 +110,65 @@ export function IncidentesPage() {
             cell: (incidente) => <Badge bg={incidente.estado === 'Abierto' ? 'warning' : 'success'} text={incidente.estado === 'Abierto' ? 'dark' : undefined}>{incidente.estado}</Badge>,
         },
         {
-            name: 'Detalle',
-            button: true,
-            minWidth: '100px',
+            name: 'Acciones',
+            center: true,
+            minWidth: '160px',
             cell: (incidente) => (
-                <Button variant="outline-primary" size="sm" onClick={() => setIncidenteDetalle(incidente)} aria-label={`Ver detalle de ${incidente.nombre}`}>
-                    {incidente.foto_url ? <i className="bi bi-image me-1" aria-hidden="true" /> : <i className="bi bi-card-text me-1" aria-hidden="true" />}
-                    Ver
-                </Button>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, padding: '6px 0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                        <ActionButton
+                            variant="outline-secondary"
+                            size="sm"
+                            tooltip="Ver historial"
+                            icon="bi-clock-history"
+                            onClick={() => setIncidenteParaHistorial(incidente)}
+                        />
+                        {currentUser?.administrar && (
+                            <ActionButton
+                                variant="outline-success"
+                                size="sm"
+                                tooltip="Acción correctiva"
+                                icon="bi-clipboard-check"
+                                disabled={incidente.estado === 'Cerrado'}
+                                onClick={() => setIncidenteParaAccionCorrectiva(incidente)}
+                            />
+                        )}
+                        <ActionButton
+                            variant="outline-warning"
+                            size="sm"
+                            tooltip="Reabrir incidente"
+                            icon="bi-arrow-counterclockwise"
+                            disabled={incidente.estado === 'Abierto'}
+                            onClick={() => setIncidenteParaReabrir(incidente)}
+                        />
+                    </div>
+                    {currentUser?.administrar && (
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                            <ActionButton
+                                variant="outline-info"
+                                size="sm"
+                                tooltip="Ver"
+                                icon="bi-eye"
+                                onClick={() => navigate(`/incidentes/${incidente.id}`)}
+                            />
+                            <ActionButton
+                                variant="outline-primary"
+                                size="sm"
+                                tooltip="Editar"
+                                icon="bi-pencil"
+                                disabled={!incidente.activo}
+                                onClick={() => navigate(`/incidentes/${incidente.id}/edit`)}
+                            />
+                            <ActionButton
+                                variant={incidente.activo ? 'outline-danger' : 'outline-success'}
+                                size="sm"
+                                tooltip={incidente.activo ? 'Dar de baja' : 'Dar de alta'}
+                                icon={incidente.activo ? 'bi-dash-circle' : 'bi-check-circle'}
+                                onClick={() => setIncidenteToDelete(incidente)}
+                            />
+                        </div>
+                    )}
+                </div>
             ),
         },
     ];
@@ -120,10 +183,24 @@ export function IncidentesPage() {
                 eyebrow="SEGUIMIENTO Y PREVENCIÓN"
                 title={titulo}
                 subtitle="Revisá los incidentes reportados y consultá las acciones correctivas registradas."
-                actions={abiertos && (
-                    <Badge bg="warning" text="dark" className="page-header-summary">
-                        <i className="bi bi-exclamation-triangle me-1" />{demorados} demorados
-                    </Badge>
+                actions={(
+                    <div className="d-flex align-items-center gap-2">
+                        {abiertos && (
+                            <Badge bg="warning" text="dark" className="page-header-summary">
+                                <i className="bi bi-exclamation-triangle me-1" />{demorados} demorados
+                            </Badge>
+                        )}
+                        {currentUser?.administrar && (
+                            <Button
+                                variant="primary"
+                                size="sm"
+                                onClick={() => navigate('/incidentes/new')}
+                                style={{ whiteSpace: 'nowrap' }}
+                            >
+                                + Nuevo Incidente
+                            </Button>
+                        )}
+                    </div>
                 )}
             />
 
@@ -172,6 +249,10 @@ export function IncidentesPage() {
                                     when: (incidente) => incidente.nivel_demora === 'demorado',
                                     style: { backgroundColor: '#fff8f6' },
                                     classNames: ['incident-row-delayed'],
+                                }, {
+                                    when: (incidente) => !incidente.activo,
+                                    style: { opacity: 0.55 },
+                                    classNames: ['incident-row-inactive'],
                                 }]}
                                 noDataComponent={(
                                     <div className="incident-empty-state">
@@ -186,31 +267,28 @@ export function IncidentesPage() {
                 </Card>
             )}
 
-            <Modal show={incidenteDetalle !== null} onHide={() => setIncidenteDetalle(null)} size="lg" centered>
-                <Modal.Header closeButton>
-                    <Modal.Title>{incidenteDetalle?.nombre ?? 'Detalle del incidente'}</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    {incidenteDetalle && (
-                        <div className="incident-detail">
-                            <div className="d-flex flex-wrap gap-2 mb-3">
-                                <Badge bg={incidenteDetalle.estado === 'Abierto' ? 'warning' : 'success'} text={incidenteDetalle.estado === 'Abierto' ? 'dark' : undefined}>
-                                    {incidenteDetalle.estado}
-                                </Badge>
-                                <Badge bg="light" text="dark" className="incident-type">{incidenteDetalle.tipo.nombre}</Badge>
-                                <span className="text-muted small">{formatDate(incidenteDetalle.fecha)} · Reportado por {incidenteDetalle.reportado_por}</span>
-                            </div>
-                            <p className="incident-detail-description">{incidenteDetalle.descripcion}</p>
-                            {incidenteDetalle.foto_url ? (
-                                <img className="incident-detail-photo" src={incidenteDetalle.foto_url} alt={`Foto del incidente: ${incidenteDetalle.nombre}`} />
-                            ) : (
-                                <div className="incident-no-photo"><i className="bi bi-image me-2" />Este incidente no tiene una foto adjunta.</div>
-                            )}
-                        </div>
-                    )}
-                </Modal.Body>
-                <Modal.Footer><Button variant="secondary" onClick={() => setIncidenteDetalle(null)}>Cerrar</Button></Modal.Footer>
-            </Modal>
+            <DeleteIncidenteModal
+                incidente={incidenteToDelete}
+                onHide={() => setIncidenteToDelete(null)}
+                onDeleted={() => mutate(endpoint)}
+            />
+
+            <AccionCorrectivaModal
+                incidente={incidenteParaAccionCorrectiva}
+                onHide={() => setIncidenteParaAccionCorrectiva(null)}
+                onRegistrada={() => mutate(endpoint)}
+            />
+
+            <ReabrirIncidenteModal
+                incidente={incidenteParaReabrir}
+                onHide={() => setIncidenteParaReabrir(null)}
+                onReabierto={() => mutate(endpoint)}
+            />
+
+            <HistorialIncidenteModal
+                incidente={incidenteParaHistorial}
+                onHide={() => setIncidenteParaHistorial(null)}
+            />
         </div>
     );
 }
