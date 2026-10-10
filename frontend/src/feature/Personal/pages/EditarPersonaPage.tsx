@@ -1,4 +1,4 @@
-import { Container, Spinner, Alert, Col, Row } from 'react-bootstrap'
+import { Container, Alert, Col, Row } from 'react-bootstrap'
 import { useNavigate, useParams } from 'react-router-dom'
 import { mutate } from 'swr'
 import { PageHeader } from '../../../components/PageHeader'
@@ -7,6 +7,8 @@ import { api } from '../../../libs/axios'
 import { useApi } from '../../../hooks/useApi'
 import { useAuth } from '../../../hooks/useAuth'
 import type { NewPersona, Persona } from '../types'
+import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
+import { PageLoading } from '../../../components/PageLoading'
 
 export function EditarPersonaPage() {
   const navigate = useNavigate()
@@ -28,24 +30,21 @@ export function EditarPersonaPage() {
       }
 
       await mutate('/personal/')
+      mostrarAlertaExito("El personal se editó correctamente.");
       navigate('/personal')
-    } catch (err: any) {
-      const detail = err.response?.data?.detail || 'No se pudo editar la persona.'
-      alert(detail)
-      console.log(err)
+    } catch (error: any) {
+      let mensajeFinal = "No se pudo editar el personal.";
+      if (error.response?.data?.detail) {
+        const detail = error.response.data.detail;
+        mensajeFinal = Array.isArray(detail) ? detail[0].msg : detail;
+      }
+      mostrarAlertaError(mensajeFinal);
+      console.log(error);
     }
   }
 
-  if (isLoading) {
-    return (
-      <>
-        <PageHeader title="Editar personal" />
-        <Spinner animation="border" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </Spinner>
-      </>
-    )
-  }
+  const tituloPagina = "Editar personal"
+  if (isLoading) return <PageLoading title={tituloPagina} />;
 
   if (!persona) {
     return (
@@ -63,7 +62,7 @@ export function EditarPersonaPage() {
   if (error) {
     return (
       <Container>
-        <PageHeader title="Editar personal" />
+        <PageHeader title={tituloPagina} />
         <Row className="justify-content-center">
           <Col md={6}>
             <Alert variant="danger">Ocurrió un error al cargar la persona</Alert>
@@ -76,7 +75,7 @@ export function EditarPersonaPage() {
   if (!persona.activo) {
     return (
       <Container>
-        <PageHeader title="Editar personal" />
+        <PageHeader title={tituloPagina}/>
         <Row className="justify-content-center">
           <Col md={6}>
             <Alert variant="warning">No se puede editar una persona dada de baja.</Alert>
@@ -88,7 +87,7 @@ export function EditarPersonaPage() {
 
   return (
     <>
-      <PageHeader title="Editar personal" />
+      <PageHeader title={tituloPagina} />
       <Container>
         <PersonaForm
           key={`${persona.id}-${persona.operar}-${persona.administrar}-${persona.nombre}`}

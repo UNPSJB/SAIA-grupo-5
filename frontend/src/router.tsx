@@ -7,6 +7,7 @@ import { Page404 } from './feature/NotFound/Page404.tsx'
 import { ListPage as InsumosListPage } from './feature/Insumos/pages/ListPage.tsx'
 import { NuevoInsumoPage } from './feature/Insumos/pages/NuevoInsumoPage.tsx'
 import { EditarInsumoPage } from './feature/Insumos/pages/EditarInsumoPage.tsx'
+import { VerInsumoPage } from './feature/Insumos/pages/VerInsumoPage.tsx'
 
 import { EquiposPage } from './feature/Equipos/pages/ListPage.tsx'
 import { EditarEquipoPage } from './feature/Equipos/pages/EditarEquipoPage.tsx'
@@ -19,6 +20,7 @@ import { NuevoSectorPage } from './feature/Sectores/pages/NuevoSectorPage.tsx';
 import { ListPage as PersonalListPage } from './feature/Personal/pages/ListPage.tsx'
 import { EditarPersonaPage } from './feature/Personal/pages/EditarPersonaPage.tsx'
 import { NuevaPersonaPage } from './feature/Personal/pages/NuevaPersonaPage.tsx'
+import { VerPersonalPage } from './feature/Personal/pages/VerPersonalPage.tsx'
 
 import { ElementosLimpiezaPage } from './feature/ElementosLimpieza/pages/ListPage.tsx';
 import { NuevoElementoPage } from "./feature/ElementosLimpieza/pages/NuevoElementoPage";
@@ -89,6 +91,15 @@ import { EditarVencimientoPersonalPage } from './feature/VencimientoPersonal/pag
 import { NuevoVencimientoPersonalPage } from './feature/VencimientoPersonal/pages/NuevoVencimientoPersonalPage.tsx'
 import { VerVencimientoPersonalPage } from './feature/VencimientoPersonal/pages/VerVencimientoPersonalPage.tsx'
 import { VencimientoConsolidadoPage } from './feature/VencimientoPersonal/pages/ListadoConsolidadoVencimientoPersonal.tsx'
+
+import { ListPage as TipoIncidenteListPage } from './feature/TiposIncidentes/pages/ListPage.tsx'
+import { EditarTipoIncidentePage } from './feature/TiposIncidentes/pages/EditarTipoIncidentePage.tsx'
+import { NuevoTipoIncidentePage } from './feature/TiposIncidentes/pages/NuevoTipoIncidentePage.tsx'
+import { VerTipoIncidentePage } from './feature/TiposIncidentes/pages/VerTipoIncidentePage.tsx'
+
+import { EditarIncidentePage } from './feature/Incidentes/pages/EditarIncidentePage.tsx'
+import { NuevoIncidentePage } from './feature/Incidentes/pages/NuevoIncidentePage.tsx'
+import { VerIncidentePage } from './feature/Incidentes/pages/VerIncidentePage.tsx'
 
 import { ConfiguracionSistemaPage } from './feature/ConfiguracionSistema/pages/ConfiguracionSistemaPage.tsx'
 
@@ -161,6 +172,7 @@ const router = createBrowserRouter([
                 children: [
                   { path: 'new', element: <NuevoInsumoPage /> },
                   { path: ':id/edit', element: <EditarInsumoPage /> },
+                  { path: ':id', element: <VerInsumoPage />},
                 ],
               },
             ],
@@ -202,6 +214,7 @@ const router = createBrowserRouter([
               { path: ':id/edit', element: <EditarPersonaPage /> },
               { path: ':personaId/vencimientos', element: <VencimientoPersonalListPage /> },
               { path: ':personaId/vencimientos/new', element: <NuevoVencimientoPersonalPage /> },
+              { path: ':id', element: <VerPersonalPage />},
             ],
           },
           {
@@ -346,6 +359,25 @@ const router = createBrowserRouter([
               { index: true, element: <VencimientoConsolidadoPage />},
               { path: ':id', element: <VerVencimientoPersonalPage /> },
               { path: ':id/edit', element: <EditarVencimientoPersonalPage /> },
+            ],
+          },
+          {
+            path: 'tipos-incidentes',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <TipoIncidenteListPage /> },
+              { path: 'new', element: <NuevoTipoIncidentePage /> },
+              { path: ':id', element: <VerTipoIncidentePage /> },
+              { path: ':id/edit', element: <EditarTipoIncidentePage /> },
+            ],
+          },
+          {
+            path: 'incidentes',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { path: 'new', element: <NuevoIncidentePage /> },
+              { path: ':id', element: <VerIncidentePage /> },
+              { path: ':id/edit', element: <EditarIncidentePage /> },
             ],
           },
           {

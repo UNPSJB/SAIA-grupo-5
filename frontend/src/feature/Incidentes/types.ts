@@ -1,11 +1,37 @@
+import type { Sector } from "../Sectores/types";
+import type { TipoIncidente } from "../TiposIncidentes/types";
+
+export type EstadoIncidente = 'Abierto' | 'Cerrado';
+export type EstadoSeguimientoIncidente = EstadoIncidente;
 export type NivelDemora = 'normal' | 'demorado';
-export type EstadoIncidente = 'abierto' | 'cerrado';
+
+export type PersonaBasica = {
+    nombre: string;
+    apellido: string;
+};
 
 export type Incidente = {
     id: number;
     nombre: string;
     descripcion: string;
+    foto_opcional: string | null;
+    fecha_abierto: string;
+    fecha_cierre: string | null;
     estado: EstadoIncidente;
+    activo: boolean;
+    tipo_id: number;
+    operario_id: number | null;
+    sector_id: number | null;
+    tipo: TipoIncidente;
+    sector: Sector | null;
+    operario: PersonaBasica | null;
+};
+
+export type IncidenteSeguimiento = {
+    id: number;
+    nombre: string;
+    descripcion: string;
+    estado: EstadoSeguimientoIncidente;
     fecha: string;
     fecha_abierto: string;
     fecha_cierre: string | null;
@@ -22,4 +48,18 @@ export type IncidentesAbiertosPorTipo = {
     tipo_id: number;
     tipo: string;
     cantidad: number;
+};
+
+export type NewIncidente = {
+    nombre: string;
+    descripcion: string;
+    foto_opcional?: string | null;
+    tipo_id: number;
+    sector_id?: number | null;
+};
+
+export type EditarIncidente = {
+    nombre: string;
+    descripcion: string;
+    foto_opcional: string | null;
 };

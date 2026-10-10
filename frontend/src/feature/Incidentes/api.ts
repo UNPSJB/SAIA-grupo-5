@@ -1,10 +1,10 @@
 import { api } from '../../libs/axios';
-import type { Incidente, IncidentesAbiertosPorTipo } from './types';
+import type { IncidenteSeguimiento, IncidentesAbiertosPorTipo } from './types';
 
 export async function listarIncidentes(estado?: 'abierto' | 'cerrado', orden: 'asc' | 'desc' = 'desc') {
     const params = new URLSearchParams({ orden });
     if (estado) params.set('estado', estado);
-    const response = await api.get<Incidente[]>(`/incidentes?${params.toString()}`);
+    const response = await api.get<IncidenteSeguimiento[]>(`/incidentes?${params.toString()}`);
     return response.data;
 }
 

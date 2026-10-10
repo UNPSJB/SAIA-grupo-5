@@ -29,3 +29,13 @@ def migrar_esquema_incidentes(engine: Engine) -> None:
             with engine.begin() as connection:
                 connection.execute(text(f"ALTER TABLE incidentes ADD COLUMN {columna} {definicion}"))
             columnas.add(columna)
+
+    if "estado" in columnas:
+        with engine.begin() as connection:
+            connection.execute(
+                text(
+                    "UPDATE incidentes SET estado = CASE estado "
+                    "WHEN 'abierto' THEN 'Abierto' WHEN 'cerrado' THEN 'Cerrado' END "
+                    "WHERE estado IN ('abierto', 'cerrado')"
+                )
+            )

@@ -11,7 +11,6 @@ import { PageError } from '../../../components/PageError'
 import { ActionButton } from '../../../components/ActionButton'
 import { useApi } from '../../../hooks/useApi'
 import { useAuth } from '../../../hooks/useAuth'
-import { api } from '../../../libs/axios'
 import { Capacidades } from '../../Capacidades/types'
 import { DeletePersonaModal } from '../components/DeletePersonaModal'
 import type { Persona } from '../types'
@@ -55,17 +54,6 @@ export function ListPage() {
       />
     )
   }, [])
-
-  const cambiarEstado = async (persona: Persona) => {
-    try {
-      await api.patch<Persona>(`/personal/${persona.id}/estado`)
-      await mutate('/personal/')
-    } catch (err: any) {
-      const detail = err.response?.data?.detail || `No se pudo ${persona.activo ? 'dar de baja' : 'dar de alta'} la persona.`
-      alert(detail)
-      console.log(err)
-    }
-  }
 
   if (isLoading) {
     return <PageLoading title="Listado de Personal" />
@@ -170,6 +158,13 @@ export function ListPage() {
         cell: (row) => (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <ActionButton
+              variant="outline-info"
+              size="sm"
+              tooltip="Ver"
+              icon="bi bi-eye"
+              onClick={() => navigate(`/personal/${row.id}`)}
+            />
+            <ActionButton
               variant="outline-warning"
               size="sm"
               tooltip="Ver vencimientos"
@@ -198,7 +193,7 @@ export function ListPage() {
                 size="sm"
                 tooltip="Dar de alta"
                 icon="bi-check-circle"
-                onClick={() => cambiarEstado(row)}
+                onClick={() => setPersonaToDelete(row)}
               />
             )}
           </div>
@@ -217,7 +212,15 @@ export function ListPage() {
           {subHeaderComponentMemo}
         </Col>
         {currentUser?.administrar && (
-          <Col xs="auto" className="d-flex justify-content-end">
+          <Col xs="auto" className="d-flex justify-content-end gap-2">
+            <Button
+              variant="warning"
+              size="sm"
+              onClick={() => navigate('/vencimiento-personal')}
+              style={{ whiteSpace: 'nowrap' }}
+            >
+              <i className="bi-calendar-check me-1"></i>Ver Vencimientos
+            </Button>
             <Button
               variant="primary"
               size="sm"

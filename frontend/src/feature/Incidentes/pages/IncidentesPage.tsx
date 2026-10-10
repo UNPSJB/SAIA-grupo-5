@@ -4,10 +4,10 @@ import { type TableColumn } from 'react-data-table-component';
 import { AppTable } from '../../../components/AppTable';
 import { useLocation } from 'react-router-dom';
 import { useApi } from '../../../hooks/useApi';
-import type { EstadoIncidente, Incidente } from '../types';
+import type { IncidenteSeguimiento } from '../types';
 import './IncidentesPage.css';
 
-type FiltroEstado = 'todos' | EstadoIncidente;
+type FiltroEstado = 'todos' | 'Abierto' | 'Cerrado';
 
 function formatDate(value: string) {
     return new Intl.DateTimeFormat('es-AR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
@@ -17,20 +17,20 @@ export function IncidentesPage() {
     const { pathname } = useLocation();
     const [estadoSeleccionado, setEstadoSeleccionado] = useState<{ pathname: string; value: FiltroEstado }>({
         pathname,
-        value: pathname.startsWith('/incidentes/abiertos') ? 'abierto' : 'todos',
+        value: pathname.startsWith('/incidentes/abiertos') ? 'Abierto' : 'todos',
     });
     const estado = estadoSeleccionado.pathname === pathname
         ? estadoSeleccionado.value
-        : pathname.startsWith('/incidentes/abiertos') ? 'abierto' : 'todos';
+        : pathname.startsWith('/incidentes/abiertos') ? 'Abierto' : 'todos';
     const setEstado = (value: FiltroEstado) => setEstadoSeleccionado({ pathname, value });
     const [busqueda, setBusqueda] = useState('');
-    const [incidenteDetalle, setIncidenteDetalle] = useState<Incidente | null>(null);
-    const orden = estado === 'abierto' ? 'asc' : 'desc';
-    const endpoint = estado === 'todos'
+    const [incidenteDetalle, setIncidenteDetalle] = useState<IncidenteSeguimiento | null>(null);
+    const estadoSeguimiento = estado === 'Abierto' ? 'abierto' : estado === 'Cerrado' ? 'cerrado' : 'todos';
+    const orden = estadoSeguimiento === 'abierto' ? 'asc' : 'desc';
+    const endpoint = estadoSeguimiento === 'todos'
         ? `/incidentes?orden=${orden}`
-        : `/incidentes?estado=${estado}&orden=${orden}`;
-    const { data: incidentes, error, isLoading } = useApi<Incidente[]>(endpoint);
-
+        : `/incidentes?estado=${estadoSeguimiento}&orden=${orden}`;
+    const { data: incidentes, error, isLoading } = useApi<IncidenteSeguimiento[]>(endpoint);
     const incidentesFiltrados = useMemo(() => {
         const texto = busqueda.trim().toLocaleLowerCase('es');
         return (incidentes ?? []).filter((incidente) =>
@@ -39,7 +39,7 @@ export function IncidentesPage() {
         );
     }, [busqueda, incidentes]);
 
-    const columnas: TableColumn<Incidente>[] = [
+    const columnas: TableColumn<IncidenteSeguimiento>[] = [
         {
             name: 'Incidente',
             selector: (incidente) => incidente.nombre,
@@ -94,7 +94,7 @@ export function IncidentesPage() {
             selector: (incidente) => incidente.estado,
             sortable: true,
             minWidth: '110px',
-            cell: (incidente) => <Badge bg={incidente.estado === 'abierto' ? 'warning' : 'success'} text={incidente.estado === 'abierto' ? 'dark' : undefined}>{incidente.estado === 'abierto' ? 'Abierto' : 'Cerrado'}</Badge>,
+            cell: (incidente) => <Badge bg={incidente.estado === 'Abierto' ? 'warning' : 'success'} text={incidente.estado === 'Abierto' ? 'dark' : undefined}>{incidente.estado}</Badge>,
         },
         {
             name: 'Detalle',
@@ -110,7 +110,7 @@ export function IncidentesPage() {
     ];
 
     const demorados = (incidentes ?? []).filter((incidente) => incidente.nivel_demora === 'demorado').length;
-    const abiertos = estado === 'abierto';
+    const abiertos = estado === 'Abierto';
     const titulo = pathname.startsWith('/incidentes/abiertos') ? 'Pendientes / Abiertos' : 'Incidentes';
 
     return (
@@ -144,8 +144,8 @@ export function IncidentesPage() {
                                     className="incident-state-filter"
                                 >
                                     <option value="todos">Todos los estados</option>
-                                    <option value="abierto">Abiertos</option>
-                                    <option value="cerrado">Cerrados</option>
+                                    <option value="Abierto">Abiertos</option>
+                                    <option value="Cerrado">Cerrados</option>
                                 </Form.Select>
                                 <InputGroup className="incident-search">
                                     <InputGroup.Text><i className="bi bi-search" aria-hidden="true" /></InputGroup.Text>
@@ -191,8 +191,8 @@ export function IncidentesPage() {
                     {incidenteDetalle && (
                         <div className="incident-detail">
                             <div className="d-flex flex-wrap gap-2 mb-3">
-                                <Badge bg={incidenteDetalle.estado === 'abierto' ? 'warning' : 'success'} text={incidenteDetalle.estado === 'abierto' ? 'dark' : undefined}>
-                                    {incidenteDetalle.estado === 'abierto' ? 'Abierto' : 'Cerrado'}
+                                <Badge bg={incidenteDetalle.estado === 'Abierto' ? 'warning' : 'success'} text={incidenteDetalle.estado === 'Abierto' ? 'dark' : undefined}>
+                                    {incidenteDetalle.estado}
                                 </Badge>
                                 <Badge bg="light" text="dark" className="incident-type">{incidenteDetalle.tipo.nombre}</Badge>
                                 <span className="text-muted small">{formatDate(incidenteDetalle.fecha)} · Reportado por {incidenteDetalle.reportado_por}</span>

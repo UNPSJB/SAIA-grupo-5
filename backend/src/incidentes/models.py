@@ -7,20 +7,11 @@ from src.incidentes.constants import EstadoIncidente
 from src.models import ModeloBase
 from src.personal.models import Persona
 from src.sector.models import Sector
+from src.tipo_incidente.models import TipoIncidente
 
 
 def _valores_estado(enum_cls):
     return [estado.value for estado in enum_cls]
-
-
-class TipoIncidente(ModeloBase):
-    __tablename__ = "tipos_incidentes"
-
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    nombre: Mapped[str] = mapped_column(String(30), nullable=False, unique=True, index=True)
-    descripcion: Mapped[str | None] = mapped_column(String(400), nullable=True)
-    activo: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-    incidentes: Mapped[list["Incidente"]] = relationship(back_populates="tipo")
 
 
 class Incidente(ModeloBase):
@@ -44,7 +35,7 @@ class Incidente(ModeloBase):
     sector_id: Mapped[int | None] = mapped_column(ForeignKey("sectores.id"), nullable=True)
 
     tipo: Mapped[TipoIncidente] = relationship(back_populates="incidentes")
-    operario: Mapped[Persona] = relationship()
+    operario: Mapped[Persona | None] = relationship()
     sector: Mapped[Sector | None] = relationship()
     acciones_correctivas: Mapped[list["AccionCorrectiva"]] = relationship(back_populates="incidente")
 

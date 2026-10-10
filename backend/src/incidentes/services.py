@@ -2,31 +2,33 @@ from datetime import date, datetime
 from typing import Literal
 
 from sqlalchemy import func, select
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session, joinedload, selectinload
 
+from src.incidentes import exceptions, schemas
 from src.incidentes.constants import DIAS_UMBRAL_INCIDENTE_DEMORADO, EstadoIncidente
 from src.incidentes.models import AccionCorrectiva, Incidente, TipoIncidente
 from src.incidentes.schemas import IncidentesAbiertosPorTipo
+from src.personal.models import Persona
 
 
 def _dias_abierto(incidente: Incidente, estado: str, hoy: date | None = None) -> int:
-    fecha_fin = incidente.fecha_cierre.date() if estado == EstadoIncidente.CERRADO.value and incidente.fecha_cierre else (hoy or date.today())
+    fecha_fin = (
+        incidente.fecha_cierre.date()
+        if estado == EstadoIncidente.CERRADO.value and incidente.fecha_cierre
+        else (hoy or date.today())
+    )
     return max(0, (fecha_fin - incidente.fecha_abierto.date()).days)
 
 
 def _incidente_a_respuesta(incidente: Incidente, hoy: date | None = None) -> dict:
     tiene_accion_correctiva = any(accion.activo for accion in incidente.acciones_correctivas)
-    estado = (
-        EstadoIncidente.CERRADO.value
-        if tiene_accion_correctiva
-        else EstadoIncidente.ABIERTO.value
-    )
-    dias_abierto = _dias_abierto(incidente, estado, hoy)
+    estado_enum = EstadoIncidente.CERRADO if tiene_accion_correctiva else EstadoIncidente.ABIERTO
+    dias_abierto = _dias_abierto(incidente, estado_enum.value, hoy)
     return {
         "id": incidente.id,
         "nombre": incidente.nombre,
         "descripcion": incidente.descripcion,
-        "estado": estado,
+        "estado": estado_enum.value,
         "fecha": incidente.fecha_abierto,
         "fecha_abierto": incidente.fecha_abierto,
         "fecha_cierre": incidente.fecha_cierre,
@@ -41,9 +43,49 @@ def _incidente_a_respuesta(incidente: Incidente, hoy: date | None = None) -> dic
         "tipo": incidente.tipo,
         "dias_abierto": dias_abierto,
         "nivel_demora": "demorado"
-        if estado == EstadoIncidente.ABIERTO.value and dias_abierto >= DIAS_UMBRAL_INCIDENTE_DEMORADO
+        if estado_enum == EstadoIncidente.ABIERTO and dias_abierto >= DIAS_UMBRAL_INCIDENTE_DEMORADO
         else "normal",
     }
+
+
+def crear_incidente(db: Session, incidente: schemas.IncidenteCreate, persona: Persona) -> Incidente:
+    datos = incidente.model_dump()
+    datos["operario_id"] = persona.id
+    datos["fecha_abierto"] = datetime.now()
+    nuevo_incidente = Incidente(**datos)
+    db.add(nuevo_incidente)
+    db.commit()
+    db.refresh(nuevo_incidente)
+    return nuevo_incidente
+
+
+def leer_incidente(db: Session, incidente_id: int) -> Incidente:
+    incidente = db.scalar(
+        select(Incidente)
+        .where(Incidente.id == incidente_id)
+        .options(joinedload(Incidente.tipo), joinedload(Incidente.operario), joinedload(Incidente.sector))
+    )
+    if incidente is None:
+        raise exceptions.IncidenteNoEncontrado()
+    return incidente
+
+
+def modificar_incidente(db: Session, incidente_id: int, incidente: schemas.IncidenteUpdate) -> Incidente:
+    db_incidente = leer_incidente(db, incidente_id)
+    db_incidente.nombre = incidente.nombre
+    db_incidente.descripcion = incidente.descripcion
+    db_incidente.foto_opcional = incidente.foto_opcional
+    db.commit()
+    db.refresh(db_incidente)
+    return db_incidente
+
+
+def cambiar_estado_incidente(db: Session, incidente_id: int) -> Incidente:
+    db_incidente = leer_incidente(db, incidente_id)
+    db_incidente.activo = not db_incidente.activo
+    db.commit()
+    db.refresh(db_incidente)
+    return db_incidente
 
 
 def listar_incidentes(
@@ -60,17 +102,37 @@ def listar_incidentes(
         .options(
             selectinload(Incidente.tipo),
             selectinload(Incidente.operario),
+            selectinload(Incidente.sector),
             selectinload(Incidente.acciones_correctivas),
         )
         .where(Incidente.activo.is_(True))
     )
-    if estado == EstadoIncidente.ABIERTO.value:
+    if estado in ("abierto", EstadoIncidente.ABIERTO.value):
         consulta = consulta.where(~accion_registrada)
-    elif estado == EstadoIncidente.CERRADO.value:
+    elif estado in ("cerrado", EstadoIncidente.CERRADO.value):
         consulta = consulta.where(accion_registrada)
     fecha = Incidente.fecha_abierto.asc() if orden == "asc" else Incidente.fecha_abierto.desc()
     incidentes = db.scalars(consulta.order_by(fecha, Incidente.id.asc())).all()
     return [_incidente_a_respuesta(incidente) for incidente in incidentes]
+
+
+def _listar_incidentes_crud(db: Session, estado: EstadoIncidente | None = None) -> list[Incidente]:
+    consulta = select(Incidente).options(
+        joinedload(Incidente.tipo),
+        joinedload(Incidente.operario),
+        joinedload(Incidente.sector),
+    )
+    if estado is not None:
+        consulta = consulta.where(Incidente.estado == estado)
+    return db.scalars(consulta).all()
+
+
+def listar_incidentes_abiertos(db: Session) -> list[Incidente]:
+    return _listar_incidentes_crud(db, EstadoIncidente.ABIERTO)
+
+
+def listar_incidentes_cerrados(db: Session) -> list[Incidente]:
+    return _listar_incidentes_crud(db, EstadoIncidente.CERRADO)
 
 
 def contar_incidentes_abiertos_por_tipo(db: Session) -> list[IncidentesAbiertosPorTipo]:
@@ -85,10 +147,7 @@ def contar_incidentes_abiertos_por_tipo(db: Session) -> list[IncidentesAbiertosP
             func.count(Incidente.id).label("cantidad"),
         )
         .join(Incidente, Incidente.tipo_id == TipoIncidente.id)
-        .where(
-            Incidente.activo.is_(True),
-            ~accion_registrada,
-        )
+        .where(Incidente.activo.is_(True), ~accion_registrada)
         .group_by(TipoIncidente.id, TipoIncidente.nombre)
         .order_by(TipoIncidente.nombre)
     ).all()
