@@ -172,7 +172,11 @@ export function PlanesLimpiezaPage() {
         <Container>
             <Row className="p-2 align-items-center">
                 <Col>
-                    <PageHeader title="Listado de Planes de Limpieza" />
+                    <PageHeader
+                        eyebrow="GESTIÓN"
+                        title="Listado de Planes de Limpieza"
+                        subtitle="Revisá los Planes de Limpieza y crea nuevos."
+                    />
                 </Col>
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}

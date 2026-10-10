@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Alert, Badge, Button, Card, Form, InputGroup, Modal, Spinner } from 'react-bootstrap';
 import { type TableColumn } from 'react-data-table-component';
 import { AppTable } from '../../../components/AppTable';
+import { PageHeader } from '../../../components/PageHeader';
 import { useLocation } from 'react-router-dom';
 import { useApi } from '../../../hooks/useApi';
 import type { IncidenteSeguimiento } from '../types';
@@ -115,14 +116,16 @@ export function IncidentesPage() {
 
     return (
         <div className="incident-page">
-            <div className="incident-heading">
-                <div>
-                    <span className="incident-eyebrow">SEGUIMIENTO Y PREVENCIÓN</span>
-                    <h1>{titulo}</h1>
-                    <p>Revisá los incidentes reportados y consultá las acciones correctivas registradas.</p>
-                </div>
-                {abiertos && <Badge bg="warning" text="dark" className="incident-summary"><i className="bi bi-exclamation-triangle me-1" />{demorados} demorados</Badge>}
-            </div>
+            <PageHeader
+                eyebrow="SEGUIMIENTO Y PREVENCIÓN"
+                title={titulo}
+                subtitle="Revisá los incidentes reportados y consultá las acciones correctivas registradas."
+                actions={abiertos && (
+                    <Badge bg="warning" text="dark" className="page-header-summary">
+                        <i className="bi bi-exclamation-triangle me-1" />{demorados} demorados
+                    </Badge>
+                )}
+            />
 
             {isLoading ? (
                 <div className="incident-loading"><Spinner animation="border" role="status"><span className="visually-hidden">Cargando incidentes...</span></Spinner></div>
