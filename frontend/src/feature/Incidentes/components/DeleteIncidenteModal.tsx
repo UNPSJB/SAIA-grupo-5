@@ -4,7 +4,7 @@ import type { Incidente } from "../types";
 import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
 
 interface DeleteIncidenteModalProps {
-    incidente: Incidente | null;
+    incidente: Pick<Incidente, "id" | "nombre" | "activo"> | null;
     onHide: () => void;
     onDeleted: () => void;
 }

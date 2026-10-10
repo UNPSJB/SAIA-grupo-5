@@ -58,7 +58,7 @@ export function VerIncidentePage() {
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
                                 <Col sm={4} className="fw-bold text-secondary">Reportado por</Col>
                                 <Col sm={8}>
-                                    {incidente.operario?.nombre || "Sin sector asignado"}
+                                    {incidente.operario?.nombre || "Sin datos del reportante"}
                                 </Col>
                             </Row>
 

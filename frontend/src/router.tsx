@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom'
 
 import { HomePage } from './feature/Home/HomePage.tsx'
+import { ListPage as IncidentesPage } from './feature/Incidentes/pages/ListPage.tsx'
 import { Page404 } from './feature/NotFound/Page404.tsx'
 
 import { ListPage as InsumosListPage } from './feature/Insumos/pages/ListPage.tsx'
@@ -35,7 +36,6 @@ import { NuevoRecambioElementoLimpiezaPage } from './feature/RecambiosElementosL
 import { VerRecambioElementoLimpiezaPage } from './feature/RecambiosElementosLimpieza/pages/VerRecambioElementoLimpiezaPage.tsx'
 
 import { ListPage as ChecklistListPage } from './feature/Checklist/pages/ListPage.tsx'
-import { ListPage as IncidentesListPage } from './feature/Incidentes/pages/ListPage.tsx'
 import { SuperficiesPage } from './feature/Superficies/pages/ListPage.tsx';
 import { NuevaSuperficiePage } from './feature/Superficies/pages/NuevoSuperficiePage.tsx';
 import { EditarSuperficiePage } from './feature/Superficies/pages/EditarSuperficiePage.tsx';
@@ -134,6 +134,17 @@ const router = createBrowserRouter([
         element: <App />,
         children: [
           { index: true, element: <HomePage /> },
+          {
+            path: 'incidentes',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <IncidentesPage /> },
+              { path: 'abiertos', element: <IncidentesPage /> },
+              { path: 'new', element: <NuevoIncidentePage /> },
+              { path: ':id', element: <VerIncidentePage /> },
+              { path: ':id/edit', element: <EditarIncidentePage /> },
+            ],
+          },
           {
             path: 'equipos',
             children: [
@@ -361,16 +372,6 @@ const router = createBrowserRouter([
               { path: 'new', element: <NuevoTipoIncidentePage /> },
               { path: ':id', element: <VerTipoIncidentePage /> },
               { path: ':id/edit', element: <EditarTipoIncidentePage /> },
-            ],
-          },
-          {
-            path: 'incidentes',
-            element: <ProtectedRoute requireAdmin />,
-            children: [
-              { index: true, element: <IncidentesListPage /> },
-              { path: 'new', element: <NuevoIncidentePage /> },
-              { path: ':id', element: <VerIncidentePage /> },
-              { path: ':id/edit', element: <EditarIncidentePage /> },
             ],
           },
           {

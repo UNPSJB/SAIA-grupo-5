@@ -1,4 +1,4 @@
-import  { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { mutate } from 'swr';
 import { Button, ButtonGroup, Col, Container, Dropdown, Form, Row } from 'react-bootstrap';
 import { type TableColumn } from 'react-data-table-component';
@@ -52,40 +52,40 @@ export function ListPage() {
         const hoy = fechaHoy();
         return tareas.filter((tarea) => {
             const coincideFecha = tarea.fecha === hoy;
-            const coincideBusqueda = 
+            const coincideBusqueda =
                 tarea.tarea_nombre_snap.toLowerCase().includes(search.toLowerCase()) ||
                 tarea.plan_nombre_snap.toLowerCase().includes(search.toLowerCase());
-            
+
             const coincidePlan = filtroPlan === '' || tarea.plan_nombre_snap === filtroPlan;
 
             return coincideFecha && coincideBusqueda && coincidePlan;
         });
-    }, [search, tareas, filtroPlan]); 
+    }, [search, tareas, filtroPlan]);
     const subHeaderComponentMemo = useMemo(() => {
         return (
             <div className="d-flex gap-2 w-100">
                 <Dropdown as={ButtonGroup} className="w-50" style={{ minWidth: 0 }}>
-                    <Button 
-                        variant="outline-secondary" 
+                    <Button
+                        variant="outline-secondary"
                         onClick={() => setFiltroPlan('')}
                         className="text-truncate text-start"
                     >
                         {filtroPlan ? filtroPlan : 'Filtrar por plan'}
                     </Button>
                     <Dropdown.Toggle split variant="outline-secondary" id="dropdown-filtro-planes" />
-                    
+
                     <Dropdown.Menu>
-                        <Dropdown.Item 
-                            active={filtroPlan === ''} 
+                        <Dropdown.Item
+                            active={filtroPlan === ''}
                             onClick={() => setFiltroPlan('')}
                         >
                             Todos los planes
                         </Dropdown.Item>
                         <Dropdown.Divider />
                         {planesDisponibles.map(plan => (
-                            <Dropdown.Item 
-                                key={plan} 
-                                active={filtroPlan === plan} 
+                            <Dropdown.Item
+                                key={plan}
+                                active={filtroPlan === plan}
                                 onClick={() => setFiltroPlan(plan)}
                             >
                                 {plan}
@@ -191,7 +191,7 @@ export function ListPage() {
                 </div>
             )
         },
-        
+
         {
             name: "Acciones",
             center: true,
@@ -202,16 +202,16 @@ export function ListPage() {
                 const tienePermiso = currentUser?.operar === true;
                 if (!tienePermiso)
                     return <>-</>
-                return(
+                return (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <ActionButton
-                        variant={estaCompletada ? "outline-info" : "outline-success"}
-                        size="sm"
-                        disabled={laHizoOtro}
-                        tooltip={laHizoOtro ? "Completada por otro usuario" : estaCompletada ? "Editar" : "Marcar realizada"}
-                        icon={estaCompletada ? "bi-pencil" : "bi-check2-circle"}
-                        onClick={() => abrirModal(row)}
-                    />
+                        <ActionButton
+                            variant={estaCompletada ? "outline-info" : "outline-success"}
+                            size="sm"
+                            disabled={laHizoOtro}
+                            tooltip={laHizoOtro ? "Completada por otro usuario" : estaCompletada ? "Editar" : "Marcar realizada"}
+                            icon={estaCompletada ? "bi-pencil" : "bi-check2-circle"}
+                            onClick={() => abrirModal(row)}
+                        />
                     </div>
                 )
             },
@@ -224,10 +224,14 @@ export function ListPage() {
     return (
         <Container>
             <Row className="p-2 align-items-center">
-                <Col>    
-                    <PageHeader title={`Checklist de limpieza - ${fechaLarga}`} />               
+                <Col>
+                    <PageHeader
+                        eyebrow="OPERACIONES"
+                        title={"Checklist de limpieza"}
+                        subtitle={`${fechaLarga}`}
+                    />
                 </Col>
-                <Col 
+                <Col
                     xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
                 </Col>
@@ -241,14 +245,14 @@ export function ListPage() {
                 ))}
                 {filteredTareas.length === 0 && <p className="text-muted text-center p-4">No se encontraron resultados.</p>}
             </div>
-                <CompletarTareaModal
-                    tarea={tareaSeleccionada}
-                    onHide={() => setTareaSeleccionada(null)}
-                    onCompleted={() => {
-                        mutate("/tareas-ocurrencia/");
-                    }}
-                />
-            
+            <CompletarTareaModal
+                tarea={tareaSeleccionada}
+                onHide={() => setTareaSeleccionada(null)}
+                onCompleted={() => {
+                    mutate("/tareas-ocurrencia/");
+                }}
+            />
+
         </Container>
     );
 }

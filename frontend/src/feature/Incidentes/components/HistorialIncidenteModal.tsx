@@ -6,7 +6,7 @@ import type { Persona } from '../../Personal/types';
 import type { HistorialIncidente, Incidente, TipoEventoHistorial } from '../types';
 
 interface HistorialIncidenteModalProps {
-    incidente: Incidente | null;
+    incidente: Pick<Incidente, "id" | "nombre"> | null;
     onHide: () => void;
 }
 
@@ -22,6 +22,7 @@ const TIPO_EVENTO_ESTILOS: Record<TipoEventoHistorial, { background: string; col
     REABIERTO: { background: "#fef3c7", color: "#92400e" },
 };
 
+// El componente expandible recibe la fila como prop `data`.
 function DescripcionExpandida({ data: row }: ExpanderComponentProps<HistorialIncidente>) {
     return (
         <div style={{ padding: '16px 40px', background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>

@@ -70,7 +70,11 @@ export function TareasPage() {
 
     return (
         <Container>
-            <PageHeader title="Tareas" />
+            <PageHeader
+                eyebrow="OPERACIONES"
+                title={"Tareas"}
+                subtitle="Selecciona un plan de limpieza y revisá las tareas creadas de ese plan."
+            />
 
             <Form.Group className="mb-4" controlId="formPlanLimpieza">
                 <Form.Label className="fw-bold">Plan de Limpieza</Form.Label>
@@ -100,11 +104,7 @@ export function TareasPage() {
 
             <div className="d-flex justify-content-between align-items-start">
                 <div className="flex-grow-1">
-                    {!planId ? (
-                        <p className="text-muted">
-                            Seleccioná un plan de limpieza para ver sus tareas.
-                        </p>
-                    ) : isLoadingTareas ? (
+                    {!planId ? null : isLoadingTareas ? (
                         <div className="text-center py-4">
                             <Spinner animation="border" role="status">
                                 <span className="visually-hidden">Cargandon Tareas...</span>

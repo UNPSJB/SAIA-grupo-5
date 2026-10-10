@@ -7,7 +7,7 @@ import { getErrorMessage } from '../../../libs/errors';
 import type { Incidente, NewAccionCorrectiva } from '../types';
 
 interface AccionCorrectivaModalProps {
-    incidente: Incidente | null;
+    incidente: Pick<Incidente, "id" | "nombre"> | null;
     onHide: () => void;
     onRegistrada: () => void;
 }

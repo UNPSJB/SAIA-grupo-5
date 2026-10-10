@@ -104,7 +104,11 @@ export function RecambiosElementoLimpiezaPage() {
         <Container>
             <Row className="p-2 align-items-center">
                 <Col>
-                    <PageHeader title="Recambios de Elementos de Limpieza" />
+                    <PageHeader
+                        eyebrow="GESTIÓN"
+                        title="Recambios de Elementos de Limpieza"
+                        subtitle="Revisá los Recambios de Elementos de Limpieza y crea nuevos."
+                    />
                 </Col>
 
                 <Col xs="auto" className="align-self-center">

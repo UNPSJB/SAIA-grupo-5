@@ -16,8 +16,12 @@ export function VencimientosConsolidadosPage() {
 
     return (
         <Container>
-            <PageHeader title="Vencimientos consolidados" />
-            <Tabs defaultActiveKey={defaultTab!=null? defaultTab : "personal"} className="mb-3">
+            <PageHeader
+                eyebrow="VENCIMIENTOS"
+                title="Vencimientos consolidados"
+                subtitle="Revisá los distintos vencimientos con sus respectivas acciones de renovación"
+            />
+            <Tabs defaultActiveKey={defaultTab != null ? defaultTab : "personal"} className="mb-3">
                 <Tab eventKey="personal" title="Personal">
                     <PersonalTab diasAntelacion={diasAntelacion} />
                 </Tab>

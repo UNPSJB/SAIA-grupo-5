@@ -22,6 +22,7 @@ export const navGroups: NavGroup[] = [
             { label: 'Tareas', to: '/tareas', icon: 'bi-list-check' },
             { label: 'Checklist', to: '/checklist', icon: 'bi-check2-square' },
             { label: 'Historial', to: '/historial', icon: 'bi-clock-history', adminOnly: true },
+            { label: 'Incidentes', to: '/incidentes', icon: 'bi-exclamation-diamond', adminOnly: true },
         ],
     },
     {
@@ -38,18 +39,9 @@ export const navGroups: NavGroup[] = [
             { label: 'Planes de calibracion', to: '/planes-calibracion', icon: 'bi-tools' },
             { label: 'Planes de limpieza', to: '/planes-limpieza', icon: 'bi-clipboard-check' },
             { label: 'Superficies', to: '/superficies', icon: 'bi-virus2' },
-            { label: 'Documentos', to: '/documentos', icon: 'bi bi-file-text' },
             { label: 'Personal', to: '/personal', icon: 'bi-people', adminOnly: true },
             { label: 'Consulta de consumo', to: '/consumos-productos/consulta', icon: 'bi-droplet-half', adminOnly: true },
         ],
-    },
-    {
-        id: 'incidentes',
-        label: 'No conformidades',
-        icon: 'bi-exclamation-triangle',
-        items: [
-            { label: 'Incidentes', to: '/incidentes', icon: 'bi-exclamation-triangle-fill' },
-        ]
     },
     {
         id: 'datos-maestros',

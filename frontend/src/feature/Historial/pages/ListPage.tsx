@@ -138,11 +138,18 @@ export function HistorialPage() {
         },
     ];
 
+    // Fecha para mostrar
+    const fechaLarga = new Date().toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
+
     return (
         <Container>
             <Row className="p-2 align-items-center">
                 <Col>
-                    <PageHeader title="Historial de Checklists" />
+                    <PageHeader
+                        eyebrow="OPERACIONES"
+                        title="Historial de Checklists"
+                        subtitle={`${fechaLarga} - Revisá el historial de checklist registrados`}
+                    />
                 </Col>
             </Row>
 

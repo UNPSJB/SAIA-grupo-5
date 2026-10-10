@@ -1,4 +1,4 @@
-const API_BASE_URL: string = import.meta.env.VITE_API_URL ?? "http://192.168.110.128:8000";
+const API_BASE_URL: string = import.meta.env.VITE_API_URL ?? "http://192.168.0.183:8000";
 const USER_API_URL: string = `${API_BASE_URL}/personal`;
 const LOGIN_API_URL: string = `${API_BASE_URL}/auth/token`;
 const LOGOUT_API_URL: string = `${API_BASE_URL}/auth/token`;

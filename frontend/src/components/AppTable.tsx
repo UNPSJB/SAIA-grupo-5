@@ -1,5 +1,6 @@
-import type { ComponentType } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 import DataTable, { type ColumnGroup, type ConditionalStyles, type ExpanderComponentProps, type TableColumn } from 'react-data-table-component';
+import './AppTable.css';
 
 const customStyles = {
     headCells: {
@@ -17,9 +18,11 @@ interface AppTableProps<T> {
     conditionalRowStyles?: ConditionalStyles<T>[];
     expandableRows?: boolean;
     expandableRowsComponent?: ComponentType<ExpanderComponentProps<T>>;
+    pagination?: boolean;
+    noDataComponent?: ReactNode;
 }
 
-export function AppTable<T>({ columns, data, columnGroups, onColumnGroupOrderChange, conditionalRowStyles, expandableRows, expandableRowsComponent }: AppTableProps<T>) {
+export function AppTable<T>({ columns, data, columnGroups, onColumnGroupOrderChange, conditionalRowStyles, expandableRows, expandableRowsComponent, pagination = true, noDataComponent }: AppTableProps<T>) {
     return (
         <DataTable
             columns={columns}
@@ -29,8 +32,8 @@ export function AppTable<T>({ columns, data, columnGroups, onColumnGroupOrderCha
             conditionalRowStyles={conditionalRowStyles}
             expandableRows={expandableRows}
             expandableRowsComponent={expandableRowsComponent}
-            pagination
-            noDataComponent={<div className="p-4 text-muted">No se encontraron resultados.</div>}
+            pagination={pagination}
+            noDataComponent={noDataComponent ?? <div className="p-4 text-muted">No se encontraron resultados.</div>}
             paginationComponentOptions={{
                 rowsPerPageText: "Filas por página",
                 rangeSeparatorText: "de",

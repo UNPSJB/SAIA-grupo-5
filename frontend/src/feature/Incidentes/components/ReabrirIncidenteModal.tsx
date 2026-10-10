@@ -7,7 +7,7 @@ import { getErrorMessage } from '../../../libs/errors';
 import type { Incidente, ReabrirIncidente } from '../types';
 
 interface ReabrirIncidenteModalProps {
-    incidente: Incidente | null;
+    incidente: Pick<Incidente, "id" | "nombre"> | null;
     onHide: () => void;
     onReabierto: () => void;
 }

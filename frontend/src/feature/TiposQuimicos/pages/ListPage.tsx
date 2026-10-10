@@ -123,7 +123,11 @@ export function ListPage() {
         <Container>
             <Row className="p-2 align-items-center" >
                 <Col>
-                    <PageHeader title="Listado de Tipos Químicos" />
+                    <PageHeader
+                        eyebrow="DATOS MAESTROS"
+                        title="Listado de Tipos Químicos"
+                        subtitle="Revisá el Listado de Tipos Químicos creados hasta la fecha."
+                    />
                 </Col>
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}

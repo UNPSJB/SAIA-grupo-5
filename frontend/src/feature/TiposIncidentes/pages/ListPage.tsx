@@ -129,7 +129,11 @@ export function ListPage() {
         <Container>
             <Row className="p-2 align-items-center" >
                 <Col>
-                    <PageHeader title="Listado de Tipos Incidentes" />
+                    <PageHeader
+                        eyebrow="DATOS MAESTROS"
+                        title="Listado de Tipos Incidentes"
+                        subtitle="Revisá el Listado de Tipos Incidentes creados hasta la fecha."
+                    />
                 </Col>
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
