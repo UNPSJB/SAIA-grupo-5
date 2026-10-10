@@ -17,10 +17,6 @@ def registrar_evento_historial(
     descripcion: str | None = None,
     accion_correctiva_id: int | None = None,
 ) -> HistorialIncidente:
-    # Solo agrega la fila a la sesión -- no comitea. Queda dentro de la
-    # transacción de quien la llama (crear_incidente, crear_accion_correctiva,
-    # reabrir_incidente), para que el evento de historial y el cambio de
-    # estado del incidente se guarden atómicamente o no se guarde ninguno.
     _evento = HistorialIncidente(
         incidente_id=incidente_id,
         tipo_evento=tipo_evento,

@@ -76,11 +76,6 @@ def reabrir_incidente(db: Session, incidente_id: int, motivo: str, persona) -> I
     db_incidente = leer_incidente(db, incidente_id)
     db_incidente.estado = EstadoIncidente.ABIERTO
 
-    # El listado principal (listar_incidentes) no mira esta columna: considera
-    # cerrado a un incidente con una AccionCorrectiva activa (ver
-    # _incidente_a_respuesta). Hay que desactivarlas para que también se vea
-    # reabierto ahí, no solo en los endpoints CRUD viejos que sí filtran por
-    # Incidente.estado.
     for accion_correctiva in db_incidente.acciones_correctivas:
         if accion_correctiva.activo:
             accion_correctiva.activo = False
