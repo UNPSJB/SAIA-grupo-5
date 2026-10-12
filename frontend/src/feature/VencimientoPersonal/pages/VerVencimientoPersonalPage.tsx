@@ -5,6 +5,7 @@ import { useApi } from "../../../hooks/useApi";
 import type { VencimientoPersonal } from "../types";
 import type { ConfiguracionSistema } from "../../ConfiguracionSistema/types";
 import { PageLoading } from "../../../components/PageLoading";
+import { useAuth } from "../../../hooks";
 
 const obtenerNombreArchivo = (base64: string | null | undefined): string => {
     if (!base64) return "";
@@ -25,6 +26,7 @@ export function VerVencimientoPersonalPage() {
     const navigate = useNavigate();
     const locacion = useLocation();
     const { id } = useParams();
+    const { currentUser } = useAuth();
 
     const { data: vencimiento, isLoading, error } = useApi<VencimientoPersonal>(`/vencimiento-personal/${id}`);
     const { data: configuracion } = useApi<ConfiguracionSistema>('/configuracion-sistema/');
@@ -175,7 +177,7 @@ export function VerVencimientoPersonalPage() {
                             >
                                 <i className="bi bi-arrow-left me-1"></i>Volver a la lista
                             </Button>
-
+                            {currentUser?.administrar && (
                             <Button
                                 variant="primary"
                                 disabled={!vencimiento.persona?.activo}
@@ -183,6 +185,7 @@ export function VerVencimientoPersonalPage() {
                             >
                                 <i className="bi bi-pencil me-1"></i>Editar Vencimiento
                             </Button>
+                            )}
                         </Card.Footer>
                     </Card>
                 </Col>

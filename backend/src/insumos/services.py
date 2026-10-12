@@ -32,9 +32,10 @@ def leer_insumo(db: Session, insumo_id: int) -> schemas.Insumo:
         raise exceptions.InsumoNoEncontrado()
     return db_insumo
 
-def eliminar_insumo(db: Session, insumo_id: int) -> schemas.InsumoDelete:
+def cambiar_estado_insumo(db: Session, insumo_id: int) -> schemas.Insumo:
     db_insumo = leer_insumo(db, insumo_id)
-    db_insumo.activo = False
+
+    db_insumo.activo = not db_insumo.activo
     db.commit()
     db.refresh(db_insumo)
     return db_insumo

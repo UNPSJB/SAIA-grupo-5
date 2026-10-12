@@ -1,11 +1,13 @@
 import { createBrowserRouter } from 'react-router-dom'
 
 import { HomePage } from './feature/Home/HomePage.tsx'
+import { IncidentesPage } from './feature/Incidentes/pages/IncidentesPage.tsx'
 import { Page404 } from './feature/NotFound/Page404.tsx'
 
 import { ListPage as InsumosListPage } from './feature/Insumos/pages/ListPage.tsx'
 import { NuevoInsumoPage } from './feature/Insumos/pages/NuevoInsumoPage.tsx'
 import { EditarInsumoPage } from './feature/Insumos/pages/EditarInsumoPage.tsx'
+import { VerInsumoPage } from './feature/Insumos/pages/VerInsumoPage.tsx'
 
 import { EquiposPage } from './feature/Equipos/pages/ListPage.tsx'
 import { EditarEquipoPage } from './feature/Equipos/pages/EditarEquipoPage.tsx'
@@ -18,6 +20,7 @@ import { NuevoSectorPage } from './feature/Sectores/pages/NuevoSectorPage.tsx';
 import { ListPage as PersonalListPage } from './feature/Personal/pages/ListPage.tsx'
 import { EditarPersonaPage } from './feature/Personal/pages/EditarPersonaPage.tsx'
 import { NuevaPersonaPage } from './feature/Personal/pages/NuevaPersonaPage.tsx'
+import { VerPersonalPage } from './feature/Personal/pages/VerPersonalPage.tsx'
 
 import { ElementosLimpiezaPage } from './feature/ElementosLimpieza/pages/ListPage.tsx';
 import { NuevoElementoPage } from "./feature/ElementosLimpieza/pages/NuevoElementoPage";
@@ -59,6 +62,22 @@ import { EditarConsumoProductoPage } from './feature/ConsumoProducto/pages/Edita
 import { NuevoConsumoProductoPage } from './feature/ConsumoProducto/pages/NuevoConsumoProductoPage.tsx'
 import { ConsumoAcumuladoPage } from './feature/ConsumoProducto/pages/ConsumoAcumuladoPage.tsx'
 
+import { ListPage as TipoDocumentoListPage } from './feature/TiposDocumentos/pages/ListPage.tsx'
+import { EditarTipoDocumentoPage } from './feature/TiposDocumentos/pages/EditarTipoDocumentoPage.tsx'
+import { NuevoTipoDocumentoPage } from './feature/TiposDocumentos/pages/NuevoTipoDocumentoPage.tsx'
+import { VerTipoDocumentoPage } from './feature/TiposDocumentos/pages/VerTipoDocumentoPage.tsx'
+
+import { ListPage as DocumentoListPage } from './feature/Documentos/pages/ListPage.tsx'
+import { EditarDocumentoPage } from './feature/Documentos/pages/EditarDocumentoPage.tsx'
+import { NuevoDocumentoPage } from './feature/Documentos/pages/NuevoDocumentoPage.tsx'
+import { VerDocumentoPage } from './feature/Documentos/pages/VerDocumentoPage.tsx'
+
+import { ListPage as VersionDocumentoListPage } from './feature/VersionesDocumentos/pages/ListPage.tsx'
+import { EditarVersionDocumentoPage } from './feature/VersionesDocumentos/pages/EditarVersionDocumentoPage.tsx'
+import { NuevaVersionDocumentoPage } from './feature/VersionesDocumentos/pages/NuevaVersionDocumentoPage.tsx'
+import { VerVersionDocumentoPage } from './feature/VersionesDocumentos/pages/VerVersionDocumentoPage.tsx'
+
+
 import { VerDetalleTareaOcurrenciaPage } from './feature/Historial/pages/VerDetalleTareaOcurrenciaPage.tsx' 
 import { NotificacionesPage } from './feature/Notificaciones/pages/ListPage.tsx'
 
@@ -73,7 +92,18 @@ import { NuevoVencimientoPersonalPage } from './feature/VencimientoPersonal/page
 import { VerVencimientoPersonalPage } from './feature/VencimientoPersonal/pages/VerVencimientoPersonalPage.tsx'
 import { VencimientoConsolidadoPage } from './feature/VencimientoPersonal/pages/ListadoConsolidadoVencimientoPersonal.tsx'
 
+import { ListPage as TipoIncidenteListPage } from './feature/TiposIncidentes/pages/ListPage.tsx'
+import { EditarTipoIncidentePage } from './feature/TiposIncidentes/pages/EditarTipoIncidentePage.tsx'
+import { NuevoTipoIncidentePage } from './feature/TiposIncidentes/pages/NuevoTipoIncidentePage.tsx'
+import { VerTipoIncidentePage } from './feature/TiposIncidentes/pages/VerTipoIncidentePage.tsx'
+
+import { EditarIncidentePage } from './feature/Incidentes/pages/EditarIncidentePage.tsx'
+import { NuevoIncidentePage } from './feature/Incidentes/pages/NuevoIncidentePage.tsx'
+import { VerIncidentePage } from './feature/Incidentes/pages/VerIncidentePage.tsx'
+
 import { ConfiguracionSistemaPage } from './feature/ConfiguracionSistema/pages/ConfiguracionSistemaPage.tsx'
+
+import { VencimientosConsolidadosPage } from './feature/VencimientosConsolidados/pages/VencimientosConsolidadosPage.tsx'
 
 import { PlanesCalibracionPage } from './feature/PlanesCalibracion/pages/PlanesCalibracionPage.tsx'
 import { NuevoPlanCalibracionPage } from './feature/PlanesCalibracion/pages/NuevoPlanCalibracionPage.tsx'
@@ -105,6 +135,14 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <HomePage /> },
           {
+            path: 'incidentes',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <IncidentesPage /> },
+              { path: 'abiertos', element: <IncidentesPage /> },
+            ],
+          },
+          {
             path: 'equipos',
             children: [
               { index: true, element: <EquiposPage /> },
@@ -134,6 +172,7 @@ const router = createBrowserRouter([
                 children: [
                   { path: 'new', element: <NuevoInsumoPage /> },
                   { path: ':id/edit', element: <EditarInsumoPage /> },
+                  { path: ':id', element: <VerInsumoPage />},
                 ],
               },
             ],
@@ -175,6 +214,7 @@ const router = createBrowserRouter([
               { path: ':id/edit', element: <EditarPersonaPage /> },
               { path: ':personaId/vencimientos', element: <VencimientoPersonalListPage /> },
               { path: ':personaId/vencimientos/new', element: <NuevoVencimientoPersonalPage /> },
+              { path: ':id', element: <VerPersonalPage />},
             ],
           },
           {
@@ -261,6 +301,48 @@ const router = createBrowserRouter([
             ]
           },
           {
+            path: 'tipos-documentos',
+            children: [
+              { index: true, element: <TipoDocumentoListPage /> },
+              { path: ':id', element: <VerTipoDocumentoPage /> },
+              {
+                element: <ProtectedRoute requireAdmin />,
+                children: [
+                  { path: 'new', element: <NuevoTipoDocumentoPage /> },
+                  { path: ':id/edit', element: <EditarTipoDocumentoPage /> },
+                ],
+              },
+            ],
+          },
+          {
+            path: 'documentos',
+            children: [
+              { index: true, element: <DocumentoListPage /> },
+              { path: ':id', element: <VerDocumentoPage /> },
+              {
+                element: <ProtectedRoute requireAdmin />,
+                children: [
+                  { path: 'new', element: <NuevoDocumentoPage /> },
+                  { path: ':id/edit', element: <EditarDocumentoPage /> },
+                ],
+              },
+            ],
+          },
+          {
+            path: 'versiones-documentos',
+            children: [
+              { path: 'documento/:documentoId', element: <VersionDocumentoListPage /> },
+              { path: 'version/:id', element: <VerVersionDocumentoPage /> },
+              {
+                element: <ProtectedRoute requireAdmin />,
+                children: [
+                  { path: 'documento/:documentoId/new', element: <NuevaVersionDocumentoPage /> },
+                  { path: 'version/:id/edit', element: <EditarVersionDocumentoPage /> },
+                ],
+              },
+            ],
+          },
+          {
             path: 'tipos-vencimientos',
             element: <ProtectedRoute requireAdmin />,
             children: [
@@ -280,10 +362,36 @@ const router = createBrowserRouter([
             ],
           },
           {
+            path: 'tipos-incidentes',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <TipoIncidenteListPage /> },
+              { path: 'new', element: <NuevoTipoIncidentePage /> },
+              { path: ':id', element: <VerTipoIncidentePage /> },
+              { path: ':id/edit', element: <EditarTipoIncidentePage /> },
+            ],
+          },
+          {
+            path: 'incidentes',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { path: 'new', element: <NuevoIncidentePage /> },
+              { path: ':id', element: <VerIncidentePage /> },
+              { path: ':id/edit', element: <EditarIncidentePage /> },
+            ],
+          },
+          {
             path: 'configuracion-sistema',
             element: <ProtectedRoute requireAdmin />,
             children: [
               { index: true, element: <ConfiguracionSistemaPage /> },
+            ],
+          },
+          {
+            path: 'vencimientos',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <VencimientosConsolidadosPage /> },
             ],
           },
           { path: '*', element: <Page404 /> },

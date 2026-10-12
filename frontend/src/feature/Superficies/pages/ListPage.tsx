@@ -163,7 +163,11 @@ export function SuperficiesPage() {
         <Container>
             <Row className="p-2 align-items-center">
                 <Col>
-                    <PageHeader title="Listado de Superficies" />
+                    <PageHeader
+                        eyebrow="GESTIÓN"
+                        title="Listado de Superficies"
+                        subtitle="Revisá el Listado de Superficies creados hasta la fecha."
+                    />
                 </Col>
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}

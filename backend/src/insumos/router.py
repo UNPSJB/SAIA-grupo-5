@@ -25,9 +25,9 @@ def read_insumo(insumo_id: int, db: Session = Depends(get_db)):
     return services.leer_insumo(db, insumo_id)
 
 
-@router.delete("/{insumo_id}", response_model=schemas.InsumoDelete)
-def delete_insumo(insumo_id: int, db: Session = Depends(get_db)):
-    return services.eliminar_insumo(db, insumo_id)
+@router.patch("/{insumo_id}/estado", response_model=schemas.Insumo)
+def cambiar_estado_insumo(insumo_id: int, db: Session = Depends(get_db)):
+    return services.cambiar_estado_insumo(db, insumo_id)
 
 
 @router.put("/{insumo_id}", response_model=schemas.Insumo)

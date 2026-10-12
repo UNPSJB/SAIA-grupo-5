@@ -10,6 +10,7 @@ const PATH_LABELS: Record<string, string> = {
     '/tareas-ocurrencia': 'Historial',
     '/vencimiento-personal': 'Vencimientos de personal',
     '/notificaciones': 'Notificaciones',
+    '/incidentes/abiertos': 'Pendientes / Abiertos',
 };
 
 // Etiquetas de segmentos finales de acción (new, edit, vencimientos, etc.).

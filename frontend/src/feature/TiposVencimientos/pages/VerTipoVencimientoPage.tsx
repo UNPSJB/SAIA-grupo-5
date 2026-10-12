@@ -1,8 +1,9 @@
-import { Container, Spinner, Alert, Row, Col, Card, Button } from "react-bootstrap";
+import { Container, Alert, Row, Col, Card, Button } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 import type { TipoVencimiento } from "../types";
+import { PageLoading } from "../../../components/PageLoading";
 
 export function VerTipoVencimientoPage() {
     const navigate = useNavigate();
@@ -10,14 +11,9 @@ export function VerTipoVencimientoPage() {
 
     const { data: tipoVencimiento, isLoading, error } = useApi<TipoVencimiento>(`/tipos-vencimientos/${id}`);
 
-    if (isLoading) return (
-        <>
-            <PageHeader title="Detalle del Tipo Vencimiento" />
-            <Spinner animation="border" role="status" className="d-block mx-auto mt-5 text-primary">
-                <span className="visually-hidden">Cargando...</span>
-            </Spinner>
-        </>
-    );
+    const tituloPagina = "Detalle del Tipo Vencimiento";
+
+    if (isLoading) return <PageLoading title={tituloPagina} />;
 
     if (!tipoVencimiento || error) return (
         <Container>
@@ -35,22 +31,15 @@ export function VerTipoVencimientoPage() {
 
     return (
         <Container>
-            <PageHeader title="Detalle del Tipo Vencimiento" />
+            <PageHeader title={tituloPagina} />
 
             <Row className="justify-content-center mt-3">
                 <Col md={8}>
                     <Card className="shadow-sm border-0 rounded-3">
-                        <Card.Header className="bg-white border-bottom p-4">
-                            <h5 className="mb-0 fw-bold text-primary">
-                                <i className="bi bi-info-circle me-2"></i>
-                                Información del Tipo Vencimiento
-                            </h5>
-                        </Card.Header>
-                        
                         <Card.Body className="p-4">
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
                                 <Col sm={4} className="fw-bold text-secondary">Nombre</Col>
-                                <Col sm={8} className="fs-5">{tipoVencimiento.nombre}</Col>
+                                <Col sm={8} className="fs-6">{tipoVencimiento.nombre}</Col>
                             </Row>
 
                             <Row className="mb-3 border-bottom pb-3 align-items-center">

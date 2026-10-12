@@ -1,4 +1,4 @@
-import { Container, Spinner, Alert, Col, Row } from "react-bootstrap";
+import { Container, Alert, Col, Row } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { mutate } from "swr";
 import { PageHeader } from "../../../components/PageHeader";
@@ -6,6 +6,8 @@ import { InsumoForm } from "../components/InsumoForm";
 import { api } from "../../../libs/axios";
 import { useApi } from "../../../hooks/useApi";
 import type { Insumo, NewInsumo } from "../types";
+import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
+import { PageLoading } from "../../../components/PageLoading";
 
 export function EditarInsumoPage(){
     const navigate = useNavigate();     // Esto se usa para cambiar de pagina cuando cree el insumo
@@ -18,21 +20,23 @@ export function EditarInsumoPage(){
             await api.put(`/insumos/${id}`, datos);
             await mutate("/insumos/");
             await mutate(`/insumos/${id}`);     // Se agrego esto ya que habia un bug en el editar
+            mostrarAlertaExito("El insumo se edito correctamente.");
             navigate("/insumos");
-        } catch (error){
-            alert("No se pudo editar el insumo.");       // Esto se puede cambiar porque se ve como la alerta de google que esta fea
-            console.log(error)
+        } catch (error: any){
+            let mensajeFinal = "No se pudo editar el insumo.";        // Si falla el servidor por alguna razon, creamos este mensaje predeterminado
+            if (error.response?.data?.detail){      // Se le pregunta a Axios si el error tiene una respuesta del backend
+                const detail = error.response.data.detail;
+                mensajeFinal = Array.isArray(detail) ? detail[0].msg : detail;
+            }
+            mostrarAlertaError(mensajeFinal);
+            console.log(error);
         }
     };
 
-    if (isLoading) return (
-        <>
-            <PageHeader title="Editar Insumo" />
-            <Spinner animation="border" role="status">
-                <span className="visually-hidden">Loading...</span>
-            </Spinner>
-        </>
-    )
+    const tituloPagina = "Editar Insumo";
+
+    if (isLoading) return <PageLoading title={tituloPagina} />;
+
     if (!insumo) return (
         <Container>
             <PageHeader title="Insumo no encontrado" />
@@ -46,7 +50,7 @@ export function EditarInsumoPage(){
 
     if (error) return (
         <Container>
-            <PageHeader title="Editar Insumo" />
+            <PageHeader title={tituloPagina} />
             <Row className="justify-content-center">
                 <Col md={6}>
                     <Alert variant="danger">Ocurrió un error al cargar el Insumo</Alert>
@@ -57,7 +61,7 @@ export function EditarInsumoPage(){
 
     if (!insumo.activo) return (
         <Container>
-            <PageHeader title="Editar Insumo" />
+            <PageHeader title={tituloPagina} />
             <Row className="justify-content-center">
                 <Col md={6}>
                     <Alert variant="warning">No se puede editar un insumo dado de baja.</Alert>
@@ -69,7 +73,7 @@ export function EditarInsumoPage(){
 
     return(
         <>
-            <PageHeader title="Editar Insumo"/>
+            <PageHeader title={tituloPagina}/>
 
             <Container>
                 <InsumoForm textoBoton="Editar Insumo"

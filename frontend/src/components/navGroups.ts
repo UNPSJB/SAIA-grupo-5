@@ -22,6 +22,7 @@ export const navGroups: NavGroup[] = [
             { label: 'Tareas', to: '/tareas', icon: 'bi-list-check' },
             { label: 'Checklist', to: '/checklist', icon: 'bi-check2-square' },
             { label: 'Historial', to: '/historial', icon: 'bi-clock-history', adminOnly: true },
+            { label: 'Incidentes', to: '/incidentes', icon: 'bi-exclamation-diamond', adminOnly: true },
         ],
     },
     {
@@ -33,6 +34,7 @@ export const navGroups: NavGroup[] = [
             { label: 'Insumos químicos', to: '/insumos-quimicos', icon: 'bi-droplet' },
             { label: 'Equipos', to: '/equipos', icon: 'bi-tools' },
             { label: 'Elementos de limpieza', to: '/elementos-limpieza', icon: 'bi-bucket' },
+            { label: 'Documentos', to: '/documentos', icon: 'bi-file-text' },
             { label: 'Recambios', to: '/recambios-elementos-limpieza', icon: 'bi-arrow-repeat' },
             { label: 'Planes de calibracion', to: '/planes-calibracion', icon: 'bi-tools' },
             { label: 'Planes de limpieza', to: '/planes-limpieza', icon: 'bi-clipboard-check' },
@@ -50,7 +52,9 @@ export const navGroups: NavGroup[] = [
             { label: 'Sectores', to: '/sectores', icon: 'bi-geo-alt' },
             { label: 'Tipos de elementos', to: '/tipos-elementos-limpieza', icon: 'bi-tags' },
             { label: 'Tipos de químicos', to: '/tipos-quimicos', icon: 'bi-flask' },
-            { label: 'Tipos de Vencimientos', to: '/tipos-vencimientos', icon: 'bi-calendar-plus'}
+            { label: 'Tipos de Vencimientos', to: '/tipos-vencimientos', icon: 'bi-calendar-plus'},
+            { label: 'Tipos de Documentos', to: '/tipos-documentos', icon: 'bi bi-file-earmark-text'},
+            { label: 'Tipos de Incidentes', to: '/tipos-incidentes', icon: 'bi-exclamation-triangle'}
         ],
     },
 ];

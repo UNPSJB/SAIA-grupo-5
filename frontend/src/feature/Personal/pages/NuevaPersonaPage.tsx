@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { PageHeader } from "../../../components/PageHeader";
 import { PersonaForm } from "../components/PersonaForm";
 import { api } from "../../../libs/axios";
-import { getErrorMessage } from "../../../libs/errors";
 import type { NewPersona } from "../types";
+import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
 
 export function NuevaPersonaPage(){
     const navigate = useNavigate();     // Esto se usa para cambiar de pagina cuando cree el insumo
@@ -13,11 +13,17 @@ export function NuevaPersonaPage(){
     const guardarPersona = async (datos: NewPersona) => {
         try{
             await api.post("/personal", datos);
-            await mutate('/personal/')
+            await mutate('/personal/');
+            mostrarAlertaExito("El personal se registro correctamente.");
             navigate("/personal");
         } catch (error: any){
-            alert(getErrorMessage(error, "No se pudo registrar el personal."));
-            console.log(error)
+            let mensajeFinal = "No se pudo registrar el personal.";
+            if (error.response?.data?.detail) {
+                const detail = error.response.data.detail;
+                mensajeFinal = Array.isArray(detail) ? detail[0].msg : detail;
+            }
+            mostrarAlertaError(mensajeFinal);
+            console.log(error);
         }
     };
     

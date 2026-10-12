@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
-import { Alert, Badge, Button, Card, Form, InputGroup, Spinner, Table } from 'react-bootstrap';
+import { Alert, Badge, Button, Card, Form, InputGroup, Spinner } from 'react-bootstrap';
+import { type ConditionalStyles, type TableColumn } from 'react-data-table-component';
 import { mutate } from 'swr';
+import { AppTable } from '../../../components/AppTable';
 import { useApi } from '../../../hooks/useApi';
 import { api } from '../../../libs/axios';
 import type { Notificacion } from '../types';
@@ -39,6 +41,52 @@ export function NotificacionesPage() {
         await Promise.all(unread.map((notification) => api.patch(`/notificaciones/${notification.id}/leida`)));
         await mutate(NOTIFICATIONS_URL);
     };
+
+    const columns: TableColumn<Notificacion>[] = [
+        {
+            name: 'Novedad',
+            selector: (notification) => notification.titulo,
+            sortable: true,
+            grow: 2,
+            minWidth: '220px',
+            cell: (notification) => <div><strong>{notification.titulo}</strong><div className="small text-muted mt-1">{notification.descripcion}</div></div>,
+        },
+        {
+            name: 'Elemento / entidad',
+            selector: (notification) => notification.entidad,
+            sortable: true,
+            minWidth: '160px',
+        },
+        {
+            name: 'Fecha',
+            selector: (notification) => notification.creada_en,
+            sortable: true,
+            minWidth: '145px',
+            cell: (notification) => <span className="text-nowrap">{formatDate(notification.creada_en)}</span>,
+        },
+        {
+            name: 'Estado',
+            selector: (notification) => notification.resuelta ? 'Resuelta' : notification.leida ? 'Leída' : 'Pendiente',
+            sortable: true,
+            minWidth: '120px',
+            cell: (notification) => notification.resuelta ? <Badge bg="secondary">Resuelta</Badge> : notification.leida ? <Badge bg="light" text="dark">Leída</Badge> : <Badge bg="warning" text="dark">Pendiente</Badge>,
+        },
+        {
+            name: 'Acción',
+            button: true,
+            minWidth: '145px',
+            cell: (notification) => !notification.leida && !notification.resuelta ? (
+                <Button variant="outline-primary" size="sm" onClick={() => void markRead(notification)}>
+                    <i className="bi bi-check2 me-1" />Marcar leída
+                </Button>
+            ) : null,
+        },
+    ];
+    const unreadRowStyles: ConditionalStyles<Notificacion>[] = [{
+        when: (notification) => !notification.leida && !notification.resuelta,
+        style: { backgroundColor: '#f4faf7' },
+        classNames: ['notification-row-unread'],
+    }];
 
     if (isLoading) {
         return <div className="d-flex justify-content-center py-5"><Spinner animation="border" role="status"><span className="visually-hidden">Cargando notificaciones...</span></Spinner></div>;
@@ -88,36 +136,21 @@ export function NotificacionesPage() {
                         </div>
                     )}
 
-                    {filteredNotifications.length === 0 ? (
-                        <div className="notification-empty-state">
-                            <i className="bi bi-bell-slash" aria-hidden="true" />
-                            <strong>No hay notificaciones para mostrar</strong>
-                            <span>Probá cambiar la búsqueda o el filtro seleccionado.</span>
-                        </div>
-                    ) : (
-                        <Table responsive hover className="align-middle mb-0 notification-table">
-                            <thead><tr><th>Novedad</th><th>Elemento / entidad</th><th>Fecha</th><th>Estado</th><th className="text-end">Acción</th></tr></thead>
-                            <tbody>
-                                {filteredNotifications.map((notification) => (
-                                    <tr key={notification.id} className={!notification.leida && !notification.resuelta ? 'notification-row-unread' : undefined}>
-                                        <td><strong>{notification.titulo}</strong><div className="small text-muted mt-1">{notification.descripcion}</div></td>
-                                        <td>{notification.entidad}</td>
-                                        <td className="text-nowrap">{formatDate(notification.creada_en)}</td>
-                                        <td>
-                                            {notification.resuelta ? <Badge bg="secondary">Resuelta</Badge> : notification.leida ? <Badge bg="light" text="dark">Leída</Badge> : <Badge bg="warning" text="dark">Pendiente</Badge>}
-                                        </td>
-                                        <td className="text-end">
-                                            {!notification.leida && !notification.resuelta && (
-                                                <Button variant="outline-primary" size="sm" onClick={() => void markRead(notification)}>
-                                                    <i className="bi bi-check2 me-1" />Marcar leída
-                                                </Button>
-                                            )}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </Table>
-                    )}
+                    <div className="notification-table">
+                        <AppTable
+                            columns={columns}
+                            data={filteredNotifications}
+                            pagination={false}
+                            conditionalRowStyles={unreadRowStyles}
+                            noDataComponent={(
+                                <div className="notification-empty-state">
+                                    <i className="bi bi-bell-slash" aria-hidden="true" />
+                                    <strong>No hay notificaciones para mostrar</strong>
+                                    <span>Probá cambiar la búsqueda o el filtro seleccionado.</span>
+                                </div>
+                            )}
+                        />
+                    </div>
                     <div className="notification-results-count">{filteredNotifications.length} de {(notifications ?? []).length} notificaciones</div>
                 </Card.Body>
             </Card>

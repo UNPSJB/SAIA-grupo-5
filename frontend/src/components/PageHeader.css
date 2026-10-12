@@ -1,0 +1,41 @@
+.page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: .25rem 0 1.5rem;
+}
+
+.page-header-eyebrow {
+    color: #06794f;
+    font-size: .68rem;
+    font-weight: 750;
+    letter-spacing: .13em;
+}
+
+.page-header h1 {
+    margin: .3rem 0;
+    color: #25343a;
+    font-size: clamp(1.55rem, 2vw, 1.9rem);
+    font-weight: 700;
+    letter-spacing: -.035em;
+}
+
+.page-header p {
+    margin: 0;
+    color: #78858b;
+    font-size: .92rem;
+}
+
+.page-header-summary {
+    flex: 0 0 auto;
+    padding: .55rem .8rem;
+    font-size: .85rem;
+}
+
+@media (max-width: 700px) {
+    .page-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

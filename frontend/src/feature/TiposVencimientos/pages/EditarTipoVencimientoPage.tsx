@@ -1,4 +1,4 @@
-import { Container, Spinner, Alert, Col, Row } from "react-bootstrap";
+import { Container, Alert, Col, Row } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { mutate } from "swr";
 import { PageHeader } from "../../../components/PageHeader";
@@ -7,6 +7,7 @@ import { api } from "../../../libs/axios";
 import { useApi } from "../../../hooks/useApi";
 import type { TipoVencimiento, NewTipoVencimiento } from "../types";
 import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
+import { PageLoading } from "../../../components/PageLoading";
 
 export function EditarTipoVencimientoPage(){
     const navigate = useNavigate();     // Esto se usa para cambiar de pagina cuando cree el insumo
@@ -32,14 +33,10 @@ export function EditarTipoVencimientoPage(){
         }
     };
 
-    if (isLoading) return (
-        <>
-            <PageHeader title="Editar Tipo Vencimiento" />
-            <Spinner animation="border" role="status">
-                <span className="visually-hidden">Cargando...</span>
-            </Spinner>
-        </>
-    )
+    const tituloPagina = "Editar Tipo Vencimiento";
+
+    if (isLoading) return <PageLoading title={tituloPagina} />;
+
     if (!tipoVencimiento) return (
         <Container>
             <PageHeader title="Tipo Vencimiento no encontrado" />
@@ -53,7 +50,7 @@ export function EditarTipoVencimientoPage(){
 
     if (error) return (
         <Container>
-            <PageHeader title="Editar Tipo Vencimiento" />
+            <PageHeader title={tituloPagina} />
             <Row className="justify-content-center">
                 <Col md={6}>
                     <Alert variant="danger">Ocurrió un error al cargar el Tipo Vencimiento.</Alert>
@@ -65,7 +62,7 @@ export function EditarTipoVencimientoPage(){
 
     return(
         <>
-            <PageHeader title="Editar Tipo Vencimiento"/>
+            <PageHeader title={tituloPagina}/>
 
             <Container>
                 <TipoVencimientoForm textoBoton="Editar Tipo Vencimiento"

@@ -6,11 +6,13 @@ from src.models import ModeloBase
 from src.personal.models import Persona
 from src.auth.utils import get_password_hash
 from src.scheduler.scheduler import scheduler, iniciar_scheduler
+from src.incidentes.migrations import migrar_esquema_incidentes
 
 
 @asynccontextmanager
 async def db_creation_lifespan(app: FastAPI):
     ModeloBase.metadata.create_all(bind=engine)
+    migrar_esquema_incidentes(engine)
     inspector = inspect(engine)
     tablas = inspector.get_table_names()
 

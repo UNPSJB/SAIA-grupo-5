@@ -112,6 +112,10 @@ async def tiene_permiso_administrar(
     return persona
 
 
+# Alias con nombre de dominio explícito para rutas que requieren administración.
+requiere_permiso_administrar = tiene_permiso_administrar
+
+
 async def tiene_permiso_operar(
     persona: personal_models.Persona = Depends(get_current_persona),
 ) -> personal_models.Persona:

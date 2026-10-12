@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { mutate } from 'swr';
-import { Alert, Col, Container, Form, Row } from 'react-bootstrap';
+import { Alert, Col, Container, Form, Row, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { type TableColumn } from 'react-data-table-component';
 import { ActionButton } from '../../../components/ActionButton';
@@ -213,6 +213,15 @@ export function VencimientoConsolidadoPage() {
     return (
         <Container>
             <Row className="p-2 align-items-center justify-content-between" >
+                <Col>
+                    <Button 
+                        variant="outline-secondary" 
+                        size="sm" 
+                        onClick={() => navigate("/personal")}
+                    >
+                        <i className="bi bi-arrow-left me-1"></i>Volver
+                    </Button>               
+                </Col>
                 <Col>
                     <PageHeader title={tituloPagina} />
                 </Col>
