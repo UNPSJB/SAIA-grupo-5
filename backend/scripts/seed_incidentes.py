@@ -4,15 +4,14 @@ Pobla la base con Tipos de Incidente y una tanda de Incidentes de ejemplo
 (rotura de equipo, hallazgo de plaga, devolución de cliente, desvío de
 procedimiento), con una mezcla de incidentes abiertos y cerrados.
 
-Importante sobre qué significa "cerrado" en este modelo: el listado
-principal (services.listar_incidentes, usado por GET /incidentes y
-GET /incidentes/abiertos) NO mira la columna Incidente.estado -- considera
-cerrado a un incidente que tiene al menos una AccionCorrectiva activa
-vinculada (ver services._incidente_a_respuesta). Por eso este seed, además
-de setear Incidente.estado, crea una AccionCorrectiva activa para cada
-incidente que se quiere ver como cerrado. Los endpoints CRUD viejos
-(/incidentes/abiertos-crud, /incidentes/cerrados) sí filtran por
-Incidente.estado directamente, así que seteamos ambas cosas.
+GET /incidentes, /incidentes/abiertos y /incidentes/cerrados filtran
+directamente por Incidente.estado (ver services.listar_incidentes_abiertos
+/ _cerrados), así que alcanza con setear ese campo. Para que las pantallas
+de "Acción correctiva" e "Historial" tengan datos reales para mostrar, este
+seed además crea, para cada incidente que nace cerrado:
+  - una AccionCorrectiva activa vinculada al incidente.
+  - los eventos de HistorialIncidente correspondientes (CREADO y CERRADO),
+    igual que lo haría el flujo real (crear_incidente / crear_accion_correctiva).
 
 Requiere haber corrido antes:
 1. python -m scripts.seed_personal (al menos una persona cargada)
@@ -23,11 +22,15 @@ Uso: python -m scripts.seed_incidentes
 from datetime import datetime, timedelta
 
 from faker import Faker
+from sqlalchemy import select
 
 import src.all_models  # noqa: F401
 from src.database import SessionLocal
-from src.incidentes.models import AccionCorrectiva, Incidente
+from src.incidentes.models import Incidente
 from src.incidentes.constants import EstadoIncidente
+from src.accion_correctiva.models import AccionCorrectiva
+from src.historial_incidente.models import HistorialIncidente
+from src.historial_incidente.constants import TipoEvento
 from src.tipo_incidente.models import TipoIncidente
 from src.personal.models import Persona
 from src.sector.models import Sector
@@ -43,7 +46,7 @@ TIPOS_INCIDENTES = [
 ]
 
 # (nombre, descripcion, tipo, sector|None, dias_desde_apertura, estado, dias_desde_cierre|None,
-#  accion_correctiva|None -> (nombre, descripcion) si el incidente está cerrado)
+#  accion_correctiva|None -> (titulo, detalle) si el incidente está cerrado)
 INCIDENTES = [
     (
         "Pérdida de frío en freezer 2",
@@ -110,14 +113,14 @@ def generar_tipos_incidentes(db) -> dict[str, TipoIncidente]:
 
 
 def generar_incidentes(db, tipos: dict[str, TipoIncidente]) -> list[tuple[Incidente, tuple[str, str] | None]]:
-    operarios = db.query(Persona).filter(Persona.activo == True).all()
+    operarios = db.scalars(select(Persona).where(Persona.activo == True)).all()
     if not operarios:
         return []
 
-    sectores = {s.nombre: s for s in db.query(Sector).all()}
+    sectores = {s.nombre: s for s in db.scalars(select(Sector)).all()}
 
     hoy = datetime.now()
-    resultado = []
+    pares = []
 
     for nombre, descripcion, tipo_nombre, sector_nombre, dias_abierto, estado, dias_cerrado, accion_correctiva in INCIDENTES:
         operario = fake.random_element(elements=operarios)
@@ -133,24 +136,51 @@ def generar_incidentes(db, tipos: dict[str, TipoIncidente]) -> list[tuple[Incide
             operario_id=operario.id,
             sector_id=sector.id if sector else None,
         )
-        resultado.append((incidente, accion_correctiva))
+        pares.append((incidente, accion_correctiva))
 
-    return resultado
+    return pares
 
 
-def generar_acciones_correctivas(incidentes: list[tuple[Incidente, tuple[str, str] | None]]) -> list[AccionCorrectiva]:
+def generar_historial(db, pares: list[tuple[Incidente, tuple[str, str] | None]]) -> list[AccionCorrectiva]:
     acciones = []
-    for incidente, accion_correctiva in incidentes:
-        if accion_correctiva is None:
-            continue
-        accion_nombre, accion_descripcion = accion_correctiva
-        acciones.append(
-            AccionCorrectiva(
-                nombre=accion_nombre,
-                descripcion=accion_descripcion,
+
+    for incidente, accion_correctiva in pares:
+        db.add(
+            HistorialIncidente(
                 incidente_id=incidente.id,
+                tipo_evento=TipoEvento.CREADO,
+                fecha_evento=incidente.fecha_abierto,
+                usuario_id=incidente.operario_id,
             )
         )
+
+        if accion_correctiva is None:
+            continue
+
+        titulo, detalle = accion_correctiva
+        descripcion = f"{titulo}. {detalle}"
+
+        _accion = AccionCorrectiva(
+            descripcion=descripcion,
+            fecha=incidente.fecha_cierre,
+            incidente_id=incidente.id,
+            persona_id=incidente.operario_id,
+        )
+        db.add(_accion)
+        db.flush()  # necesitamos el id de la accion correctiva para el evento de historial
+
+        db.add(
+            HistorialIncidente(
+                incidente_id=incidente.id,
+                tipo_evento=TipoEvento.CERRADO,
+                fecha_evento=incidente.fecha_cierre,
+                usuario_id=incidente.operario_id,
+                descripcion=descripcion,
+                accion_correctiva_id=_accion.id,
+            )
+        )
+        acciones.append(_accion)
+
     return acciones
 
 
@@ -158,19 +188,17 @@ def main():
     db = SessionLocal()
     try:
         tipos = generar_tipos_incidentes(db)
-        incidentes_con_accion = generar_incidentes(db, tipos)
+        pares = generar_incidentes(db, tipos)
 
-        if not incidentes_con_accion:
+        if not pares:
             print("No hay personal cargado. Correr antes scripts.seed_personal.")
             return
 
-        incidentes = [incidente for incidente, _ in incidentes_con_accion]
+        incidentes = [incidente for incidente, _ in pares]
         db.add_all(incidentes)
-        db.flush()  # necesitamos el id de cada incidente antes de crear sus acciones correctivas
+        db.flush()  # necesitamos el id de cada incidente antes de crear su historial
 
-        acciones = generar_acciones_correctivas(incidentes_con_accion)
-        db.add_all(acciones)
-
+        acciones = generar_historial(db, pares)
         db.commit()
 
         abiertos = sum(1 for i in incidentes if i.estado == EstadoIncidente.ABIERTO)

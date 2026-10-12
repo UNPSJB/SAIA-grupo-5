@@ -32,6 +32,12 @@ async def db_creation_lifespan(app: FastAPI):
         with engine.begin() as connection:
             connection.execute(text("ALTER TABLE insumos ADD COLUMN activo BOOLEAN NOT NULL DEFAULT 1"))
 
+    if "acciones_correctivas" in tablas and not any(
+        column["name"] == "activo" for column in inspector.get_columns("acciones_correctivas")
+    ):
+        with engine.begin() as connection:
+            connection.execute(text("ALTER TABLE acciones_correctivas ADD COLUMN activo BOOLEAN NOT NULL DEFAULT 1"))
+
     # Crear administrador por defecto si no existe
     with SessionLocal() as db:
         admin = db.scalar(select(Persona).where(Persona.username == "admin1"))

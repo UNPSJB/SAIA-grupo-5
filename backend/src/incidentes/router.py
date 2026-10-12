@@ -67,3 +67,12 @@ def update_incidente(
 @router.patch("/{incidente_id}/estado", response_model=schemas.Incidente)
 def cambiar_estado_incidente(incidente_id: int, db: Session = Depends(get_db)):
     return services.cambiar_estado_incidente(db, incidente_id)
+
+@router.post("/{incidente_id}/reabrir", response_model=schemas.Incidente)
+def reabrir_incidente(
+    incidente_id: int,
+    datos: schemas.IncidenteReabrir,
+    db: Session = Depends(get_db),
+    persona = Depends(get_current_persona),
+):
+    return services.reabrir_incidente(db, incidente_id, datos.motivo, persona)
