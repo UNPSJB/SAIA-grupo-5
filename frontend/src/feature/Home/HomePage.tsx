@@ -29,6 +29,7 @@ import { useAuth } from "../../hooks";
 
 export function HomePage() {
     const { currentUser } = useAuth();
+    const esOperador = currentUser?.operar === true;
 
     const today = useMemo(() => new Date(), []);
     const fromDate = useMemo(() => {
@@ -38,7 +39,9 @@ export function HomePage() {
     }, []);
 
     const historyUrl = `/tareas-ocurrencia/historial?fecha_desde=${toDateKey(fromDate)}&fecha_hasta=${toDateKey(today)}`;
-    const { data: history, error: historyError, isLoading: historyLoading } = useApi<TareaOcurrencia[]>(historyUrl);
+    const { data: history, error: historyError, isLoading: historyLoading } = useApi<TareaOcurrencia[]>(
+        esOperador ? null : historyUrl,
+    );
     const occurrences = useMemo(() => history ?? [], [history]);
 
     const { data: elements, error: elementsError, isLoading: elementsLoading } = useApi<ElementoLimpieza[]>("/elementos-limpieza/");
@@ -156,7 +159,7 @@ export function HomePage() {
                 </Alert>
             )}
 
-            <section aria-label="Indicadores de checklists" className="mb-4">
+            {!esOperador && <section aria-label="Indicadores de checklists" className="mb-4">
                 <div className="dashboard-section-heading">
                     <div>
                         <h2>Checklists</h2>
@@ -170,7 +173,7 @@ export function HomePage() {
                     <Col xs={6} xl={3}><MetricCard label="Incumplidas" value={formatMetric(historyLoading, historyHasError, overdueTasks)} icon="bi-exclamation-circle" tone={SEAFOAM.danger} detail={`${pendingTasks} pendientes`} /></Col>
                     <Col xs={6} xl={3}><MetricCard label="Cumplimiento" value={historyLoading ? "…" : historyHasError || compliance === null ? "—" : `${compliance}%`} icon="bi-speedometer2" tone={SEAFOAM.secondary} detail="Sobre tareas resueltas" /></Col>
                 </Row>
-            </section>
+            </section>}
 
             <section aria-label="Indicadores de inventario" className="mb-4">
                 <div className="dashboard-section-heading">
@@ -200,7 +203,7 @@ export function HomePage() {
                             to="/vencimientos?default=elementos"
                         />
                     </Col>
-                    <Col xs={6} md={4} xl={3}>
+                    {!esOperador && <Col xs={6} md={4} xl={3}>
                         <MetricCard
                             label="Personal vencidos"
                             value={currentUser?.administrar ? formatMetric(vencimientosPersonalLoading,
@@ -210,8 +213,8 @@ export function HomePage() {
                             detail={currentUser?.administrar ? "Vencimientos de personal" : "Solo administración"}
                             to={currentUser?.administrar ? "/vencimientos?default=personal" : undefined}
                         />
-                    </Col>
-                    <Col xs={6} md={4} xl={3}>
+                    </Col>}
+                    {!esOperador && <Col xs={6} md={4} xl={3}>
                         <MetricCard
                             label="Personal por vencer"
                             value={currentUser?.administrar ? formatMetric(vencimientosPersonalLoading, Boolean(vencimientosPersonalError), vencimientosPersonalProximos.length) : "—"}
@@ -220,8 +223,8 @@ export function HomePage() {
                             detail={currentUser?.administrar ? "Dentro de la antelación configurada" : "Solo administración"}
                             to={currentUser?.administrar ? "/vencimientos?default=personal" : undefined}
                         />
-                    </Col>
-                    <Col xs={6} md={4} xl={3}>
+                    </Col>}
+                    {!esOperador && <Col xs={6} md={4} xl={3}>
                         <MetricCard
                             label="Vencimientos consolidados"
                             value={currentUser?.administrar ? formatMetric(vencimientosConsolidadosLoading, vencimientosConsolidadosError, vencimientosConsolidadosTotal) : "—"}
@@ -230,12 +233,12 @@ export function HomePage() {
                             detail={currentUser?.administrar ? "Personal, elementos y equipos" : "Solo administración"}
                             to={currentUser?.administrar ? "/vencimientos" : undefined}
                         />
-                    </Col>
+                    </Col>}
                 </Row>
             </section>
 
             <Row className="g-3 dashboard-charts">
-                <Col xl={7}>
+                {!esOperador && <Col xl={7}>
                     <Card className="dashboard-chart-card h-100">
                         <Card.Body>
                             <div className="dashboard-chart-heading">
@@ -263,8 +266,8 @@ export function HomePage() {
                             </div>
                         </Card.Body>
                     </Card>
-                </Col>
-                <Col xl={5}>
+                </Col>}
+                <Col xl={esOperador ? 12 : 5}>
                     <Card className="dashboard-chart-card h-100">
                         <Card.Body>
                             <div className="dashboard-chart-heading">
