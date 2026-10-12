@@ -129,7 +129,7 @@ export function ListPage() {
                                 size="sm"
                                 tooltip="Acción correctiva"
                                 icon="bi-clipboard-check"
-                                disabled={incidente.estado === 'Cerrado'}
+                                disabled={!incidente.activo || incidente.estado === 'Cerrado'}
                                 onClick={() => setIncidenteParaAccionCorrectiva(incidente)}
                             />
                         )}
@@ -138,7 +138,7 @@ export function ListPage() {
                             size="sm"
                             tooltip="Reabrir incidente"
                             icon="bi-arrow-counterclockwise"
-                            disabled={incidente.estado === 'Abierto'}
+                            disabled={!incidente.activo || incidente.estado === 'Abierto'}
                             onClick={() => setIncidenteParaReabrir(incidente)}
                         />
                     </div>
