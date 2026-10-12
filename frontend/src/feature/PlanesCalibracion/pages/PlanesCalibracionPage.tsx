@@ -1,12 +1,15 @@
 import { useMemo, useState } from "react";
 import { mutate } from "swr";
-import { useAuth } from "../../../hooks/useAuth";
 import { Alert, Button, Col, Container, Form, Row, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { type TableColumn } from "react-data-table-component";
+import { ActionButton } from "../../../components/ActionButton";
+
 import { AppTable } from "../../../components/AppTable";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
+import { useAuth } from "../../../hooks/useAuth";
+
 import { EstadoPlanCalibracionModal } from "../components/EstadoPlanCalibracionModal";
 import { RealizarCalibracionModal } from "../components/RealizarCalibracionModal";
 import { HistoricoCalibracionModal } from "../components/HistoricoCalibracionModal";
@@ -89,7 +92,7 @@ export function PlanesCalibracionPage() {
             sortable: true,
             center: true,
             grow: 2,
-            maxWidth: "90px",
+            minWidth: "90px",
         },
         {
             name: "Periodicidad",
@@ -180,50 +183,44 @@ export function PlanesCalibracionPage() {
         {
             name: "Acciones",
             center: true,
-            minWidth: "180px",
+            minWidth: "200px",
             cell: row => (
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
                     {currentUser?.administrar && (
                         <>
-                            <Button
+                            <ActionButton
                                 variant="outline-warning"
                                 size="sm"
-                                title="Histórico"
+                                tooltip="Histórico"
+                                icon="bi bi-clock-history"
                                 onClick={() => setPlanHistorico(row)}
-                            >
-                                <i className="bi bi-clock-history"></i>
-                            </Button>
+                            />
 
-                            {row.estado && (
-                                <>
-                                    <Button
-                                        variant="outline-primary"
-                                        size="sm"
-                                        title="Editar"
-                                        onClick={() => navigate(`/planes-calibracion/${row.id}/edit`)}
-                                    >
-                                        <i className="bi bi-pencil"></i>
-                                    </Button>
+                            <ActionButton
+                                variant="outline-primary"
+                                size="sm"
+                                tooltip="Editar"
+                                icon="bi bi-pencil"
+                                disabled={!row.estado}
+                                onClick={() => navigate(`/planes-calibracion/${row.id}/edit`)}
+                            />
 
-                                    <Button
-                                        variant="outline-success"
-                                        size="sm"
-                                        title="Registrar calibración"
-                                        onClick={() => setPlanToCalibrar(row)}
-                                    >
-                                        <i className="bi bi-tools"></i>
-                                    </Button>
-                                </>
-                            )}
+                            <ActionButton
+                                variant="outline-success"
+                                size="sm"
+                                tooltip="Registrar calibración"
+                                icon="bi bi-tools"
+                                disabled={!row.estado}
+                                onClick={() => setPlanToCalibrar(row)}
+                            />
 
-                            <Button
+                            <ActionButton
                                 variant={row.estado ? "outline-danger" : "outline-success"}
                                 size="sm"
-                                title={row.estado ? "Dar de baja" : "Dar de alta"}
+                                tooltip={row.estado ? "Dar de baja" : "Dar de alta"}
+                                icon={`bi ${row.estado ? "bi-dash-circle" : "bi-check-circle"}`}
                                 onClick={() => setPlanToDelete(row)}
-                            >
-                                <i className={`bi ${row.estado ? "bi-trash3" : "bi-check-circle"}`}></i>
-                            </Button>
+                            />
                         </>
                     )}
                 </div>
