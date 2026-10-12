@@ -16,8 +16,6 @@ from src.elementosLimpieza.models import ElementoLimpieza, TipoElementoLimpieza
 from src.recambiosElementosLimpieza.models import RecambioElementoLimpieza
 from src.consumo_producto.models import ConsumoProducto
 from src.tipo_quimico.models import TipoQuimico
-from src.tipo_incidente.models import TipoIncidente
-from src.incidentes.models import AccionCorrectiva, Incidente
 from src.tipo_documento.models import TipoDocumento
 from src.documentos.models import Documento
 from src.version_documento.models import VersionDocumento
@@ -26,3 +24,8 @@ from src.planesCalibracion.models import PlanCalibracion
 from src.registrosCalibracion.models import RegistroCalibracion
 from src.configuracion_sistema.models import ConfiguracionSistema
 from src.notificaciones.models import Notificacion
+
+from src.tipo_incidente.models import TipoIncidente
+from src.incidentes.models import Incidente
+from src.accion_correctiva.models import AccionCorrectiva
+from src.historial_incidente.models import HistorialIncidente
