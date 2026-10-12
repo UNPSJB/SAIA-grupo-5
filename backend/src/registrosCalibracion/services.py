@@ -26,7 +26,8 @@ def crear_registro_calibracion(db: Session, plan_calibracion_id: int, registro: 
     _registro = RegistroCalibracion(
         plan_calibracion_id=plan_calibracion_id,
         fecha=fecha_registro,
-        observacion=registro.observacion
+        observacion=registro.observacion,
+        certificado=registro.certificado
     )
 
     db.add(_registro)
@@ -49,7 +50,10 @@ def listar_registros_por_plan(db: Session, plan_calibracion_id: int) -> List[sch
     return db.scalars(
         select(RegistroCalibracion)
         .where(RegistroCalibracion.plan_calibracion_id == plan_calibracion_id)
-        .order_by(RegistroCalibracion.fecha.desc())
+        .order_by(
+            RegistroCalibracion.fecha.desc(),
+            RegistroCalibracion.id.desc()
+        )
     ).all()
 
 
