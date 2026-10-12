@@ -8,6 +8,8 @@ import { AppTable } from "../../../components/AppTable";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 import { EstadoPlanCalibracionModal } from "../components/EstadoPlanCalibracionModal";
+import { RealizarCalibracionModal } from "../components/RealizarCalibracionModal";
+import { HistoricoCalibracionModal } from "../components/HistoricoCalibracionModal";
 import type { PlanCalibracion } from "../types";
 import type { Equipo } from "../../Equipos/types";
 
@@ -17,6 +19,8 @@ export function PlanesCalibracionPage() {
     const { currentUser } = useAuth();
     const [search, setSearch] = useState("");
     const [planToDelete, setPlanToDelete] = useState<PlanCalibracion | null>(null);
+    const [planToCalibrar, setPlanToCalibrar] = useState<PlanCalibracion | null>(null);
+    const [planHistorico, setPlanHistorico] = useState<PlanCalibracion | null>(null);
 
     const { data: planes, error, isLoading } = useApi<PlanCalibracion[]>("/planes-calibracion");
     const { data: equipos } = useApi<Equipo[]>("/equipos");
@@ -181,6 +185,15 @@ export function PlanesCalibracionPage() {
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
                     {currentUser?.administrar && (
                         <>
+                            <Button
+                                variant="outline-warning"
+                                size="sm"
+                                title="Histórico"
+                                onClick={() => setPlanHistorico(row)}
+                            >
+                                <i className="bi bi-clock-history"></i>
+                            </Button>
+
                             {row.estado && (
                                 <>
                                     <Button
@@ -196,7 +209,7 @@ export function PlanesCalibracionPage() {
                                         variant="outline-success"
                                         size="sm"
                                         title="Registrar calibración"
-                                        onClick={() => {}}
+                                        onClick={() => setPlanToCalibrar(row)}
                                     >
                                         <i className="bi bi-tools"></i>
                                     </Button>
@@ -253,6 +266,19 @@ export function PlanesCalibracionPage() {
                 onHide={() => setPlanToDelete(null)}
                 onDeleted={() => mutate("/planes-calibracion")}
             />
+            <RealizarCalibracionModal
+                plan={planToCalibrar}
+                onHide={() => setPlanToCalibrar(null)}
+                onRealizado={() => {
+                    mutate("/planes-calibracion");
+                    setPlanToCalibrar(null);
+                }}
+            />
+            <HistoricoCalibracionModal
+                plan={planHistorico}
+                onHide={() => setPlanHistorico(null)}
+            />
+
         </Container>
     );
 }
