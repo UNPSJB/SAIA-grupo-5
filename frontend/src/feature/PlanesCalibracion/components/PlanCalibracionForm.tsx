@@ -96,14 +96,16 @@ export function PlanCalibracionForm({ textoBoton, onSubmit, valoresIniciales, ed
                         {errors.periodicidad?.message}
                     </Form.Control.Feedback>
                 </Form.Group>
+                <div className="d-flex justify-content-end">
+                    <Button variant="secondary" type="button" onClick={() => navigate("/planes-calibracion")}>
+                        <i className="bi bi-x-circle me-1"></i>Cancelar
+                    </Button>
 
-                <Button variant="secondary" type="button" onClick={() => navigate("/planes-calibracion")}>
-                    <i className="bi bi-x-circle me-1"></i>Cancelar
-                </Button>
-
-                <Button className="ms-2" variant="primary" type="submit">
-                    <i className="bi bi-floppy me-1"></i>{textoBoton}
-                </Button>
+                    <Button className="ms-2" variant="primary" type="submit">
+                        <i className="bi bi-floppy me-1"></i>{textoBoton}
+                    </Button>
+                </div>
+                
             </Form>
         </div>
     );

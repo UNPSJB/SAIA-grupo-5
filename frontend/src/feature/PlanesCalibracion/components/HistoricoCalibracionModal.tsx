@@ -39,6 +39,7 @@ export function HistoricoCalibracionModal({ plan, onHide }: HistoricoCalibracion
                     {row.observacion || '-'}
                 </div>
             ),
+            center: true,
         },
         {
             name: 'Certificado',
