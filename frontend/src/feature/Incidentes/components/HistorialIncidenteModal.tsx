@@ -1,6 +1,8 @@
-import { Modal, Button, Spinner, Alert } from 'react-bootstrap';
+import { Modal, Button } from 'react-bootstrap';
 import { type ExpanderComponentProps, type TableColumn } from 'react-data-table-component';
 import { AppTable } from '../../../components/AppTable';
+import { ModalLoading } from '../../../components/ModalLoading';
+import { ModalError } from '../../../components/ModalError';
 import { useApi } from '../../../hooks/useApi';
 import type { Persona } from '../../Personal/types';
 import type { HistorialIncidente, Incidente, TipoEventoHistorial } from '../types';
@@ -89,15 +91,9 @@ export function HistorialIncidenteModal({ incidente, onHide }: HistorialIncident
                 </Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                {isLoading && (
-                    <div className="text-center p-4">
-                        <Spinner animation="border" role="status" />
-                    </div>
-                )}
+                {isLoading && <ModalLoading />}
                 {error && (
-                    <Alert variant="danger">
-                        Ocurrió un error al cargar el historial del incidente.
-                    </Alert>
+                    <ModalError message="Ocurrió un error al cargar el historial del incidente." />
                 )}
                 {!isLoading && !error && (
                     <AppTable

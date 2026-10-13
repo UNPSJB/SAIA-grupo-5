@@ -1,4 +1,6 @@
-import { Alert, ListGroup, Modal, Spinner } from "react-bootstrap";
+import { ListGroup, Modal } from "react-bootstrap";
+import { ModalLoading } from "../../../components/ModalLoading";
+import { ModalError } from "../../../components/ModalError";
 import { useApi } from "../../../hooks/useApi";
 import type { Superficie } from "../../Superficies/types";
 import type { Sector } from "../types";
@@ -20,17 +22,9 @@ export function SuperficiesDeSectorModal({ sector, onHide }: SuperficiesDeSector
                 <Modal.Title>Superficies de {sector?.nombre}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                {isLoading && (
-                    <div className="text-center py-3">
-                        <Spinner animation="border" role="status">
-                            <span className="visually-hidden">Cargando...</span>
-                        </Spinner>
-                    </div>
-                )}
+                {isLoading && <ModalLoading />}
                 {error && (
-                    <Alert variant="danger" className="mb-0">
-                        Ocurrió un error al cargar las superficies del sector.
-                    </Alert>
+                    <ModalError message="Ocurrió un error al cargar las superficies del sector." />
                 )}
                 {!isLoading && !error && (
                     superficies && superficies.length > 0 ? (
