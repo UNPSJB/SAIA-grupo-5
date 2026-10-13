@@ -17,3 +17,17 @@ export interface NewPlanCalibracion {
 export interface UpdatePlanCalibracion {
     periodicidad: number;
 }
+
+export interface RegistroCalibracion {
+    id: number;
+    plan_calibracion_id: number;
+    fecha: string;
+    observacion?: string | null;
+    certificado?: string | null;
+}
+
+export interface NewRegistroCalibracion {
+    fecha: string;
+    observacion?: string | null;
+    certificado?: string | null;
+}

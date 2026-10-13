@@ -1,6 +1,8 @@
-import { Modal, Button, Spinner, Alert } from 'react-bootstrap';
+import { Modal, Button } from 'react-bootstrap';
 import { type TableColumn } from 'react-data-table-component';
 import { AppTable } from '../../../components/AppTable';
+import { ModalLoading } from '../../../components/ModalLoading';
+import { ModalError } from '../../../components/ModalError';
 import { useApi } from '../../../hooks/useApi';
 import type { VencimientoPersonal } from '../types';
 import { ActionButton } from '../../../components/ActionButton';
@@ -86,15 +88,9 @@ export function HistoricoVencimientoModal({ vencimiento, onHide }: HistoricoVenc
                 </Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                {isLoading && (
-                    <div className="text-center p-4">
-                        <Spinner animation="border" role="status" />
-                    </div>
-                )}
+                {isLoading && <ModalLoading />}
                 {error && (
-                    <Alert variant="danger">
-                        Ocurrió un error al cargar el historico de renovaciones.
-                    </Alert>
+                    <ModalError message="Ocurrió un error al cargar el historico de renovaciones." />
                 )}
                 {!isLoading && !error && (
                     <AppTable columns={columns} data={historico ?? []} />

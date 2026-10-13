@@ -1,5 +1,6 @@
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { mutate } from "swr"
 import type { TableColumn } from "react-data-table-component"
 import { AppTable } from "../../../components/AppTable"
 import { PageLoading } from "../../../components/PageLoading"
@@ -9,6 +10,7 @@ import { useApi } from "../../../hooks/useApi"
 import { useAuth } from "../../../hooks/useAuth"
 import type { Equipo } from "../../Equipos/types"
 import type { PlanCalibracion } from "../../PlanesCalibracion/types"
+import { RealizarCalibracionModal } from "../../PlanesCalibracion/components/RealizarCalibracionModal"
 import { clasificarPorDiasRestantes, ESTADO_VENCIMIENTOS_ORDEN, type EstadoVencimientos } from "../utils/estado"
 import { EstadoVencimiento } from "./EstadoVencimiento"
 
@@ -23,6 +25,7 @@ export function EquiposTab({ diasAntelacion }: { diasAntelacion: number }) {
     const { currentUser } = useAuth()
     const { data: planes, error: errorPlanes, isLoading: isLoadingPlanes } = useApi<PlanCalibracion[]>("/planes-calibracion/")
     const { data: equipos, error: errorEquipos, isLoading: isLoadingEquipos } = useApi<Equipo[]>("/equipos/")
+    const [planToCalibrar, setPlanToCalibrar] = useState<PlanCalibracion | null>(null)
 
     const filas = useMemo<FilaEquipo[]>(() => {
         if (!Array.isArray(equipos)) return []
@@ -75,11 +78,12 @@ export function EquiposTab({ diasAntelacion }: { diasAntelacion: number }) {
                 if (!currentUser?.administrar) return null
                 return row.plan ? (
                     <ActionButton
-                        variant="outline-primary"
+                        variant="outline-success"
                         size="sm"
-                        tooltip="Editar plan"
-                        icon="bi bi-pencil"
-                        onClick={() => navigate(`/planes-calibracion/${row.plan!.id}/edit`)}
+                        tooltip="Registrar calibración"
+                        icon="bi bi-tools"
+                        disabled={!row.plan.estado}
+                        onClick={() => setPlanToCalibrar(row.plan ?? null)}
                     />
                 ) : (
                     <ActionButton
@@ -95,9 +99,20 @@ export function EquiposTab({ diasAntelacion }: { diasAntelacion: number }) {
     ]
 
     return (
-        <AppTable
-            columns={columns}
-            data={filas}
-        />
+        <>
+            <AppTable
+                columns={columns}
+                data={filas}
+            />
+
+            <RealizarCalibracionModal
+                plan={planToCalibrar}
+                onHide={() => setPlanToCalibrar(null)}
+                onRealizado={() => {
+                    mutate("/planes-calibracion/")
+                    setPlanToCalibrar(null)
+                }}
+            />
+        </>
     )
 }

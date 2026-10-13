@@ -16,7 +16,10 @@ def calcular_proxima_fecha(db: Session, plan: PlanCalibracion) -> date:
     ultimo_registro = db.scalar(
         select(RegistroCalibracion)
         .where(RegistroCalibracion.plan_calibracion_id == plan.id)
-        .order_by(RegistroCalibracion.fecha.desc())
+        .order_by(
+            RegistroCalibracion.fecha.desc(),
+            RegistroCalibracion.id.desc()
+        )
     )
 
     fecha_base = ultimo_registro.fecha if ultimo_registro else plan.fecha_inicio

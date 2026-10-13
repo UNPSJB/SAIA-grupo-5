@@ -104,6 +104,8 @@ export function PlanCalibracionForm({ textoBoton, onSubmit, valoresIniciales, ed
                 <Button className="ms-2" variant="primary" type="submit">
                     <i className="bi bi-floppy me-1"></i>{textoBoton}
                 </Button>
+                
+                
             </Form>
         </div>
     );

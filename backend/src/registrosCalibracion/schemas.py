@@ -5,7 +5,7 @@ from typing import Annotated
 
 class RegistroCalibracionBase(BaseModel):
     observacion: Annotated[str | None, Field(default=None, max_length=255)]
-
+    certificado: str | None = None
 
 class RegistroCalibracionCreate(RegistroCalibracionBase):
     fecha: date | None = None
