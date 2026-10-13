@@ -223,14 +223,14 @@ export function VencimientoPersonalForm({ textoBoton, esEdicion = false, rutaCan
                         {errors.observacion?.message}
                     </Form.Control.Feedback>
                 </Form.Group>
-                <div className="d-flex justify-content-end">
-                    <Button variant="secondary" type="button" onClick={() => navigate(rutaCancelar)}>
-                        <i className="bi bi-x-circle me-1"></i>Cancelar
-                    </Button>
-                    <Button className="ms-2" variant="primary" type="submit">
-                        <i className="bi bi-floppy me-1"></i> {textoBoton}
-                    </Button>
-                </div>
+
+                <Button variant="secondary" type="button" onClick={() => navigate(rutaCancelar)}>
+                    <i className="bi bi-x-circle me-1"></i>Cancelar
+                </Button>
+                <Button className="ms-2" variant="primary" type="submit">
+                    <i className="bi bi-floppy me-1"></i> {textoBoton}
+                </Button>
+
             </Form>
         </div>
     );
