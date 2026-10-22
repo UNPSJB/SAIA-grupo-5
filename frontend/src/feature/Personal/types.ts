@@ -9,6 +9,7 @@ export type Persona = {
   username: string
   operar: boolean
   administrar: boolean
+  supervisor: boolean
   activo: boolean
   capacidades: Capacidad[]
 }
@@ -22,4 +23,5 @@ export type NewPersona = {
   password?: string
   operar: boolean
   administrar: boolean
+  supervisor: boolean
 }
