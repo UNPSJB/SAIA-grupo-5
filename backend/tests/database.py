@@ -55,7 +55,7 @@ def persona(db_session):
         dni="30111222",
         mail="juana.perez@test.com",
         username="juana_perez",
-        hashed_password="x",
+        hashed_password=get_password_hash("juana123"),
         operar=True,
         administrar=False,
         activo=True,
@@ -84,5 +84,13 @@ def auth_headers(client, db_session):
     db_session.commit()
 
     r = client.post("/auth/token", data={"username": "admin_test", "password": "admin123"})
+    token = r.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture(scope="function")
+def auth_headers_sin_permiso(client, persona):
+    # se loguea persona sin permisos 
+    r = client.post("/auth/token", data={"username": persona.username, "password": "juana123"})
     token = r.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
