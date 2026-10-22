@@ -13,6 +13,19 @@ import { PageLoading } from "../../../components/PageLoading";
 const formatearFechaHora = (fecha?: string | null) =>
     fecha ? new Date(fecha).toLocaleString('es-AR') : '-';
 
+const obtenerNombreArchivo = (base64: string | null | undefined): string => {
+    if (!base64) return "";
+
+    const matchNombre = base64.match(/;name=([^;]+);base64,/);      // Esto busca adentro del texto Base64 si esta guardado la parte ';name=([^;]+);base64,' y saca lo que esta en el medio que es el nombre del archivo
+
+    if (matchNombre?.[1]) {
+        return decodeURIComponent(matchNombre[1]);      // Convierte los espacios o acentos en texto normal para que se vea bien en la pantalla.
+    }
+
+    {/* Estos if y return son por si entras al editar y no seleccionaste otro archivo */}
+    if (base64.startsWith("data:application/pdf")) return "Version Documento PDF.pdf";      
+    return "Version Documento";
+};
 
 export function VerVersionDocumentoPage() {
     const navigate = useNavigate();
@@ -136,7 +149,7 @@ export function VerVersionDocumentoPage() {
                             </Row>
 
 
-                            <Row className="mb-2 align-items-center">
+                            <Row className="mb-2 border-bottom pb-3 align-items-center">
                                 <Col sm={4} className="fw-bold text-secondary">Estado Actual</Col>
                                 <Col sm={8}>
                                     <div
@@ -156,17 +169,24 @@ export function VerVersionDocumentoPage() {
                                     </div>
                                 </Col>
                             </Row>
-
-                            <Row className="mt-4">
-                                <Col>
-                                    <h6 className="fw-bold text-secondary mb-3"> Archivo PDF </h6>
-                                    <iframe
-                                        src={version.archivo}
-                                        title="Archivo PDF"
-                                        width="100%"
-                                        height="600px"
-                                        className="border rounded"
-                                    />
+                            <Row className="mb-2 align-items-center">
+                                <Col sm={4} className="fw-bold text-secondary">Archivo</Col>
+                                <Col sm={8}>
+                                    <div>
+                                        <div className="mb-2">
+                                            <span className="badge bg-light text-dark border p-2">
+                                                <i className="bi bi-file-earmark-text text-success me-1"></i>
+                                                {obtenerNombreArchivo(version.archivo)}
+                                            </span>
+                                        </div>
+                                        <a
+                                            href={version.archivo}
+                                            download={`documento_${documento?.nombre}_version_${version.version}`}
+                                            className="btn btn-outline-primary btn-sm"
+                                        >
+                                            <i className="bi bi-download me-1"></i>Descargar Archivo 
+                                        </a>
+                                    </div>
                                 </Col>
                             </Row>
                         </Card.Body>
