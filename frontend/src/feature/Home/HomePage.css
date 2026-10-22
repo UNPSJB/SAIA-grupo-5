@@ -82,6 +82,8 @@
 .dashboard-chart-heading p { margin: .25rem 0 0; color: #899499; font-size: .78rem; }
 .dashboard-chart-icon { display: grid; width: 2.2rem; height: 2.2rem; place-items: center; border-radius: .6rem; background: #e8f6f0; color: #06794f; }
 .dashboard-chart-area { width: 100%; height: 255px; margin-top: .5rem; }
+.dashboard-chart-filters { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .75rem; margin-top: .85rem; }
+.dashboard-chart-filters .form-label { margin-bottom: .2rem; color: #7d898e; font-size: .72rem; font-weight: 600; }
 .dashboard-donut-area { position: relative; width: 100%; height: 215px; margin-top: .45rem; }
 .dashboard-chart-message { display: flex; height: 100%; align-items: center; justify-content: center; gap: .6rem; color: #839096; font-size: .86rem; }
 .dashboard-donut-center { position: absolute; top: 50%; left: 50%; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -50%); pointer-events: none; }
