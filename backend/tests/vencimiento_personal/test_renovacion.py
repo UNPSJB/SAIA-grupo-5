@@ -5,6 +5,7 @@ from sqlalchemy import select
 
 from src.vencimiento_personal.models import VencimientoPersonal
 from src.vencimiento_personal import services, schemas, exceptions
+from src.vencimiento_personal.constants import ErrorCode
 
 
 def _vencimientos_actuales(db_session, persona_id, tipo_vencimiento_id):
@@ -26,8 +27,9 @@ def test_crear_vencimiento_duplicado(db_session, persona, tipo_vencimiento):
     )
     services.crear_vencimiento(db_session, datos)
 
-    with pytest.raises(exceptions.VencimientoDuplicado):
+    with pytest.raises(exceptions.VencimientoDuplicado) as exc_info:
         services.crear_vencimiento(db_session, datos)
+    assert exc_info.value.detail == ErrorCode.VENCIMIENTO_DUPLICADO
 
     # el duplicado rechazado no debe alterar el invariante
     actuales = _vencimientos_actuales(db_session, persona.id, tipo_vencimiento.id)
@@ -36,5 +38,6 @@ def test_crear_vencimiento_duplicado(db_session, persona, tipo_vencimiento):
 
 def test_renovar_vencimiento_inexistente(db_session):
     datos = schemas.VencimientoPersonalUpdate(fecha_desde=date(2026, 1, 1), fecha_hasta=date(2026, 6, 1))
-    with pytest.raises(exceptions.VencimientoNoEncontrado):
+    with pytest.raises(exceptions.VencimientoNoEncontrado) as exc_info:
         services.renovar_vencimiento(db_session, 9999, datos)
+    assert exc_info.value.detail == ErrorCode.VENCIMIENTO_NO_ENCONTRADO

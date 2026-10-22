@@ -1,3 +1,7 @@
+from src.exceptions import PermissionDenied
+from src.plan_limpieza.constants import ErrorCode
+
+
 def test_crear_plan_limpieza(client, auth_headers):
     response = client.post(
         "/planes-limpieza/",
@@ -20,6 +24,8 @@ def test_crear_plan_limpieza_sin_permiso(client, auth_headers_sin_permiso):
     )
 
     assert response.status_code == 403
+    data = response.json()
+    assert data["detail"] == PermissionDenied.DETAIL
 
 
 def test_leer_plan_limpieza(client, auth_headers, plan_limpieza):
@@ -34,6 +40,8 @@ def test_plan_limpieza_no_existe(client, auth_headers):
     response = client.get("/planes-limpieza/9999", headers=auth_headers)
 
     assert response.status_code == 404
+    data = response.json()
+    assert data["detail"] == ErrorCode.PLAN_LIMPIEZA_NO_ENCONTRADO
 
 
 def test_modificar_plan_limpieza(client, auth_headers, plan_limpieza):
@@ -56,6 +64,8 @@ def test_modificar_plan_limpieza_no_existe(client, auth_headers):
     )
 
     assert response.status_code == 404
+    data = response.json()
+    assert data["detail"] == ErrorCode.PLAN_LIMPIEZA_NO_ENCONTRADO
 
 
 # error 403
@@ -67,6 +77,8 @@ def test_modificar_plan_limpieza_sin_permiso(client, auth_headers_sin_permiso, p
     )
 
     assert response.status_code == 403
+    data = response.json()
+    assert data["detail"] == PermissionDenied.DETAIL
 
 
 def test_cambiar_estado_plan_limpieza(client, auth_headers, plan_limpieza):
@@ -81,6 +93,8 @@ def test_cambiar_estado_plan_limpieza_sin_permiso(client, auth_headers_sin_permi
     response = client.put(f"/planes-limpieza/{plan_limpieza.id}/estado", headers=auth_headers_sin_permiso)
 
     assert response.status_code == 403
+    data = response.json()
+    assert data["detail"] == PermissionDenied.DETAIL
 
 
 def test_eliminar_plan_limpieza(client, auth_headers, plan_limpieza):
@@ -97,6 +111,8 @@ def test_eliminar_plan_limpieza_no_existe(client, auth_headers):
     response = client.delete("/planes-limpieza/9999", headers=auth_headers)
 
     assert response.status_code == 404
+    data = response.json()
+    assert data["detail"] == ErrorCode.PLAN_LIMPIEZA_NO_ENCONTRADO
 
 
 # error 403
@@ -104,6 +120,8 @@ def test_eliminar_plan_limpieza_sin_permiso(client, auth_headers_sin_permiso, pl
     response = client.delete(f"/planes-limpieza/{plan_limpieza.id}", headers=auth_headers_sin_permiso)
 
     assert response.status_code == 403
+    data = response.json()
+    assert data["detail"] == PermissionDenied.DETAIL
 
 
 # error 400 - no se puede eliminar un plan con tareas activas
@@ -111,4 +129,6 @@ def test_eliminar_plan_limpieza_en_uso(client, auth_headers, plan_limpieza_en_us
     response = client.delete(f"/planes-limpieza/{plan_limpieza_en_uso.id}", headers=auth_headers)
 
     assert response.status_code == 400
+    data = response.json()
+    assert data["detail"] == ErrorCode.PLAN_LIMPIEZA_EN_USO
 

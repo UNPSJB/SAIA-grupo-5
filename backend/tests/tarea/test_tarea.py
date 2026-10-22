@@ -1,3 +1,7 @@
+from src.exceptions import PermissionDenied
+from src.tarea.constants import ErrorCode
+
+
 def test_crear_tarea(client, auth_headers, plan_limpieza, sector):
     response = client.post(
         "/tareas/",
@@ -55,6 +59,8 @@ def test_crear_tarea_sin_permiso(client, auth_headers_sin_permiso, plan_limpieza
     )
 
     assert response.status_code == 403
+    data = response.json()
+    assert data["detail"] == PermissionDenied.DETAIL
 
 
 # error 422 - la tarea debe ser de un sector, una superficie o un equipo
@@ -102,6 +108,8 @@ def test_tarea_no_existe(client, auth_headers):
     response = client.get("/tareas/9999", headers=auth_headers)
 
     assert response.status_code == 404
+    data = response.json()
+    assert data["detail"] == ErrorCode.TAREA_NO_ENCONTRADA
 
 
 def test_listar_tareas_por_plan(client, auth_headers, tarea):
@@ -151,6 +159,8 @@ def test_modificar_tarea_no_existe(client, auth_headers, plan_limpieza, sector):
     )
 
     assert response.status_code == 404
+    data = response.json()
+    assert data["detail"] == ErrorCode.TAREA_NO_ENCONTRADA
 
 
 # error 403
@@ -168,6 +178,8 @@ def test_modificar_tarea_sin_permiso(client, auth_headers_sin_permiso, tarea):
     )
 
     assert response.status_code == 403
+    data = response.json()
+    assert data["detail"] == PermissionDenied.DETAIL
 
 
 def test_cambiar_estado_tarea(client, auth_headers, tarea):
@@ -182,6 +194,8 @@ def test_cambiar_estado_tarea_sin_permiso(client, auth_headers_sin_permiso, tare
     response = client.put(f"/tareas/{tarea.id}/estado", headers=auth_headers_sin_permiso)
 
     assert response.status_code == 403
+    data = response.json()
+    assert data["detail"] == PermissionDenied.DETAIL
 
 
 def test_eliminar_tarea(client, auth_headers, tarea):
@@ -198,6 +212,8 @@ def test_eliminar_tarea_no_existe(client, auth_headers):
     response = client.delete("/tareas/9999", headers=auth_headers)
 
     assert response.status_code == 404
+    data = response.json()
+    assert data["detail"] == ErrorCode.TAREA_NO_ENCONTRADA
 
 
 # error 403
@@ -205,3 +221,5 @@ def test_eliminar_tarea_sin_permiso(client, auth_headers_sin_permiso, tarea):
     response = client.delete(f"/tareas/{tarea.id}", headers=auth_headers_sin_permiso)
 
     assert response.status_code == 403
+    data = response.json()
+    assert data["detail"] == PermissionDenied.DETAIL

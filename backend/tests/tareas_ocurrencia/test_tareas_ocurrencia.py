@@ -1,5 +1,8 @@
 from datetime import date
 
+from src.exceptions import PermissionDenied
+from src.tareas_ocurrencia.constants import ErrorCode
+
 
 def test_crear_tarea_ocurrencia(client, auth_headers):
     response = client.post(
@@ -35,6 +38,8 @@ def test_crear_tarea_ocurrencia_sin_permiso(client, auth_headers_sin_permiso):
     )
 
     assert response.status_code == 403
+    data = response.json()
+    assert data["detail"] == PermissionDenied.DETAIL
 
 
 def test_leer_tarea_ocurrencia(client, auth_headers, tarea_ocurrencia):
@@ -50,6 +55,8 @@ def test_tarea_ocurrencia_no_existe(client, auth_headers):
     response = client.get("/tareas-ocurrencia/9999", headers=auth_headers)
 
     assert response.status_code == 404
+    data = response.json()
+    assert data["detail"] == ErrorCode.TAREA_OCURRENCIA_NO_ENCONTRADA
 
 
 def test_generar_ocurrencias_manual(client, auth_headers, tarea):
@@ -70,6 +77,8 @@ def test_generar_ocurrencias_manual_sin_permiso(client, auth_headers_sin_permiso
     response = client.post("/tareas-ocurrencia/generar-manual", headers=auth_headers_sin_permiso)
 
     assert response.status_code == 403
+    data = response.json()
+    assert data["detail"] == PermissionDenied.DETAIL
 
 
 def test_completar_tarea_ocurrencia(client, auth_headers_sin_permiso, persona, tarea_ocurrencia):
@@ -114,6 +123,8 @@ def test_editar_tarea_ocurrencia_completada_por_otro(
     response = client.put(url, json={"operario_id": otro_operario.id}, headers=auth_headers_sin_permiso)
 
     assert response.status_code == 403
+    data = response.json()
+    assert data["detail"] == ErrorCode.TAREA_OCURRENCIA_COMPLETADA_POR_OTRO
 
 
 # error 404
@@ -125,6 +136,8 @@ def test_completar_tarea_ocurrencia_no_existe(client, auth_headers_sin_permiso, 
     )
 
     assert response.status_code == 404
+    data = response.json()
+    assert data["detail"] == ErrorCode.TAREA_OCURRENCIA_NO_ENCONTRADA
 
 
 def test_listar_pendientes_y_completadas(client, auth_headers, persona, tarea_ocurrencia):
@@ -169,6 +182,8 @@ def test_historial_sin_permiso(client, auth_headers_sin_permiso):
     )
 
     assert response.status_code == 403
+    data = response.json()
+    assert data["detail"] == PermissionDenied.DETAIL
 
 
 def test_eliminar_tarea_ocurrencia(client, auth_headers, tarea_ocurrencia):
@@ -186,6 +201,8 @@ def test_eliminar_tarea_ocurrencia_no_existe(client, auth_headers):
     response = client.delete("/tareas-ocurrencia/9999", headers=auth_headers)
 
     assert response.status_code == 404
+    data = response.json()
+    assert data["detail"] == ErrorCode.TAREA_OCURRENCIA_NO_ENCONTRADA
 
 
 # error 403
@@ -193,3 +210,5 @@ def test_eliminar_tarea_ocurrencia_sin_permiso(client, auth_headers_sin_permiso,
     response = client.delete(f"/tareas-ocurrencia/{tarea_ocurrencia.id}", headers=auth_headers_sin_permiso)
 
     assert response.status_code == 403
+    data = response.json()
+    assert data["detail"] == PermissionDenied.DETAIL
