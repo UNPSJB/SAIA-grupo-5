@@ -9,6 +9,7 @@ import { Capacidades } from '../../Capacidades/types'
 const capacidadLabels: Record<string, string> = {
     [Capacidades.OPERAR]: 'Operar',
     [Capacidades.ADMINISTRAR]: 'Administrar',
+    [Capacidades.SUPERVISOR]: 'Supervisor',
 };
 
 export function VerPersonalPage() {
@@ -82,8 +83,8 @@ export function VerPersonalPage() {
                                                     style={{
                                                         padding: '3px 10px',
                                                         borderRadius: '14px',
-                                                        background: capacidad === Capacidades.ADMINISTRAR ? '#dbeafe' : '#e5e7eb',
-                                                        color: capacidad === Capacidades.ADMINISTRAR ? '#1d4ed8' : '#374151',
+                                                        background: capacidad === Capacidades.ADMINISTRAR ? '#dbeafe' : capacidad === Capacidades.SUPERVISOR ? '#fef3c7' : '#e5e7eb',
+                                                        color: capacidad === Capacidades.ADMINISTRAR ? '#1d4ed8' : capacidad === Capacidades.SUPERVISOR ? '#92400e' : '#374151',
                                                         fontWeight: 600,
                                                         fontSize: '0.85rem',
                                                         display: 'flex',

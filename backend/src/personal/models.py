@@ -23,6 +23,7 @@ class Persona(ModeloBase):
 
     operar: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     administrar: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    supervisor: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     activo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
     @property
@@ -32,6 +33,8 @@ class Persona(ModeloBase):
             capacidades.add(Capacidades.OPERAR)
         if self.administrar:
             capacidades.add(Capacidades.ADMINISTRAR)
+        if self.supervisor:
+            capacidades.add(Capacidades.SUPERVISOR)
         return capacidades
 
     @property
@@ -40,8 +43,16 @@ class Persona(ModeloBase):
 
     @property
     def role_name(self) -> str:
-        return "admin" if self.administrar else "operario"
+        if self.administrar:
+            return "admin"
+        if self.supervisor:
+            return "supervisor"
+        return "operario"
 
     @property
     def role_id(self) -> int:
-        return 1 if self.administrar else 2
+        if self.administrar:
+            return 1
+        if self.supervisor:
+            return 3
+        return 2
