@@ -123,18 +123,20 @@ export function ListPage() {
 
                 />
 
-                <Button
-                    variant="success"
-                    onClick={generarTareas}
-                    disabled={generando}
-                    className="text-nowrap flex-shrink-0"
-                >
-                    <i className="bi bi-arrow-repeat me-1"></i>
-                    {generando ? 'Generando...' : 'Generar tareas'}
-                </Button>
+                {currentUser?.administrar && (
+                    <Button
+                        variant="success"
+                        onClick={generarTareas}
+                        disabled={generando}
+                        className="text-nowrap flex-shrink-0"
+                    >
+                        <i className="bi bi-arrow-repeat me-1"></i>
+                        {generando ? 'Generando...' : 'Generar tareas'}
+                    </Button>
+                )}
             </div>
         );
-    }, [search, planesDisponibles, filtroPlan, generando]);
+    }, [search, planesDisponibles, filtroPlan, generando, currentUser?.administrar]);
 
     const abrirModal = (tarea: TareaOcurrencia) => {
         setTareaSeleccionada(tarea);
