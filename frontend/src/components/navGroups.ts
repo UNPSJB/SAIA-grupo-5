@@ -54,7 +54,8 @@ export const navGroups: NavGroup[] = [
             { label: 'Tipos de químicos', to: '/tipos-quimicos', icon: 'bi-flask' },
             { label: 'Tipos de Vencimientos', to: '/tipos-vencimientos', icon: 'bi-calendar-plus'},
             { label: 'Tipos de Documentos', to: '/tipos-documentos', icon: 'bi bi-file-earmark-text'},
-            { label: 'Tipos de Incidentes', to: '/tipos-incidentes', icon: 'bi-exclamation-triangle'}
+            { label: 'Tipos de Incidentes', to: '/tipos-incidentes', icon: 'bi-exclamation-triangle'},
+            { label: 'Unidades de Medida', to: '/unidades-medida', icon: '<bi bi-rulers'}
         ],
     },
 ];

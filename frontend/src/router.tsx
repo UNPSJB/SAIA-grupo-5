@@ -109,6 +109,11 @@ import { PlanesCalibracionPage } from './feature/PlanesCalibracion/pages/PlanesC
 import { NuevoPlanCalibracionPage } from './feature/PlanesCalibracion/pages/NuevoPlanCalibracionPage.tsx'
 import { EditarPlanCalibracionPage } from './feature/PlanesCalibracion/pages/EditarPlanCalibracionPage.tsx'
 
+import { ListPage as UnidadMedidaListPage } from './feature/UnidadMedida/pages/ListPage.tsx'
+import { NuevaUnidadMedidaPage } from './feature/UnidadMedida/pages/NuevaUnidadMedidaPage.tsx'
+import { EditarUnidadMedidaPage } from './feature/UnidadMedida/pages/EditarUnidadMedidaPage.tsx'
+import { VerUnidadMedidaPage } from './feature/UnidadMedida/pages/VerUnidadMedidaPage.tsx'
+
 import { Login, NoAutorizado } from './feature/auth'
 import AuthLayout from './layouts/AuthLayout.tsx'
 import { ProtectedRoute } from './components/ProtectedRoute.tsx'
@@ -353,6 +358,16 @@ const router = createBrowserRouter([
               { path: 'new', element: <NuevoTipoVencimientoPage /> },
               { path: ':id', element: <VerTipoVencimientoPage /> },
               { path: ':id/edit', element: <EditarTipoVencimientoPage /> },
+            ],
+          },
+          {
+            path: 'unidades-medida',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <UnidadMedidaListPage />},
+              { path: 'new', element: <NuevaUnidadMedidaPage />},
+              { path: ':id', element: <VerUnidadMedidaPage />},
+              { path: ':id/edit', element: <EditarUnidadMedidaPage />},
             ],
           },
           {
