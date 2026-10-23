@@ -29,7 +29,7 @@ export function ListPage() {
         return (insumosQuimicos ?? []).filter((insumoQuimico) => {
             return (
                 insumoQuimico.nombre.toLowerCase().includes(search.toLowerCase()) ||
-                insumoQuimico.unidad_medida.toLowerCase().includes(search.toLowerCase()) ||
+                insumoQuimico.unidad_medida.nombre.toLowerCase().includes(search.toLowerCase()) ||
                 insumoQuimico.tipo.nombre.toLowerCase().includes(search.toLocaleLowerCase())
             );
         });
@@ -86,7 +86,7 @@ export function ListPage() {
         },
         {
             name: 'Unidad de medida',
-            selector: row => row.unidad_medida,
+            selector: row => row.unidad_medida.nombre,
             sortable: true,
             center: true,
             cell: row => (
@@ -104,7 +104,7 @@ export function ListPage() {
                             whiteSpace: 'nowrap',
                         }}      // Se modifico para poder poner las unidades de medida con los nombres completos y que se vean bien
                     >
-                        {row.unidad_medida}
+                        {row.unidad_medida.nombre}
                     </div>
                 </div>
             ),

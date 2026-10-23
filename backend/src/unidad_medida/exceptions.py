@@ -10,3 +10,6 @@ class UnidadMedidaDuplicada(BadRequest):
     
 class UnidadMedidaDadaDeBaja(BadRequest):
     DETAIL = ErrorCode.UNIDAD_DADA_DE_BAJA
+
+class UnidadMedidaUtilizada(BadRequest):
+    DETAIL = ErrorCode.UNIDAD_MEDIDA_UTILIZADA

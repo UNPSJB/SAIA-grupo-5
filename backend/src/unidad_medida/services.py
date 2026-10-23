@@ -4,6 +4,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from src.unidad_medida.models import UnidadMedida
 from src.unidad_medida import schemas, exceptions
+from src.insumos.models import Insumo
+from src.consumo_producto.models import ConsumoProducto
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +54,13 @@ def cambiar_estado_unidad_medida(db: Session, unidad_medida_id: int) -> schemas.
     db_unidad_medida = leer_unidad_medida(db, unidad_medida_id)
     if db_unidad_medida is None:
         raise exceptions.UnidadMedidaNoEncontrada()
+
+    if db_unidad_medida.activo:
+        insumo_asociado = db.scalars(select(Insumo).where(Insumo.unidad_medida_id == unidad_medida_id, Insumo.activo == True)).first()
+        consumo_asociado = db.scalars(select(ConsumoProducto).where(ConsumoProducto.unidad_medida_id == unidad_medida_id, ConsumoProducto.estado == True)).first()
+
+        if insumo_asociado or consumo_asociado:
+            raise exceptions.UnidadMedidaUtilizada()
     
     db_unidad_medida.activo = not db_unidad_medida.activo
     db.commit()
