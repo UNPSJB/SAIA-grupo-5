@@ -2,12 +2,13 @@
 
 ## Resumen
 
-Login con JWT (`PyJWT`, algoritmo `HS256`). No hay un solo rol "admin/operador" — `Persona` tiene dos flags booleanos independientes:
+Login con JWT (`PyJWT`, algoritmo `HS256`). `Persona` tiene tres capacidades booleanas independientes:
 
 - `operar`: puede operar equipos/tareas.
 - `administrar`: puede administrar (crear/editar/borrar entidades, ver el listado de personal, etc.).
+- `supervisor`: identifica a quienes supervisan operaciones; se asigna independientemente y no concede permisos administrativos ni operativos por sí sola.
 
-Una persona puede tener uno, otro, los dos, o ninguno. El admin por default que se crea al arrancar la app (`admin1` / `admin`, ver `src/lifespan.py`) tiene `administrar=True` pero `operar=False` — **no asumir que "admin" implica "operar"**, son independientes.
+Una persona puede tener una o varias capacidades. El admin por default que se crea al arrancar la app (`admin1` / `admin`, ver `src/lifespan.py`) tiene `administrar=True` pero `operar=False` y `supervisor=False` — las capacidades no se implican entre sí.
 
 ## Login: los endpoints de `/auth`
 
@@ -60,9 +61,10 @@ Si cambiás estas claves con la app corriendo, cualquier sesión activa (tokens 
 get_current_persona        # está logueado (cualquiera activo) -> devuelve la Persona
 tiene_permiso_administrar  # además, persona.administrar == True (si no, 403)
 tiene_permiso_operar       # además, persona.operar == True (si no, 403)
+tiene_permiso_supervisor   # además, persona.supervisor == True (si no, 403)
 ```
 
-`tiene_permiso_administrar`/`tiene_permiso_operar` dependen a su vez de `get_current_persona` — primero valida que estés logueado, después el flag puntual.
+Las dependencias de capacidad dependen a su vez de `get_current_persona` — primero valida que estés logueado, después el flag puntual. El `PermissionedRouter` mantiene las escrituras restringidas a administración; para una ruta de supervisión, declarar `Depends(tiene_permiso_supervisor)` explícitamente.
 
 ## `PermissionedRouter`: permiso por default según el método HTTP
 
@@ -139,3 +141,4 @@ POST     /insumos/                          -> ['administrar']
 
 - **Admin**: `admin1` / `admin` (se crea solo al arrancar la app si no existe, ver `src/lifespan.py` — `operar=False`, `administrar=True`).
 - **Operador**: los que carga `scripts/seed_personal.py` (contraseña `password123` para todos, usuario generado con Faker — mirar la tabla `personal` en la base para ver los usernames reales de esa corrida).
+- **Supervisor**: puede asignarse desde Personal junto con otras capacidades; requiere `supervisor=True` para endpoints que declaren `tiene_permiso_supervisor`.

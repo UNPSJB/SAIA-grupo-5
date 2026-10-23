@@ -22,6 +22,7 @@ export function PersonaForm({ textoBoton, onSubmit, valoresIniciales, isEditing 
   const [password, setPassword] = useState('')
   const [operar, setOperar] = useState(valoresIniciales?.operar || false)
   const [administrar, setAdministrar] = useState(valoresIniciales?.administrar || false)
+  const [supervisor, setSupervisor] = useState(valoresIniciales?.supervisor || false)
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -35,7 +36,7 @@ export function PersonaForm({ textoBoton, onSubmit, valoresIniciales, isEditing 
       (!isEditing && !username.trim()) ||
       (!isEditing && !password.trim()) ||
       (isEditing && Boolean(password && password.length < 4)) ||
-      (!operar && !administrar)
+      (!operar && !administrar && !supervisor)
     ) {
       return
     }
@@ -48,6 +49,7 @@ export function PersonaForm({ textoBoton, onSubmit, valoresIniciales, isEditing 
       username: username.trim(),
       operar,
       administrar,
+      supervisor,
     }
 
     if (password && password.trim()) {
@@ -192,8 +194,15 @@ export function PersonaForm({ textoBoton, onSubmit, valoresIniciales, isEditing 
               checked={administrar}
               onChange={(e) => setAdministrar(e.target.checked)}
             />
+            <Form.Check
+              type="checkbox"
+              id="capacidad-supervisor"
+              label="Supervisor"
+              checked={supervisor}
+              onChange={(e) => setSupervisor(e.target.checked)}
+            />
           </div>
-          {validated && !operar && !administrar && (
+          {validated && !operar && !administrar && !supervisor && (
             <div className="invalid-feedback d-block mt-1">
               Debe seleccionar al menos una capacidad.
             </div>

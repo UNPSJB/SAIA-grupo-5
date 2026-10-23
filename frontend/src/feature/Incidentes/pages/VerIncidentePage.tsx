@@ -6,6 +6,20 @@ import type { Incidente } from "../types";
 import { useAuth } from '../../../hooks';
 import { PageLoading } from "../../../components/PageLoading";
 
+const obtenerNombreArchivo = (base64: string | null | undefined): string => {
+    if (!base64) return "";
+
+    const matchNombre = base64.match(/;name=([^;]+);base64,/);      // Esto busca adentro del texto Base64 si esta guardado la parte ';name=([^;]+);base64,' y saca lo que esta en el medio que es el nombre del archivo
+
+    if (matchNombre?.[1]) {
+        return decodeURIComponent(matchNombre[1]);      // Convierte los espacios o acentos en texto normal para que se vea bien en la pantalla.
+    }
+
+    {/* Estos if y return son por si entras al editar y no seleccionaste otro archivo */}
+    if (base64.startsWith("data:image/")) return "Foto adjunta";
+    return "Foto adjunta";
+};
+
 export function VerIncidentePage() {
     const navigate = useNavigate();
     const { id } = useParams(); 
@@ -119,7 +133,7 @@ export function VerIncidentePage() {
                                 </Col>
                             </Row>
 
-                            <Row className="mb-2 align-items-center">
+                            <Row className="mb-2 border-bottom pb-3 align-items-center">
                                 <Col sm={4} className="fw-bold text-secondary">Estado Actual</Col>
                                 <Col sm={8}>
                                     <div
@@ -140,19 +154,35 @@ export function VerIncidentePage() {
                                 </Col>
                             </Row>
 
-                            {incidente.foto_opcional && (
-                                <Row className="mt-4">
-                                    <Col>
-                                        <h6 className="fw-bold text-secondary mb-3">Foto</h6>
-                                        <img
-                                            src={incidente.foto_opcional}
-                                            alt="Foto del incidente"
-                                            className="img-fluid border rounded"
-                                            style={{ maxHeight: "600px", objectFit: "contain" }}
-                                        />
-                                    </Col>
-                                </Row>
-                            )}
+                            <Row className="mb-2 align-items-center">
+                                <Col sm={4} className="fw-bold text-secondary"> Foto </Col>
+                                <Col sm={8}>
+                                    {incidente.foto_opcional ? (
+                                        <div>
+                                            <div className="mb-2">
+                                                <img
+                                                    src={incidente.foto_opcional}
+                                                    alt="Foto"
+                                                    style={{ maxWidth: '100%', maxHeight: '250px', borderRadius: '8px' }}
+                                                    className="border shadow-sm"
+                                                />
+                                                <div className="small text-muted mt-1">
+                                                    {obtenerNombreArchivo(incidente.foto_opcional)}
+                                                </div>
+                                            </div>
+                                            <a
+                                                href={incidente.foto_opcional}
+                                                download={`incidente_${incidente.nombre}`}
+                                                className="btn btn-outline-primary btn-sm"
+                                            >
+                                                <i className="bi bi-download me-1"></i>Descargar Foto Adjunta
+                                            </a>
+                                        </div>
+                                    ) : (
+                                        <span className="text-muted fst-italic">Sin foto adjunta</span>
+                                    )}
+                                </Col>
+                            </Row>
                         </Card.Body>
 
                         <Card.Footer className="bg-light border-top p-3 d-flex justify-content-end gap-2">

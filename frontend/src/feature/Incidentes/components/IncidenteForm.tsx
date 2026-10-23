@@ -34,6 +34,20 @@ interface IncidenteFormData {
     sector_id: number | null;
 }
 
+const obtenerNombreArchivo = (base64: string | null | undefined): string => {
+    if (!base64) return "";
+
+    const matchNombre = base64.match(/;name=([^;]+);base64,/);      // Esto busca adentro del texto Base64 si esta guardado la parte ';name=([^;]+);base64,' y saca lo que esta en el medio que es el nombre del archivo
+
+    if (matchNombre?.[1]) {
+        return decodeURIComponent(matchNombre[1]);      // Convierte los espacios o acentos en texto normal para que se vea bien en la pantalla.
+    }
+
+    {/* Estos if y return son por si entras al editar y no seleccionaste otro archivo */}
+    if (base64.startsWith("data:image/")) return "Foto adjunta";
+    return "Foto adjunta";
+};
+
 export function IncidenteForm({ textoBoton, onSubmit, valoresIniciales, soloLectura }: IncidenteFormProps) {
     const navigate = useNavigate();
     const [fotoBase64, setFotoBase64] = useState<string | null>(null);
@@ -184,7 +198,7 @@ export function IncidenteForm({ textoBoton, onSubmit, valoresIniciales, soloLect
 
                 <Form.Group className="mb-3 text-start">
                     <Form.Label className="p-1 fw-bold">Foto (Opcional)</Form.Label>
-                    {!valoresIniciales?.foto_opcional ? (
+                    {!valoresIniciales?.foto_opcional && (
                         <>
                             <Form.Control
                                 type="file"
@@ -196,11 +210,6 @@ export function IncidenteForm({ textoBoton, onSubmit, valoresIniciales, soloLect
                                 {fotoError}
                             </Form.Control.Feedback>
                         </>
-                    ) : (
-                        <div className="p-2 border rounded bg-light d-inline-block">
-                            <i className="bi bi-file-earmark-pdf text-danger me-2"></i>
-                            <span>Foto cargada correctamente</span>
-                        </div>
                     )}
                     {fotoMostrar && (
                         <div className="mt-3 text-center">
@@ -210,9 +219,10 @@ export function IncidenteForm({ textoBoton, onSubmit, valoresIniciales, soloLect
                             <img
                                 src={fotoMostrar}
                                 alt="Foto del incidente"
-                                style={{ maxHeight: "150px", maxWidth: "100%", borderRadius: "8px", objectFit: "cover", }}
+                                style={{ maxHeight: '150px', borderRadius: '8px', objectFit: 'cover' }}
                                 className="border shadow-sm"
                             />
+                            <div className="small text-muted">{obtenerNombreArchivo(fotoMostrar)}</div>
                         </div>
                     )}
                 </Form.Group>
