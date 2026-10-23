@@ -2,8 +2,8 @@ import { useMemo, useState } from "react";
 import { ButtonGroup, Card, Form, Spinner, ToggleButton } from "react-bootstrap";
 import {
     CartesianGrid,
-    Line,
-    LineChart,
+    Area,
+    AreaChart,
     ReferenceLine,
     ResponsiveContainer,
     Tooltip,
@@ -12,7 +12,7 @@ import {
 } from "recharts";
 import { useApi } from "../../../hooks/useApi";
 import type { TareaOcurrencia } from "../../TareasOcurrencias/types";
-import { getEstadoHistorial } from "../../Historial/types";
+import { getEstadoHistorial, type EstadoHistorial } from "../../Historial/types";
 import { toDateKey, dateFromKey } from "../../../libs/date";
 import { SEAFOAM } from "../constants";
 
@@ -53,34 +53,41 @@ export function CumplimientoChart() {
 
     const puntos = useMemo<PuntoCumplimiento[]>(() => {
         if (!rangoValido) return [];
-        const buckets = new Map<string, PuntoCumplimiento>();
-        const keyDe = (date: Date) => toDateKey(agrupacion === "semana" ? inicioSemana(date) : date);
+        const points = new Map<string, PuntoCumplimiento>();
+        const keyDate = (date: Date) => toDateKey(agrupacion === "semana" ? inicioSemana(date) : date);
 
         // Se generan todos los períodos del rango para que los días/semanas sin datos queden visibles
-        const cursor = dateFromKey(fechaDesde);
-        const fin = dateFromKey(fechaHasta);
-        while (cursor <= fin) {
-            const key = keyDe(cursor);
-            if (!buckets.has(key)) {
+        const startDate = dateFromKey(fechaDesde);
+        const finDate = dateFromKey(fechaHasta);
+        while (startDate <= finDate) {
+            const key = keyDate(startDate);
+            if (!points.has(key)) {
                 const label = agrupacion === "semana"
                     ? `Sem. ${formatoDia.format(dateFromKey(key))}`
-                    : formatoDia.format(cursor);
-                buckets.set(key, { key, label, cumplimiento: null, completadas: 0, incumplidas: 0, pendientes: 0 });
+                    : formatoDia.format(startDate);
+                points.set(key, {
+                    key,
+                    label,
+                    cumplimiento: null,
+                    completadas: 0,
+                    incumplidas: 0,
+                    pendientes: 0
+                });
             }
-            cursor.setDate(cursor.getDate() + 1);
+            startDate.setDate(startDate.getDate() + 1);
         }
 
         (data ?? []).forEach((ocurrencia) => {
-            const item = buckets.get(keyDe(dateFromKey(ocurrencia.fecha.slice(0, 10))));
+            const item = points.get(keyDate(dateFromKey(ocurrencia.fecha.slice(0, 10))));
             if (!item) return;
-            const estado = getEstadoHistorial(ocurrencia);
+            const estado: EstadoHistorial = getEstadoHistorial(ocurrencia);
             if (estado === "Completada") item.completadas += 1;
             else if (estado === "Incumplida") item.incumplidas += 1;
             else item.pendientes += 1;
         });
 
         // El cumplimiento se calcula sobre tareas resueltas, igual que el indicador general
-        return Array.from(buckets.values()).map((item) => {
+        return Array.from(points.values()).map((item) => {
             const resueltas = item.completadas + item.incumplidas;
             return { ...item, cumplimiento: resueltas > 0 ? Math.round((item.completadas / resueltas) * 100) : null };
         });
@@ -159,8 +166,22 @@ export function CumplimientoChart() {
                                         No hay tareas resueltas en este período.
                                     </div> : (
                                         <ResponsiveContainer width="100%" height="100%">
-                                            <LineChart data={puntos} margin={{ top: 10, right: 16, left: -12, bottom: 0 }}>
-                                                <CartesianGrid stroke="#e9eef2" vertical={false} />
+                                            <AreaChart
+                                                data={puntos}
+                                                margin={{
+                                                    top: 10,
+                                                    right: 16,
+                                                    left: -12,
+                                                    bottom: 0
+                                                }}
+                                            >
+                                                <defs>
+                                                    <linearGradient id="cumplimiento-fill" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="5%" stopColor={SEAFOAM.primary} stopOpacity={0.5} />
+                                                        <stop offset="90%" stopColor={SEAFOAM.primary} stopOpacity={0} />
+                                                    </linearGradient>
+                                                </defs>
+                                                <CartesianGrid strokeDasharray="3 3" stroke="#e9eef2" />
                                                 <XAxis
                                                     dataKey="label"
                                                     tickLine={false}
@@ -190,17 +211,19 @@ export function CumplimientoChart() {
                                                         "Cumplimiento",
                                                     ]}
                                                 />
-                                                <Line
+                                                <Area
                                                     type="monotone"
                                                     dataKey="cumplimiento"
                                                     name="Cumplimiento"
                                                     stroke={SEAFOAM.primary}
                                                     strokeWidth={2}
+                                                    fill="url(#cumplimiento-fill)"
+                                                    fillOpacity={1}
                                                     dot={{ r: 3, fill: SEAFOAM.primary, strokeWidth: 0 }}
                                                     activeDot={{ r: 5 }}
                                                     connectNulls
                                                 />
-                                            </LineChart>
+                                            </AreaChart>
                                         </ResponsiveContainer>
                                     )}
                 </div>
