@@ -58,18 +58,24 @@ export function EditarDocumentoPage(){
     )
 
 
-    return(
-        <>
-            <PageHeader title="Editar Documento"/>
+    return (
+    <>
+        <PageHeader title="Editar Documento" />
 
-            <Container>
-                <DocumentoForm textoBoton="Editar Documento"
+        <Container>
+            <div data-tour="form-documento">
+                <DocumentoForm
+                    textoBoton="Editar Documento"
                     onSubmit={actualizarDocumento}
-                    valoresIniciales={{ nombre: documento.nombre,
-                    descripcion: documento.descripcion,
-                    tipo_id: documento.tipo_id}}/>
-            </Container>
-        </>
-    )
+                    valoresIniciales={{
+                        nombre: documento.nombre,
+                        descripcion: documento.descripcion,
+                        tipo_id: documento.tipo_id,
+                    }}
+                />
+            </div>
+        </Container>
+    </>
+);
 }
 

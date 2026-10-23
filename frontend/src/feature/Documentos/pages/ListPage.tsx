@@ -33,6 +33,7 @@ export function ListPage() {
     const subHeaderComponentMemo = useMemo(() => {
         return (
             <Form.Control
+                data-tour="buscador-documentos"
                 type="text"
                 placeholder="Buscar documento..."
                 className=" mr-sm-2"
@@ -103,6 +104,7 @@ export function ListPage() {
                     {currentUser?.administrar && (
                         <>
                             <Button
+                                data-tour="btn-editar-documento"
                                 variant="outline-primary"
                                 size="sm"
                                 disabled={!row.activo}      // Si no esta activo se muestra en gris y no se puede editar
@@ -152,7 +154,9 @@ export function ListPage() {
                 )}
 
             </Row>
-            <AppTable columns={columns} data={filteredDocumentos} />
+                <div data-tour="tabla-documentos">
+                    <AppTable columns={columns} data={filteredDocumentos} />
+                </div>  
             <DeleteDocumentoModal
                 documento={documentoToDelete}
                 onHide={() => setDocumentoToDelete(null)}

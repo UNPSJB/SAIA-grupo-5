@@ -6,6 +6,7 @@ import { useApi } from '../hooks/useApi';
 import { useAuth } from '../hooks';
 import { api } from '../libs/axios';
 import type { Notificacion } from '../feature/Notificaciones/types';
+import { TutorialMenu } from './TutorialMenu';
 import { navGroups } from './navGroups';
 import { Breadcrumbs } from './Breadcrumbs';
 import './Nav.css';
@@ -163,6 +164,7 @@ export function Nav({ children }: { children: React.ReactNode }) {
                     </div>
 
                     <div className="sb-topbar-actions">
+                        <TutorialMenu />
                         {isAdmin && (
                             <Dropdown align="end" className="sb-notification-dropdown">
                                 <Dropdown.Toggle as="button" id="sb-notification-menu" className="sb-notification-toggle" aria-label={`Notificaciones: ${pendingNotifications.length} pendientes`}>
