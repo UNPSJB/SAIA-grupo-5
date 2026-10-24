@@ -32,6 +32,7 @@ export const navGroups: NavGroup[] = [
         items: [
             { label: 'Insumos', to: '/insumos', icon: 'bi-box-seam' },
             { label: 'Insumos químicos', to: '/insumos-quimicos', icon: 'bi-droplet' },
+            { label: 'Productos', to: '/productos', icon: 'bi bi-fork-knife'},
             { label: 'Equipos', to: '/equipos', icon: 'bi-tools' },
             { label: 'Elementos de limpieza', to: '/elementos-limpieza', icon: 'bi-bucket' },
             { label: 'Documentos', to: '/documentos', icon: 'bi-file-text' },

@@ -35,6 +35,9 @@ def leer_insumo(db: Session, insumo_id: int) -> schemas.Insumo:
 def cambiar_estado_insumo(db: Session, insumo_id: int) -> schemas.Insumo:
     db_insumo = leer_insumo(db, insumo_id)
 
+    if not db_insumo.activo and not db_insumo.unidad_medida.activo:
+        raise exceptions.UnidadMedidaDadaDeBaja()
+
     db_insumo.activo = not db_insumo.activo
     db.commit()
     db.refresh(db_insumo)

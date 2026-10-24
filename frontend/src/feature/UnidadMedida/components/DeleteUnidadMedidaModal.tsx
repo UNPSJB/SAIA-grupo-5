@@ -20,7 +20,7 @@ export function DeleteUnidadMedidaModal({ unidadMedida, onHide, onDeleted }: Del
             mostrarAlertaExito(`La unidad de medida '${unidadMedida.nombre}' se dio de ${estabaActivo ? 'baja' : 'alta'} correctamente.`);
             onDeleted();
         } catch (error: any){
-            let mensajeFinal = "No se pudo ${estabaActivo ? 'dar de baja' : 'dar de alta'} la unidad de medida '${unidadMedida.nombre}'."
+            let mensajeFinal = `No se pudo ${estabaActivo ? 'dar de baja' : 'dar de alta'} la unidad de medida '${unidadMedida.nombre}'.`
             if (error.response?.data?.detail){      
                 const detail = error.response.data.detail;
                 mensajeFinal = Array.isArray(detail) ? detail[0].msg : detail;

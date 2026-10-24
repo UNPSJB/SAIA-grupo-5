@@ -59,9 +59,9 @@ def cambiar_estado_unidad_medida(db: Session, unidad_medida_id: int) -> schemas.
     if db_unidad_medida.activo:
         insumo_asociado = db.scalars(select(Insumo).where(Insumo.unidad_medida_id == unidad_medida_id, Insumo.activo == True)).first()
         consumo_asociado = db.scalars(select(ConsumoProducto).where(ConsumoProducto.unidad_medida_id == unidad_medida_id, ConsumoProducto.estado == True)).first()
-        producto_asociado = db.scalars(select(Producto).where(Producto.unidad_medida_id == unidad_medida_id, Producto.estado == True)).first()
+        producto_asociado = db.scalars(select(Producto).where(Producto.unidad_medida_id == unidad_medida_id, Producto.activo == True)).first()
 
-        if insumo_asociado or consumo_asociado:
+        if insumo_asociado or consumo_asociado or producto_asociado:
             raise exceptions.UnidadMedidaUtilizada()
     
     db_unidad_medida.activo = not db_unidad_medida.activo

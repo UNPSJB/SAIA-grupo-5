@@ -92,7 +92,7 @@ export function VerInsumoQuimicoPage() {
                             </Row>
                         </Card.Body>
 
-                        <Card.Footer className="bg-light border-top p-3 d-flex justify-content-end gap-2">
+                        <Card.Footer className="bg-light border-top p-3 d-flex justify-content-start gap-2">
                             <Button 
                                 variant="outline-secondary" 
                                 onClick={() => navigate('/insumos-quimicos')}

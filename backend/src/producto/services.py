@@ -35,6 +35,9 @@ def leer_producto(db: Session, producto_id: int) -> schemas.Producto:
 def cambiar_estado_producto(db: Session, producto_id: int) -> schemas.Producto:
     db_producto = leer_producto(db, producto_id)
 
+    if not db_producto.activo and not db_producto.unidad_medida.activo:
+        raise exceptions.UnidadMedidaDadaDeBaja()
+
     db_producto.activo = not db_producto.activo
     db.commit()
     db.refresh(db_producto)

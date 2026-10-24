@@ -70,3 +70,12 @@ def test_modificar_producto_dada_de_baja(db_session, unico_producto, unica_unida
     with pytest.raises(exceptions.ProductoDadoDeBaja):
         services.modificar_producto(db=db_session, 
                     producto_id=unico_producto.id, producto=datos)
+
+def test_reactivar_producto_con_unidad_medida_inactiva(db_session, unico_producto, unica_unidad_medida):
+    services.cambiar_estado_producto(db=db_session, producto_id=unico_producto.id)
+
+    unica_unidad_medida.activo = False
+    db_session.commit()
+
+    with pytest.raises(exceptions.UnidadMedidaDadaDeBaja):
+        services.cambiar_estado_producto(db=db_session, producto_id=unico_producto.id)
