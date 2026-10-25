@@ -17,3 +17,6 @@ class InsumoDadoDeBaja(HTTPException):
             status_code=status.HTTP_409_CONFLICT,
             detail=ErrorCode.INSUMO_DADO_DE_BAJA,
         )
+
+class UnidadMedidaDadaDeBaja(BadRequest):
+    DETAIL = ErrorCode.UNIDAD_MEDIDAD_DADA_DE_BAJA

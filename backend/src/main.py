@@ -28,6 +28,7 @@ from src.incidentes.models import Incidente
 from src.accion_correctiva.models import AccionCorrectiva
 from src.historial_incidente.models import HistorialIncidente
 from src.unidad_medida.models import UnidadMedida
+from src.producto.models import Producto
 
 from src.config import settings
 from src.settings import ROOT_PATH
@@ -63,6 +64,7 @@ from src.incidentes.router import router as incidentes_router
 from src.accion_correctiva.router import router as accion_correctiva_router
 from src.historial_incidente.router import router as historial_incidente_router
 from src.unidad_medida.router import router as unidad_medida_router
+from src.producto.router import router as producto_router
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -115,3 +117,4 @@ app.include_router(incidentes_router)
 app.include_router(accion_correctiva_router)
 app.include_router(historial_incidente_router)
 app.include_router(unidad_medida_router)
+app.include_router(producto_router)

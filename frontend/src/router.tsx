@@ -114,6 +114,11 @@ import { NuevaUnidadMedidaPage } from './feature/UnidadMedida/pages/NuevaUnidadM
 import { EditarUnidadMedidaPage } from './feature/UnidadMedida/pages/EditarUnidadMedidaPage.tsx'
 import { VerUnidadMedidaPage } from './feature/UnidadMedida/pages/VerUnidadMedidaPage.tsx'
 
+import { ListPage as ProductoListPage } from './feature/Productos/pages/ListPage.tsx'
+import { NuevoProductoPage } from './feature/Productos/pages/NuevoProductoPage.tsx'
+import { EditarProductoPage } from './feature/Productos/pages/EditarProductoPage.tsx'
+import { VerProductoPage } from './feature/Productos/pages/VerProductoPage.tsx'
+
 import { Login, NoAutorizado } from './feature/auth'
 import AuthLayout from './layouts/AuthLayout.tsx'
 import { ProtectedRoute } from './components/ProtectedRoute.tsx'
@@ -368,6 +373,16 @@ const router = createBrowserRouter([
               { path: 'new', element: <NuevaUnidadMedidaPage />},
               { path: ':id', element: <VerUnidadMedidaPage />},
               { path: ':id/edit', element: <EditarUnidadMedidaPage />},
+            ],
+          },
+          {
+            path: 'productos',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <ProductoListPage />},
+              { path: 'new', element: <NuevoProductoPage />},
+              { path: ':id/edit', element: <EditarProductoPage />},
+              { path: ':id', element: <VerProductoPage />},
             ],
           },
           {
