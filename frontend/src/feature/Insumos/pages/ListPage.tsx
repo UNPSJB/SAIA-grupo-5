@@ -27,7 +27,7 @@ export function ListPage() {
         return (insumos ?? []).filter((insumo) => {
             return (
                 insumo.nombre.toLowerCase().includes(search.toLowerCase()) ||
-                insumo.unidad_medida.toLowerCase().includes(search.toLowerCase())
+                insumo.unidad_medida.nombre.toLowerCase().includes(search.toLowerCase())
             );
         });
     }, [search, insumos]);
@@ -60,7 +60,7 @@ export function ListPage() {
         },
         {
             name: 'Unidad de medida',
-            selector: row => row.unidad_medida,
+            selector: row => row.unidad_medida.nombre,
             sortable: true,
             center: true,
             cell: row => (
@@ -78,7 +78,7 @@ export function ListPage() {
                             whiteSpace: 'nowrap',
                         }}
                     >
-                        {row.unidad_medida}
+                        {row.unidad_medida.nombre}
                     </div>
                 </div>
             ),

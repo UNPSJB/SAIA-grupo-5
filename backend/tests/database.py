@@ -10,6 +10,7 @@ from src.database import get_db
 from src.main import app
 from src.personal.models import Persona
 from src.auth.utils import get_password_hash
+from src.unidad_medida.models import UnidadMedida
 
 engine = create_engine(
     settings.DB_URL_TEST, 
@@ -94,3 +95,24 @@ def auth_headers_sin_permiso(client, persona):
     r = client.post("/auth/token", data={"username": persona.username, "password": "juana123"})
     token = r.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture(scope="function")
+def unica_unidad_medida(db_session):
+    unidad = UnidadMedida(nombre="Kilogramo", activo=True)
+    db_session.add(unidad)
+    db_session.commit()
+    db_session.refresh(unidad)
+    return unidad
+
+
+@pytest.fixture(scope="function")
+def multiples_unidades_medida(db_session):
+    unidades = [
+        UnidadMedida(nombre="Kilogramo", activo=True),
+        UnidadMedida(nombre="Litro", activo=False),
+        UnidadMedida(nombre="Gramo", activo=True),
+    ]
+    db_session.add_all(unidades)
+    db_session.commit()
+    return unidades

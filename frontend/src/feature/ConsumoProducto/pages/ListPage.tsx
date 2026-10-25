@@ -65,7 +65,7 @@ export function ListPage() {
         },
         {
             name: 'Unidad de medida',
-            selector: row => row.unidad_medida,
+            selector: row => row.unidad_medida.nombre,
             sortable: true,
             center: true,
             cell: row => (
@@ -83,7 +83,7 @@ export function ListPage() {
                             whiteSpace: 'nowrap',
                         }}
                     >
-                        {row.unidad_medida}
+                        {row.unidad_medida.nombre}
                     </div>
                 </div>
             ),

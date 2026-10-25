@@ -61,7 +61,7 @@ export function VerInsumoPage() {
                                             whiteSpace: 'nowrap',
                                         }}
                                     >
-                                        {insumo.unidad_medida}
+                                        {insumo.unidad_medida.nombre}
                                     </div>
                                 </div>
                                 </Col>
