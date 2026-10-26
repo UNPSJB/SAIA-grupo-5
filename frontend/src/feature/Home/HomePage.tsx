@@ -372,7 +372,6 @@ export function HomePage() {
                                         <BarChart data={incidentesPorTipo} margin={{ top: 10, right: 20, left: -18, bottom: 5, }}>
                                             <CartesianGrid stroke="#e9eef2" vertical={false} />
                                             <XAxis dataKey="tipo" tickLine={false} axisLine={false} tick={{ fill: "#718096", fontSize: 12, }} interval={0}/>
-                                            {/*si queda mas chiquito*//*<XAxis dataKey="tipo" tickLine={false} axisLine={false} tick={{ fill: "#718096", fontSize: 12, }} interval={0} angle={-10} textAnchor="end" height={55}/>*/} 
                                             <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fill: "#8a969e", fontSize: 11, }} />
                                             <Tooltip contentStyle={{ border: "1px solid #e7ecef", borderRadius: 10, }}/>
                                             <Bar dataKey="cantidad" name="Incidentes" fill={SEAFOAM.primary} radius={[5, 5, 0, 0]} maxBarSize={45}/>
