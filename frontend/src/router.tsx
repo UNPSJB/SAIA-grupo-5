@@ -100,6 +100,7 @@ import { VerTipoIncidentePage } from './feature/TiposIncidentes/pages/VerTipoInc
 import { EditarIncidentePage } from './feature/Incidentes/pages/EditarIncidentePage.tsx'
 import { NuevoIncidentePage } from './feature/Incidentes/pages/NuevoIncidentePage.tsx'
 import { VerIncidentePage } from './feature/Incidentes/pages/VerIncidentePage.tsx'
+import { IncidentesHistorialPage } from './feature/IncidentesHistorial/pages/ListPage.tsx';
 
 import { ConfiguracionSistemaPage } from './feature/ConfiguracionSistema/pages/ConfiguracionSistemaPage.tsx'
 import { VistaPublicaPage } from './feature/ConfiguracionSistema/pages/VistaPublicaPage.tsx'
@@ -159,6 +160,13 @@ const router = createBrowserRouter([
               { path: 'new', element: <NuevoIncidentePage /> },
               { path: ':id', element: <VerIncidentePage /> },
               { path: ':id/edit', element: <EditarIncidentePage /> },
+            ],
+          },
+          {
+            path: 'incidentes-historial',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <IncidentesHistorialPage /> },
             ],
           },
           {
