@@ -58,6 +58,7 @@ from src.registrosCalibracion.router import router as registros_calibracion_rout
 from src.tipos_vencimientos.router import router as tipos_vencimientos_router
 from src.vencimiento_personal.router import router as vencimiento_personal_router
 from src.configuracion_sistema.router import router as configuracion_sistema_router
+from src.configuracion_sistema.router import public_router as vista_publica_router
 from src.notificaciones.router import router as notificaciones_router
 from src.tipo_incidente.router import router as tipo_incidente_router
 from src.incidentes.router import router as incidentes_router
@@ -107,6 +108,7 @@ app.include_router(registros_calibracion_router)
 app.include_router(tipos_vencimientos_router)
 app.include_router(vencimiento_personal_router)
 app.include_router(configuracion_sistema_router)
+app.include_router(vista_publica_router)
 app.include_router(notificaciones_router)
 app.include_router(documentos_router)
 app.include_router(tipo_documento_router)

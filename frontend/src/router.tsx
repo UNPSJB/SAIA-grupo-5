@@ -102,6 +102,8 @@ import { NuevoIncidentePage } from './feature/Incidentes/pages/NuevoIncidentePag
 import { VerIncidentePage } from './feature/Incidentes/pages/VerIncidentePage.tsx'
 
 import { ConfiguracionSistemaPage } from './feature/ConfiguracionSistema/pages/ConfiguracionSistemaPage.tsx'
+import { VistaPublicaPage } from './feature/ConfiguracionSistema/pages/VistaPublicaPage.tsx'
+import { VistaPublicaVisitantePage } from './feature/ConfiguracionSistema/pages/VistaPublicaVisitantePage.tsx'
 
 import { VencimientosConsolidadosPage } from './feature/VencimientosConsolidados/pages/VencimientosConsolidadosPage.tsx'
 
@@ -131,6 +133,10 @@ const router = createBrowserRouter([
   {
     path: '/iniciar-sesion',
     element: <Login />,
+  },
+  {
+    path: '/publica/:token',
+    element: <VistaPublicaVisitantePage />,
   },
   {
     path: '/no-autorizado',
@@ -409,6 +415,7 @@ const router = createBrowserRouter([
             element: <ProtectedRoute requireAdmin />,
             children: [
               { index: true, element: <ConfiguracionSistemaPage /> },
+              { path: 'vista-publica', element: <VistaPublicaPage /> },
             ],
           },
           {
