@@ -1,7 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field
 from typing import Annotated
-
-from src.insumos.constants import UnidadMedida    
+from src.unidad_medida.schemas import UnidadMedida
 
 class TareaResumen(BaseModel):
     id: int
@@ -11,7 +10,8 @@ class TareaResumen(BaseModel):
 class InsumoResumen(BaseModel):
     id: int
     nombre: str
-    unidad_medida: UnidadMedida     
+    unidad_medida_id: int
+    unidad_medida: UnidadMedida 
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -19,7 +19,7 @@ class ConsumoProductoBase(BaseModel):
     tarea_id: int
     insumo_quimico_id: int
     cantidad_aproximada: Annotated[float, Field(gt=0.0)]
-    unidad_medida: UnidadMedida    
+    unidad_medida_id: int   
 
 class ConsumoProductoCreate(ConsumoProductoBase):
     pass
@@ -30,7 +30,7 @@ class ConsumoProductoUpdate(ConsumoProductoBase):
 class ConsumoProducto(ConsumoProductoBase):
     id: int
     estado: bool
-    
+    unidad_medida: UnidadMedida
     tarea: TareaResumen   
     insumo: InsumoResumen
     model_config = ConfigDict(from_attributes=True)
@@ -41,5 +41,5 @@ class ConsumoProductoDelete(ConsumoProductoBase):
 class ConsumoAcumuladoProducto(BaseModel):
     insumo_quimico_id: int
     nombre: str
-    unidad_medida: UnidadMedida
+    unidad_medida: str
     acumulado: float

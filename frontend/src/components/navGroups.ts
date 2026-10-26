@@ -33,6 +33,7 @@ export const navGroups: NavGroup[] = [
         items: [
             { label: 'Insumos', to: '/insumos', icon: 'bi-box-seam' },
             { label: 'Insumos químicos', to: '/insumos-quimicos', icon: 'bi-droplet' },
+            { label: 'Productos', to: '/productos', icon: 'bi bi-fork-knife'},
             { label: 'Equipos', to: '/equipos', icon: 'bi-tools' },
             { label: 'Elementos de limpieza', to: '/elementos-limpieza', icon: 'bi-bucket' },
             { label: 'Documentos', to: '/documentos', icon: 'bi-file-text' },
@@ -55,7 +56,8 @@ export const navGroups: NavGroup[] = [
             { label: 'Tipos de químicos', to: '/tipos-quimicos', icon: 'bi-flask' },
             { label: 'Tipos de Vencimientos', to: '/tipos-vencimientos', icon: 'bi-calendar-plus'},
             { label: 'Tipos de Documentos', to: '/tipos-documentos', icon: 'bi bi-file-earmark-text'},
-            { label: 'Tipos de Incidentes', to: '/tipos-incidentes', icon: 'bi-exclamation-triangle'}
+            { label: 'Tipos de Incidentes', to: '/tipos-incidentes', icon: 'bi-exclamation-triangle'},
+            { label: 'Unidades de Medida', to: '/unidades-medida', icon: '<bi bi-rulers'}
         ],
     },
 ];

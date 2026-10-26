@@ -25,6 +25,8 @@ async def db_creation_lifespan(app: FastAPI):
                 connection.execute(text("ALTER TABLE personal RENAME COLUMN puede_administrar TO administrar"))
             if "activo" not in columnas_personal:
                 connection.execute(text("ALTER TABLE personal ADD COLUMN activo BOOLEAN NOT NULL DEFAULT 1"))
+            if "supervisor" not in columnas_personal:
+                connection.execute(text("ALTER TABLE personal ADD COLUMN supervisor BOOLEAN NOT NULL DEFAULT 0"))
 
     if "insumos" in tablas and not any(
         column["name"] == "activo" for column in inspector.get_columns("insumos")

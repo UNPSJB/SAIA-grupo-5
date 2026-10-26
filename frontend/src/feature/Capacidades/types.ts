@@ -1,6 +1,7 @@
 export const Capacidades = {
   OPERAR: 'operar',
   ADMINISTRAR: 'administrar',
+  SUPERVISOR: 'supervisor',
 } as const
 
 export type Capacidad = (typeof Capacidades)[keyof typeof Capacidades]

@@ -1,6 +1,5 @@
 import { Button, Form, Col, Row } from 'react-bootstrap';
 import { useState } from 'react';
-import { UnidadMedida } from '../types';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useApi } from '../../../hooks/useApi';
 import type { InsumoQuimico } from '../../InsumosQuimicos/types';
@@ -9,8 +8,8 @@ import type { Tarea } from '../../Tareas/types';
 
 interface ConsumoProductoFormProps {
   textoBoton: string;
-  onSubmit: (datos: { tarea_id: number; insumo_quimico_id: number; cantidad_aproximada: number; unidad_medida: UnidadMedida }) => void;
-  valoresIniciales?: { tarea_id: number; insumo_quimico_id: number; cantidad_aproximada: number; unidad_medida: UnidadMedida };
+  onSubmit: (datos: { tarea_id: number; insumo_quimico_id: number; cantidad_aproximada: number; unidad_medida_id: number }) => void;
+  valoresIniciales?: { tarea_id: number; insumo_quimico_id: number; cantidad_aproximada: number; unidad_medida_id: number };
   soloLectura?: boolean;
 }
 
@@ -24,16 +23,16 @@ export function ConsumoProductoForm({ textoBoton, onSubmit, valoresIniciales, so
   const [tarea_id] = useState(valoresIniciales?.tarea_id || tareaId || "");
   const [insumo_quimico_id, setInsumoQuimicoId] = useState(valoresIniciales?.insumo_quimico_id || "");
   const [cantidad_aproximada, setCantidadAproximada] = useState(valoresIniciales?.cantidad_aproximada || "");
-  const [unidad_medida, setUnidadMedida] = useState<UnidadMedida | "">(valoresIniciales?.unidad_medida || "");     // Se agrega el <UnidadMedida | ""> para exigir que los valores unicamente puedan ser los de las unidades de medidas que definio Alex
+  const [unidad_medida_id, setUnidadMedidaId] = useState<number | "">(valoresIniciales?.unidad_medida_id || "");    
   const { data: insumos } = useApi<InsumoQuimico[]>('/insumos-quimicos/');
   const { data: tarea } = useApi<Tarea>(`/tareas/${tarea_id}`);
 
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {   
     e.preventDefault();
     setValidated(true);
-    if (!tarea_id || !insumo_quimico_id || !cantidad_aproximada || !unidad_medida) return; // corta acá si falta algo
+    if (!tarea_id || !insumo_quimico_id || !cantidad_aproximada || !unidad_medida_id) return; // corta acá si falta algo
     onSubmit({ tarea_id: Number(tarea_id), insumo_quimico_id: Number(insumo_quimico_id),
-        cantidad_aproximada: Number(cantidad_aproximada), unidad_medida: unidad_medida as UnidadMedida });
+        cantidad_aproximada: Number(cantidad_aproximada), unidad_medida_id: Number(unidad_medida_id) });
   }
 
   return (
@@ -59,10 +58,10 @@ export function ConsumoProductoForm({ textoBoton, onSubmit, valoresIniciales, so
                       required
                       value={insumo_quimico_id}
                       onChange={(e) => {setInsumoQuimicoId(e.target.value);
-                          setUnidadMedida(
+                          setUnidadMedidaId(
                               insumos?.find(
                                   (insumo) => String(insumo.id) === e.target.value
-                              )?.unidad_medida || ""
+                              )?.unidad_medida_id || ""
                           );
                       }}
                       disabled={soloLectura}
@@ -89,7 +88,7 @@ export function ConsumoProductoForm({ textoBoton, onSubmit, valoresIniciales, so
                     <div className="form-control bg-light">
                       {insumos?.find(
                         (insumo) => String(insumo.id) === String(insumo_quimico_id)
-                      )?.unidad_medida || "Seleccione un insumo"}
+                      )?.unidad_medida.nombre || "Seleccione un insumo"}
                     </div>
                 </Form.Group>
             </Col>
