@@ -9,3 +9,6 @@ class InsumoQuimicoDuplicado(BadRequest):
 
 class TipoQuimicoNoEncontradoOInactivo(BadRequest):
     DETAIL = ErrorCode.TIPO_QUIMICO_NO_ENCONTRADO_O_INACTIVO
+
+class UnidadMedidaDadaDeBaja(BadRequest):
+    DETAIL = ErrorCode.UNIDAD_MEDIDAD_DADA_DE_BAJA

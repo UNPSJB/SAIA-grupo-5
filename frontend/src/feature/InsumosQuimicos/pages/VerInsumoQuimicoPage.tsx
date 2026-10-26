@@ -62,7 +62,7 @@ export function VerInsumoQuimicoPage() {
 
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
                                 <Col sm={4} className="fw-bold text-secondary">Unidad de medida</Col>
-                                <Col sm={8} className="fs-5">{insumoQuimico.unidad_medida}</Col>
+                                <Col sm={8} className="fs-5">{insumoQuimico.unidad_medida.nombre}</Col>
                             </Row>
 
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
@@ -92,7 +92,7 @@ export function VerInsumoQuimicoPage() {
                             </Row>
                         </Card.Body>
 
-                        <Card.Footer className="bg-light border-top p-3 d-flex justify-content-end gap-2">
+                        <Card.Footer className="bg-light border-top p-3 d-flex justify-content-start gap-2">
                             <Button 
                                 variant="outline-secondary" 
                                 onClick={() => navigate('/insumos-quimicos')}
