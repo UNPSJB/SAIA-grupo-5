@@ -63,7 +63,7 @@ export function ListPage() {
     }, [search, tareas, filtroPlan]);
     const subHeaderComponentMemo = useMemo(() => {
         return (
-            <div className="d-flex gap-2 w-100">
+            <div className="d-flex gap-2 w-100" data-tour="filtros-checklist">
                 <Dropdown as={ButtonGroup} className="w-50" style={{ minWidth: 0 }}>
                     <Button
                         variant="outline-secondary"
@@ -204,14 +204,19 @@ export function ListPage() {
                     return <>-</>
                 return (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <ActionButton
-                            variant={estaCompletada ? "outline-info" : "outline-success"}
-                            size="sm"
-                            disabled={laHizoOtro}
-                            tooltip={laHizoOtro ? "Completada por otro usuario" : estaCompletada ? "Editar" : "Marcar realizada"}
-                            icon={estaCompletada ? "bi-pencil" : "bi-check2-circle"}
-                            onClick={() => abrirModal(row)}
-                        />
+                    <span
+                        className="d-inline-block"
+                        data-tour={!estaCompletada ? 'btn-marcar-realizada' : undefined}
+                    >
+                            <ActionButton
+                                variant={estaCompletada ? "outline-info" : "outline-success"}
+                                size="sm"
+                                disabled={laHizoOtro}
+                                tooltip={laHizoOtro ? "Completada por otro usuario" : estaCompletada ? "Editar" : "Marcar realizada"}
+                                icon={estaCompletada ? "bi-pencil" : "bi-check2-circle"}
+                                onClick={() => abrirModal(row)}
+                            />
+                    </span>
                     </div>
                 )
             },
@@ -236,14 +241,16 @@ export function ListPage() {
                     {subHeaderComponentMemo}
                 </Col>
             </Row>
-            <div className="d-none d-lg-block">  {/*Si es tamaño lg muestra como bloque */}
-                <AppTable columns={columns} data={filteredTareas} />
-            </div>
-            <div className="d-lg-none">    {/*Si no es tamaño lg muestra la version movil */}
-                {filteredTareas.map((tarea) => (
-                    <TareaMovil key={tarea.id} tarea={tarea} onCompletar={abrirModal} />
-                ))}
-                {filteredTareas.length === 0 && <p className="text-muted text-center p-4">No se encontraron resultados.</p>}
+            <div data-tour="listado-checklist">
+                <div className="d-none d-lg-block">  {/*Si es tamaño lg muestra como bloque */}
+                    <AppTable columns={columns} data={filteredTareas} />
+                </div>
+                <div className="d-lg-none">    {/*Si no es tamaño lg muestra la version movil */}
+                    {filteredTareas.map((tarea) => (
+                        <TareaMovil key={tarea.id} tarea={tarea} onCompletar={abrirModal} />
+                    ))}
+                    {filteredTareas.length === 0 && <p className="text-muted text-center p-4">No se encontraron resultados.</p>}
+                </div>
             </div>
             <CompletarTareaModal
                 tarea={tareaSeleccionada}

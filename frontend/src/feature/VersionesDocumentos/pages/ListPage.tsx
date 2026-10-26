@@ -43,6 +43,7 @@ export function ListPage() {
     const subHeaderComponentMemo = useMemo(() => {
         return (
             <Form.Control
+                data-tour="buscador-versiones"
                 type="text"
                 placeholder="Buscar version..."
                 className=" mr-sm-2"
@@ -91,7 +92,7 @@ export function ListPage() {
                         ? { label: 'Histórica',    fondo: '#e5e7eb', texto: '#374151' }
                         : { label: 'Sin vigencia', fondo: '#fef3c7', texto: '#92400e' };
                 return (
-                    <div style={{
+                    <div data-tour="vigencia-version" style={{
                         padding: '4px 12px', borderRadius: '16px', background: estado.fondo,
                         color: estado.texto, fontWeight: 700, whiteSpace: 'nowrap',
                     }}>
@@ -136,56 +137,63 @@ export function ListPage() {
                 </div>
             )
         },
-        {
+                {
             name: "Acciones",
             center: true,
             minWidth: '260px',
             cell: (row) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <ActionButton
-                        variant="outline-info"
-                        size="sm"
-                        tooltip="Ver"
-                        icon = "bi-eye"
-                        onClick={() => navigate(`/versiones-documentos/version/${row.id}`)}
-                    >
-                    </ActionButton>
+                    <span className="d-inline-block" data-tour="btn-ver-version">
+                        <ActionButton
+                            variant="outline-info"
+                            size="sm"
+                            tooltip="Ver"
+                            icon="bi-eye"
+                            onClick={() => navigate(`/versiones-documentos/version/${row.id}`)}
+                        />
+                    </span>
 
                     {currentUser?.administrar && (
                         <>
-                        {!row.fecha_hasta_vigencia &&(
-                            <ActionButton
-                                variant="outline-primary"
-                                size="sm"
-                                tooltip="Editar"
-                                icon = "bi-pencil"
-                                disabled={!row.activo}      // Si no esta activo se muestra en gris y no se puede editar
-                                onClick={() => navigate(`/versiones-documentos/version/${row.id}/edit`)}
-                            >
-                            </ActionButton>
-                        )}
-                            {row.activo && !row.vigente && !row.fecha_hasta_vigencia &&(
-                                <ActionButton
-                                    variant="outline-success"
-                                    size="sm"
-                                    tooltip="Marcar vigente"
-                                    icon="bi-patch-check"
-                                    onClick={() => setVersionAMarcar(row)}
+                            {!row.fecha_hasta_vigencia && (
+                                <span className="d-inline-block" data-tour={row.activo ? 'btn-editar-version' : undefined}>
+                                    <ActionButton
+                                        variant="outline-primary"
+                                        size="sm"
+                                        tooltip="Editar"
+                                        icon="bi-pencil"
+                                        disabled={!row.activo}
+                                        onClick={() => navigate(`/versiones-documentos/version/${row.id}/edit`)}
+                                    />
+                                </span>
+                            )}
+                            {row.activo && !row.vigente && !row.fecha_hasta_vigencia && (
+                                <span className="d-inline-block" data-tour="btn-marcar-vigente">
+                                    <ActionButton
+                                        variant="outline-success"
+                                        size="sm"
+                                        tooltip="Marcar vigente"
+                                        icon="bi-patch-check"
+                                        onClick={() => setVersionAMarcar(row)}
+                                    />
+                                </span>
+                            )}
+                            {!row.fecha_hasta_vigencia && (
+                                <span
+                                    className="d-inline-block"
+                                    data-tour={!(row.vigente && row.activo) ? 'btn-baja-version' : undefined}
                                 >
-                                </ActionButton>
+                                    <ActionButton
+                                        variant={row.activo ? 'outline-danger' : 'outline-success'}
+                                        size="sm"
+                                        tooltip={row.activo ? 'Dar de baja' : 'Dar de alta'}
+                                        icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
+                                        disabled={row.vigente && row.activo}
+                                        onClick={() => setVersionDocumentoToDelete(row)}
+                                    />
+                                </span>
                             )}
-                            {!row.fecha_hasta_vigencia &&(
-                            <ActionButton
-                                variant={row.activo ? 'outline-danger' : 'outline-success'}
-                                size="sm"
-                                tooltip={row.activo ? 'Dar de baja' : 'Dar de alta'}
-                                icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
-                                disabled={row.vigente && row.activo}
-                                onClick={() => setVersionDocumentoToDelete(row)}
-                            >
-                            </ActionButton>
-                            )}
-                        </>  
+                        </>
                     )}
                 </div>
             )
@@ -202,13 +210,15 @@ export function ListPage() {
                     {subHeaderComponentMemo}
                 </Col>
                 <Col xs="auto" className="align-self-center">
-                    <Form.Check
-                        type="switch"
-                        id="switch-historicas"
-                        label="Ver históricas"
-                        checked={incluirHistoricas}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setIncluirHistoricas(e.target.checked)}
-                    />
+                    <div data-tour="switch-historicas">
+                        <Form.Check
+                            type="switch"
+                            id="switch-historicas"
+                            label="Ver históricas"
+                            checked={incluirHistoricas}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setIncluirHistoricas(e.target.checked)}
+                        />
+                    </div>
                 </Col>
                 <Col xs="auto" className="d-flex justify-content-end">
                     <Button
@@ -223,6 +233,7 @@ export function ListPage() {
                 {currentUser?.administrar &&(
                     <Col xs="auto" className="d-flex justify-content-end">
                         <Button
+                            data-tour="btn-nueva-version"
                             variant="primary"
                             size='sm'
                             onClick={() => navigate(`/versiones-documentos/documento/${documentoId}/new`)}
@@ -234,7 +245,9 @@ export function ListPage() {
                 )}
 
             </Row>
-            <AppTable columns={columns} data={filteredVersionesDocumentos} />
+            <div data-tour="tabla-versiones">
+                <AppTable columns={columns} data={filteredVersionesDocumentos} />
+            </div>
             <DeleteVersionDocumentoModal
                 version={versionDocumentoToDelete}
                 onHide={() => setVersionDocumentoToDelete(null)}

@@ -71,6 +71,7 @@ export function ListPage() {
             cell: row => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10}}>
                     <div
+                        data-tour="estado-documento"
                         style={{
                             padding: '4px 12px',
                             borderRadius: '16px',
@@ -94,6 +95,7 @@ export function ListPage() {
             cell: (row) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <Button
+                        data-tour="btn-ver-documento"
                         variant="outline-info"
                         size="sm"
                         onClick={() => navigate(`/documentos/${row.id}`)}
@@ -113,6 +115,7 @@ export function ListPage() {
                                 <i className="bi bi-pencil me-1"></i>Editar
                             </Button>
                             <Button
+                                data-tour="btn-baja-documento"
                                 variant={row.activo ? 'outline-danger' : 'outline-success'}
                                 size="sm"
                                 onClick={() => setDocumentoToDelete(row)}
@@ -143,6 +146,7 @@ export function ListPage() {
                 {currentUser?.administrar &&(
                     <Col xs="auto" className="d-flex justify-content-end">
                         <Button
+                            data-tour="btn-nuevo-documento"
                             variant="primary"
                             size='sm'
                             onClick={() => navigate("/documentos/new")}
