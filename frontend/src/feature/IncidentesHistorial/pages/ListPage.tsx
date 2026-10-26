@@ -30,21 +30,6 @@ export function IncidentesHistorialPage() {
 
     const { pathname } = useLocation();
 
-    const obtenerEstadoInicial = (ruta: string): FiltroEstado => {
-        if (ruta.startsWith('/incidentes/abiertos')) return 'Abierto';
-        if (ruta.startsWith('/incidentes/cerrados')) return 'Cerrado';
-        return 'todos';
-    };
-{/*
-    const [estadoSeleccionado, setEstadoSeleccionado] = useState<{ pathname: string; value: FiltroEstado }>({
-        pathname,
-        value: obtenerEstadoInicial(pathname),
-    });
-    const estado = estadoSeleccionado.pathname === pathname
-        ? estadoSeleccionado.value
-        : obtenerEstadoInicial(pathname);
-*/}
-
     const [estadoSeleccionado, setEstadoSeleccionado] = useState<{ pathname: string; value: FiltroEstado }>({
         pathname,
         value: pathname.startsWith('/incidentes/abiertos') ? 'Abierto' : 'todos',
@@ -182,11 +167,6 @@ export function IncidentesHistorialPage() {
     const demorados = (incidentes ?? []).filter((incidente) => incidente.activo && incidente.nivel_demora === 'demorado').length;
     const abiertos = estado === 'Abierto';
     const titulo = pathname.startsWith('/incidentes/abiertos') ? 'Pendientes / Abiertos' : 'Incidentes';
-{/*
-    const titulo = pathname.startsWith('/incidentes/abiertos')
-        ? 'Pendientes / Abiertos' : pathname.startsWith('/incidentes/cerrados')
-        ? 'Incidentes Cerrados' : 'Incidentes';
-*/}
     const fechaLarga = new Date().toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
 
     return (
@@ -240,18 +220,6 @@ export function IncidentesHistorialPage() {
                         ))}
                     </Form.Select>
                 </Col>
-                {/*                
-                <Col className="d-flex justify-content-end">
-                    <Button
-                        variant="outline-danger"
-                        active={soloAbiertos}
-                        onClick={() => setSoloAbiertos((prev) => !prev)}
-                    >
-                        <i className="bi bi-funnel me-1"></i>
-                        {soloAbiertos ? "Ver todos" : "Ver solo abiertos"}
-                    </Button>
-                </Col>
-                */}
             </Row>
 
             {rangoValido && incidentesEstadisticas && !errorEstadisticas && (
