@@ -8,7 +8,7 @@ from src.personal.constants import ErrorCode
 
 
 def test_login_supervisor(client, supervisor):
-    response = client.post("/auth/token", data={"username": "sup", "password": "super123"})
+    response = client.post("/auth/token", data={"username": "sup_ctrl", "password": "super123"})
 
     assert response.status_code == 200
     assert response.json()["access_token"]
@@ -19,7 +19,7 @@ def test_leer_propia_persona_supervisor(client, auth_headers_supervisor, supervi
 
     assert response.status_code == 200
     data = response.json()
-    assert data["username"] == "sup"
+    assert data["username"] == "sup_ctrl"
     assert data["supervisor"] is True
     assert data["administrar"] is False
     assert data["role_name"] == "supervisor"
