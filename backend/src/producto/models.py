@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from src.unidad_medida.models import UnidadMedida
+    from src.lote_produccion.models import LoteProduccion
 
 
 class Producto(ModeloBase):
@@ -24,7 +25,7 @@ class Producto(ModeloBase):
     fecha_lanzamiento: Mapped[date] = mapped_column(Date, nullable=False)
 
     #lotes_produccion_id: Mapped[list[int]]
-    #lotes_produccion: Mapped[list["LotesProduccion"]] = mappedColumn
+    lotes_produccion: Mapped[list["LoteProduccion"]] = relationship(back_populates="producto")
 
     activo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
