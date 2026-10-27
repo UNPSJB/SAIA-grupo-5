@@ -1,5 +1,5 @@
 import { Container, Alert, Row, Col, Card, Button } from "react-bootstrap";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 import type { Incidente } from "../types";
@@ -27,6 +27,12 @@ export function VerIncidentePage() {
     const { currentUser } = useAuth();
     const isAdmin = Boolean(currentUser?.administrar);
 
+    const location = useLocation();
+    const origen = location.state?.origen;
+    const volverA = origen === "historial"
+        ? "/incidentes-historial"
+        : "/incidentes/";
+        
     if (isLoading) return <PageLoading title="Detalle del Incidente" />;
 
 
@@ -66,7 +72,7 @@ export function VerIncidentePage() {
 
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
                                 <Col sm={4} className="fw-bold text-secondary">Tipo Incidente</Col>
-                                <Col sm={8}>{incidente?.tipo.nombre || "Cargando..."}</Col>
+                                <Col sm={8}>{incidente?.tipo?.nombre || "Cargando..."}</Col>
                             </Row>
 
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
@@ -188,7 +194,7 @@ export function VerIncidentePage() {
                         <Card.Footer className="bg-light border-top p-3 d-flex justify-content-end gap-2">
                             <Button 
                                 variant="outline-secondary" 
-                                onClick={() => navigate("/incidentes/")}
+                                onClick={() => navigate(volverA)}
                             >
                                 <i className="bi bi-arrow-left me-1"></i>Volver a la lista
                             </Button>
