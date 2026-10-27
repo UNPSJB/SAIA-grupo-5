@@ -10,6 +10,7 @@ import { tutorialesHistorial } from '../Historial/tutoriales';
 import { tutorialesInicio } from '../Home/tutoriales';
 import { tutorialesIncidentes } from '../Incidentes/tutoriales';
 import { tutorialesInsumos } from '../Insumos/tutoriales';
+import { tutorialesConfiguracionSistema } from '../ConfiguracionSistema/tutoriales';
 
 export const tutoriales: Tutorial[] = [
     ...tutorialesDocumentos,
@@ -23,4 +24,5 @@ export const tutoriales: Tutorial[] = [
     ...tutorialesInicio,
     ...tutorialesIncidentes,
     ...tutorialesInsumos,
+    ...tutorialesConfiguracionSistema,
 ];

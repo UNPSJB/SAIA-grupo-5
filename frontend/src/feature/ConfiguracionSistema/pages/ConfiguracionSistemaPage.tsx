@@ -75,8 +75,8 @@ export function ConfiguracionSistemaPage() {
                             <i className="bi bi-gear me-2"></i>Parámetros generales
                         </Card.Header>
                         <Card.Body>
-                            <Form onSubmit={handleSubmit}>
-                                <Form.Group className="mb-3 text-start" controlId="formDiasAntelacion">
+                            <Form onSubmit={handleSubmit} data-tour="form-configuracion">
+                                <Form.Group className="mb-3 text-start" controlId="formDiasAntelacion" data-tour="antelacion-personal">
                                     <Form.Label className="p-1 fw-bold">
                                         Antelación de alerta de vencimientos de personal (días)
                                     </Form.Label>
@@ -92,7 +92,7 @@ export function ConfiguracionSistemaPage() {
                                     </Form.Text>
                                 </Form.Group>
 
-                                <Form.Group className="mb-3 text-start" controlId="formDiasAntelacion">
+                                <Form.Group className="mb-3 text-start" controlId="formDiasAntelacionElementos" data-tour="antelacion-elementos">
                                     <Form.Label className="p-1 fw-bold">
                                         Antelación de alerta de vencimientos de elementos de limpieza (días)
                                     </Form.Label>
@@ -108,7 +108,7 @@ export function ConfiguracionSistemaPage() {
                                     </Form.Text>
                                 </Form.Group>
 
-                                <Form.Group className="mb-3 text-start" controlId="formHoraGeneracion">
+                                <Form.Group className="mb-3 text-start" controlId="formHoraGeneracion" data-tour="hora-generacion-checklists">
                                     <Form.Label className="p-1 fw-bold">
                                         Hora de generación de checklists
                                     </Form.Label>
