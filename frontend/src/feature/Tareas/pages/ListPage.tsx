@@ -79,6 +79,7 @@ export function TareasPage() {
             <Form.Group className="mb-4" controlId="formPlanLimpieza">
                 <Form.Label className="fw-bold">Plan de Limpieza</Form.Label>
                 <Form.Select
+                    data-tour="selector-plan-tareas"
                     value={planId}
                     onChange={(e) => {
                         setPlanId(e.target.value);
@@ -116,6 +117,7 @@ export function TareasPage() {
                 </div>
                 <Dropdown as={ButtonGroup} className="ms-3 flex-shrink-0">
                     <Button
+                        data-tour="btn-filtrar-tarea"
                         variant="outline-secondary"
                         size="sm"
                         disabled={!planId}
@@ -145,6 +147,7 @@ export function TareasPage() {
 
                 {currentUser?.administrar && (
                     <Button
+                        data-tour="btn-agregar-tarea"
                         variant="primary"
                         size="sm"
                         className="ms-2 flex-shrink-0"
@@ -157,51 +160,54 @@ export function TareasPage() {
             </div>
 
             {planId && !isLoadingTareas && !errorTareas && (
-                <Tabs defaultActiveKey={String(Frecuencia.DIARIA)} className="mb-3">
-                    {FRECUENCIA_TABS.map(({ key, label, emptyMessage }) => {
-                        const tareasDeLaPestania = tareasPorFrecuencia[key] ?? [];
-                        return (
-                            <Tab key={key} eventKey={String(key)} title={label}>
-                                {tareasDeLaPestania.length > 0 ? (
-                                    <Container fluid className="mt-3 px-0">
-                                        <Row>
-                                            {tareasDeLaPestania.map((tarea) => (
-                                                <Col key={tarea.id} xs={12} md={6} lg={4} className="mb-3">
-                                                    <Card
-                                                        role="button"
-                                                        className="shadow rounded-3 overflow-hidden"
-                                                        style={{ cursor: "pointer" }}
-                                                        onClick={() => setTareaSeleccionada(tarea)}
-                                                    >
-                                                        <Card.Header className="bg-secondary-subtle">
-                                                            {tarea.nombre}
-                                                        </Card.Header>
-                                                        <Card.Body>
-                                                            <Card.Text className="mb-0">{tarea.descripcion}</Card.Text>
-                                                        </Card.Body>
-                                                        <Card.Footer className="bg-transparent border-top-0 py-2 d-flex justify-content-between align-items-center">
-                                                            <small className="text-muted">{getRelacionTipoLabel(tarea)}</small>
-                                                            <div className="d-flex gap-2">
-                                                                {!tarea.activo && (
-                                                                    <Badge bg="danger">Inactiva</Badge>
-                                                                )}
-                                                                <Badge bg={PRIORIDAD_VARIANTS[tarea.prioridad]}>
-                                                                    {PRIORIDAD_LABELS[tarea.prioridad]}
-                                                                </Badge>
-                                                            </div>
-                                                        </Card.Footer>
-                                                    </Card>
-                                                </Col>
-                                            ))}
-                                        </Row>
-                                    </Container>
-                                ) : (
-                                    <p className="text-muted mt-3">{emptyMessage}</p>
-                                )}
-                            </Tab>
-                        );
-                    })}
-                </Tabs>
+                <div data-tour="tarjetas-tareas">
+                    <Tabs defaultActiveKey={String(Frecuencia.DIARIA)} className="mb-3">
+                        {FRECUENCIA_TABS.map(({ key, label, emptyMessage }) => {
+                            const tareasDeLaPestania = tareasPorFrecuencia[key] ?? [];
+                            return (
+                                <Tab key={key} eventKey={String(key)} title={label}>
+                                    {tareasDeLaPestania.length > 0 ? (
+                                        <Container fluid className="mt-3 px-0">
+                                            <Row>
+                                                {tareasDeLaPestania.map((tarea) => (
+                                                    <Col key={tarea.id} xs={12} md={6} lg={4} className="mb-3">
+                                                        <Card
+                                                            data-tour="tarjeta-tarea"
+                                                            role="button"
+                                                            className="shadow rounded-3 overflow-hidden"
+                                                            style={{ cursor: "pointer" }}
+                                                            onClick={() => setTareaSeleccionada(tarea)}
+                                                        >
+                                                            <Card.Header className="bg-secondary-subtle">
+                                                                {tarea.nombre}
+                                                            </Card.Header>
+                                                            <Card.Body>
+                                                                <Card.Text className="mb-0">{tarea.descripcion}</Card.Text>
+                                                            </Card.Body>
+                                                            <Card.Footer className="bg-transparent border-top-0 py-2 d-flex justify-content-between align-items-center">
+                                                                <small className="text-muted">{getRelacionTipoLabel(tarea)}</small>
+                                                                <div className="d-flex gap-2">
+                                                                    {!tarea.activo && (
+                                                                        <Badge bg="danger">Inactiva</Badge>
+                                                                    )}
+                                                                    <Badge bg={PRIORIDAD_VARIANTS[tarea.prioridad]}>
+                                                                        {PRIORIDAD_LABELS[tarea.prioridad]}
+                                                                    </Badge>
+                                                                </div>
+                                                            </Card.Footer>
+                                                        </Card>
+                                                    </Col>
+                                                ))}
+                                            </Row>
+                                        </Container>
+                                    ) : (
+                                        <p className="text-muted mt-3">{emptyMessage}</p>
+                                    )}
+                                </Tab>
+                            );
+                        })}
+                    </Tabs>
+                </div>
             )}
 
             <TareaDetalleModal

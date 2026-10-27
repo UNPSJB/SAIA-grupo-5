@@ -72,6 +72,7 @@ export function ElementosLimpiezaPage() {
     const subHeaderComponentMemo = useMemo(() => {
         return (
             <Form.Control
+                data-tour="buscador-elementos"
                 type="text"
                 placeholder="Buscar elemento..."
                 className="mr-sm-2"
@@ -124,37 +125,24 @@ export function ElementosLimpiezaPage() {
             minWidth: "180px",
             selector: row => row.dias_restantes ?? 999999,
             cell: row => {
-                if (row.dias_restantes === null) {
-                    return <span>Sin definir</span>;
-                }
+            const contenido = (() => {
+                if (row.dias_restantes === null) return <span>Sin definir</span>;
 
                 if (row.dias_restantes < 0) {
                     return (
-                        <div
-                            style={{
-                                padding: "4px 12px",
-                                borderRadius: "16px",
-                                background: "#fef3c7",
-                                color: "#92400e",
-                                fontWeight: 700,
-                                whiteSpace: "nowrap",
-                            }}
-                        >
+                        <div style={{ padding: "4px 12px", borderRadius: "16px", background: "#fef3c7", color: "#92400e", fontWeight: 700, whiteSpace: "nowrap" }}>
                             Vencido
                         </div>
                     );
                 }
 
-                if (row.dias_restantes === 0) {
-                    return <span>Recambio hoy</span>;
-                }
-                
-                if (row.dias_restantes === 1) {
-                    return <span>{row.dias_restantes} dia</span>;
-                }
-
+                if (row.dias_restantes === 0) return <span>Recambio hoy</span>;
+                if (row.dias_restantes === 1) return <span>{row.dias_restantes} dia</span>;
                 return <span>{row.dias_restantes} días</span>;
-            },
+            })();
+
+            return <div data-tour="dias-recambio-elemento">{contenido}</div>;
+        },
         },
         {
             name: "Estado",
@@ -164,6 +152,7 @@ export function ElementosLimpiezaPage() {
             cell: row => (
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <div
+                        data-tour="estado-elemento"
                         style={{
                             padding: "4px 12px",
                             borderRadius: "16px",
@@ -187,18 +176,22 @@ export function ElementosLimpiezaPage() {
             minWidth: "180px",
             cell: row => (
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-                    <ActionButton
-                        variant="outline-secondary"
-                        size="sm"
-                        tooltip="Ver"
-                        icon="bi-eye"
-                        onClick={() => navigate(`/elementos-limpieza/${row.id}`)}
+                    <span data-tour="btn-ver-elemento">
+                        <ActionButton
+                            variant="outline-secondary"
+                            size="sm"
+                            tooltip="Ver"
+                            icon="bi-eye"
+                            onClick={() => navigate(`/elementos-limpieza/${row.id}`)}
                     />
+                    </span>
+
 
                     {currentUser?.administrar && (
                         <>
                             {row.estado && (
-                                <>
+                                <>  
+                                    <span data-tour="btn-editar-elemento">
                                     <ActionButton
                                         variant="outline-primary"
                                         size="sm"
@@ -206,6 +199,8 @@ export function ElementosLimpiezaPage() {
                                         icon="bi-pencil"
                                         onClick={() => navigate(`/elementos-limpieza/${row.id}/edit`)}
                                     />
+                                    </span>
+                                    <span data-tour="btn-recambio-elemento">
 
                                     <ActionButton
                                         variant="outline-success"
@@ -214,8 +209,10 @@ export function ElementosLimpiezaPage() {
                                         icon="bi-arrow-repeat"
                                         onClick={() => navigate(`/recambios-elementos-limpieza/new/${row.id}`)}
                                     />
+                                    </span>
                                 </>
                             )}
+                            <span data-tour="btn-baja-elemento">
 
                             <ActionButton
                                 variant={row.estado ? "outline-danger" : "outline-success"}
@@ -224,6 +221,7 @@ export function ElementosLimpiezaPage() {
                                 icon={row.estado ? "bi-dash-circle" : "bi-check-circle"}
                                 onClick={() => setElementoToDelete(row)}
                             />
+                            </span>
                         </>
                     )}
                 </div>
@@ -246,8 +244,8 @@ export function ElementosLimpiezaPage() {
                     {subHeaderComponentMemo}
                 </Col>
 
-                <Col xs="auto" className="align-self-center">
-                    <Dropdown as={ButtonGroup}>
+                <Col xs="auto" className="align-self-center" data-tour="filtro-estado-elementos"> 
+                        <Dropdown as={ButtonGroup}>
                         <Button
                             variant="outline-secondary"
                             size="sm"
@@ -278,6 +276,7 @@ export function ElementosLimpiezaPage() {
                 {currentUser?.administrar && (
                     <Col xs="auto" className="d-flex justify-content-end">
                         <Button
+                            data-tour="btn-nuevo-elemento"
                             variant="primary"
                             size="sm"
                             onClick={() => navigate("/elementos-limpieza/new")}
@@ -288,11 +287,12 @@ export function ElementosLimpiezaPage() {
                     </Col>
                 )} 
             </Row>
-
-            <AppTable
-                columns={columns}
-                data={filteredElementos}
-            />
+<           div data-tour="tabla-elementos">
+                <AppTable
+                    columns={columns}
+                    data={filteredElementos}
+                />
+            </div>
 
             <EstadoElementoLimpiezaModal
                 elementoLimpieza={elementoToDelete}

@@ -34,6 +34,7 @@ export function ListPage() {
     const subHeaderComponentMemo = useMemo(() => {
         return (
             <Form.Control
+                data-tour="buscador-consumos"
                 type="text"
                 placeholder="Buscar consumo..."
                 className=" mr-sm-2"
@@ -119,21 +120,25 @@ export function ListPage() {
             minWidth: "50px",
             cell: (row) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <ActionButton
-                        variant="outline-primary"
-                        size="sm"
-                        tooltip="Editar"
-                        icon="bi-pencil"
-                        disabled={!row.estado}      // Si no esta activo se muestra en gris y no se puede editar
-                        onClick={() => navigate(`/consumos-productos/${row.id}/edit`)}
-                    />
-                    <ActionButton
-                        variant={row.estado ? 'outline-danger' : 'outline-success'}
-                        size="sm"
-                        tooltip={row.estado ? 'Dar de baja' : 'Dar de alta'}
-                        icon={row.estado ? 'bi-dash-circle' : 'bi-check-circle'}
-                        onClick={() => setConsumoProductoToDelete(row)}
-                    />
+                    <span className="d-inline-block" data-tour={row.estado ? 'btn-editar-consumo' : undefined}>
+                        <ActionButton
+                            variant="outline-primary"
+                            size="sm"
+                            tooltip="Editar"
+                            icon="bi-pencil"
+                            disabled={!row.estado}
+                            onClick={() => navigate(`/consumos-productos/${row.id}/edit`)}
+                        />
+                    </span>
+                    <span className="d-inline-block" data-tour="btn-baja-consumo">
+                        <ActionButton
+                            variant={row.estado ? 'outline-danger' : 'outline-success'}
+                            size="sm"
+                            tooltip={row.estado ? 'Dar de baja' : 'Dar de alta'}
+                            icon={row.estado ? 'bi-dash-circle' : 'bi-check-circle'}
+                            onClick={() => setConsumoProductoToDelete(row)}
+                        />
+                    </span>
                 </div>
             )
         },
@@ -150,6 +155,7 @@ export function ListPage() {
                 </Col>
                 <Col xs="auto" className="d-flex justify-content-end">
                     <Button
+                        data-tour="btn-nuevo-consumo"
                         variant="primary"
                         size='sm'
                         onClick={() => navigate(`/consumos-productos/new?tareaId=${id}`)}
@@ -159,10 +165,14 @@ export function ListPage() {
                     </Button>
                 </Col>
             </Row>
-            <AppTable columns={columns} data={filteredConsumos} />
+            <div data-tour="tabla-consumos">
+                <AppTable columns={columns} data={filteredConsumos} />
+            </div>
             <Row>
                 <Col xs="auto">
-                    <Button variant="secondary" size="sm" className="px-3" 
+                    <Button 
+                        data-tour="btn-volver-consumos"
+                        variant="secondary" size="sm" className="px-3" 
                         onClick={() => navigate('/tareas')}
                     >
                         <i className="bi bi-arrow-left"></i> Volver
