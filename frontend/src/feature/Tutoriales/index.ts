@@ -11,6 +11,9 @@ import { tutorialesInicio } from '../Home/tutoriales';
 import { tutorialesIncidentes } from '../Incidentes/tutoriales';
 import { tutorialesInsumos } from '../Insumos/tutoriales';
 import { tutorialesConfiguracionSistema } from '../ConfiguracionSistema/tutoriales';
+import { tutorialesInsumosQuimicos } from '../InsumosQuimicos/tutoriales';
+import { tutorialesNotificaciones } from '../Notificaciones/tutoriales';
+import { tutorialesPersonal } from '../Personal/tutoriales';
 
 export const tutoriales: Tutorial[] = [
     ...tutorialesDocumentos,
@@ -25,4 +28,7 @@ export const tutoriales: Tutorial[] = [
     ...tutorialesIncidentes,
     ...tutorialesInsumos,
     ...tutorialesConfiguracionSistema,
+    ...tutorialesInsumosQuimicos,
+    ...tutorialesNotificaciones,
+    ...tutorialesPersonal
 ];

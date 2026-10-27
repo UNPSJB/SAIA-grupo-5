@@ -38,6 +38,7 @@ export function ListPage() {
     const subHeaderComponentMemo = useMemo(() => {
         return (
             <Form.Control
+                data-tour="buscador-insumos-quimicos"
                 type="text"
                 placeholder="Buscar insumo químico..."
                 className=" mr-sm-2"
@@ -67,6 +68,7 @@ export function ListPage() {
             cell: row => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div
+                        data-tour="tipo-insumo-quimico"
                         style={{
                             padding: '4px 12px',
                             borderRadius: '16px',
@@ -92,6 +94,7 @@ export function ListPage() {
             cell: row => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div
+                        data-tour="unidad-medida-insumo-quimico"
                         style={{
                             padding: '4px 12px',
                             borderRadius: '16px',
@@ -117,6 +120,7 @@ export function ListPage() {
             cell: row => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10}}>
                     <div
+                        data-tour="estado-insumo-quimico"
                         style={{
                             padding: '4px 12px',
                             borderRadius: '16px',
@@ -141,30 +145,36 @@ export function ListPage() {
             minWidth: '280px',
             cell: (row) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <ActionButton
-                        variant="outline-info"
-                        size="sm"
-                        tooltip="Ver"
-                        icon="bi-eye"
-                        onClick={() => navigate (`/insumos-quimicos/${row.id}`)}
-                    />
+                    <span data-tour="btn-ver-insumo-quimico">
+                        <ActionButton
+                            variant="outline-info"
+                            size="sm"
+                            tooltip="Ver"
+                            icon="bi-eye"
+                            onClick={() => navigate (`/insumos-quimicos/${row.id}`)}
+                        />
+                    </span>
                     {currentUser?.administrar && (
                         <>
-                            <ActionButton
-                                variant="outline-primary"
-                                size="sm"
-                                tooltip="Editar"
-                                icon="bi-pencil"
-                                disabled={!row.activo}      // Si no esta activo se muestra en gris y no se puede editar
-                                onClick={() => navigate(`/insumos-quimicos/${row.id}/edit`)}
-                            />
-                            <ActionButton
-                                variant={row.activo ? 'outline-danger' : 'outline-success'}
-                                size="sm"
-                                tooltip={row.activo ? 'Dar de baja' : 'Dar de alta'}
-                                icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
-                                onClick={() => setInsumoQuimicoToDelete(row)}
-                            />
+                            <span data-tour="btn-editar-insumo-quimico">
+                                <ActionButton
+                                    variant="outline-primary"
+                                    size="sm"
+                                    tooltip="Editar"
+                                    icon="bi-pencil"
+                                    disabled={!row.activo}      // Si no esta activo se muestra en gris y no se puede editar
+                                    onClick={() => navigate(`/insumos-quimicos/${row.id}/edit`)}
+                                />
+                            </span>
+                            <span data-tour="btn-baja-insumo-quimico">
+                                <ActionButton
+                                    variant={row.activo ? 'outline-danger' : 'outline-success'}
+                                    size="sm"
+                                    tooltip={row.activo ? 'Dar de baja' : 'Dar de alta'}
+                                    icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
+                                    onClick={() => setInsumoQuimicoToDelete(row)}
+                                />
+                            </span>
                         </>
                     )}
                 </div>
@@ -189,6 +199,7 @@ export function ListPage() {
                 {currentUser?.administrar && (
                     <Col xs="auto" className="d-flex justify-content-end">
                         <Button
+                            data-tour="btn-nuevo-insumo-quimico"
                             variant="primary"
                             size='sm'
                             onClick={() => navigate("/insumos-quimicos/new")}
@@ -200,7 +211,9 @@ export function ListPage() {
                 )}
 
             </Row>
-            <AppTable columns={columns} data={filteredInsumosQuimicos} />
+            <div data-tour="tabla-insumos-quimicos">
+                <AppTable columns={columns} data={filteredInsumosQuimicos} />
+            </div>
             <DeleteInsumoQuimicoModal
                 insumoQuimico={insumoQuimicoToDelete}
                 onHide={() => setInsumoQuimicoToDelete(null)}
