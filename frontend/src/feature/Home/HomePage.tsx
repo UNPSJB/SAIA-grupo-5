@@ -150,7 +150,7 @@ export function HomePage() {
                     <h1>Resumen operativo</h1>
                     <p>Actividad de checklists e indicadores de limpieza de los últimos 30 días.</p>
                 </div>
-                <span className="dashboard-period"><i className="bi bi-calendar3 me-2" />Últimos 30 días</span>
+                <span className="dashboard-period" data-tour="periodo-panel"><i className="bi bi-calendar3 me-2" />Últimos 30 días</span>
             </div>
 
             {(historyHasError || inventoryHasError) && (
@@ -159,7 +159,7 @@ export function HomePage() {
                 </Alert>
             )}
 
-            {!esOperador && <section aria-label="Indicadores de checklists" className="mb-4">
+            {!esOperador && <section aria-label="Indicadores de checklists" className="mb-4" data-tour="seccion-checklists">
                 <div className="dashboard-section-heading">
                     <div>
                         <h2>Checklists</h2>
@@ -175,7 +175,7 @@ export function HomePage() {
                 </Row>
             </section>}
 
-            <section aria-label="Indicadores de inventario" className="mb-4">
+            <section aria-label="Indicadores de inventario" className="mb-4" data-tour="seccion-inventario">
                 <div className="dashboard-section-heading">
                     <div>
                         <h2>Inventario, recambios y vencimientos</h2>
@@ -184,7 +184,7 @@ export function HomePage() {
                     {(elementsLoading || vencimientosPersonalLoading || planesCalibracionLoading) && <Spinner animation="border" size="sm" variant="success" aria-label="Cargando inventario" />}
                 </div>
                 <Row className="g-3">
-                    <Col xs={6} md={4} xl={3}>
+                    <Col xs={6} md={4} xl={3} data-tour="card-elementos-vencidos">
                         <MetricCard
                             label="Elementos vencidos"
                             value={formatMetric(elementsLoading, Boolean(elementsError), overdueElements.length)}
@@ -193,7 +193,7 @@ export function HomePage() {
                             to="/vencimientos?default=elementos"
                         />
                     </Col>
-                    <Col xs={6} md={4} xl={3}>
+                    <Col xs={6} md={4} xl={3} data-tour="card-elementos-por-vencer">
                         <MetricCard
                             label="Elementos Por vencer"
                             value={formatMetric(elementsLoading, Boolean(elementsError), dueSoonElements.length)}
@@ -203,7 +203,7 @@ export function HomePage() {
                             to="/vencimientos?default=elementos"
                         />
                     </Col>
-                    {!esOperador && <Col xs={6} md={4} xl={3}>
+                    {!esOperador && <Col xs={6} md={4} xl={3} data-tour="card-personal-vencidos">
                         <MetricCard
                             label="Personal vencidos"
                             value={currentUser?.administrar ? formatMetric(vencimientosPersonalLoading,
@@ -214,7 +214,7 @@ export function HomePage() {
                             to={currentUser?.administrar ? "/vencimientos?default=personal" : undefined}
                         />
                     </Col>}
-                    {!esOperador && <Col xs={6} md={4} xl={3}>
+                    {!esOperador && <Col xs={6} md={4} xl={3} data-tour="card-personal-por-vencer">
                         <MetricCard
                             label="Personal por vencer"
                             value={currentUser?.administrar ? formatMetric(vencimientosPersonalLoading, Boolean(vencimientosPersonalError), vencimientosPersonalProximos.length) : "—"}
@@ -224,7 +224,7 @@ export function HomePage() {
                             to={currentUser?.administrar ? "/vencimientos?default=personal" : undefined}
                         />
                     </Col>}
-                    {!esOperador && <Col xs={6} md={4} xl={3}>
+                    {!esOperador && <Col xs={6} md={4} xl={3} data-tour="card-vencimientos-consolidados">
                         <MetricCard
                             label="Vencimientos consolidados"
                             value={currentUser?.administrar ? formatMetric(vencimientosConsolidadosLoading, vencimientosConsolidadosError, vencimientosConsolidadosTotal) : "—"}
@@ -239,7 +239,7 @@ export function HomePage() {
 
             <Row className="g-3 dashboard-charts">
                 {!esOperador && <Col xl={7}>
-                    <Card className="dashboard-chart-card h-100">
+                    <Card className="dashboard-chart-card h-100" data-tour="grafico-actividad">
                         <Card.Body>
                             <div className="dashboard-chart-heading">
                                 <div>
@@ -268,7 +268,7 @@ export function HomePage() {
                     </Card>
                 </Col>}
                 <Col xl={esOperador ? 12 : 5}>
-                    <Card className="dashboard-chart-card h-100">
+                    <Card className="dashboard-chart-card h-100" data-tour="grafico-recambios">
                         <Card.Body>
                             <div className="dashboard-chart-heading">
                                 <div>

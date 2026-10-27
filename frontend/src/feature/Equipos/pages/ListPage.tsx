@@ -36,6 +36,7 @@ export function EquiposPage() {
     const subHeaderComponentMemo = useMemo(() => {
         return (
             <Form.Control
+                data-tour="buscador-equipos"
                 type="text"
                 placeholder="Buscar equipo..."
                 className="mr-sm-2"
@@ -79,6 +80,7 @@ export function EquiposPage() {
             cell: row => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div
+                        data-tour="estado-equipo"
                         style={{
                             padding: '4px 12px',
                             borderRadius: '16px',
@@ -107,7 +109,9 @@ export function EquiposPage() {
                 minWidth: "220px",
                 cell: (row) => (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        
                         <ActionButton
+                            data-tour="btn-editar-equipo"
                             variant="outline-primary"
                             size="sm"
                             tooltip="Editar"
@@ -117,13 +121,15 @@ export function EquiposPage() {
                         />
 
                         {row.estado && (
-                            <ActionButton
-                                variant="outline-danger"
-                                size="sm"
-                                tooltip="Dar de baja"
-                                icon="bi-dash-circle"
-                                onClick={() => setEquipoToDelete(row)}
-                            />
+                            <span data-tour="btn-baja-equipo">
+                                <ActionButton
+                                    variant="outline-danger"
+                                    size="sm"
+                                    tooltip="Dar de baja"
+                                    icon="bi-dash-circle"
+                                    onClick={() => setEquipoToDelete(row)}
+                                />
+                            </span>
                         )}
                     </div>
                 )
@@ -147,6 +153,7 @@ export function EquiposPage() {
                 {currentUser?.administrar && (
                     <Col xs="auto" className="d-flex justify-content-end">
                         <Button
+                            data-tour="btn-nuevo-equipo"
                             variant="primary"
                             size="sm"
                             onClick={() => navigate("/equipos/new")}     
@@ -157,7 +164,9 @@ export function EquiposPage() {
                     </Col>
                 )}
             </Row>
-            <AppTable columns={columns} data={filteredInsumos} />
+            <div data-tour="tabla-equipos">
+                <AppTable columns={columns} data={filteredInsumos} />
+            </div>
             <DeleteEquipoModal
                 equipo={equipoToDelete}
                 onHide={() => setEquipoToDelete(null)}

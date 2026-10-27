@@ -107,7 +107,7 @@ export function ListPage() {
             selector: (incidente) => incidente.estado,
             sortable: true,
             minWidth: '110px',
-            cell: (incidente) => <Badge bg={incidente.estado === 'Abierto' ? 'warning' : 'success'} text={incidente.estado === 'Abierto' ? 'dark' : undefined}>{incidente.estado}</Badge>,
+            cell: (incidente) => <Badge data-tour="estado-incidente" bg={incidente.estado === 'Abierto' ? 'warning' : 'success'} text={incidente.estado === 'Abierto' ? 'dark' : undefined}>{incidente.estado}</Badge>,
         },
         {
             name: 'Acciones',
@@ -116,56 +116,68 @@ export function ListPage() {
             cell: (incidente) => (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, padding: '6px 0' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                        <ActionButton
-                            variant="outline-secondary"
-                            size="sm"
-                            tooltip="Ver historial"
-                            icon="bi-clock-history"
-                            onClick={() => setIncidenteParaHistorial(incidente)}
-                        />
-                        {currentUser?.administrar && (
+                        <span data-tour="btn-historial-incidente">
                             <ActionButton
-                                variant="outline-success"
+                                variant="outline-secondary"
                                 size="sm"
-                                tooltip="Acción correctiva"
-                                icon="bi-clipboard-check"
-                                disabled={!incidente.activo || incidente.estado === 'Cerrado'}
-                                onClick={() => setIncidenteParaAccionCorrectiva(incidente)}
+                                tooltip="Ver historial"
+                                icon="bi-clock-history"
+                                onClick={() => setIncidenteParaHistorial(incidente)}
                             />
+                        </span>
+                        {currentUser?.administrar && (
+                            <span data-tour="btn-accion-correctiva">
+                                <ActionButton
+                                    variant="outline-success"
+                                    size="sm"
+                                    tooltip="Acción correctiva"
+                                    icon="bi-clipboard-check"
+                                    disabled={!incidente.activo || incidente.estado === 'Cerrado'}
+                                    onClick={() => setIncidenteParaAccionCorrectiva(incidente)}
+                                />
+                            </span>
                         )}
-                        <ActionButton
-                            variant="outline-warning"
-                            size="sm"
-                            tooltip="Reabrir incidente"
-                            icon="bi-arrow-counterclockwise"
-                            disabled={!incidente.activo || incidente.estado === 'Abierto'}
-                            onClick={() => setIncidenteParaReabrir(incidente)}
-                        />
+                        <span data-tour="btn-reabrir-incidente">
+                            <ActionButton
+                                variant="outline-warning"
+                                size="sm"
+                                tooltip="Reabrir incidente"
+                                icon="bi-arrow-counterclockwise"
+                                disabled={!incidente.activo || incidente.estado === 'Abierto'}
+                                onClick={() => setIncidenteParaReabrir(incidente)}
+                            />
+                        </span>
                     </div>
                     {currentUser?.administrar && (
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                            <ActionButton
-                                variant="outline-info"
-                                size="sm"
-                                tooltip="Ver"
-                                icon="bi-eye"
-                                onClick={() => navigate(`/incidentes/${incidente.id}`)}
-                            />
-                            <ActionButton
-                                variant="outline-primary"
-                                size="sm"
-                                tooltip="Editar"
-                                icon="bi-pencil"
-                                disabled={!incidente.activo}
-                                onClick={() => navigate(`/incidentes/${incidente.id}/edit`)}
-                            />
-                            <ActionButton
-                                variant={incidente.activo ? 'outline-danger' : 'outline-success'}
-                                size="sm"
-                                tooltip={incidente.activo ? 'Dar de baja' : 'Dar de alta'}
-                                icon={incidente.activo ? 'bi-dash-circle' : 'bi-check-circle'}
-                                onClick={() => setIncidenteToDelete(incidente)}
-                            />
+                            <span data-tour="btn-ver-incidente">
+                                <ActionButton
+                                    variant="outline-info"
+                                    size="sm"
+                                    tooltip="Ver"
+                                    icon="bi-eye"
+                                    onClick={() => navigate(`/incidentes/${incidente.id}`)}
+                                />
+                            </span>
+                            <span data-tour="btn-editar-incidente">
+                                <ActionButton
+                                    variant="outline-primary"
+                                    size="sm"
+                                    tooltip="Editar"
+                                    icon="bi-pencil"
+                                    disabled={!incidente.activo}
+                                    onClick={() => navigate(`/incidentes/${incidente.id}/edit`)}
+                                />
+                            </span>
+                            <span data-tour="btn-baja-incidente">
+                                <ActionButton
+                                    variant={incidente.activo ? 'outline-danger' : 'outline-success'}
+                                    size="sm"
+                                    tooltip={incidente.activo ? 'Dar de baja' : 'Dar de alta'}
+                                    icon={incidente.activo ? 'bi-dash-circle' : 'bi-check-circle'}
+                                    onClick={() => setIncidenteToDelete(incidente)}
+                                />
+                            </span>
                         </div>
                     )}
                 </div>
@@ -192,6 +204,7 @@ export function ListPage() {
                         )}
                         {currentUser?.administrar && (
                             <Button
+                                data-tour="btn-nuevo-incidente"
                                 variant="primary"
                                 size="sm"
                                 onClick={() => navigate('/incidentes/new')}
@@ -218,6 +231,7 @@ export function ListPage() {
                             </div>
                             <div className="d-flex flex-column flex-sm-row gap-2 incident-filters">
                                 <Form.Select
+                                    data-tour="filtro-estado-incidentes"
                                     aria-label="Filtrar incidentes por estado"
                                     value={estado}
                                     onChange={(event) => setEstado(event.target.value as FiltroEstado)}
@@ -227,7 +241,7 @@ export function ListPage() {
                                     <option value="Abierto">Abiertos</option>
                                     <option value="Cerrado">Cerrados</option>
                                 </Form.Select>
-                                <InputGroup className="incident-search">
+                                <InputGroup className="incident-search" data-tour="buscador-incidentes">
                                     <InputGroup.Text><i className="bi bi-search" aria-hidden="true" /></InputGroup.Text>
                                     <Form.Control
                                         type="search"
@@ -240,7 +254,7 @@ export function ListPage() {
                             </div>
                         </div>
 
-                        <div className="incident-table">
+                        <div className="incident-table" data-tour="tabla-incidentes">
                             <AppTable
                                 columns={columnas}
                                 data={incidentesFiltrados}

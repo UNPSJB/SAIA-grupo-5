@@ -5,6 +5,10 @@ import { tutorialesVersionesDocumentos } from '../VersionesDocumentos/tutoriales
 import { tutorialesConsumoProducto } from '../ConsumoProducto/tutoriales';
 import { tutorialesTareas } from '../Tareas/tutoriales';
 import { tutorialesElementosLimpieza } from '../ElementosLimpieza/tutoriales';
+import { tutorialesEquipos } from '../Equipos/tutoriales';
+import { tutorialesHistorial } from '../Historial/tutoriales';
+import { tutorialesInicio } from '../Home/tutoriales';
+import { tutorialesIncidentes } from '../Incidentes/tutoriales';
 
 export const tutoriales: Tutorial[] = [
     ...tutorialesDocumentos,
@@ -12,5 +16,9 @@ export const tutoriales: Tutorial[] = [
     ...tutorialesVersionesDocumentos,
     ...tutorialesConsumoProducto,
     ...tutorialesTareas,
-    ...tutorialesElementosLimpieza
+    ...tutorialesElementosLimpieza,
+    ...tutorialesEquipos,
+    ...tutorialesHistorial,
+    ...tutorialesInicio,
+    ...tutorialesIncidentes,
 ];
