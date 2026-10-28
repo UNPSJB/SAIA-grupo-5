@@ -10,6 +10,7 @@ export type Producto = {
     foto_producto?: string | null;
     fecha_lanzamiento: string;
     activo: boolean;
+    receta?: { id: number } | null;
 }
 
 export type NewProducto = {
