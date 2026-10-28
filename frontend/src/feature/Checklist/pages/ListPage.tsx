@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { mutate } from 'swr';
+import { isAxiosError } from 'axios';
 import { Button, ButtonGroup, Col, Container, Dropdown, Form, Row } from 'react-bootstrap';
 import { type TableColumn } from 'react-data-table-component';
 
@@ -10,6 +11,8 @@ import { PageError } from '../../../components/PageError';
 import { ActionButton } from '../../../components/ActionButton';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks';
+import { api } from '../../../libs/axios';
+import { mostrarAlertaError, mostrarAlertaExito } from '../../../libs/alertas';
 
 
 import type { TareaOcurrencia } from '../../TareasOcurrencias/types';
@@ -34,6 +37,7 @@ export function ListPage() {
     const [filtroPlan, setFiltroPlan] = useState('');
 
     const [tareaSeleccionada, setTareaSeleccionada] = useState<TareaOcurrencia | null>(null);
+    const [generando, setGenerando] = useState(false);
 
     const planesDisponibles = useMemo(() => {
         if (!Array.isArray(tareas)) return [];
@@ -46,6 +50,22 @@ export function ListPage() {
         return () => clearInterval(intervalo);
     }, []);
 
+    const generarTareas = async () => {
+        setGenerando(true);
+        try {
+            const { data: generadas } = await api.post<TareaOcurrencia[]>("/tareas-ocurrencia/generar-manual");
+            mostrarAlertaExito(generadas.length > 0
+                ? `Se generaron ${generadas.length} tareas.`
+                : "No había tareas pendientes de generar.");
+            mutate("/tareas-ocurrencia/");
+        } catch (error) {
+            const detail = isAxiosError(error) ? error.response?.data?.detail : undefined;
+            mostrarAlertaError(detail ? (Array.isArray(detail) ? detail[0].msg : detail) : "No se pudieron generar las tareas.");
+            console.log(error);
+        } finally {
+            setGenerando(false);
+        }
+    };
 
     const filteredTareas = useMemo(() => {
         if (!Array.isArray(tareas)) return [];
@@ -102,9 +122,21 @@ export function ListPage() {
                     className="w-50"
 
                 />
+
+                {currentUser?.administrar && (
+                    <Button
+                        variant="success"
+                        onClick={generarTareas}
+                        disabled={generando}
+                        className="text-nowrap flex-shrink-0"
+                    >
+                        <i className="bi bi-arrow-repeat me-1"></i>
+                        {generando ? 'Generando...' : 'Generar tareas'}
+                    </Button>
+                )}
             </div>
         );
-    }, [search, planesDisponibles, filtroPlan]);
+    }, [search, planesDisponibles, filtroPlan, generando, currentUser?.administrar]);
 
     const abrirModal = (tarea: TareaOcurrencia) => {
         setTareaSeleccionada(tarea);

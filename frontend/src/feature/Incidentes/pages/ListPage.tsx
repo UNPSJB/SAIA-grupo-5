@@ -149,7 +149,7 @@ export function ListPage() {
                                 size="sm"
                                 tooltip="Ver"
                                 icon="bi-eye"
-                                onClick={() => navigate(`/incidentes/${incidente.id}`)}
+                                onClick={() => navigate(`/incidentes/${incidente.id}`, { state: { origen: "lista" }})}
                             />
                             <ActionButton
                                 variant="outline-primary"

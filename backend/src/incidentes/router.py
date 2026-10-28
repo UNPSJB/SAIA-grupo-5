@@ -1,5 +1,5 @@
 from typing import Literal
-
+from datetime import date
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
@@ -36,10 +36,15 @@ def read_incidentes_cerrados(db: Session = Depends(get_db)):
 def read_incidentes(
     estado: Literal["abierto", "cerrado"] | None = None,
     orden: Literal["asc", "desc"] = "desc",
+    tipo_id: int | None = None,
+    fecha_desde: date | None = None,
+    fecha_hasta: date | None = None,
     db: Session = Depends(get_db),
 ):
-    return services.listar_incidentes(db, estado=estado, orden=orden)
-
+    return services.listar_incidentes(
+        db, estado=estado, orden=orden,
+        tipo_id=tipo_id, fecha_desde=fecha_desde, fecha_hasta=fecha_hasta,
+    )
 
 @router.post("/", response_model=schemas.Incidente)
 def create_incidente(
