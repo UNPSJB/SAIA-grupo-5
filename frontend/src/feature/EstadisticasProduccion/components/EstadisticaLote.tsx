@@ -30,9 +30,10 @@ export function EstadisticasLotes() {
 
     const [fechaHasta, setFechaHasta] = useState(() => toDateKey(new Date()));
     const [productoId, setProductoId] = useState("");
+    const hoy = toDateKey(new Date());
 
     const rangoValido = Boolean(
-        fechaDesde && fechaHasta && fechaDesde <= fechaHasta
+    fechaDesde && fechaHasta && fechaDesde <= fechaHasta && fechaDesde <= hoy && fechaHasta <= hoy
     );
 
     const params = new URLSearchParams({
@@ -103,12 +104,6 @@ export function EstadisticasLotes() {
 
     return (
         <section aria-label="Estadísticas de producción" className="mb-4">
-            <div className="dashboard-section-heading">
-                <div>
-                    <h2>Producción</h2>
-                    <span>Seguimiento de cantidades producidas por producto</span>
-                </div>
-            </div>
 
             <Card className="dashboard-chart-card">
                 <Card.Body>
@@ -147,7 +142,7 @@ export function EstadisticasLotes() {
                                 <Form.Control
                                     type="date"
                                     value={fechaDesde}
-                                    max={fechaHasta || undefined}
+                                    max={fechaHasta && fechaHasta < hoy ? fechaHasta : hoy}
                                     onChange={(e) => setFechaDesde(e.target.value)}
                                 />
                             </Form.Group>
@@ -160,6 +155,7 @@ export function EstadisticasLotes() {
                                     type="date"
                                     value={fechaHasta}
                                     min={fechaDesde || undefined}
+                                    max={hoy}
                                     onChange={(e) => setFechaHasta(e.target.value)}
                                 />
                             </Form.Group>

@@ -22,7 +22,17 @@ interface AppTableProps<T> {
     noDataComponent?: ReactNode;
 }
 
-export function AppTable<T>({ columns, data, columnGroups, onColumnGroupOrderChange, conditionalRowStyles, expandableRows, expandableRowsComponent, pagination = true, noDataComponent }: AppTableProps<T>) {
+export function AppTable<T>({
+    columns,
+    data,
+    columnGroups,
+    onColumnGroupOrderChange,
+    conditionalRowStyles,
+    expandableRows,
+    expandableRowsComponent,
+    pagination = true,
+    noDataComponent
+}: AppTableProps<T>) {
     return (
         <DataTable
             columns={columns}
