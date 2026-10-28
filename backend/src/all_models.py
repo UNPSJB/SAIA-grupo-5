@@ -29,3 +29,7 @@ from src.tipo_incidente.models import TipoIncidente
 from src.incidentes.models import Incidente
 from src.accion_correctiva.models import AccionCorrectiva
 from src.historial_incidente.models import HistorialIncidente
+
+from src.unidad_medida.models import UnidadMedida
+from src.producto.models import Producto
+from src.lote_produccion.models import LoteProduccion
