@@ -13,6 +13,7 @@ import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
 
 import { DeleteProductoModal } from '../components/DeleteProductoModal';
+import { NuevaRecetaModal } from '../../Recetas/components/NuevaRecetaModal';
 import type { Producto } from '../types';
 
 export function ListPage() {
@@ -21,6 +22,7 @@ export function ListPage() {
     const [search, setSearch] = useState('');
     const { data: productos, error, isLoading } = useApi<Producto[]>("/productos/");
     const [productoToDelete, setProductoToDelete] = useState<Producto | null>(null);
+    const [productoReceta, setProductoReceta] = useState<Producto | null>(null);
 
     const filteredProducto = useMemo(() => {
         if (!Array.isArray(productos)) return [];
@@ -149,6 +151,14 @@ export function ListPage() {
                                 onClick={() => navigate(`/productos/${row.id}/edit`)}
                             />
                             <ActionButton
+                                variant="outline-secondary"
+                                size="sm"
+                                tooltip="Agregar receta"
+                                icon="bi bi-journal-plus"
+                                disabled={!row.activo}
+                                onClick={() => setProductoReceta(row)}
+                            />
+                            <ActionButton
                                 variant={row.activo ? 'outline-danger' : 'outline-success'}
                                 size="sm"
                                 tooltip={row.activo ? 'Dar de baja' : 'Dar de alta'}
@@ -193,6 +203,11 @@ export function ListPage() {
                 producto={productoToDelete}
                 onHide={() => setProductoToDelete(null)}
                 onDeleted={() => mutate("/productos/")}
+            />
+            <NuevaRecetaModal
+                producto={productoReceta}
+                onHide={() => setProductoReceta(null)}
+                onCreated={(receta) => mutate(`/recetas/producto/${receta.producto_id}`, receta, false)}
             />
         </Container>
     );
