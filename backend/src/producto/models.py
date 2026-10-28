@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from src.lote_produccion.models import LoteProduccion
     from src.unidad_medida.models import UnidadMedida
+    from src.lote_produccion.models import LoteProduccion
 
 
 class Producto(ModeloBase):

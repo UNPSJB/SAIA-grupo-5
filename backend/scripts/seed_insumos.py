@@ -1,7 +1,11 @@
 """
-Pobla la base de datos con insumos de prueba.
+Pobla la base de datos con insumos de prueba y sus unidades de medida.
+
+Si las unidades de medida no existen, las crea automáticamente.
+
 Uso: python -m scripts.seed_insumos
 """
+
 from faker import Faker
 from sqlalchemy import select
 
@@ -93,6 +97,7 @@ def generar_insumos(cantidad: int, db) -> list[Insumo]:
 
 def main():
     db = SessionLocal()
+
     try:
         insumos = generar_insumos(CANTIDAD_INSUMOS, db)
 
@@ -100,7 +105,16 @@ def main():
         db.commit()
 
         inactivos = sum(1 for insumo in insumos if not insumo.activo)
-        print(f"Se insertaron {len(insumos)} insumos ({inactivos} inactivos).")
+
+        print(
+            f"Se insertaron {len(insumos)} insumos "
+            f"({inactivos} inactivos)."
+        )
+
+    except Exception:
+        db.rollback()
+        raise
+
     finally:
         db.close()
 
