@@ -55,6 +55,7 @@ export function PlanesCalibracionPage() {
     const subHeaderComponentMemo = useMemo(() => {
         return (
             <Form.Control
+                data-tour="buscador-planes-calibracion"
                 type="text"
                 placeholder="Buscar plan..."
                 className="mr-sm-2"
@@ -123,36 +124,21 @@ export function PlanesCalibracionPage() {
             minWidth: "190px",
             selector: row => row.dias_restantes ?? 999999,
             cell: row => {
-                if (row.dias_restantes === null) {
-                    return <span>Sin definir</span>;
-                }
+                const contenido = (() => {
+                    if (row.dias_restantes === null) return <span>Sin definir</span>;
+                    if (row.dias_restantes < 0) {
+                        return (
+                            <div style={{ padding: "4px 12px", borderRadius: "16px", background: "#fef3c7", color: "#92400e", fontWeight: 700, whiteSpace: "nowrap" }}>
+                                Vencido
+                            </div>
+                        );
+                    }
+                    if (row.dias_restantes === 0) return <span>Calibración hoy</span>;
+                    if (row.dias_restantes === 1) return <span>{row.dias_restantes} día</span>;
+                    return <span>{row.dias_restantes} días</span>;
+                })();
 
-                if (row.dias_restantes < 0) {
-                    return (
-                        <div
-                            style={{
-                                padding: "4px 12px",
-                                borderRadius: "16px",
-                                background: "#fef3c7",
-                                color: "#92400e",
-                                fontWeight: 700,
-                                whiteSpace: "nowrap",
-                            }}
-                        >
-                            Vencido
-                        </div>
-                    );
-                }
-
-                if (row.dias_restantes === 0) {
-                    return <span>Calibración hoy</span>;
-                }
-
-                if (row.dias_restantes === 1) {
-                    return <span>{row.dias_restantes} día</span>;
-                }
-
-                return <span>{row.dias_restantes} días</span>;
+                return <div data-tour="dias-calibracion">{contenido}</div>;
             },
         },
         {
@@ -163,6 +149,7 @@ export function PlanesCalibracionPage() {
             cell: row => (
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <div
+                        data-tour="estado-plan-calibracion"
                         style={{
                             padding: "4px 12px",
                             borderRadius: "16px",
@@ -188,6 +175,7 @@ export function PlanesCalibracionPage() {
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
                     {currentUser?.administrar && (
                         <>
+                        <span data-tour="btn-historico-calibracion">
                             <ActionButton
                                 variant="outline-warning"
                                 size="sm"
@@ -195,7 +183,8 @@ export function PlanesCalibracionPage() {
                                 icon="bi bi-clock-history"
                                 onClick={() => setPlanHistorico(row)}
                             />
-
+                        </span>
+                        <span data-tour="btn-editar-plan-calibracion">
                             <ActionButton
                                 variant="outline-primary"
                                 size="sm"
@@ -204,7 +193,8 @@ export function PlanesCalibracionPage() {
                                 disabled={!row.estado}
                                 onClick={() => navigate(`/planes-calibracion/${row.id}/edit`)}
                             />
-
+                        </span>    
+                        <span data-tour="btn-registrar-calibracion">
                             <ActionButton
                                 variant="outline-success"
                                 size="sm"
@@ -213,6 +203,8 @@ export function PlanesCalibracionPage() {
                                 disabled={!row.estado}
                                 onClick={() => setPlanToCalibrar(row)}
                             />
+                        </span>
+                        <span data-tour="btn-baja-plan-calibracion">
 
                             <ActionButton
                                 variant={row.estado ? "outline-danger" : "outline-success"}
@@ -221,6 +213,7 @@ export function PlanesCalibracionPage() {
                                 icon={`bi ${row.estado ? "bi-dash-circle" : "bi-check-circle"}`}
                                 onClick={() => setPlanToDelete(row)}
                             />
+                        </span>
                         </>
                     )}
                 </div>
@@ -246,6 +239,7 @@ export function PlanesCalibracionPage() {
                 {currentUser?.administrar && (
                     <Col xs="auto" className="d-flex justify-content-end">
                         <Button
+                            data-tour="btn-nuevo-plan-calibracion"
                             variant="primary"
                             size="sm"
                             onClick={() => navigate("/planes-calibracion/new")}
@@ -256,11 +250,12 @@ export function PlanesCalibracionPage() {
                     </Col>
                 )}
             </Row>
-
-            <AppTable
-                columns={columns}
-                data={filteredPlanes}
-            />
+            <div data-tour="tabla-planes-calibracion">
+                <AppTable
+                    columns={columns}
+                    data={filteredPlanes}
+                />
+            </div>
 
             <EstadoPlanCalibracionModal
                 planCalibracion={planToDelete}

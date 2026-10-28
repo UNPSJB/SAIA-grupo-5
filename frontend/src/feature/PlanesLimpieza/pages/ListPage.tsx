@@ -54,6 +54,7 @@ export function PlanesLimpiezaPage() {
             center: true,
             cell: row => (
                 <Button
+                    data-tour="btn-ver-descripcion-plan"
                     variant="outline-info"
                     size="sm"
                     onClick={() => setPlanDescripcion(row)}
@@ -67,6 +68,7 @@ export function PlanesLimpiezaPage() {
             center: true,
             cell: row => (
                 <Button
+                    data-tour="btn-ver-tareas-plan"
                     variant="outline-primary"
                     size="sm"
                     disabled={!row.activo}
@@ -85,6 +87,7 @@ export function PlanesLimpiezaPage() {
             cell: row => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div
+                        data-tour="estado-plan-limpieza"
                         style={{
                             padding: '4px 12px',
                             borderRadius: '16px',
@@ -114,31 +117,36 @@ export function PlanesLimpiezaPage() {
                 minWidth: "220px",
                 cell: (row) => (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <ActionButton
-                            variant="outline-primary"
-                            size="sm"
-                            tooltip="Editar"
-                            icon="bi-pencil"
-                            disabled={!row.activo}
-                            onClick={() => navigate(`/planes-limpieza/${row.id}/edit`)}
-                        />
-                        {row.activo ? (
+                        <span data-tour="btn-editar-plan-limpieza">
                             <ActionButton
-                                variant="outline-danger"
+                                variant="outline-primary"
                                 size="sm"
-                                tooltip="Dar de baja"
-                                icon="bi-dash-circle"
-                                onClick={() => setPlanToDelete(row)}
+                                tooltip="Editar"
+                                icon="bi-pencil"
+                                disabled={!row.activo}
+                                onClick={() => navigate(`/planes-limpieza/${row.id}/edit`)}
                             />
+                        </span>
+                        <span data-tour="btn-baja-plan-limpieza">
+                            {row.activo ? (
+                                <ActionButton
+                                    variant="outline-danger"
+                                    size="sm"
+                                    tooltip="Dar de baja"
+                                    icon="bi-dash-circle"
+                                    onClick={() => setPlanToDelete(row)}
+                                />
                         ) : (
-                            <ActionButton
-                                variant="outline-success"
-                                size="sm"
-                                tooltip="Dar de alta"
-                                icon="bi-check-circle"
-                                onClick={() => cambiarEstado(row)}
-                            />
+                                <ActionButton
+                                    variant="outline-success"
+                                    size="sm"
+                                    tooltip="Dar de alta"
+                                    icon="bi-check-circle"
+                                    onClick={() => cambiarEstado(row)}
+                                />
+                            
                         )}
+                        </span>
                     </div>
                 )
             }
@@ -155,6 +163,7 @@ export function PlanesLimpiezaPage() {
     const subHeaderComponentMemo = useMemo(() => {
         return (
             <Form.Control
+                data-tour="buscador-planes-limpieza"
                 type="text"
                 placeholder="Buscar plan de limpieza..."
                 className=" mr-sm-2"
@@ -184,6 +193,7 @@ export function PlanesLimpiezaPage() {
                 {currentUser?.administrar && (
                     <Col xs="auto" className="d-flex justify-content-end">
                         <Button
+                            data-tour="btn-nuevo-plan-limpieza"
                             variant="primary"
                             size='sm'
                             onClick={() => navigate("/planes-limpieza/new")}
@@ -194,7 +204,9 @@ export function PlanesLimpiezaPage() {
                     </Col>
                 )}
             </Row>
-            <AppTable columns={columns} data={filteredPlanes} />
+            <div data-tour="tabla-planes-limpieza">
+                <AppTable columns={columns} data={filteredPlanes} />
+            </div>
             <DeletePlanLimpiezaModal
                 plan={planToDelete}
                 onHide={() => setPlanToDelete(null)}
