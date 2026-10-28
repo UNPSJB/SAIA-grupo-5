@@ -6,9 +6,11 @@ import type { Receta } from '../types';
 interface VerRecetaModalProps {
     producto: Producto | null;
     onHide: () => void;
+    // revisar permisos (administrar, operar o supervisar)
+    onEditar?: (receta: Receta) => void;
 }
 
-export function VerRecetaModal({ producto, onHide }: VerRecetaModalProps) {
+export function VerRecetaModal({ producto, onHide, onEditar }: VerRecetaModalProps) {
     const { data: receta, error, isLoading } = useApi<Receta>(
         producto ? `/recetas/producto/${producto.id}` : null,
     );
@@ -53,6 +55,11 @@ export function VerRecetaModal({ producto, onHide }: VerRecetaModalProps) {
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="secondary" onClick={onHide}>Cerrar</Button>
+                {onEditar && receta && (
+                    <Button className="ms-2" variant="primary" onClick={() => onEditar(receta)}>
+                        <i className="bi bi-pencil me-1"></i> Editar receta
+                    </Button>
+                )}
             </Modal.Footer>
         </Modal>
     );

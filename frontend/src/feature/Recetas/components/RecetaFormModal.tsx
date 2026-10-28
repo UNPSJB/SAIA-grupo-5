@@ -8,10 +8,12 @@ import type { Producto } from '../../Productos/types';
 import type { NewEtapaReceta, NewReceta, Receta } from '../types';
 import { PLANTILLA_ETAPAS } from '../constants';
 
-interface NuevaRecetaModalProps {
+interface RecetaFormModalProps {
     producto: Producto | null;
+    // Si se pasa una receta el modal la edita; si no, da de alta una nueva desde la plantilla
+    receta?: Receta | null;
     onHide: () => void;
-    onCreated: (receta: Receta) => void;
+    onSaved: (receta: Receta) => void;
 }
 
 interface RecetaFormData {
@@ -22,8 +24,16 @@ const plantillaInicial = (): RecetaFormData => ({
     etapas: PLANTILLA_ETAPAS.map((etapa) => ({ ...etapa, pasos: etapa.pasos.map((paso) => ({ ...paso })) })),
 });
 
-export function NuevaRecetaModal({ producto, onHide, onCreated }: NuevaRecetaModalProps) {
+const valoresDeReceta = (receta: Receta): RecetaFormData => ({
+    etapas: receta.etapas.map((etapa) => ({
+        nombre: etapa.nombre,
+        pasos: etapa.pasos.map((paso) => ({ descripcion: paso.descripcion })),
+    })),
+});
+
+export function RecetaFormModal({ producto, receta, onHide, onSaved }: RecetaFormModalProps) {
     const [cargando, setCargando] = useState(false);
+    const esEdicion = Boolean(receta);
 
     const { register, control, handleSubmit, reset, formState: { errors } } = useForm<RecetaFormData>({
         defaultValues: plantillaInicial(),
@@ -31,29 +41,28 @@ export function NuevaRecetaModal({ producto, onHide, onCreated }: NuevaRecetaMod
     const { fields: etapas, append, remove } = useFieldArray({ control, name: "etapas" });
     const etapasActuales = useWatch({ control, name: "etapas" });
 
-    // Cada vez que se abre para un producto arranca de nuevo con la plantilla
+    // Cada vez que se abre arranca con la receta a editar o, en el alta, con la plantilla
     useEffect(() => {
-        if (producto) reset(plantillaInicial());
-    }, [producto, reset]);
+        if (producto) reset(receta ? valoresDeReceta(receta) : plantillaInicial());
+    }, [producto, receta, reset]);
 
     const onSubmit = async (data: RecetaFormData) => {
         if (!producto) return;
 
         setCargando(true);
         try {
-            const datos: NewReceta = {
-                producto_id: producto.id,
-                etapas: data.etapas.map((etapa) => ({
-                    nombre: etapa.nombre.trim(),
-                    pasos: etapa.pasos.map((paso) => ({ descripcion: paso.descripcion.trim() })),
-                })),
-            };
-            const { data: receta } = await api.post<Receta>("/recetas/", datos);
-            mostrarAlertaExito(`La receta del producto '${producto.nombre}' se creó correctamente.`);
-            onCreated(receta);
+            const etapas = data.etapas.map((etapa) => ({
+                nombre: etapa.nombre.trim(),
+                pasos: etapa.pasos.map((paso) => ({ descripcion: paso.descripcion.trim() })),
+            }));
+            const { data: guardada } = receta
+                ? await api.put<Receta>(`/recetas/${receta.id}`, { etapas })
+                : await api.post<Receta>("/recetas/", { producto_id: producto.id, etapas } satisfies NewReceta);
+            mostrarAlertaExito(`La receta del producto '${producto.nombre}' se ${esEdicion ? 'actualizó' : 'creó'} correctamente.`);
+            onSaved(guardada);
             onHide();
         } catch (error) {
-            let mensajeFinal = `No se pudo crear la receta del producto '${producto.nombre}'.`;
+            let mensajeFinal = `No se pudo ${esEdicion ? 'actualizar' : 'crear'} la receta del producto '${producto.nombre}'.`;
             const detail = isAxiosError(error) ? error.response?.data?.detail : undefined;
             if (detail) {
                 mensajeFinal = Array.isArray(detail) ? detail[0].msg : detail;
@@ -69,13 +78,15 @@ export function NuevaRecetaModal({ producto, onHide, onCreated }: NuevaRecetaMod
         <Modal show={producto !== null} onHide={onHide} size="lg" scrollable>
             <Form onSubmit={handleSubmit(onSubmit)} noValidate className="d-flex flex-column overflow-hidden">
                 <Modal.Header closeButton>
-                    <Modal.Title>Nueva receta</Modal.Title>
+                    <Modal.Title>{esEdicion ? 'Editar receta' : 'Nueva receta'}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <p className="mb-1"><strong>Producto:</strong> {producto?.nombre}</p>
                     <p className="text-muted small mb-3">
-                        La receta se carga con una plantilla de ejemplo. Eliminá las etapas y pasos que no correspondan y agregá los que necesites.
-                        El orden de etapas y pasos es el orden en que aparecen.
+                        {esEdicion
+                            ? 'Modificá, eliminá o agregá las etapas y pasos que necesites.'
+                            : 'La receta se carga con una plantilla de ejemplo. Eliminá las etapas y pasos que no correspondan y agregá los que necesites.'}
+                        {' '}El orden de etapas y pasos es el orden en que aparecen.
                     </p>
 
                     <Accordion alwaysOpen defaultActiveKey={["0"]}>

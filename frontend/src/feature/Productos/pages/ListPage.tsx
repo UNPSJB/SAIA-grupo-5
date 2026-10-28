@@ -13,9 +13,10 @@ import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
 
 import { DeleteProductoModal } from '../components/DeleteProductoModal';
-import { NuevaRecetaModal } from '../../Recetas/components/NuevaRecetaModal';
+import { RecetaFormModal } from '../../Recetas/components/RecetaFormModal';
 import { VerRecetaModal } from '../../Recetas/components/VerRecetaModal';
 import type { Producto } from '../types';
+import type { Receta } from '../../Recetas/types';
 
 export function ListPage() {
     const navigate = useNavigate();
@@ -25,6 +26,7 @@ export function ListPage() {
     const [productoToDelete, setProductoToDelete] = useState<Producto | null>(null);
     const [productoReceta, setProductoReceta] = useState<Producto | null>(null);
     const [productoVerReceta, setProductoVerReceta] = useState<Producto | null>(null);
+    const [recetaEditar, setRecetaEditar] = useState<Receta | null>(null);
 
     const filteredProducto = useMemo(() => {
         if (!Array.isArray(productos)) return [];
@@ -217,10 +219,14 @@ export function ListPage() {
                 onHide={() => setProductoToDelete(null)}
                 onDeleted={() => mutate("/productos/")}
             />
-            <NuevaRecetaModal
+            <RecetaFormModal
                 producto={productoReceta}
-                onHide={() => setProductoReceta(null)}
-                onCreated={(receta) => {
+                receta={recetaEditar}
+                onHide={() => {
+                    setProductoReceta(null);
+                    setRecetaEditar(null);
+                }}
+                onSaved={(receta) => {
                     mutate(`/recetas/producto/${receta.producto_id}`, receta, false);
                     mutate("/productos/");
                 }}
@@ -228,6 +234,11 @@ export function ListPage() {
             <VerRecetaModal
                 producto={productoVerReceta}
                 onHide={() => setProductoVerReceta(null)}
+                onEditar={currentUser?.administrar ? (receta) => {
+                    setRecetaEditar(receta);
+                    setProductoReceta(productoVerReceta);
+                    setProductoVerReceta(null);
+                } : undefined}
             />
         </Container>
     );
