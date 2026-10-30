@@ -22,6 +22,9 @@ import { tutorialesSuperficies } from '../Superficies/tutoriales';
 import { tutorialesTiposDocumentos } from '../TiposDocumentos/tutoriales';
 import { tutorialesTiposElementoLimpieza } from '../TiposElementoLimpieza/tutoriales';
 import { tutorialesTiposIncidentes } from '../TiposIncidentes/tutoriales';
+import { tutorialesTiposQuimicos } from '../TiposQuimicos/tutoriales';
+import { tutorialesTiposVencimientos } from '../TiposVencimientos/tutoriales';
+import { tutorialesVencimientoConsolidado, tutorialesVencimientoPersonal } from '../VencimientoPersonal/tutoriales';
 
 export const tutoriales: Tutorial[] = [
     ...tutorialesDocumentos,
@@ -47,4 +50,8 @@ export const tutoriales: Tutorial[] = [
     ...tutorialesTiposDocumentos,
     ...tutorialesTiposElementoLimpieza,
     ...tutorialesTiposIncidentes,
+    ...tutorialesTiposQuimicos,
+    ...tutorialesTiposVencimientos,
+    ...tutorialesVencimientoPersonal,
+    ...tutorialesVencimientoConsolidado
 ];

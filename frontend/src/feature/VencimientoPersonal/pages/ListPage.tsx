@@ -45,6 +45,7 @@ export function ListPage() {
     const subHeaderComponentMemo = useMemo(() => {
         return (
             <Form.Control
+                data-tour="buscador-vencimientos-persona"
                 type="text"
                 placeholder="Buscar tipo vencimiento..."
                 className=" mr-sm-2"
@@ -136,6 +137,7 @@ export function ListPage() {
                 return (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <div
+                            data-tour="estado-vencimiento-persona"
                             style={{
                                 padding: '4px 12px',
                                 borderRadius: '16px',
@@ -160,39 +162,46 @@ export function ListPage() {
             minWidth: '280px',
             cell: (row) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <ActionButton
-                        variant="outline-info"
-                        size="sm"
-                        tooltip="Ver vencimiento"
-                        icon="bi bi-eye"
-                        onClick={() => navigate (`/vencimiento-personal/${row.id}`)}
-                    />
-
-                    <ActionButton
-                        variant="outline-warning"
-                        size="sm"
-                        tooltip="Historico"
-                        icon="bi bi-clock-history"
-                        onClick={() => setVencimientoHistorico(row)}
-                    />
+                    <span data-tour="btn-ver-vencimiento-persona">
+                        <ActionButton
+                            variant="outline-info"
+                            size="sm"
+                            tooltip="Ver vencimiento"
+                            icon="bi bi-eye"
+                            onClick={() => navigate (`/vencimiento-personal/${row.id}`)}
+                        />
+                    </span>
+                    <span data-tour="btn-historico-vencimiento">
+                        <ActionButton
+                            variant="outline-warning"
+                            size="sm"
+                            tooltip="Historico"
+                            icon="bi bi-clock-history"
+                            onClick={() => setVencimientoHistorico(row)}
+                        />
+                    </span>
                     {currentUser?.administrar && (
                         <>
-                            <ActionButton
-                                variant="outline-primary"
-                                size="sm"
-                                tooltip="Editar"
-                                icon="bi bi-pencil"
-                                disabled={!persona?.activo}
-                                onClick={() => navigate(`/vencimiento-personal/${row.id}/edit`)}
-                            />
-                            <ActionButton
-                                variant="outline-success"
-                                size="sm"
-                                tooltip="Renovar"
-                                icon="bi bi-arrow-repeat"
-                                disabled={!persona?.activo}
-                                onClick={() => setVencimientoToRenovar(row)}
-                            />
+                            <span data-tour="btn-editar-vencimiento-persona">
+                                <ActionButton
+                                    variant="outline-primary"
+                                    size="sm"
+                                    tooltip="Editar"
+                                    icon="bi bi-pencil"
+                                    disabled={!persona?.activo}
+                                    onClick={() => navigate(`/vencimiento-personal/${row.id}/edit`)}
+                                />
+                            </span>
+                            <span data-tour="btn-renovar-vencimiento">
+                                <ActionButton
+                                    variant="outline-success"
+                                    size="sm"
+                                    tooltip="Renovar"
+                                    icon="bi bi-arrow-repeat"
+                                    disabled={!persona?.activo}
+                                    onClick={() => setVencimientoToRenovar(row)}
+                                />
+                            </span>
                         </>
                     )}
                 </div>
@@ -205,6 +214,7 @@ export function ListPage() {
             <Row className="p-2 align-items-center" >
                 <Col>
                     <Button 
+                        data-tour="btn-volver-personal"
                         variant="outline-secondary" 
                         size="sm" 
                         onClick={() => navigate("/personal")}
@@ -224,6 +234,7 @@ export function ListPage() {
                 {currentUser?.administrar && (
                     <Col xs="auto" className="d-flex justify-content-end">
                         <Button
+                            data-tour="btn-nuevo-vencimiento-persona"
                             variant="primary"
                             size='sm'
                             disabled={!persona?.activo}
@@ -235,7 +246,9 @@ export function ListPage() {
                     </Col>
                 )}
             </Row>
-            <AppTable columns={columns} data={filteredVencimientos} />
+            <div data-tour="tabla-vencimientos-persona">
+                <AppTable columns={columns} data={filteredVencimientos} />
+            </div>
             <RenovarVencimientoModal
                 vencimiento={vencimientoToRenovar}
                 onHide={() => setVencimientoToRenovar(null)}

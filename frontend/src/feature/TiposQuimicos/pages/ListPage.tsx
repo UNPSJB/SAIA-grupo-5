@@ -36,6 +36,7 @@ export function ListPage() {
     const subHeaderComponentMemo = useMemo(() => {
         return (
             <Form.Control
+                data-tour="buscador-tipos-quimicos"
                 type="text"
                 placeholder="Buscar tipo químico..."
                 className=" mr-sm-2"
@@ -65,6 +66,7 @@ export function ListPage() {
             cell: row => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10}}>
                     <div
+                        data-tour="estado-tipo-quimico"
                         style={{
                             padding: '4px 12px',
                             borderRadius: '16px',
@@ -87,31 +89,37 @@ export function ListPage() {
             center: true,
             cell: (row) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <ActionButton
-                        variant="outline-info"
-                        size="sm"
-                        tooltip="Ver"
-                        icon="bi-eye"
-                        onClick={() => navigate(`/tipos-quimicos/${row.id}`)}
-                    />
+                    <span data-tour="btn-ver-tipo-quimico">
+                        <ActionButton
+                            variant="outline-info"
+                            size="sm"
+                            tooltip="Ver"
+                            icon="bi-eye"
+                            onClick={() => navigate(`/tipos-quimicos/${row.id}`)}
+                        />
+                    </span>
 
                     {currentUser?.administrar && (
                         <>
-                            <ActionButton
-                                variant="outline-primary"
-                                size="sm"
-                                tooltip="Editar"
-                                icon="bi-pencil"
-                                disabled={!row.activo}      // Si no esta activo se muestra en gris y no se puede editar
-                                onClick={() => navigate(`/tipos-quimicos/${row.id}/edit`)}
-                            />
-                            <ActionButton
-                                variant={row.activo ? 'outline-danger' : 'outline-success'}
-                                size="sm"
-                                tooltip={row.activo ? 'Dar de baja' : 'Dar de alta'}
-                                icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
-                                onClick={() => setTipoQuimicoToDelete(row)}
-                            />
+                            <span data-tour="btn-editar-tipo-quimico">
+                                <ActionButton
+                                    variant="outline-primary"
+                                    size="sm"
+                                    tooltip="Editar"
+                                    icon="bi-pencil"
+                                    disabled={!row.activo}      // Si no esta activo se muestra en gris y no se puede editar
+                                    onClick={() => navigate(`/tipos-quimicos/${row.id}/edit`)}
+                                />
+                            </span>
+                            <span data-tour="btn-baja-tipo-quimico">
+                                <ActionButton
+                                    variant={row.activo ? 'outline-danger' : 'outline-success'}
+                                    size="sm"
+                                    tooltip={row.activo ? 'Dar de baja' : 'Dar de alta'}
+                                    icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
+                                    onClick={() => setTipoQuimicoToDelete(row)}
+                                />
+                            </span>
                         </>
                     )}
                 </div>
@@ -135,6 +143,7 @@ export function ListPage() {
                 {currentUser?.administrar &&(
                     <Col xs="auto" className="d-flex justify-content-end">
                         <Button
+                            data-tour="btn-nuevo-tipo-quimico"
                             variant="primary"
                             size='sm'
                             onClick={() => navigate("/tipos-quimicos/new")}
@@ -146,7 +155,9 @@ export function ListPage() {
                 )}
 
             </Row>
-            <AppTable columns={columns} data={filteredTiposQuimicos} />
+            <div data-tour="tabla-tipos-quimicos">
+                <AppTable columns={columns} data={filteredTiposQuimicos} />
+            </div>
             <DeleteTipoQuimicoModal
                 tipoQuimico={tipoQuimicoToDelete}
                 onHide={() => setTipoQuimicoToDelete(null)}
