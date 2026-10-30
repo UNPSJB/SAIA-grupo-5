@@ -34,6 +34,7 @@ export function ListPage() {
     const subHeaderComponentMemo = useMemo(() => {
         return (
             <Form.Control
+                data-tour="buscador-tipos-incidentes"
                 type="text"
                 placeholder="Buscar tipo incidente..."
                 className=" mr-sm-2"
@@ -71,6 +72,7 @@ export function ListPage() {
             cell: row => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10}}>
                     <div
+                        data-tour="estado-tipo-incidente"
                         style={{
                             padding: '4px 12px',
                             borderRadius: '16px',
@@ -93,16 +95,19 @@ export function ListPage() {
             center: true,
             cell: (row) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <ActionButton
-                        variant="outline-info"
-                        size="sm"
-                        tooltip="Ver"
-                        icon="bi bi-eye"
-                        onClick={() => navigate(`/tipos-incidentes/${row.id}`)}
-                    />
+                    <span data-tour="btn-ver-tipo-incidente">
+                        <ActionButton
+                            variant="outline-info"
+                            size="sm"
+                            tooltip="Ver"
+                            icon="bi bi-eye"
+                            onClick={() => navigate(`/tipos-incidentes/${row.id}`)}
+                        />
+                    </span>
 
                     {currentUser?.administrar && (
                         <>
+                    <span data-tour="btn-editar-tipo-incidente">
                             <ActionButton
                                 variant="outline-primary"
                                 size="sm"
@@ -111,6 +116,8 @@ export function ListPage() {
                                 disabled={!row.activo}      // Si no esta activo se muestra en gris y no se puede editar
                                 onClick={() => navigate(`/tipos-incidentes/${row.id}/edit`)}
                             />
+                    </span>
+                    <span data-tour="btn-baja-tipo-incidente">
                             <ActionButton
                                 variant={row.activo ? 'outline-danger' : 'outline-success'}
                                 size="sm"
@@ -118,6 +125,7 @@ export function ListPage() {
                                 icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
                                 onClick={() => setTipoIncidenteToDelete(row)}
                             />
+                    </span>
                         </>  
                     )}
                 </div>
@@ -141,6 +149,7 @@ export function ListPage() {
                 {currentUser?.administrar &&(
                     <Col xs="auto" className="d-flex justify-content-end">
                         <Button
+                            data-tour="btn-nuevo-tipo-incidente"
                             variant="primary"
                             size='sm'
                             onClick={() => navigate("/tipos-incidentes/new")}
@@ -152,7 +161,9 @@ export function ListPage() {
                 )}
 
             </Row>
-            <AppTable columns={columns} data={filteredTiposIncidentes} />
+            <div data-tour="tabla-tipos-incidentes">
+                <AppTable columns={columns} data={filteredTiposIncidentes} />
+            </div>
             <DeleteTipoIncidenteModal
                 tipoIncidente={tipoIncidenteToDelete}
                 onHide={() => setTipoIncidenteToDelete(null)}

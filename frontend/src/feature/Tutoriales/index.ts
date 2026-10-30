@@ -20,6 +20,8 @@ import { tutorialesRecambiosElementosLimpieza } from '../RecambiosElementosLimpi
 import { tutorialesSectores } from '../Sectores/tutoriales';
 import { tutorialesSuperficies } from '../Superficies/tutoriales';
 import { tutorialesTiposDocumentos } from '../TiposDocumentos/tutoriales';
+import { tutorialesTiposElementoLimpieza } from '../TiposElementoLimpieza/tutoriales';
+import { tutorialesTiposIncidentes } from '../TiposIncidentes/tutoriales';
 
 export const tutoriales: Tutorial[] = [
     ...tutorialesDocumentos,
@@ -42,5 +44,7 @@ export const tutoriales: Tutorial[] = [
     ...tutorialesRecambiosElementosLimpieza,
     ...tutorialesSectores,
     ...tutorialesSuperficies,
-    ...tutorialesTiposDocumentos
+    ...tutorialesTiposDocumentos,
+    ...tutorialesTiposElementoLimpieza,
+    ...tutorialesTiposIncidentes,
 ];
