@@ -38,6 +38,7 @@ export function SuperficiesPage() {
     const subHeaderComponentMemo = useMemo(() => {
         return (
             <Form.Control
+                data-tour="buscador-superficies"
                 type="text"
                 placeholder="Buscar superficie..."
                 className=" mr-sm-2"
@@ -84,6 +85,7 @@ export function SuperficiesPage() {
             center: true,
             cell: row => (
                 <Button
+                    data-tour="btn-ver-sectores-superficie"
                     variant="outline-info"
                     size="sm"
                     onClick={() => setSuperficieSectores(row)}
@@ -100,6 +102,7 @@ export function SuperficiesPage() {
             cell: row => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div
+                        data-tour="estado-superficie"
                         style={{
                             padding: '4px 12px',
                             borderRadius: '16px',
@@ -128,31 +131,35 @@ export function SuperficiesPage() {
                 minWidth: "220px",
                 cell: (row) => (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <ActionButton
-                            variant="outline-primary"
-                            size="sm"
-                            tooltip="Editar"
-                            icon="bi-pencil"
-                            disabled={!row.activo}
-                            onClick={() => navigate(`/superficies/${row.id}/edit`)}
-                        />
-                        {row.activo ? (
+                        <span data-tour="btn-editar-superficie">
                             <ActionButton
-                                variant="outline-danger"
+                                variant="outline-primary"
                                 size="sm"
-                                tooltip="Dar de baja"
-                                icon="bi-dash-circle"
-                                onClick={() => setSuperficieToDelete(row)}
+                                tooltip="Editar"
+                                icon="bi-pencil"
+                                disabled={!row.activo}
+                                onClick={() => navigate(`/superficies/${row.id}/edit`)}
                             />
-                        ) : (
-                            <ActionButton
-                                variant="outline-success"
-                                size="sm"
-                                tooltip="Dar de alta"
-                                icon="bi-check-circle"
-                                onClick={() => cambiarEstado(row)}
-                            />
-                        )}
+                        </span>
+                        <span data-tour="btn-baja-superficie">
+                            {row.activo ? (
+                                <ActionButton
+                                    variant="outline-danger"
+                                    size="sm"
+                                    tooltip="Dar de baja"
+                                    icon="bi-dash-circle"
+                                    onClick={() => setSuperficieToDelete(row)}
+                                />
+                            ) : (
+                                <ActionButton
+                                    variant="outline-success"
+                                    size="sm"
+                                    tooltip="Dar de alta"
+                                    icon="bi-check-circle"
+                                    onClick={() => cambiarEstado(row)}
+                                />
+                            )}
+                        </span>
                     </div>
                 )
             }
@@ -175,6 +182,7 @@ export function SuperficiesPage() {
                 {currentUser?.administrar && (
                     <Col xs="auto" className="d-flex justify-content-end">
                         <Button
+                            data-tour="btn-nueva-superficie"
                             variant="primary"
                             size='sm'
                             onClick={() => navigate("/superficies/new")}
@@ -185,7 +193,9 @@ export function SuperficiesPage() {
                     </Col>
                 )}
             </Row>
-            <AppTable columns={columns} data={filteredSuperficies} />
+            <div data-tour="tabla-superficies">
+                <AppTable columns={columns} data={filteredSuperficies} />
+            </div>
             <DeleteSuperficieModal
                 superficie={superficieToDelete}
                 onHide={() => setSuperficieToDelete(null)}

@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { type TableColumn } from "react-data-table-component";
-
 import { AppTable } from "../../../components/AppTable";
 import { PageHeader } from "../../../components/PageHeader";
 import { PageLoading } from "../../../components/PageLoading";
@@ -46,6 +45,7 @@ export function RecambiosElementoLimpiezaPage() {
     const subHeaderComponentMemo = useMemo(() => {
         return (
             <Form.Control
+                data-tour="buscador-recambios"
                 type="text"
                 placeholder="Buscar recambio..."
                 className="mr-sm-2"
@@ -89,13 +89,15 @@ export function RecambiosElementoLimpiezaPage() {
             name: "Acciones",
             center: true,
             cell: row => (
-                <ActionButton
-                    variant="outline-secondary"
-                    size="sm"
-                    tooltip="Ver"
-                    icon="bi-eye"
-                    onClick={() => navigate(`/recambios-elementos-limpieza/${row.id}`)}
-                />
+                <span data-tour="btn-ver-recambio">
+                    <ActionButton
+                        variant="outline-secondary"
+                        size="sm"
+                        tooltip="Ver"
+                        icon="bi-eye"
+                        onClick={() => navigate(`/recambios-elementos-limpieza/${row.id}`)}
+                    />
+                </span>
             ),
         },
     ];
@@ -118,6 +120,7 @@ export function RecambiosElementoLimpiezaPage() {
                 <Col xs="auto" className="d-flex justify-content-end">
                     {currentUser?.administrar && (
                         <Button
+                            data-tour="btn-nuevo-recambio"
                             variant="primary"
                             size="sm"
                             onClick={() => navigate("/recambios-elementos-limpieza/new")}
@@ -128,11 +131,12 @@ export function RecambiosElementoLimpiezaPage() {
                     )}
                 </Col>
             </Row>
-
-            <AppTable
-                columns={columns}
-                data={filteredRecambios}
-            />
+            <div data-tour="tabla-recambios">
+                <AppTable
+                    columns={columns}
+                    data={filteredRecambios}
+                />
+            </div>
         </Container>
     );
 }

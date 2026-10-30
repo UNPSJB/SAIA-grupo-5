@@ -33,6 +33,7 @@ export function ListPage() {
     const subHeaderComponentMemo = useMemo(() => {
         return (
             <Form.Control
+                data-tour="buscador-tipos-documentos"
                 type="text"
                 placeholder="Buscar tipo documento..."
                 className=" mr-sm-2"
@@ -70,6 +71,7 @@ export function ListPage() {
             cell: row => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10}}>
                     <div
+                        data-tour="estado-tipo-documento"
                         style={{
                             padding: '4px 12px',
                             borderRadius: '16px',
@@ -93,6 +95,7 @@ export function ListPage() {
             cell: (row) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <Button
+                        data-tour="btn-ver-tipo-documento"
                         variant="outline-info"
                         size="sm"
                         onClick={() => navigate(`/tipos-documentos/${row.id}`)}
@@ -103,6 +106,7 @@ export function ListPage() {
                     {currentUser?.administrar && (
                         <>
                             <Button
+                                data-tour="btn-editar-tipo-documento"
                                 variant="outline-primary"
                                 size="sm"
                                 disabled={!row.activo}      // Si no esta activo se muestra en gris y no se puede editar
@@ -111,6 +115,7 @@ export function ListPage() {
                                 <i className="bi bi-pencil me-1"></i>Editar
                             </Button>
                             <Button
+                                data-tour="btn-baja-tipo-documento"
                                 variant={row.activo ? 'outline-danger' : 'outline-success'}
                                 size="sm"
                                 onClick={() => setTipoDocumentoToDelete(row)}
@@ -141,6 +146,7 @@ export function ListPage() {
                 {currentUser?.administrar &&(
                     <Col xs="auto" className="d-flex justify-content-end">
                         <Button
+                            data-tour="btn-nuevo-tipo-documento"
                             variant="primary"
                             size='sm'
                             onClick={() => navigate("/tipos-documentos/new")}
@@ -152,7 +158,9 @@ export function ListPage() {
                 )}
 
             </Row>
-            <AppTable columns={columns} data={filteredTiposDocumentos} />
+            <div data-tour="tabla-tipos-documentos">
+                <AppTable columns={columns} data={filteredTiposDocumentos} />
+            </div>
             <DeleteTipoDocumentoModal
                 tipoDocumento={tipoDocumentoToDelete}
                 onHide={() => setTipoDocumentoToDelete(null)}

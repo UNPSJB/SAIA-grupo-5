@@ -16,6 +16,10 @@ import { tutorialesNotificaciones } from '../Notificaciones/tutoriales';
 import { tutorialesPersonal } from '../Personal/tutoriales';
 import { tutorialesPlanesCalibracion } from '../PlanesCalibracion/tutoriales';
 import { tutorialesPlanesLimpieza } from '../PlanesLimpieza/tutoriales';
+import { tutorialesRecambiosElementosLimpieza } from '../RecambiosElementosLimpieza/tutoriales';
+import { tutorialesSectores } from '../Sectores/tutoriales';
+import { tutorialesSuperficies } from '../Superficies/tutoriales';
+import { tutorialesTiposDocumentos } from '../TiposDocumentos/tutoriales';
 
 export const tutoriales: Tutorial[] = [
     ...tutorialesDocumentos,
@@ -35,4 +39,8 @@ export const tutoriales: Tutorial[] = [
     ...tutorialesPersonal,
     ...tutorialesPlanesCalibracion,
     ...tutorialesPlanesLimpieza,
+    ...tutorialesRecambiosElementosLimpieza,
+    ...tutorialesSectores,
+    ...tutorialesSuperficies,
+    ...tutorialesTiposDocumentos
 ];
