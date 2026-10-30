@@ -1,20 +1,20 @@
 import { Button, Form } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
-import { UnidadMedida } from '../../Insumos/types';
+import type { UnidadMedida } from '../../UnidadMedida/types';
 import { useNavigate } from 'react-router-dom';
 import { useApi } from '../../../hooks/useApi';
 import type { TipoQuimico } from '../../TiposQuimicos/types';
 
 interface InsumoQuimicoFormProps {
     textoBoton: string;
-    onSubmit: (datos: { nombre: string, unidad_medida: UnidadMedida, tipo_quimico_id: number, dilucion: string }) => void;
-    valoresIniciales?: { nombre: string, unidad_medida: UnidadMedida, tipo_quimico_id: number, dilucion: string };
+    onSubmit: (datos: { nombre: string, unidad_medida_id: number, tipo_quimico_id: number, dilucion: string }) => void;
+    valoresIniciales?: { nombre: string, unidad_medida_id: number, tipo_quimico_id: number, dilucion: string };
 }
 
 
 interface InsumoQuimicoFormData {
     nombre: string;
-    unidad_medida: UnidadMedida | "";
+    unidad_medida_id: number | "";
     tipo_quimico_id: number | "";
     dilucion: string;
 }
@@ -22,11 +22,12 @@ interface InsumoQuimicoFormData {
 export function InsumoQuimicoForm({ textoBoton, onSubmit, valoresIniciales }: InsumoQuimicoFormProps) {
     const navigate = useNavigate();
     const { data: tiposQuimicos, isLoading } = useApi<TipoQuimico[]>('/tipos-quimicos/');
+    const { data: unidadesMedida, isLoading: isLoadingUnidades } = useApi<UnidadMedida[]>('/unidades-medida/');
 
     const {register, handleSubmit, formState: { errors }, } = useForm<InsumoQuimicoFormData> ({
         defaultValues: {
             nombre: valoresIniciales?.nombre || "",
-            unidad_medida: valoresIniciales?.unidad_medida || "",
+            unidad_medida_id: valoresIniciales?.unidad_medida_id || "",
             tipo_quimico_id: valoresIniciales?.tipo_quimico_id || "",
             dilucion: valoresIniciales?.dilucion || "",
         },
@@ -35,7 +36,7 @@ export function InsumoQuimicoForm({ textoBoton, onSubmit, valoresIniciales }: In
     const onSubmitHookForm = (data: InsumoQuimicoFormData) => {
         onSubmit({
             nombre: data.nombre.trim(),
-            unidad_medida: data.unidad_medida as UnidadMedida,
+            unidad_medida_id: Number(data.unidad_medida_id),
             tipo_quimico_id: Number(data.tipo_quimico_id),
             dilucion: data.dilucion.trim(),
         });
@@ -90,20 +91,21 @@ export function InsumoQuimicoForm({ textoBoton, onSubmit, valoresIniciales }: In
             <Form.Group className="mb-3 text-start" controlId="formUnidadMedida">
                 <Form.Label className="p-1 fw-bold">Unidad de medida *</Form.Label>
                 <Form.Select
-                    {...register("unidad_medida", {
+                    {...register("unidad_medida_id", {
                     required: "La unidad de medida es obligatoria."
                     })}
-                    isInvalid={!!errors.unidad_medida}
+                    isInvalid={!!errors.unidad_medida_id}
                 >
                     <option value="" disabled>Seleccione una unidad de medida</option>
-                    {Object.entries(UnidadMedida).map(([clave, valor]) => (
-                        <option key={clave} value={valor}>
-                            {valor}
+                    {isLoadingUnidades && <option disabled> Cargando unidades de medida...</option>}
+                    {unidadesMedida?.filter(u => u.activo).map ((u) => (
+                        <option key={u.id} value={u.id}>
+                            {u.nombre}
                         </option>
                     ))}
                 </Form.Select>
                 <Form.Control.Feedback type="invalid">
-                    {errors.unidad_medida?.message}
+                    {errors.unidad_medida_id?.message}
                 </Form.Control.Feedback>
             </Form.Group>
 

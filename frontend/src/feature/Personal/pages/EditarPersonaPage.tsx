@@ -90,7 +90,7 @@ export function EditarPersonaPage() {
       <PageHeader title={tituloPagina} />
       <Container>
         <PersonaForm
-          key={`${persona.id}-${persona.operar}-${persona.administrar}-${persona.nombre}`}
+          key={`${persona.id}-${persona.operar}-${persona.administrar}-${persona.supervisor}-${persona.nombre}`}
           textoBoton="Guardar cambios"
           isEditing={true}
           onSubmit={actualizarPersona}
@@ -102,6 +102,7 @@ export function EditarPersonaPage() {
             username: persona.username,
             operar: persona.operar,
             administrar: persona.administrar,
+            supervisor: persona.supervisor,
           }}
         />
       </Container>

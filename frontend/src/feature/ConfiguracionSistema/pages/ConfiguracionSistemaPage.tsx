@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 import { mutate } from "swr";
 import { PageHeader } from "../../../components/PageHeader";
 import { PageLoading } from "../../../components/PageLoading";
@@ -16,6 +17,7 @@ function aHoraMinuto(hora: number, minuto: number): string {
 }
 
 export function ConfiguracionSistemaPage() {
+    const navigate = useNavigate();
     const { data: configuracion, error, isLoading } = useApi<ConfiguracionSistema>(CONFIGURACION_URL);
 
     const [diasAntelacion, setDiasAntelacion] = useState(15);
@@ -66,7 +68,7 @@ export function ConfiguracionSistemaPage() {
 
     return (
         <Container>
-            <PageHeader title="Configuración del Sistema" />
+            <PageHeader title="Configuración del Sistema" actions={<Button variant="outline-success" onClick={() => navigate("/configuracion-sistema/vista-publica")}><i className="bi bi-qr-code me-2" />Vista pública</Button>} />
 
             <Row className="justify-content-center">
                 <Col md={7} lg={6}>

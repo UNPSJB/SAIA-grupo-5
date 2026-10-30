@@ -156,7 +156,7 @@ export function ListPage() {
                                     size="sm"
                                     tooltip="Ver"
                                     icon="bi-eye"
-                                    onClick={() => navigate(`/incidentes/${incidente.id}`)}
+                                    onClick={() => navigate(`/incidentes/${incidente.id}`, { state: { origen: "lista" }})}
                                 />
                             </span>
                             <span data-tour="btn-editar-incidente">

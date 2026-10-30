@@ -11,6 +11,7 @@ class PersonaBase(BaseModel):
     username: Annotated[str, Field(min_length=3, max_length=50)]
     operar: bool = False
     administrar: bool = False
+    supervisor: bool = False
 
 
 class PersonaCreate(PersonaBase):
@@ -24,6 +25,7 @@ class PersonaUpdate(BaseModel):
     mail: Optional[EmailStr] = None
     operar: Optional[bool] = None
     administrar: Optional[bool] = None
+    supervisor: Optional[bool] = None
     password: Optional[Annotated[str, Field(min_length=4)]] = None
 
 

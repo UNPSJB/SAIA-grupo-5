@@ -64,7 +64,7 @@ export function EditarConsumoProductoPage(){
                     onSubmit={actualizarConsumoProducto}
                     soloLectura={true}
                     valoresIniciales={{ tarea_id: consumo.tarea_id, insumo_quimico_id: consumo.insumo_quimico_id, 
-                        cantidad_aproximada: consumo.cantidad_aproximada, unidad_medida: consumo.unidad_medida}}/>
+                        cantidad_aproximada: consumo.cantidad_aproximada, unidad_medida_id: consumo.unidad_medida_id}}/>
             </Container>
         </>
     )

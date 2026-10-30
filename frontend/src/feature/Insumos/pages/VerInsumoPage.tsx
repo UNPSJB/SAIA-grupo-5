@@ -61,7 +61,7 @@ export function VerInsumoPage() {
                                             whiteSpace: 'nowrap',
                                         }}
                                     >
-                                        {insumo.unidad_medida}
+                                        {insumo.unidad_medida.nombre}
                                     </div>
                                 </div>
                                 </Col>
@@ -89,7 +89,7 @@ export function VerInsumoPage() {
                             </Row>
                         </Card.Body>
 
-                        <Card.Footer className="bg-light border-top p-3 d-flex justify-content-end gap-2">
+                        <Card.Footer className="bg-light border-top p-3 d-flex justify-content-start gap-2">
                             <Button 
                                 variant="outline-secondary" 
                                 onClick={() => navigate('/insumos')}

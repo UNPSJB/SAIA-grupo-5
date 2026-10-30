@@ -25,6 +25,7 @@ import { tutorialesTiposIncidentes } from '../TiposIncidentes/tutoriales';
 import { tutorialesTiposQuimicos } from '../TiposQuimicos/tutoriales';
 import { tutorialesTiposVencimientos } from '../TiposVencimientos/tutoriales';
 import { tutorialesVencimientoConsolidado, tutorialesVencimientoPersonal } from '../VencimientoPersonal/tutoriales';
+import { tutorialesIncidentesHistorial } from '../IncidentesHistorial/tutoriales';
 
 export const tutoriales: Tutorial[] = [
     ...tutorialesDocumentos,
@@ -53,5 +54,6 @@ export const tutoriales: Tutorial[] = [
     ...tutorialesTiposQuimicos,
     ...tutorialesTiposVencimientos,
     ...tutorialesVencimientoPersonal,
-    ...tutorialesVencimientoConsolidado
+    ...tutorialesVencimientoConsolidado,
+    ...tutorialesIncidentesHistorial,
 ];

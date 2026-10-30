@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 def crear_insumo_quimico(db: Session, insumo_quimico: schemas.InsumoQuimicoCreate) -> schemas.InsumoQuimico:
     insumo_quimico_existente = db.scalars(select(InsumoQuimico)
                                 .where(InsumoQuimico.nombre == insumo_quimico.nombre,
-                                InsumoQuimico.unidad_medida == insumo_quimico.unidad_medida,
+                                InsumoQuimico.unidad_medida_id == insumo_quimico.unidad_medida_id,
                                 InsumoQuimico.tipo_quimico_id == insumo_quimico.tipo_quimico_id)).first()
 
     if insumo_quimico_existente:
@@ -29,10 +29,10 @@ def crear_insumo_quimico(db: Session, insumo_quimico: schemas.InsumoQuimicoCreat
     return _insumo_quimico
 
 def listar_insumos_quimicos(db: Session) -> List[schemas.InsumoQuimico]:
-    return db.scalars(select(InsumoQuimico).options(joinedload(InsumoQuimico.tipo))).all()
+    return db.scalars(select(InsumoQuimico).options(joinedload(InsumoQuimico.tipo), joinedload(InsumoQuimico.unidad_medida))).all()
 
 def leer_insumo_quimico(db: Session, insumo_quimico_id: int) -> schemas.InsumoQuimico:
-    db_insumo_quimico = db.scalar(select(InsumoQuimico).where(InsumoQuimico.id == insumo_quimico_id).options(joinedload(InsumoQuimico.tipo)))       # El joinedload es para traer toda la informacion del tipo de quimico
+    db_insumo_quimico = db.scalar(select(InsumoQuimico).where(InsumoQuimico.id == insumo_quimico_id).options(joinedload(InsumoQuimico.tipo), joinedload(InsumoQuimico.unidad_medida)))       # El joinedload es para traer toda la informacion del tipo de quimico
     if db_insumo_quimico is None:
         raise exceptions.InsumoQuimicoNoEncontrado()
     return db_insumo_quimico
@@ -41,7 +41,7 @@ def leer_insumo_quimico(db: Session, insumo_quimico_id: int) -> schemas.InsumoQu
 def modificar_insumo_quimico(db: Session, insumo_quimico_id: int, insumo_quimico: schemas.InsumoQuimicoUpdate) -> schemas.InsumoQuimico:  # Permite modificar el insumo pero si o si se tienen que enviar todos los campos
     insumo_quimico_existente = db.scalars(select(InsumoQuimico)
                                 .where(InsumoQuimico.nombre == insumo_quimico.nombre,
-                                InsumoQuimico.unidad_medida == insumo_quimico.unidad_medida,
+                                InsumoQuimico.unidad_medida_id == insumo_quimico.unidad_medida_id,
                                 InsumoQuimico.tipo_quimico_id == insumo_quimico.tipo_quimico_id,
                                 InsumoQuimico.id != insumo_quimico_id)).first()
 
@@ -69,6 +69,9 @@ def cambiar_estado_insumo_quimico(db: Session, insumo_quimico_id: int) -> schema
                         .where(TipoQuimico.id == db_insumo_quimico.tipo_quimico_id)).first()
         if not tipo_quimico or not tipo_quimico.activo:
             raise exceptions.TipoQuimicoNoEncontradoOInactivo()
+
+    if not db_insumo_quimico.activo and not db_insumo_quimico.unidad_medida.activo:
+        raise exceptions.UnidadMedidaDadaDeBaja()
     
     db_insumo_quimico.activo = not db_insumo_quimico.activo
     db.commit()

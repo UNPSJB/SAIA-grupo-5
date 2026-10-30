@@ -15,6 +15,7 @@
     "bootstrap-icons": "^1.13.1",
     "driver.js": "^1.10.2",
     "motion": "^13.5.0",
+    "qrcode.react": "^4.2.0",
     "react": "^19.2.8",
     "react-bootstrap": "^2.10.10",
     "react-data-table-component": "^8.9.0",

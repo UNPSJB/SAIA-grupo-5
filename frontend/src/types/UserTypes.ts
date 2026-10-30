@@ -7,6 +7,7 @@ export interface User {
     username: string;
     operar: boolean;
     administrar: boolean;
+    supervisor: boolean;
     activo: boolean;
     capacidades: string[];
     role_name: string;

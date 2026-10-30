@@ -13,6 +13,20 @@ interface VersionDocumentoFormProps {
 
 interface VersionDocumentoFormData { observacion: string; archivo: string; }
 
+const obtenerNombreArchivo = (base64: string | null | undefined): string => {
+    if (!base64) return "";
+
+    const matchNombre = base64.match(/;name=([^;]+);base64,/);      // Esto busca adentro del texto Base64 si esta guardado la parte ';name=([^;]+);base64,' y saca lo que esta en el medio que es el nombre del archivo
+
+    if (matchNombre?.[1]) {
+        return decodeURIComponent(matchNombre[1]);      // Convierte los espacios o acentos en texto normal para que se vea bien en la pantalla.
+    }
+
+    {/* Estos if y return son por si entras al editar y no seleccionaste otro archivo */}
+    if (base64.startsWith("data:application/pdf")) return "Version Documento PDF.pdf";      
+    return "Version Documento";
+};
+
 export function VersionDocumentoForm({ textoBoton, onSubmit, valoresIniciales }: VersionDocumentoFormProps) {
     const navigate = useNavigate();
     const { documentoId } = useParams();
@@ -62,6 +76,8 @@ export function VersionDocumentoForm({ textoBoton, onSubmit, valoresIniciales }:
         });
     };
 
+    const archivoMostrar = archivoBase64 || valoresIniciales?.archivo;
+
     return (
         <div className="col-md-6 mx-auto">
         <Form onSubmit={handleSubmit(onSubmitHookForm)} className="p-4 border rounded bg-white shadow-sm mt-3" noValidate>
@@ -105,24 +121,37 @@ export function VersionDocumentoForm({ textoBoton, onSubmit, valoresIniciales }:
 
             <Form.Group className="mb-3 text-start">
                 <Form.Label className="p-1 fw-bold">Archivo (*)</Form.Label>
-                {!valoresIniciales ? (
-                    <>
-                        <Form.Control
-                            type="file"
-                            accept="application/pdf"
-                            onChange={handleFileChange}
-                            isInvalid={!!archivoError}
-                        />
-                        <Form.Control.Feedback type="invalid">
-                            {archivoError}
-                        </Form.Control.Feedback>
-                    </>
-                ) : (
-                    <div className="p-2 border rounded bg-light d-inline-block">
-                        <i className="bi bi-file-earmark-pdf text-danger me-2"></i>
-                        <span>Documento PDF cargado correctamente</span>
-                    </div>
-                )}
+                    {!valoresIniciales && (
+                        <>
+                            <Form.Control
+                                type="file"
+                                accept="application/pdf"
+                                onChange={handleFileChange}
+                                isInvalid={!!archivoError}
+                            />
+                            <Form.Control.Feedback type="invalid">
+                                {archivoError}
+                            </Form.Control.Feedback>
+                        </>
+                    )}
+                    {archivoMostrar && (
+                        <div className="mt-3 text-center">
+                            <p className="small text-muted mb-1">
+                                {archivoBase64 ? "Archivo nuevo a subir:" : "Archivo actual guardado:"}
+                            </p>
+                                <div className="p-2 px-3 border rounded bg-light d-inline-flex align-items-center gap-2">
+                                    <i className="bi bi-file-earmark-text text-success fs-5"></i>
+                                    <span className="fw-semibold">{obtenerNombreArchivo(archivoMostrar)}</span>
+                                    <a
+                                        href={archivoMostrar}
+                                        download={obtenerNombreArchivo(archivoMostrar)}
+                                        className="btn btn-outline-primary btn-sm ms-2"
+                                    >
+                                        <i className="bi bi-download me-1"></i>Ver
+                                    </a>
+                                </div>
+                        </div>
+                    )}
             </Form.Group>
 
             <Button variant="secondary" type="button" 

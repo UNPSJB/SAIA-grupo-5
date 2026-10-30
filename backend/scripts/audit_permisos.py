@@ -6,11 +6,17 @@ aparte, así que nunca queda desactualizado).
 Uso: python -m scripts.audit_permisos
 """
 from src.main import app
-from src.auth.dependencies import tiene_permiso_administrar, tiene_permiso_operar, get_current_persona
+from src.auth.dependencies import (
+    tiene_permiso_administrar,
+    tiene_permiso_operar,
+    tiene_permiso_supervisor,
+    get_current_persona,
+)
 
 NOMBRES = {
     tiene_permiso_administrar: "administrar",
     tiene_permiso_operar: "operar",
+    tiene_permiso_supervisor: "supervisor",
     get_current_persona: "logueado (cualquiera)",
 }
 

@@ -100,14 +100,27 @@ import { VerTipoIncidentePage } from './feature/TiposIncidentes/pages/VerTipoInc
 import { EditarIncidentePage } from './feature/Incidentes/pages/EditarIncidentePage.tsx'
 import { NuevoIncidentePage } from './feature/Incidentes/pages/NuevoIncidentePage.tsx'
 import { VerIncidentePage } from './feature/Incidentes/pages/VerIncidentePage.tsx'
+import { IncidentesHistorialPage } from './feature/IncidentesHistorial/pages/ListPage.tsx';
 
 import { ConfiguracionSistemaPage } from './feature/ConfiguracionSistema/pages/ConfiguracionSistemaPage.tsx'
+import { VistaPublicaPage } from './feature/ConfiguracionSistema/pages/VistaPublicaPage.tsx'
+import { VistaPublicaVisitantePage } from './feature/ConfiguracionSistema/pages/VistaPublicaVisitantePage.tsx'
 
 import { VencimientosConsolidadosPage } from './feature/VencimientosConsolidados/pages/VencimientosConsolidadosPage.tsx'
 
 import { PlanesCalibracionPage } from './feature/PlanesCalibracion/pages/PlanesCalibracionPage.tsx'
 import { NuevoPlanCalibracionPage } from './feature/PlanesCalibracion/pages/NuevoPlanCalibracionPage.tsx'
 import { EditarPlanCalibracionPage } from './feature/PlanesCalibracion/pages/EditarPlanCalibracionPage.tsx'
+
+import { ListPage as UnidadMedidaListPage } from './feature/UnidadMedida/pages/ListPage.tsx'
+import { NuevaUnidadMedidaPage } from './feature/UnidadMedida/pages/NuevaUnidadMedidaPage.tsx'
+import { EditarUnidadMedidaPage } from './feature/UnidadMedida/pages/EditarUnidadMedidaPage.tsx'
+import { VerUnidadMedidaPage } from './feature/UnidadMedida/pages/VerUnidadMedidaPage.tsx'
+
+import { ListPage as ProductoListPage } from './feature/Productos/pages/ListPage.tsx'
+import { NuevoProductoPage } from './feature/Productos/pages/NuevoProductoPage.tsx'
+import { EditarProductoPage } from './feature/Productos/pages/EditarProductoPage.tsx'
+import { VerProductoPage } from './feature/Productos/pages/VerProductoPage.tsx'
 
 import { Login, NoAutorizado } from './feature/auth'
 import AuthLayout from './layouts/AuthLayout.tsx'
@@ -121,6 +134,10 @@ const router = createBrowserRouter([
   {
     path: '/iniciar-sesion',
     element: <Login />,
+  },
+  {
+    path: '/publica/:token',
+    element: <VistaPublicaVisitantePage />,
   },
   {
     path: '/no-autorizado',
@@ -143,6 +160,13 @@ const router = createBrowserRouter([
               { path: 'new', element: <NuevoIncidentePage /> },
               { path: ':id', element: <VerIncidentePage /> },
               { path: ':id/edit', element: <EditarIncidentePage /> },
+            ],
+          },
+          {
+            path: 'incidentes-historial',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <IncidentesHistorialPage /> },
             ],
           },
           {
@@ -356,6 +380,26 @@ const router = createBrowserRouter([
             ],
           },
           {
+            path: 'unidades-medida',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <UnidadMedidaListPage />},
+              { path: 'new', element: <NuevaUnidadMedidaPage />},
+              { path: ':id', element: <VerUnidadMedidaPage />},
+              { path: ':id/edit', element: <EditarUnidadMedidaPage />},
+            ],
+          },
+          {
+            path: 'productos',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <ProductoListPage />},
+              { path: 'new', element: <NuevoProductoPage />},
+              { path: ':id/edit', element: <EditarProductoPage />},
+              { path: ':id', element: <VerProductoPage />},
+            ],
+          },
+          {
             path: 'vencimiento-personal',
             element: <ProtectedRoute requireAdmin />,
             children: [
@@ -379,6 +423,7 @@ const router = createBrowserRouter([
             element: <ProtectedRoute requireAdmin />,
             children: [
               { index: true, element: <ConfiguracionSistemaPage /> },
+              { path: 'vista-publica', element: <VistaPublicaPage /> },
             ],
           },
           {

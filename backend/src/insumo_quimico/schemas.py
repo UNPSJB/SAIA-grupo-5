@@ -1,6 +1,7 @@
 from pydantic import ConfigDict
 from src.insumos.schemas import InsumoBase
 from src.tipo_quimico.schemas import TipoQuimico
+from src.unidad_medida.schemas import UnidadMedida
 
 class InsumoQuimicoBase(InsumoBase):
     tipo_quimico_id: int
@@ -18,6 +19,7 @@ class InsumoQuimico(InsumoBase):
     id: int
     activo: bool
     tipo: TipoQuimico
+    unidad_medida: UnidadMedida
     dilucion: str
 
     model_config = ConfigDict(from_attributes=True)

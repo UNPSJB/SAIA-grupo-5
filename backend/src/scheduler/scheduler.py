@@ -83,6 +83,11 @@ def iniciar_scheduler():
 
 def reprogramar_generacion_checklists(hour: int, minute: int):
 
-    # Cambia la hora/minuto del job ya programado sin reiniciar el scheduler
-    scheduler.reschedule_job(JOB_ID_GENERAR_OCURRENCIAS, trigger=CronTrigger(hour=hour, minute=minute))
+    # Cambia la hora/minuto de los jobs ya programados sin reiniciar el scheduler
+    for job_id in (
+        JOB_ID_GENERAR_OCURRENCIAS,
+        JOB_ID_NOTIFICACIONES_RECAMBIO_ELEMENTOS,
+        JOB_ID_NOTIFICACIONES_VENCIMIENTO_PERSONAL,
+    ):
+        scheduler.reschedule_job(job_id, trigger=CronTrigger(hour=hour, minute=minute))
     logger.info(f"Se reprogramó la generación de ocurrencias para las {hour:02d}:{minute:02d}.")

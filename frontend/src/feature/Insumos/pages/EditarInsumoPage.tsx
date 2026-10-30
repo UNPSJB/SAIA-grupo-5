@@ -78,7 +78,7 @@ export function EditarInsumoPage(){
             <Container>
                 <InsumoForm textoBoton="Editar Insumo"
                     onSubmit={actualizarInsumo}
-                    valoresIniciales={{ nombre: insumo.nombre, unidad_medida: insumo.unidad_medida}}/>
+                    valoresIniciales={{ nombre: insumo.nombre, unidad_medida_id: insumo.unidad_medida_id}}/>
             </Container>
         </>
     )

@@ -4,7 +4,7 @@ Ver también `backend/AUTH.md` para cómo funciona del lado del servidor (tokens
 
 ## Resumen
 
-El access token vive **solo en memoria** (estado de React), nunca en `localStorage`/`sessionStorage` — se pierde al recargar la página a propósito, y se recupera automáticamente al arrancar usando el refresh token, que vive en una cookie httpOnly que maneja el browser (el JS de la app nunca la toca directamente). Igual que en el backend, no hay un solo rol: `currentUser.administrar` y `currentUser.operar` son dos flags independientes.
+El access token vive **solo en memoria** (estado de React), nunca en `localStorage`/`sessionStorage` — se pierde al recargar la página a propósito, y se recupera automáticamente al arrancar usando el refresh token, que vive en una cookie httpOnly que maneja el browser (el JS de la app nunca la toca directamente). Igual que en el backend, las capacidades `currentUser.administrar`, `currentUser.operar` y `currentUser.supervisor` son flags independientes.
 
 ## `AuthContext` / `useAuth`
 

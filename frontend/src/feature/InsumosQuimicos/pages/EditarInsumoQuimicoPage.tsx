@@ -71,7 +71,7 @@ export function EditarInsumoQuimicoPage(){
                 <InsumoQuimicoForm textoBoton="Editar Insumo Químico"
                     onSubmit={actualizarInsumoQuimico}
                     valoresIniciales={{ nombre: insumoQuimico.nombre, 
-                    unidad_medida: insumoQuimico.unidad_medida, 
+                    unidad_medida_id: insumoQuimico.unidad_medida_id, 
                     tipo_quimico_id: insumoQuimico.tipo?.id || insumoQuimico.tipo_quimico_id,
                     dilucion: insumoQuimico.dilucion}}/>
             </Container>

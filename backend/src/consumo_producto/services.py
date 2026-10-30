@@ -8,6 +8,7 @@ from datetime import date
 from src.tareas_ocurrencia.models import TareaOcurrencia
 from src.tareas_ocurrencia.constants import EstadoTareaOcurrencia
 from src.insumo_quimico.models import InsumoQuimico
+from src.unidad_medida.models import UnidadMedida
 
 logger = logging.getLogger(__name__)
 
@@ -94,15 +95,16 @@ def listar_consumos_acumulados(db:Session, fecha_desde: date | None = None, fech
 
     db_consumos = db.execute(
             select(
-                ConsumoProducto.insumo_quimico_id, InsumoQuimico.nombre, InsumoQuimico.unidad_medida,
+                ConsumoProducto.insumo_quimico_id,
+                InsumoQuimico.nombre,
+                UnidadMedida.nombre.label("unidad_medida"),
                 func.sum(ConsumoProducto.cantidad_aproximada).label("acumulado"),
             )
-            .join( InsumoQuimico, InsumoQuimico.id == ConsumoProducto.insumo_quimico_id
-            )
-            .join( TareaOcurrencia, TareaOcurrencia.tarea_id_origen == ConsumoProducto.tarea_id
-            )
+            .join(InsumoQuimico, InsumoQuimico.id == ConsumoProducto.insumo_quimico_id)
+            .join(UnidadMedida, UnidadMedida.id == InsumoQuimico.unidad_medida_id)
+            .join(TareaOcurrencia, TareaOcurrencia.tarea_id_origen == ConsumoProducto.tarea_id)
             .where(*condiciones)
-            .group_by(ConsumoProducto.insumo_quimico_id, InsumoQuimico.nombre, InsumoQuimico.unidad_medida,)
+            .group_by(ConsumoProducto.insumo_quimico_id, InsumoQuimico.nombre, UnidadMedida.nombre)
         ).all()
     
     return db_consumos

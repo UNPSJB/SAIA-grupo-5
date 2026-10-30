@@ -16,6 +16,11 @@ const capacidades: CapacidadItem[] = [
     nombre: Capacidades.ADMINISTRAR,
     descripcion: 'Puede administrar la configuración y los recursos.',
   },
+  {
+    id: 3,
+    nombre: Capacidades.SUPERVISOR,
+    descripcion: 'Puede supervisar las operaciones del sistema.',
+  },
 ]
 
 const columns: TableColumn<CapacidadItem>[] = [

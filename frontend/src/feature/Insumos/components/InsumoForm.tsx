@@ -1,28 +1,30 @@
 import { Button, Form } from 'react-bootstrap';
 import { useState } from 'react';
-import { UnidadMedida } from '../types';
+import  type { UnidadMedida } from '../../UnidadMedida/types'
 import { useNavigate } from 'react-router-dom';
+import { useApi } from '../../../hooks';
 
 interface InsumoFormProps {
   textoBoton: string;
-  onSubmit: (datos: { nombre: string; unidad_medida: UnidadMedida }) => void;
-  valoresIniciales?: { nombre: string; unidad_medida: UnidadMedida }
+  onSubmit: (datos: { nombre: string; unidad_medida_id: number }) => void;
+  valoresIniciales?: { nombre: string; unidad_medida_id: number }
 }
 
 export function InsumoForm({ textoBoton, onSubmit, valoresIniciales }: InsumoFormProps) {
   const [validated, setValidated] = useState(false);
   const navigate = useNavigate();
+  const { data: unidadesMedida, isLoading } = useApi<UnidadMedida[]> ('/unidades-medida/');
 
   // Usamos useState y definimos que los valores pueden ser vacios por si se crea un nuevo insumo o que tengan un valor anterior para mostrarlos en caso de editar el insumo
   const [nombre, setNombre] = useState(valoresIniciales?.nombre || "");
-  const [unidadMedida, setUnidadMedida] = useState<UnidadMedida | "">(valoresIniciales?.unidad_medida || "");     // Se agrega el <UnidadMedida | ""> para exigir que los valores unicamente puedan ser los de las unidades de medidas que definio Alex
+  const [unidadMedidaId, setUnidadMedidaId] = useState<number | "">(valoresIniciales?.unidad_medida_id || "");     // Se agrega el <UnidadMedida | ""> para exigir que los valores unicamente puedan ser los de las unidades de medidas que definio Alex
 
   // El handleSubmit se usa para que no actualice la pagina al apretar el boton y envia a la pagina que lo utilice los datos
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {   // Se actualizo a React.SubmitEvent
     e.preventDefault();
     setValidated(true);
-    if (!nombre.trim() || !unidadMedida) return; // corta acá si falta algo
-    onSubmit({ nombre: nombre.trim(), unidad_medida: unidadMedida as UnidadMedida });
+    if (!nombre.trim() || !unidadMedidaId) return; // corta acá si falta algo
+    onSubmit({ nombre: nombre.trim(), unidad_medida_id: Number(unidadMedidaId) });
   }
 
   return (
@@ -46,14 +48,15 @@ export function InsumoForm({ textoBoton, onSubmit, valoresIniciales }: InsumoFor
           <Form.Label className="p-1 fw-bold">Unidad de medida</Form.Label>
           <Form.Select
             required
-            value={unidadMedida}
-            onChange={(e) => setUnidadMedida(e.target.value as UnidadMedida)}
-            isInvalid={validated && !unidadMedida}
+            value={unidadMedidaId}
+            onChange={(e) => setUnidadMedidaId(Number(e.target.value))}
+            isInvalid={validated && !unidadMedidaId}
           >
             <option value="" disabled> Seleccione una unidad de medida</option>
-            {Object.entries(UnidadMedida).map(([clave, valor]) => (     // Esto transforma el enum de types en una lista de clave valor para mostrarlo en las opciones
-              <option key={clave} value={valor}>
-                {valor}
+            {isLoading && <option disabled> Cargando unidades de medida...</option>}
+            {unidadesMedida?.filter(u => u.activo).map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.nombre}
               </option>
             ))}
           </Form.Select>

@@ -22,7 +22,7 @@ def _es_ultimo_administrador_activo(db: Session, persona_id: int) -> bool:
 
 
 def crear_persona(db: Session, persona: schemas.PersonaCreate) -> Persona:
-    if not persona.operar and not persona.administrar:
+    if not persona.operar and not persona.administrar and not persona.supervisor:
         raise exceptions.DebeTenerCapacidad()
 
     if db.scalar(select(Persona).where(Persona.username == persona.username)):
@@ -73,10 +73,11 @@ def modificar_persona(db: Session, persona_id: int, persona: schemas.PersonaUpda
     if not db_persona.activo:
         raise exceptions.PersonaDadaDeBaja()
 
-    # Si se actualizan capacidades, validar que no queden ambas en falso
+    # Si se actualizan capacidades, validar que al menos una siga activa.
     nuevo_operar = persona.operar if persona.operar is not None else db_persona.operar
     nuevo_administrar = persona.administrar if persona.administrar is not None else db_persona.administrar
-    if not nuevo_operar and not nuevo_administrar:
+    nuevo_supervisor = persona.supervisor if persona.supervisor is not None else db_persona.supervisor
+    if not nuevo_operar and not nuevo_administrar and not nuevo_supervisor:
         raise exceptions.DebeTenerCapacidad()
 
     if db_persona.administrar and not nuevo_administrar and _es_ultimo_administrador_activo(db, persona_id):
