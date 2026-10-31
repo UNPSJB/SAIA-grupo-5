@@ -5,6 +5,7 @@ from sqlalchemy import String, Boolean, Integer, ForeignKey, Text, Date
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from src.lote_produccion.models import LoteProduccion
     from src.unidad_medida.models import UnidadMedida
     from src.receta.models import Receta
 
@@ -26,6 +27,7 @@ class Producto(ModeloBase):
 
     #lotes_produccion_id: Mapped[list[int]]
     #lotes_produccion: Mapped[list["LotesProduccion"]] = mappedColumn
+    lotes_produccion: Mapped[list["LoteProduccion"]] = relationship(back_populates="producto")
 
     activo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
