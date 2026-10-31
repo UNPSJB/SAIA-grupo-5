@@ -1,7 +1,7 @@
 import logging
 from typing import List
 from sqlalchemy import  select, update
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, selectinload
 from src.producto.models import Producto
 from src.producto import schemas, exceptions
 
@@ -24,7 +24,7 @@ def crear_producto(db: Session, producto: schemas.ProductoCreate) -> schemas.Pro
     return _producto
 
 def listar_productos(db: Session) -> List[schemas.Producto]:
-    return db.scalars(select(Producto).options(joinedload(Producto.unidad_medida))).all()
+    return db.scalars(select(Producto).options(joinedload(Producto.unidad_medida), selectinload(Producto.receta))).all()
 
 def leer_producto(db: Session, producto_id: int) -> schemas.Producto:
     db_producto = db.scalar(select(Producto).where(Producto.id == producto_id).options(joinedload(Producto.unidad_medida)))
