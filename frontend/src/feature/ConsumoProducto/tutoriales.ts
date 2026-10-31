@@ -79,3 +79,57 @@ export const tutorialesConsumoProducto: Tutorial[] = [
         ],
     },
 ];
+
+export const tutorialesConsumoAcumulado: Tutorial[] = [
+    {
+        id: 'que-puedo-hacer-consumo-acumulado',
+        titulo: '¿Cómo consulto el consumo acumulado?',
+        ruta: '/consumos-productos/consulta',
+        pasos: [
+            {
+                // sin "element": se muestra centrado, como introducción
+                popover: {
+                    title: 'Consumo acumulado por producto químico',
+                    description: 'Acá consultás cuánto se consumió de cada insumo químico en un período. Te explico cómo hacerlo.',
+                },
+            },
+            {
+                element: t('filtro-fecha-desde-consumo'),
+                popover: {
+                    title: 'Fecha desde',
+                    description: 'Elegí la fecha de inicio del período. Si la dejás vacía, la consulta no tiene fecha de inicio.',
+                    side: 'bottom',
+                },
+            },
+            {
+                element: t('filtro-fecha-hasta-consumo'),
+                popover: {
+                    title: 'Fecha hasta',
+                    description: 'Elegí la fecha de fin del período. Si la dejás vacía, la consulta no tiene fecha de fin.',
+                    side: 'bottom',
+                },
+            },
+            {
+                element: t('btn-consultar-consumo'),
+                popover: {
+                    title: 'Consultar',
+                    description:
+                        'Hacé clic para buscar los consumos del período elegido. ' +
+                        'Hace falta completar al menos una de las dos fechas; si no, no se muestra nada.',
+                    side: 'left',
+                },
+            },
+            {
+                element: t('tabla-consumo-acumulado'),
+                popover: {
+                    title: 'Resultado de la consulta',
+                    description:
+                        'Cada fila es un insumo químico, con el total consumido y su unidad de medida. ' +
+                        'Podés ordenar por cualquier columna haciendo clic en su encabezado. ' +
+                        'Si no hubo consumos en el período, vas a ver un aviso en su lugar.',
+                    side: 'top',
+                },
+            },
+        ],
+    },
+];

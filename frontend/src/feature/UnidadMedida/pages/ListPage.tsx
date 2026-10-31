@@ -36,6 +36,7 @@ export function ListPage() {
     const subHeaderComponentMemo = useMemo(() => {
         return (
             <Form.Control
+                data-tour="buscador-unidades-medida"
                 type="text"
                 placeholder="Buscar unidad de medida..."
                 className=" mr-sm-2"
@@ -65,6 +66,7 @@ export function ListPage() {
             cell: row => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10}}>
                     <div
+                        data-tour="estado-unidad-medida"
                         style={{
                             padding: '4px 12px',
                             borderRadius: '16px',
@@ -87,31 +89,37 @@ export function ListPage() {
             center: true,
             cell: (row) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <ActionButton
-                        variant="outline-info"
-                        size="sm"
-                        tooltip="Ver"
-                        icon="bi-eye"
-                        onClick={() => navigate(`/unidades-medida/${row.id}`)}
-                    />
+                    <span data-tour="btn-ver-unidad-medida">
+                        <ActionButton
+                            variant="outline-info"
+                            size="sm"
+                            tooltip="Ver"
+                            icon="bi-eye"
+                            onClick={() => navigate(`/unidades-medida/${row.id}`)}
+                        />
+                    </span>
 
                     {currentUser?.administrar && (
                         <>
-                            <ActionButton
-                                variant="outline-primary"
-                                size="sm"
-                                tooltip="Editar"
-                                icon="bi-pencil"
-                                disabled={!row.activo}      // Si no esta activo se muestra en gris y no se puede editar
-                                onClick={() => navigate(`/unidades-medida/${row.id}/edit`)}
-                            />
-                            <ActionButton
-                                variant={row.activo ? 'outline-danger' : 'outline-success'}
-                                size="sm"
-                                tooltip={row.activo ? 'Dar de baja' : 'Dar de alta'}
-                                icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
-                                onClick={() => setUnidadMedidaToDelete(row)}
-                            />
+                            <span data-tour="btn-editar-unidad-medida">
+                                <ActionButton
+                                    variant="outline-primary"
+                                    size="sm"
+                                    tooltip="Editar"
+                                    icon="bi-pencil"
+                                    disabled={!row.activo}      // Si no esta activo se muestra en gris y no se puede editar
+                                    onClick={() => navigate(`/unidades-medida/${row.id}/edit`)}
+                                />
+                            </span>
+                            <span data-tour="btn-baja-unidad-medida">
+                                <ActionButton
+                                    variant={row.activo ? 'outline-danger' : 'outline-success'}
+                                    size="sm"
+                                    tooltip={row.activo ? 'Dar de baja' : 'Dar de alta'}
+                                    icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
+                                    onClick={() => setUnidadMedidaToDelete(row)}
+                                />
+                            </span>
                         </>
                     )}
                 </div>
@@ -135,6 +143,7 @@ export function ListPage() {
                 {currentUser?.administrar &&(
                     <Col xs="auto" className="d-flex justify-content-end">
                         <Button
+                            data-tour="btn-nueva-unidad-medida"
                             variant="primary"
                             size='sm'
                             onClick={() => navigate("/unidades-medida/new")}
@@ -146,7 +155,9 @@ export function ListPage() {
                 )}
 
             </Row>
-            <AppTable columns={columns} data={filteredUnidadesMedida} />
+            <div data-tour="tabla-unidades-medida">
+                <AppTable columns={columns} data={filteredUnidadesMedida} />
+            </div>
             <DeleteUnidadMedidaModal
                 unidadMedida={unidadMedidaToDelete}
                 onHide={() => setUnidadMedidaToDelete(null)}

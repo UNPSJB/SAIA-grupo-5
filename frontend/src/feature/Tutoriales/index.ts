@@ -2,7 +2,7 @@ import type { Tutorial } from './types';
 import { tutorialesDocumentos } from '../Documentos/tutoriales';
 import { tutorialesChecklist } from '../Checklist/tutoriales';
 import { tutorialesVersionesDocumentos } from '../VersionesDocumentos/tutoriales';
-import { tutorialesConsumoProducto } from '../ConsumoProducto/tutoriales';
+import { tutorialesConsumoAcumulado, tutorialesConsumoProducto } from '../ConsumoProducto/tutoriales';
 import { tutorialesTareas } from '../Tareas/tutoriales';
 import { tutorialesElementosLimpieza } from '../ElementosLimpieza/tutoriales';
 import { tutorialesEquipos } from '../Equipos/tutoriales';
@@ -26,6 +26,8 @@ import { tutorialesTiposQuimicos } from '../TiposQuimicos/tutoriales';
 import { tutorialesTiposVencimientos } from '../TiposVencimientos/tutoriales';
 import { tutorialesVencimientoConsolidado, tutorialesVencimientoPersonal } from '../VencimientoPersonal/tutoriales';
 import { tutorialesIncidentesHistorial } from '../IncidentesHistorial/tutoriales';
+import { tutorialesUnidadesMedida } from '../UnidadMedida/tutoriales';
+import { tutorialesProductos } from '../Productos/tutoriales';
 
 export const tutoriales: Tutorial[] = [
     ...tutorialesDocumentos,
@@ -56,4 +58,7 @@ export const tutoriales: Tutorial[] = [
     ...tutorialesVencimientoPersonal,
     ...tutorialesVencimientoConsolidado,
     ...tutorialesIncidentesHistorial,
+    ...tutorialesUnidadesMedida,
+    ...tutorialesProductos,
+    ...tutorialesConsumoAcumulado
 ];
