@@ -29,6 +29,9 @@ from src.accion_correctiva.models import AccionCorrectiva
 from src.historial_incidente.models import HistorialIncidente
 from src.unidad_medida.models import UnidadMedida
 from src.producto.models import Producto
+from src.receta.models import Receta
+from src.etapa_receta.models import EtapaReceta
+from src.paso_etapa.models import PasoEtapa
 
 from src.config import settings
 from src.settings import ROOT_PATH
@@ -66,6 +69,9 @@ from src.accion_correctiva.router import router as accion_correctiva_router
 from src.historial_incidente.router import router as historial_incidente_router
 from src.unidad_medida.router import router as unidad_medida_router
 from src.producto.router import router as producto_router
+from src.receta.router import router as receta_router
+from src.etapa_receta.router import router as etapa_receta_router
+from src.paso_etapa.router import router as paso_etapa_router
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -120,3 +126,6 @@ app.include_router(accion_correctiva_router)
 app.include_router(historial_incidente_router)
 app.include_router(unidad_medida_router)
 app.include_router(producto_router)
+app.include_router(receta_router)
+app.include_router(etapa_receta_router)
+app.include_router(paso_etapa_router)
