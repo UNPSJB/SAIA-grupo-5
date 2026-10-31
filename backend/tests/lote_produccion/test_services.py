@@ -17,6 +17,7 @@ def test_crear_lote_produccion(db_session, unico_producto):
     assert nuevo.id is not None
     assert nuevo.producto_id == unico_producto.id
     assert nuevo.cantidad_producida == 100
+    assert nuevo.estado == "En produccion"
     assert nuevo.activo is True
 
 
@@ -46,6 +47,7 @@ def test_leer_lote_produccion(db_session, unico_lote_produccion, unico_producto)
 
     assert lote.id == unico_lote_produccion.id
     assert lote.producto_id == unico_producto.id
+    assert lote.estado == "En produccion"
 
 
 def test_leer_lote_produccion_no_encontrado(db_session):
@@ -65,13 +67,23 @@ def test_modificar_lote_produccion(db_session, unico_lote_produccion, unico_prod
     assert actualizado.cantidad_producida == 250
 
 
-def test_cambiar_estado_lote_produccion(db_session, unico_lote_produccion):
-    actualizado = services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id)
+def test_cambiar_estado_secuencial_lote_produccion(db_session, unico_lote_produccion):
+    lote = services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id)
+    assert lote.estado == "Empaquetando"
 
-    assert actualizado.activo is False
+    lote = services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id)
+    assert lote.estado == "Terminado"
+
+    lote = services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id)
+    assert lote.estado == "Enviado"
+
+    with pytest.raises(exceptions.LoteYaEnviado):
+        services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id)
 
 
-def test_modificar_lote_produccion_dado_de_baja(db_session, unico_lote_produccion, unico_producto):
+def test_modificar_lote_produccion_enviado(db_session, unico_lote_produccion, unico_producto):
+    services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id)
+    services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id)
     services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id)
 
     datos = schemas.LoteProduccionUpdate(
@@ -83,12 +95,3 @@ def test_modificar_lote_produccion_dado_de_baja(db_session, unico_lote_produccio
 
     with pytest.raises(exceptions.LoteProduccionDadoDeBaja):
         services.modificar_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id, lote=datos)
-
-
-def test_reactivar_lote_con_producto_inactivo(db_session, unico_lote_produccion, unico_producto):
-    services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id)
-
-    producto_services.cambiar_estado_producto(db=db_session, producto_id=unico_producto.id)
-
-    with pytest.raises(exceptions.ProductoDadoDeBaja):
-        services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id)

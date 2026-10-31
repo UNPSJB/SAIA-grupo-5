@@ -2,6 +2,7 @@ from datetime import date
 from typing import Annotated
 from pydantic import BaseModel, ConfigDict, Field
 from src.producto.schemas import Producto
+from src.lote_produccion.models import EstadoLote
 
 
 class LoteProduccionBase(BaseModel):
@@ -21,6 +22,7 @@ class LoteProduccionUpdate(LoteProduccionBase):
 
 class LoteProduccion(LoteProduccionBase):
     id: int
+    estado: EstadoLote
     activo: bool
     producto: Producto
 

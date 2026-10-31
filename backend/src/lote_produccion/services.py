@@ -2,12 +2,18 @@ import logging
 from typing import List
 from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
-from src.lote_produccion.models import LoteProduccion
+from src.lote_produccion.models import LoteProduccion, EstadoLote
 from src.lote_produccion import schemas, exceptions
 from src.producto.models import Producto
 from src.producto import services as producto_services
 
 logger = logging.getLogger(__name__)
+
+SIGUIENTE_ESTADO ={
+    EstadoLote.EN_PRODUCCION.value: EstadoLote.EMPAQUETANDO.value,
+    EstadoLote.EMPAQUETANDO.value: EstadoLote.TERMINADO.value,
+    EstadoLote.TERMINADO.value: EstadoLote.ENVIADO.value
+}
 
 
 def crear_lote_produccion(db: Session, lote: schemas.LoteProduccionCreate) -> schemas.LoteProduccion:
@@ -42,10 +48,10 @@ def listar_lotes_por_producto(db: Session, producto_id: int) -> List[schemas.Lot
 def cambiar_estado_lote_produccion(db: Session, lote_id: int) -> schemas.LoteProduccion:
     db_lote = leer_lote_produccion(db, lote_id)
 
-    if not db_lote.activo and not db_lote.producto.activo:
-        raise exceptions.ProductoDadoDeBaja()
+    if db_lote.estado == EstadoLote.ENVIADO.value:
+        raise exceptions.LoteYaEnviado()
 
-    db_lote.activo = not db_lote.activo
+    db_lote.estado = SIGUIENTE_ESTADO[db_lote.estado]
     db.commit()
     db.refresh(db_lote)
     return db_lote
@@ -53,7 +59,7 @@ def cambiar_estado_lote_produccion(db: Session, lote_id: int) -> schemas.LotePro
 
 def modificar_lote_produccion(db: Session, lote_id: int, lote: schemas.LoteProduccionUpdate) -> schemas.LoteProduccion:
     db_lote = leer_lote_produccion(db, lote_id)
-    if not db_lote.activo:
+    if not db_lote.activo or db_lote.estado == EstadoLote.ENVIADO.value:
         raise exceptions.LoteProduccionDadoDeBaja()
 
     db_producto = producto_services.leer_producto(db, lote.producto_id)

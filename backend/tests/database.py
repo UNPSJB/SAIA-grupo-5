@@ -80,7 +80,7 @@ def auth_headers(client, db_session):
         mail="admin.test@test.com",
         username="admin_test",
         hashed_password=get_password_hash("admin123"),
-        operar=False,
+        operar=True,        #tuve que poner esto en true para hacer los test de lotes_produccion
         administrar=True,
         activo=True,
     )

@@ -12,3 +12,7 @@ class LoteProduccionDadoDeBaja(BadRequest):
 
 class ProductoDadoDeBaja(BadRequest):
     DETAIL = ErrorCode.PRODUCTO_DADO_DE_BAJA
+
+
+class LoteYaEnviado(BadRequest):
+    DETAIL = ErrorCode.LOTE_YA_ENVIADO
