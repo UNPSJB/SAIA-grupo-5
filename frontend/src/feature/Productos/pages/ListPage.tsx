@@ -13,7 +13,10 @@ import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
 
 import { DeleteProductoModal } from '../components/DeleteProductoModal';
+import { RecetaFormModal } from '../../Recetas/components/RecetaFormModal';
+import { VerRecetaModal } from '../../Recetas/components/VerRecetaModal';
 import type { Producto } from '../types';
+import type { Receta } from '../../Recetas/types';
 
 export function ListPage() {
     const navigate = useNavigate();
@@ -21,6 +24,9 @@ export function ListPage() {
     const [search, setSearch] = useState('');
     const { data: productos, error, isLoading } = useApi<Producto[]>("/productos/");
     const [productoToDelete, setProductoToDelete] = useState<Producto | null>(null);
+    const [productoReceta, setProductoReceta] = useState<Producto | null>(null);
+    const [productoVerReceta, setProductoVerReceta] = useState<Producto | null>(null);
+    const [recetaEditar, setRecetaEditar] = useState<Receta | null>(null);
 
     const filteredProducto = useMemo(() => {
         if (!Array.isArray(productos)) return [];
@@ -137,6 +143,15 @@ export function ListPage() {
                         icon="bi bi-eye"
                         onClick={() => navigate(`/productos/${row.id}`)}
                     />
+                    {row.receta != null && (
+                        <ActionButton
+                            variant="outline-secondary"
+                            size="sm"
+                            tooltip="Ver receta"
+                            icon="bi bi-journal-text"
+                            onClick={() => setProductoVerReceta(row)}
+                        />
+                    )}
 
                     {currentUser?.administrar && (
                         <>
@@ -148,6 +163,16 @@ export function ListPage() {
                                 disabled={!row.activo}
                                 onClick={() => navigate(`/productos/${row.id}/edit`)}
                             />
+                            {row.receta == null && (
+                                <ActionButton
+                                    variant="outline-secondary"
+                                    size="sm"
+                                    tooltip="Agregar receta"
+                                    icon="bi bi-journal-plus"
+                                    disabled={!row.activo}
+                                    onClick={() => setProductoReceta(row)}
+                                />
+                            )}
                             <ActionButton
                                 variant={row.activo ? 'outline-danger' : 'outline-success'}
                                 size="sm"
@@ -193,6 +218,27 @@ export function ListPage() {
                 producto={productoToDelete}
                 onHide={() => setProductoToDelete(null)}
                 onDeleted={() => mutate("/productos/")}
+            />
+            <RecetaFormModal
+                producto={productoReceta}
+                receta={recetaEditar}
+                onHide={() => {
+                    setProductoReceta(null);
+                    setRecetaEditar(null);
+                }}
+                onSaved={(receta) => {
+                    mutate(`/recetas/producto/${receta.producto_id}`, receta, false);
+                    mutate("/productos/");
+                }}
+            />
+            <VerRecetaModal
+                producto={productoVerReceta}
+                onHide={() => setProductoVerReceta(null)}
+                onEditar={currentUser?.administrar ? (receta) => {
+                    setRecetaEditar(receta);
+                    setProductoReceta(productoVerReceta);
+                    setProductoVerReceta(null);
+                } : undefined}
             />
         </Container>
     );

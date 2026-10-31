@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from src.lote_produccion.models import LoteProduccion
     from src.unidad_medida.models import UnidadMedida
-    from src.lote_produccion.models import LoteProduccion
+    from src.receta.models import Receta
 
 
 class Producto(ModeloBase):
@@ -31,4 +31,4 @@ class Producto(ModeloBase):
 
     activo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
-# TODO: Hay que agregarle el tema de las recetas, pero eso se discute con alex
+    receta: Mapped["Receta | None"] = relationship(viewonly=True, uselist=False)
