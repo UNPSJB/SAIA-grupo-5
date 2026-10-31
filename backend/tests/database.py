@@ -13,6 +13,7 @@ from src.personal.models import Persona
 from src.auth.utils import get_password_hash
 from src.unidad_medida.models import UnidadMedida
 from src.producto.models import Producto
+from src.lote_produccion.models import LoteProduccion
 
 engine = create_engine(
     settings.DB_URL_TEST, 
@@ -119,12 +120,50 @@ def multiples_unidades_medida(db_session):
     db_session.commit()
     return unidades
 
+@pytest.fixture(scope="function")
+def unico_lote_produccion(db_session, unico_producto):
+    lote = LoteProduccion(
+        producto_id=unico_producto.id, 
+        fecha_produccion=date(2026,10,1),
+        fecha_vencimiento=date(2028, 10, 1), 
+        cantidad_producida=100)
+
+    db_session.add(lote)
+    db_session.commit()
+    db_session.refresh(lote)
+    return lote
+
+@pytest.fixture(scope="function")
+def multiples_lotes_produccion(db_session, unico_producto):
+    lotes = [
+        LoteProduccion(producto_id=unico_producto.id, 
+                        fecha_produccion=date(2026,11,12),
+                        fecha_vencimiento=date(2028, 10, 1), 
+                        cantidad_producida=100),
+
+        LoteProduccion(producto_id=unico_producto.id, 
+                        fecha_produccion=date(2026,12,14),
+                        fecha_vencimiento=date(2028, 10, 1), 
+                        cantidad_producida=100),
+
+        LoteProduccion(producto_id=unico_producto.id, 
+                        fecha_produccion=date(2026,9,13),
+                        fecha_vencimiento=date(2028, 10, 1), 
+                        cantidad_producida=100)
+    ]
+
+    db_session.add_all(lotes)
+    db_session.commit()
+    return lotes
 
 @pytest.fixture(scope="function")
 def unico_producto(db_session, unica_unidad_medida):
-    producto = Producto(nombre="Pan de salame", descripcion="Esto es un pan de salame",
-                        cantidad_neta=1, unidad_medida_id=unica_unidad_medida.id,
-                        fecha_lanzamiento=date(2026, 10, 1), foto_producto=None,)
+    producto = Producto(nombre="Pan de salame", 
+                        descripcion="Esto es un pan de salame",
+                        cantidad_neta=1, 
+                        unidad_medida_id=unica_unidad_medida.id,
+                        fecha_lanzamiento=date(2026, 10, 1), 
+                        foto_producto=None,)
 
     db_session.add(producto)
     db_session.commit()
@@ -134,18 +173,29 @@ def unico_producto(db_session, unica_unidad_medida):
 @pytest.fixture(scope="function")
 def multiples_productos(db_session, unica_unidad_medida):
     productos = [
-        Producto(nombre="Queso crema", descripcion="Queso bien cremoso",
-                        cantidad_neta=1, unidad_medida_id=unica_unidad_medida.id,
-                        fecha_lanzamiento=date(2024, 10, 1), foto_producto=None,
-                        activo=True),
-        Producto(nombre="Leche", descripcion="Ideal para la chocolatada",
-                        cantidad_neta=1, unidad_medida_id=unica_unidad_medida.id,
-                        fecha_lanzamiento=date(2023, 10, 1), foto_producto=None,
-                        activo=True),
-        Producto(nombre="Aceitunas", descripcion="Ideal para pizzas",
-                        cantidad_neta=1, unidad_medida_id=unica_unidad_medida.id,
-                        fecha_lanzamiento=date(2020, 10, 1), foto_producto=None,
-                        activo=True)
+        Producto(nombre="Queso crema", 
+                descripcion="Queso bien cremoso",
+                cantidad_neta=1, 
+                unidad_medida_id=unica_unidad_medida.id,
+                fecha_lanzamiento=date(2024, 10, 1), 
+                foto_producto=None,
+                activo=True),
+
+        Producto(nombre="Leche", 
+                descripcion="Ideal para la chocolatada",
+                cantidad_neta=1, 
+                unidad_medida_id=unica_unidad_medida.id,
+                fecha_lanzamiento=date(2023, 10, 1), 
+                foto_producto=None,
+                activo=True),
+
+        Producto(nombre="Aceitunas", 
+                descripcion="Ideal para pizzas",
+                cantidad_neta=1, 
+                unidad_medida_id=unica_unidad_medida.id,
+                fecha_lanzamiento=date(2020, 10, 1), 
+                foto_producto=None,
+                activo=True)
     ]
     db_session.add_all(productos)
     db_session.commit()
