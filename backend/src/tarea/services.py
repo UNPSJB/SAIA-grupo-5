@@ -5,7 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, selectinload
 from src.tarea.models import Tarea
 from src.tarea import schemas, exceptions
-from src.tareas_ocurrencia.services import generar_ocurrencias_pendientes
+from src.tareas_ocurrencia.services import generar_ocurrencias_pendientes, ya_paso_hora_generacion
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +27,11 @@ def crear_tarea(db: Session, tarea: schemas.TareaCreate) -> schemas.Tarea:
         raise exceptions.TareaDatosInvalidos()
     db.refresh(_tarea)
 
-    generar_ocurrencias_pendientes(db)
-    db.commit()
+    # Se genera la ocurrencia de esta tarea y si ya pasó el horario configurado
+    # si no, la genera el scheduler a la hora acordada junto con el resto del checklist
+    if ya_paso_hora_generacion(db):
+        generar_ocurrencias_pendientes(db, [_tarea.id])
+        db.commit()
 
     return _tarea
 
@@ -80,8 +83,9 @@ def modificar_tarea(db: Session, tarea_id: int, tarea: schemas.TareaUpdate) -> s
     db.refresh(db_tarea)
 
     # Relevante sobre todo si cambió frecuencia o plan_limpieza_id.
-    generar_ocurrencias_pendientes(db)
-    db.commit()
+    if ya_paso_hora_generacion(db):
+        generar_ocurrencias_pendientes(db, [db_tarea.id])
+        db.commit()
 
     return db_tarea
 

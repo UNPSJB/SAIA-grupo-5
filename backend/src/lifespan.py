@@ -16,6 +16,34 @@ async def db_creation_lifespan(app: FastAPI):
     inspector = inspect(engine)
     tablas = inspector.get_table_names()
 
+    if "configuracion_sistema" in tablas:
+        columnas_configuracion = {col["name"] for col in inspector.get_columns("configuracion_sistema")}
+        migraciones_configuracion = {
+            "vista_publica_activa": "BOOLEAN NOT NULL DEFAULT 0",
+            "vista_publica_token": "VARCHAR(64)",
+            "vista_publica_nombre_establecimiento": "VARCHAR(100) NOT NULL DEFAULT 'Mi establecimiento'",
+            "vista_publica_mostrar_cumplimiento": "BOOLEAN NOT NULL DEFAULT 0",
+            "vista_publica_mostrar_calibraciones": "BOOLEAN NOT NULL DEFAULT 0",
+            "vista_publica_mostrar_tiempo_calibracion": "BOOLEAN NOT NULL DEFAULT 0",
+            "vista_publica_mostrar_recambios": "BOOLEAN NOT NULL DEFAULT 0",
+            "vista_publica_mostrar_tiempo_recambio": "BOOLEAN NOT NULL DEFAULT 0",
+            "vista_publica_mostrar_planes_limpieza": "BOOLEAN NOT NULL DEFAULT 0",
+        }
+        with engine.begin() as connection:
+            for columna, definicion in migraciones_configuracion.items():
+                if columna not in columnas_configuracion:
+                    connection.execute(text(
+                        f"ALTER TABLE configuracion_sistema ADD COLUMN {columna} {definicion}"
+                    ))
+        if "ix_configuracion_sistema_vista_publica_token" not in {
+            indice["name"] for indice in inspector.get_indexes("configuracion_sistema")
+        }:
+            with engine.begin() as connection:
+                connection.execute(text(
+                    "CREATE UNIQUE INDEX ix_configuracion_sistema_vista_publica_token "
+                    "ON configuracion_sistema (vista_publica_token)"
+                ))
+
     if "personal" in tablas:
         columnas_personal = [col["name"] for col in inspector.get_columns("personal")]
         with engine.begin() as connection:

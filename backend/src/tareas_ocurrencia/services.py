@@ -5,6 +5,7 @@ from sqlalchemy import select, update, delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from src.plan_limpieza.services import leer_plan_limpieza
+from src.configuracion_sistema.services import obtener_o_crear_configuracion
 from src.tareas_ocurrencia.models import TareaOcurrencia
 from src.tareas_ocurrencia.constants import EstadoTareaOcurrencia
 from src.tareas_ocurrencia import schemas, exceptions
@@ -94,9 +95,23 @@ def corresponde_generar(tarea: Tarea, hoy: date) -> bool:
     return (hoy - tarea.ultima_generacion).days >= tarea.frecuencia
 
 
-def generar_ocurrencias_pendientes(db: Session) -> list[TareaOcurrencia]:
+def ya_paso_hora_generacion(db: Session, ahora: datetime | None = None) -> bool:
+    # Indica si hoy ya pasó el horario configurado para generar los checklists
+    configuracion = obtener_o_crear_configuracion(db)
+    ahora = ahora or datetime.now()
+    return (ahora.hour, ahora.minute) >= (
+        configuracion.hora_generacion_checklists,
+        configuracion.minuto_generacion_checklists,
+    )
+
+
+# Si se pasan tarea_ids, solo se generan las ocurrencias de esas tareas
+def generar_ocurrencias_pendientes(db: Session, tarea_ids: list[int] | None = None) -> list[TareaOcurrencia]:
     hoy = date.today()
-    tareas = db.scalars(select(Tarea).where(Tarea.activo == True)).all()
+    query = select(Tarea).where(Tarea.activo == True)
+    if tarea_ids is not None:
+        query = query.where(Tarea.id.in_(tarea_ids))
+    tareas = db.scalars(query).all()
 
     generadas = []
     for tarea in tareas:

@@ -19,10 +19,12 @@ import type { TareaOcurrencia } from "../TareasOcurrencias/types";
 import { calcularEstadoVencimientos, type VencimientoPersonal } from "../VencimientoPersonal/types";
 import type { ConfiguracionSistema } from "../ConfiguracionSistema/types";
 import type { PlanCalibracion } from "../PlanesCalibracion/types";
+import type { IncidenteSeguimiento } from "../Incidentes/types";
 import { getEstadoHistorial } from "../Historial/types";
 import { clasificarPorDiasRestantes } from "../VencimientosConsolidados/utils/estado";
 import { toDateKey, dateFromKey } from "../../libs/date";
 import { MetricCard } from "./components/MetricCard";
+import { CumplimientoChart } from "./components/CumplimientoChart";
 import { SEAFOAM } from "./constants";
 import "./HomePage.css";
 import { useAuth } from "../../hooks";
@@ -43,6 +45,26 @@ export function HomePage() {
         esOperador ? null : historyUrl,
     );
     const occurrences = useMemo(() => history ?? [], [history]);
+
+    //estadistica incidente
+    const incidentsUrl = `/incidentes?fecha_desde=${toDateKey(fromDate)}&fecha_hasta=${toDateKey(today)}`;
+    const { data: incidents, error: incidentsError, isLoading: incidentsLoading, } = useApi<IncidenteSeguimiento[]>(incidentsUrl);
+    const incidentes = (incidents ?? []).filter((incidente) => incidente.activo);
+    const totalIncidentes = incidentes.length;
+    const incidentesAbiertos = incidentes.filter((incidente) => incidente.estado === "Abierto").length;
+    const incidentesCerrados = incidentes.filter((incidente) => incidente.estado === "Cerrado").length;
+    const porcentajeResueltos = totalIncidentes > 0
+        ? Math.round((incidentesCerrados / totalIncidentes) * 1000) / 10
+        : null;
+    const incidentesPorTipo = useMemo(() => {
+        const cantidades = new Map<string, number>();
+        incidentes.forEach((incidente) => {
+            const nombreTipo = incidente.tipo.nombre; cantidades.set(nombreTipo, (cantidades.get(nombreTipo) ?? 0) + 1);
+        });
+
+        return Array.from(cantidades, ([tipo, cantidad]) => ({ tipo, cantidad, })).sort((a, b) => b.cantidad - a.cantidad);
+    }, [incidentes]);
+    //estadistica incidente
 
     const { data: elements, error: elementsError, isLoading: elementsLoading } = useApi<ElementoLimpieza[]>("/elementos-limpieza/");
 
@@ -175,6 +197,34 @@ export function HomePage() {
                 </Row>
             </section>}
 
+            {!esOperador && <section aria-label="Indicadores de incidentes" className="mb-4">
+                <div className="dashboard-section-heading">
+                    <div>
+                        <h2>Incidentes</h2>
+                        <span>Seguimiento de los incidentes registrados</span>
+                    </div>
+                    {incidentsLoading && (<Spinner animation="border" size="sm" variant="success" aria-label="Cargando incidentes" />)}
+                </div>
+                <Row className="g-3">
+                    <Col xs={6} xl={3}><MetricCard
+                        label="Total de incidentes" value={formatMetric(incidentsLoading, Boolean(incidentsError), totalIncidentes)}
+                        icon="bi-exclamation-triangle" tone={SEAFOAM.primary} detail="Registrados en el período" to="/incidentes-historial" />
+                    </Col>
+                    <Col xs={6} xl={3}><MetricCard
+                        label="Abiertos" value={formatMetric(incidentsLoading, Boolean(incidentsError), incidentesAbiertos)}
+                        icon="bi-hourglass-split" tone={SEAFOAM.warning} detail="Pendientes de resolución" />
+                    </Col>
+                    <Col xs={6} xl={3}><MetricCard
+                        label="Cerrados" value={formatMetric(incidentsLoading, Boolean(incidentsError), incidentesCerrados)}
+                        icon="bi-check2-circle" tone={SEAFOAM.success} detail="Incidentes resueltos" />
+                    </Col>
+                    <Col xs={6} xl={3}><MetricCard
+                        label="Resueltos" value={incidentsLoading ? "…" : incidentsError || porcentajeResueltos === null ? "—" : `${porcentajeResueltos.toLocaleString("es-AR")}%`}
+                        icon="bi-speedometer2" tone={SEAFOAM.secondary} detail="Sobre el total del período" />
+                    </Col>
+                </Row>
+            </section>}
+
             <section aria-label="Indicadores de inventario" className="mb-4">
                 <div className="dashboard-section-heading">
                     <div>
@@ -246,23 +296,64 @@ export function HomePage() {
                                     <h2>Actividad de tareas</h2>
                                     <p>Resultado diario de los últimos 7 días</p>
                                 </div>
-                                <span className="dashboard-chart-icon"><i className="bi bi-bar-chart-line" /></span>
+                                <span className="dashboard-chart-icon">
+                                    <i className="bi bi-bar-chart-line" />
+                                </span>
                             </div>
-                            <div className="dashboard-chart-area" role="img" aria-label="Gráfico de tareas completadas, incumplidas y pendientes por día">
-                                {historyLoading ? <div className="dashboard-chart-message"><Spinner animation="border" size="sm" /> Cargando actividad…</div> : historyHasError ? <div className="dashboard-chart-message">No se pudo cargar la actividad.</div> : occurrences.length === 0 ? <div className="dashboard-chart-message">Todavía no hay tareas en este período.</div> : (
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart data={activityByDay} margin={{ top: 10, right: 10, left: -18, bottom: 0 }} barGap={4}>
-                                            <CartesianGrid stroke="#e9eef2" vertical={false} />
-                                            <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fill: "#718096", fontSize: 12 }} />
-                                            <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fill: "#8a969e", fontSize: 11 }} />
-                                            <Tooltip contentStyle={{ border: "1px solid #e7ecef", borderRadius: 10, boxShadow: "0 8px 24px rgba(35, 50, 60, .12)" }} />
-                                            <Legend iconType="circle" wrapperStyle={{ fontSize: 12, paddingTop: 12 }} />
-                                            <Bar dataKey="completed" name="Completadas" fill={SEAFOAM.primary} radius={[5, 5, 0, 0]} maxBarSize={25} />
-                                            <Bar dataKey="overdue" name="Incumplidas" fill={SEAFOAM.danger} radius={[5, 5, 0, 0]} maxBarSize={25} />
-                                            <Bar dataKey="pending" name="Pendientes" fill={SEAFOAM.warning} radius={[5, 5, 0, 0]} maxBarSize={25} />
-                                        </BarChart>
-                                    </ResponsiveContainer>
-                                )}
+                            <div className="dashboard-chart-area"
+                                role="img"
+                                aria-label="Gráfico de tareas completadas, incumplidas y pendientes por día"
+                            >
+                                {historyLoading ?
+                                    <div className="dashboard-chart-message">
+                                        <Spinner animation="border" size="sm" />
+                                        Cargando actividad…
+                                    </div> : historyHasError ?
+                                        <div className="dashboard-chart-message">
+                                            No se pudo cargar la actividad.
+                                        </div> : occurrences.length === 0 ?
+                                            <div className="dashboard-chart-message">
+                                                Todavía no hay tareas en este período.
+                                            </div> : (
+                                                <ResponsiveContainer width="100%" height="100%">
+                                                    <BarChart
+                                                        data={activityByDay}
+                                                        margin={{ top: 10, right: 10, left: -18, bottom: 0 }}
+                                                        barGap={4}
+                                                    >
+                                                        <CartesianGrid
+                                                            stroke="#e9eef2"
+                                                            vertical={false}
+                                                        />
+                                                        <XAxis
+                                                            dataKey="label"
+                                                            tickLine={false}
+                                                            axisLine={false}
+                                                            tick={{ fill: "#718096", fontSize: 12 }}
+                                                        />
+                                                        <YAxis
+                                                            allowDecimals={false}
+                                                            tickLine={false}
+                                                            axisLine={false}
+                                                            tick={{ fill: "#8a969e", fontSize: 11 }}
+                                                        />
+                                                        <Tooltip
+                                                            contentStyle={{
+                                                                border: "1px solid #e7ecef",
+                                                                borderRadius: 10,
+                                                                boxShadow: "0 8px 24px rgba(35, 50, 60, .12)"
+                                                            }}
+                                                        />
+                                                        <Legend
+                                                            iconType="circle"
+                                                            wrapperStyle={{ fontSize: 12, paddingTop: 12 }}
+                                                        />
+                                                        <Bar dataKey="completed" name="Completadas" fill={SEAFOAM.primary} radius={[5, 5, 0, 0]} maxBarSize={25} />
+                                                        <Bar dataKey="overdue" name="Incumplidas" fill={SEAFOAM.danger} radius={[5, 5, 0, 0]} maxBarSize={25} />
+                                                        <Bar dataKey="pending" name="Pendientes" fill={SEAFOAM.warning} radius={[5, 5, 0, 0]} maxBarSize={25} />
+                                                    </BarChart>
+                                                </ResponsiveContainer>
+                                            )}
                             </div>
                         </Card.Body>
                     </Card>
@@ -275,33 +366,111 @@ export function HomePage() {
                                     <h2>Estado de recambios</h2>
                                     <p>Estado de los elementos activos</p>
                                 </div>
-                                <span className="dashboard-chart-icon"><i className="bi bi-arrow-repeat" /></span>
+                                <span className="dashboard-chart-icon">
+                                    <i className="bi bi-arrow-repeat" />
+                                </span>
                             </div>
-                            <div className="dashboard-donut-area" role="img" aria-label="Distribución de elementos al día, por vencer, vencidos y sin frecuencia">
-                                {elementsLoading ? <div className="dashboard-chart-message"><Spinner animation="border" size="sm" /> Cargando recambios…</div> : elementsError ? <div className="dashboard-chart-message">No se pudo cargar el estado de recambios.</div> : activeElements.length === 0 ? <div className="dashboard-chart-message">No hay elementos activos para mostrar.</div> : (
-                                    <>
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <PieChart>
-                                                <Pie data={replacementStatus} dataKey="value" nameKey="name" innerRadius={64} outerRadius={91} paddingAngle={3} stroke="none">
-                                                    {replacementStatus.map((item) => <Cell key={item.name} fill={item.color} />)}
-                                                </Pie>
-                                                <Tooltip contentStyle={{ border: "1px solid #e7ecef", borderRadius: 10, boxShadow: "0 8px 24px rgba(35, 50, 60, .12)" }} />
-                                            </PieChart>
-                                        </ResponsiveContainer>
-                                        <div className="dashboard-donut-center"><strong>{activeElements.length}</strong><span>activos</span></div>
-                                    </>
-                                )}
+                            <div
+                                className="dashboard-donut-area"
+                                role="img"
+                                aria-label="Distribución de elementos al día, por vencer, vencidos y sin frecuencia"
+                            >
+                                {elementsLoading ?
+                                    <div className="dashboard-chart-message">
+                                        <Spinner animation="border" size="sm" />
+                                        Cargando recambios…
+                                    </div> : elementsError ?
+                                        <div className="dashboard-chart-message">
+                                            No se pudo cargar el estado de recambios.
+                                        </div> : activeElements.length === 0 ?
+                                            <div className="dashboard-chart-message">
+                                                No hay elementos activos para mostrar.
+                                            </div> : (
+                                                <>
+                                                    <ResponsiveContainer width="100%" height="100%">
+                                                        <PieChart>
+                                                            <Pie
+                                                                data={replacementStatus}
+                                                                dataKey="value"
+                                                                nameKey="name"
+                                                                innerRadius={64}
+                                                                outerRadius={91}
+                                                                paddingAngle={3}
+                                                                stroke="none"
+                                                            >
+                                                                {replacementStatus.map((item) => <Cell key={item.name} fill={item.color} />)}
+                                                            </Pie>
+                                                            <Tooltip
+                                                                contentStyle={{
+                                                                    border: "1px solid #e7ecef",
+                                                                    borderRadius: 10,
+                                                                    boxShadow: "0 8px 24px rgba(35, 50, 60, .12)"
+                                                                }}
+                                                            />
+                                                        </PieChart>
+                                                    </ResponsiveContainer>
+                                                    <div className="dashboard-donut-center">
+                                                        <strong>{activeElements.length}</strong>
+                                                        <span>activos</span>
+                                                    </div>
+                                                </>
+                                            )}
                             </div>
                             <div className="dashboard-chart-legend">
                                 {replacementStatus.map((item) => (
-                                    <span key={item.name}><i style={{ backgroundColor: item.color }} />{item.name}<strong>{item.value}</strong></span>
+                                    <span key={item.name}>
+                                        <i style={{ backgroundColor: item.color }} />
+                                        {item.name}
+                                        <strong>
+                                            {item.value}
+                                        </strong>
+                                    </span>
                                 ))}
                             </div>
                         </Card.Body>
                     </Card>
                 </Col>
             </Row>
-
+            <Row className="g-3 mb-4 dashboard-charts">
+                {!esOperador && <Col xs={12}>
+                    <Card className="dashboard-chart-card">
+                        <Card.Body>
+                            <div className="dashboard-chart-heading">
+                                <div>
+                                    <h2>Incidentes por tipo</h2>
+                                    <p>Cantidad registrada en los últimos 30 días</p>
+                                </div>
+                                <span className="dashboard-chart-icon"><i className="bi bi-bar-chart-line" /></span>
+                            </div>
+                            <div className="dashboard-chart-area" role="img" aria-label="Cantidad de incidentes agrupados por tipo" >
+                                {incidentsLoading ? (<div className="dashboard-chart-message"> <Spinner animation="border" size="sm" /> {" "}Cargando incidentes…</div>
+                                ) : incidentsError ? (
+                                    <div className="dashboard-chart-message"> No se pudieron cargar los incidentes. </div>
+                                ) : incidentes.length === 0 ? (
+                                    <div className="dashboard-chart-message"> No hay incidentes registrados en este período. </div>
+                                ) : (
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={incidentesPorTipo} margin={{ top: 10, right: 20, left: -18, bottom: 5, }}>
+                                            <CartesianGrid stroke="#e9eef2" vertical={false} />
+                                            <XAxis dataKey="tipo" tickLine={false} axisLine={false} tick={{ fill: "#718096", fontSize: 12, }} interval={0} />
+                                            <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fill: "#8a969e", fontSize: 11, }} />
+                                            <Tooltip contentStyle={{ border: "1px solid #e7ecef", borderRadius: 10, }} />
+                                            <Bar dataKey="cantidad" name="Incidentes" fill={SEAFOAM.primary} radius={[5, 5, 0, 0]} maxBarSize={45} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                )}
+                            </div>
+                        </Card.Body>
+                    </Card>
+                </Col>}
+            </Row>
+            {currentUser?.administrar &&
+                <Row className="g-3 dashboard-charts mt-0">
+                    <Col xs={12}>
+                        <CumplimientoChart />
+                    </Col>
+                </Row>
+            }
         </Container>
     );
 }

@@ -1,4 +1,8 @@
+from unittest.mock import patch
+
 from src.exceptions import PermissionDenied
+from src.configuracion_sistema.services import obtener_o_crear_configuracion
+from src.tarea.models import Tarea
 from src.tarea.constants import ErrorCode
 
 
@@ -22,8 +26,16 @@ def test_crear_tarea(client, auth_headers, plan_limpieza, sector):
     assert data["sector"]["id"] == sector.id
 
 
-# al crear una tarea se genera su primera ocurrencia
-def test_crear_tarea_genera_ocurrencia(client, auth_headers, plan_limpieza, sector):
+def _configurar_hora_generacion(db_session, hora: int, minuto: int):
+    configuracion = obtener_o_crear_configuracion(db_session)
+    configuracion.hora_generacion_checklists = hora
+    configuracion.minuto_generacion_checklists = minuto
+    db_session.commit()
+
+
+# al crear una tarea después del horario de generación se genera su primera ocurrencia
+def test_crear_tarea_genera_ocurrencia(client, auth_headers, db_session, plan_limpieza, sector):
+    _configurar_hora_generacion(db_session, 0, 0)
     client.post(
         "/tareas/",
         json={
@@ -45,6 +57,50 @@ def test_crear_tarea_genera_ocurrencia(client, auth_headers, plan_limpieza, sect
 
 
 # error 403
+# antes del horario de generación no se genera nada: lo hace el scheduler a la hora configurada
+def test_crear_tarea_antes_del_horario_no_genera_ocurrencias(client, auth_headers, db_session, plan_limpieza, sector, tarea):
+    with patch("src.tarea.services.ya_paso_hora_generacion", return_value=False):
+        client.post(
+            "/tareas/",
+            json={
+                "nombre": "Limpiar mesadas",
+                "frecuencia": 1,
+                "prioridad": "alta",
+                "plan_limpieza_id": plan_limpieza.id,
+                "sector_id": sector.id,
+            },
+            headers=auth_headers,
+        )
+
+    response = client.get("/tareas-ocurrencia/pendientes", headers=auth_headers)
+    assert response.json() == []
+
+    # la tarea que ya existía sigue pendiente de generar para el scheduler
+    assert db_session.get(Tarea, tarea.id).ultima_generacion is None
+
+
+# después del horario solo se genera la ocurrencia de la tarea creada, no la de las demás
+def test_crear_tarea_solo_genera_su_ocurrencia(client, auth_headers, db_session, plan_limpieza, sector, tarea):
+    _configurar_hora_generacion(db_session, 0, 0)
+    client.post(
+        "/tareas/",
+        json={
+            "nombre": "Limpiar mesadas",
+            "frecuencia": 1,
+            "prioridad": "alta",
+            "plan_limpieza_id": plan_limpieza.id,
+            "sector_id": sector.id,
+        },
+        headers=auth_headers,
+    )
+
+    response = client.get("/tareas-ocurrencia/pendientes", headers=auth_headers)
+    data = response.json()
+    assert [o["tarea_nombre_snap"] for o in data] == ["Limpiar mesadas"]
+
+    assert db_session.get(Tarea, tarea.id).ultima_generacion is None
+
+
 def test_crear_tarea_sin_permiso(client, auth_headers_sin_permiso, plan_limpieza, sector):
     response = client.post(
         "/tareas/",

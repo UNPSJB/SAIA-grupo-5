@@ -11,6 +11,7 @@ const PATH_LABELS: Record<string, string> = {
     '/vencimiento-personal': 'Vencimientos de personal',
     '/notificaciones': 'Notificaciones',
     '/incidentes/abiertos': 'Pendientes / Abiertos',
+    '/configuracion-sistema/vista-publica': 'Vista pública',
 };
 
 // Etiquetas de segmentos finales de acción (new, edit, vencimientos, etc.).
