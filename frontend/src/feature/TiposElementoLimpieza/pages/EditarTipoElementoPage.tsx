@@ -106,7 +106,7 @@ export function EditarTipoElementoPage() {
                             />
                         </Form.Group>
 
-                        <div className="d-flex justify-content-center gap-2">
+                        <div className="d-flex justify-content-start gap-2">
                             <Button
                                 variant="secondary"
                                 type="button"

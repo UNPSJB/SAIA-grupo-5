@@ -17,6 +17,15 @@ import { RecetaFormModal } from '../../Recetas/components/RecetaFormModal';
 import { VerRecetaModal } from '../../Recetas/components/VerRecetaModal';
 import type { Producto } from '../types';
 import type { Receta } from '../../Recetas/types';
+import { ListFilter } from "../../../components/ListFilter";
+
+type EstadoFiltro = "todos" | "activo" | "inactivo";
+
+const ESTADO_FILTRO_LABELS: Record<EstadoFiltro, string> = {
+    todos: "Todos",
+    activo: "Vigentes",
+    inactivo: "Descontinuados",
+};
 
 export function ListPage() {
     const navigate = useNavigate();
@@ -27,15 +36,34 @@ export function ListPage() {
     const [productoReceta, setProductoReceta] = useState<Producto | null>(null);
     const [productoVerReceta, setProductoVerReceta] = useState<Producto | null>(null);
     const [recetaEditar, setRecetaEditar] = useState<Receta | null>(null);
-
+    const [estadoFiltro, setEstadoFiltro] = useState<EstadoFiltro>("todos");
+    
     const filteredProducto = useMemo(() => {
         if (!Array.isArray(productos)) return [];
-        return (productos ?? []).filter((producto) => {
-            return (
-                producto.nombre.toLowerCase().includes(search.toLowerCase())
-            );
+
+        const busqueda = search.toLowerCase().trim();
+
+        return productos.filter((producto) => {
+            const fechaFormateada = producto.fecha_lanzamiento
+                .split("-")
+                .reverse()
+                .join("/");
+
+            const coincideBusqueda =
+                producto.nombre.toLowerCase().includes(busqueda) ||
+                producto.unidad_medida.nombre.toLowerCase().includes(busqueda) ||
+                producto.cantidad_neta.toString().includes(busqueda) ||
+                producto.fecha_lanzamiento.includes(busqueda) ||
+                fechaFormateada.includes(busqueda);
+
+            const coincideEstado =
+                estadoFiltro === "todos" ||
+                (estadoFiltro === "activo" && producto.activo) ||
+                (estadoFiltro === "inactivo" && !producto.activo);
+
+            return coincideBusqueda && coincideEstado;
         });
-    }, [search, productos]);
+    }, [search, estadoFiltro, productos]);
 
     const subHeaderComponentMemo = useMemo(() => {
         return (
@@ -199,6 +227,13 @@ export function ListPage() {
                 </Col>
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
+                </Col>
+                <Col xs="auto" className="align-self-center">
+                    <ListFilter
+                        value={estadoFiltro}
+                        options={ESTADO_FILTRO_LABELS}
+                        onChange={(value) => setEstadoFiltro(value as EstadoFiltro)}
+                    />
                 </Col>
                 {currentUser?.administrar && (
                     <Col xs="auto" className="d-flex justify-content-end">

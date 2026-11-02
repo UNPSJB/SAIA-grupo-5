@@ -11,8 +11,18 @@ import { useAuth } from "../../../hooks/useAuth"
 import { RenovarVencimientoModal } from "../../VencimientoPersonal/components/RenovarVencimientoModal"
 import { HistoricoVencimientoModal } from "../../VencimientoPersonal/components/HistoricoVencimientoModal"
 import type { VencimientoPersonal } from "../../VencimientoPersonal/types"
+import { Col, Form, Row } from "react-bootstrap";
+import { ListFilter } from "../../../components/ListFilter";
+import { clasificarPorDiasRestantes, FILTRO_VENCIMIENTOS_LABELS, type FiltroVencimientos } from "../utils/estado";
 
 const RUTA_VOLVER = "/vencimientos?default=personal"
+
+const FILTRO_LABELS = {
+    todos: FILTRO_VENCIMIENTOS_LABELS.todos,
+    vencido: FILTRO_VENCIMIENTOS_LABELS.vencido,
+    proximo: FILTRO_VENCIMIENTOS_LABELS.proximo,
+    vigente: FILTRO_VENCIMIENTOS_LABELS.vigente,
+};
 
 function celdaEstadoVencimiento(diasRestantes: number, diasAntelacion: number) {
     const vencido = diasRestantes <= 0;
@@ -52,11 +62,36 @@ export function PersonalTab({ diasAntelacion }: { diasAntelacion: number }) {
     const { data: vencimientos, error, isLoading } = useApi<VencimientoPersonal[]>("/vencimiento-personal/")
     const [vencimientoToRenovar, setVencimientoToRenovar] = useState<VencimientoPersonal | null>(null)
     const [vencimientoHistorico, setVencimientoHistorico] = useState<VencimientoPersonal | null>(null)
-
+    const [search, setSearch] = useState("");
+    const [estadoFiltro, setEstadoFiltro] = useState<FiltroVencimientos>("todos");
+    
     const ordenados = useMemo(() => {
-        if (!Array.isArray(vencimientos)) return []
-        return [...vencimientos].sort((a, b) => a.dias_restantes - b.dias_restantes)
-    }, [vencimientos])
+        if (!Array.isArray(vencimientos)) return [];
+
+        const busqueda = search.toLowerCase();
+
+        return vencimientos
+            .filter((vencimiento) => {
+                const nombrePersona = `${vencimiento.persona.nombre} ${vencimiento.persona.apellido}`;
+
+                const coincideBusqueda =
+                    nombrePersona.toLowerCase().includes(busqueda) ||
+                    vencimiento.tipo_vencimiento.nombre.toLowerCase().includes(busqueda) ||
+                    vencimiento.fecha_desde.includes(busqueda) ||
+                    vencimiento.fecha_hasta.includes(busqueda);
+
+                const coincideEstado =
+                    estadoFiltro === "todos" ||
+                    clasificarPorDiasRestantes(
+                        vencimiento.dias_restantes,
+                        diasAntelacion
+                    ) === estadoFiltro;
+
+                return coincideBusqueda && coincideEstado;
+            })
+            .sort((a, b) => a.dias_restantes - b.dias_restantes);
+
+    }, [vencimientos, search, estadoFiltro, diasAntelacion]);
 
     if (isLoading) return <PageLoading title="Personal" />
     if (!vencimientos || error) return <PageError
@@ -74,7 +109,6 @@ export function PersonalTab({ diasAntelacion }: { diasAntelacion: number }) {
         },
         {
             name: "Tipo de Vencimiento",
-            filterable: true,
             selector: (row) => row.tipo_vencimiento.nombre,
             sortable: true,
             center: true,
@@ -171,6 +205,25 @@ export function PersonalTab({ diasAntelacion }: { diasAntelacion: number }) {
 
     return (
         <>
+            <Row className="mb-3 g-2 justify-content-end">
+                <Col xs="auto">
+                    <Form.Control
+                        type="text"
+                        placeholder="Buscar vencimiento..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                </Col>
+
+                <Col xs="auto">
+                    <ListFilter
+                        value={estadoFiltro}
+                        options={FILTRO_LABELS}
+                        onChange={(value) => setEstadoFiltro(value as FiltroVencimientos)}
+                    />
+                </Col>
+            </Row>
+
             <AppTable
                 columns={columns}
                 data={ordenados}

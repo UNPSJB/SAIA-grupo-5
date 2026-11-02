@@ -14,6 +14,7 @@ import { useAuth } from '../../../hooks/useAuth'
 import { Capacidades } from '../../Capacidades/types'
 import { DeletePersonaModal } from '../components/DeletePersonaModal'
 import type { Persona } from '../types'
+import { ListFilter } from "../../../components/ListFilter";
 
 const capacidadLabels: Record<string, string> = {
   [Capacidades.OPERAR]: 'Operar',
@@ -21,29 +22,47 @@ const capacidadLabels: Record<string, string> = {
   [Capacidades.SUPERVISOR]: 'Supervisor',
 }
 
+type EstadoFiltro = "todos" | "activo" | "inactivo";
+
+const ESTADO_FILTRO_LABELS: Record<EstadoFiltro, string> = {
+    todos: "Todos",
+    activo: "Activos",
+    inactivo: "Inactivos",
+};
+
 export function ListPage() {
   const navigate = useNavigate()
   const { currentUser } = useAuth()
   const [search, setSearch] = useState('')
   const { data: personal, error, isLoading } = useApi<Persona[]>('/personal/')
   const [personaToDelete, setPersonaToDelete] = useState<Persona | null>(null)
+  const [estadoFiltro, setEstadoFiltro] = useState<EstadoFiltro>("todos");
 
   const filteredPersonal = useMemo(() => {
-    if (!Array.isArray(personal)) return []
-    return (personal ?? []).filter((persona) => {
-      const capacidadesTexto = (persona.capacidades || [])
-        .map((capacidad) => capacidadLabels[capacidad] ?? capacidad)
-        .join(' ')
-      const searchLower = search.toLowerCase()
-      return (
-        persona.nombre.toLowerCase().includes(searchLower) ||
-        (persona.apellido && persona.apellido.toLowerCase().includes(searchLower)) ||
-        (persona.username && persona.username.toLowerCase().includes(searchLower)) ||
-        (persona.dni && persona.dni.toLowerCase().includes(searchLower)) ||
-        capacidadesTexto.toLowerCase().includes(searchLower)
-      )
-    })
-  }, [search, personal])
+      if (!Array.isArray(personal)) return [];
+
+      return personal.filter((persona) => {
+          const capacidadesTexto = (persona.capacidades || [])
+              .map((capacidad) => capacidadLabels[capacidad] ?? capacidad)
+              .join(" ");
+
+          const searchLower = search.toLowerCase();
+
+          const coincideBusqueda =
+              persona.nombre.toLowerCase().includes(searchLower) ||
+              (persona.apellido && persona.apellido.toLowerCase().includes(searchLower)) ||
+              (persona.username && persona.username.toLowerCase().includes(searchLower)) ||
+              (persona.dni && persona.dni.toLowerCase().includes(searchLower)) ||
+              capacidadesTexto.toLowerCase().includes(searchLower);
+
+          const coincideEstado =
+              estadoFiltro === "todos" ||
+              (estadoFiltro === "activo" && persona.activo) ||
+              (estadoFiltro === "inactivo" && !persona.activo);
+
+          return coincideBusqueda && coincideEstado;
+      });
+  }, [search, estadoFiltro, personal]);
 
   const subHeaderComponentMemo = useMemo(() => {
     return (
@@ -215,6 +234,13 @@ export function ListPage() {
         </Col>
         <Col xs="auto" className="align-self-center">
           {subHeaderComponentMemo}
+        </Col>
+        <Col xs="auto" className="align-self-center">
+          <ListFilter
+              value={estadoFiltro}
+              options={ESTADO_FILTRO_LABELS}
+              onChange={(value) => setEstadoFiltro(value as EstadoFiltro)}
+          />
         </Col>
         {currentUser?.administrar && (
           <Col xs="auto" className="d-flex justify-content-end gap-2">
