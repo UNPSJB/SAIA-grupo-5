@@ -218,7 +218,7 @@ export function Nav({ children }: { children: React.ReactNode }) {
                                     <span>{email}</span>
                                 </div>
                                 <Dropdown.Divider />
-                                <Dropdown.Item as="button" onClick={(event) => event.preventDefault()}>
+                                <Dropdown.Item as="button" onClick={() => navigate('/configuracion-cuenta')}>
                                     <i className="bi bi-person-gear me-2" />Configuración de cuenta
                                 </Dropdown.Item>
                                 {

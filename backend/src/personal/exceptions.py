@@ -33,3 +33,7 @@ class DebeTenerCapacidad(BadRequest):
 
 class UltimoAdministrador(BadRequest):
     DETAIL = ErrorCode.ULTIMO_ADMINISTRADOR
+
+
+class PasswordActualIncorrecta(BadRequest):
+    DETAIL = ErrorCode.PASSWORD_ACTUAL_INCORRECTA
