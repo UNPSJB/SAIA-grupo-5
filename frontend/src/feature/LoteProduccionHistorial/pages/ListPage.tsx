@@ -135,7 +135,7 @@ export function LotesHistorialPage() {
         <div className="lote-page">
             <PageHeader
                 eyebrow="PRODUCCIÓN"
-                title="Lotes de Producción"
+                title="Historial de Lotes de Producción"
                 subtitle={`${fechaLarga} - Revisá el historial de lotes registrados`}                
             />
             <Row className="p-2 align-items-end g-3">

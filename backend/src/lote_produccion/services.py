@@ -3,7 +3,7 @@ from typing import List, Literal
 from datetime import date
 from sqlalchemy import select, func
 from sqlalchemy.orm import Session, joinedload, selectinload
-from src.lote_produccion.models import LoteProduccion , EstadoLote
+from src.lote_produccion.models import LoteProduccion, EstadoLote
 from src.lote_produccion import schemas, exceptions
 from src.producto.models import Producto
 from src.producto import services as producto_services
@@ -74,15 +74,39 @@ def modificar_lote_produccion(db: Session, lote_id: int, lote: schemas.LoteProdu
     db.commit()
     db.refresh(db_lote)
     return leer_lote_produccion(db, db_lote.id)
-from src.lote_produccion.models import LoteProduccion
-from src.lote_produccion import schemas, exceptions
-from src.producto.models import Producto
-from src.producto import services as producto_services
-from datetime import date
-from sqlalchemy import func
 
-logger = logging.getLogger(__name__)
+def listar_lotes_historial(
+    db: Session,
+    orden: Literal["asc", "desc"] = "desc",
+    producto_id: int | None = None,
+    fecha_desde: date | None = None,
+    fecha_hasta: date | None = None,
+) -> schemas.LoteProduccionHistorial:
 
+    consulta = (select(LoteProduccion).options(selectinload(LoteProduccion.producto)))
+
+    filtros = []
+
+    if producto_id is not None:
+        filtros.append(LoteProduccion.producto_id == producto_id)
+    if fecha_desde is not None:
+        filtros.append(LoteProduccion.fecha_produccion >= fecha_desde)
+    if fecha_hasta is not None:
+        filtros.append(LoteProduccion.fecha_produccion <= fecha_hasta)
+
+    consulta = consulta.where(*filtros)
+
+    fecha = (LoteProduccion.fecha_produccion.asc() if orden == "asc" else LoteProduccion.fecha_produccion.desc())
+    lotes = db.scalars(consulta.order_by(fecha, LoteProduccion.id.asc())).all()
+
+    total_producido = None
+    if producto_id is not None:
+        total_producido = db.scalar(
+                select(func.coalesce(func.sum(LoteProduccion.cantidad_producida), 0))
+                .where(*filtros)
+            )
+    
+    return schemas.LoteProduccionHistorial(lotes=lotes, total_producido=total_producido)
 
 def obtener_estadisticas_produccion(db: Session, fecha_desde: date, fecha_hasta: date, producto_id: int | None = None) -> List[schemas.EstadisticaProduccion]:
 

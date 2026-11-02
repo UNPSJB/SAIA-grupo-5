@@ -166,7 +166,7 @@ export function IncidentesHistorialPage() {
 
     const demorados = (incidentes ?? []).filter((incidente) => incidente.activo && incidente.nivel_demora === 'demorado').length;
     const abiertos = estado === 'Abierto';
-    const titulo = pathname.startsWith('/incidentes/abiertos') ? 'Pendientes / Abiertos' : 'Incidentes';
+    const titulo = pathname.startsWith('/incidentes/abiertos') ? 'Pendientes / Abiertos' : 'Historial de Incidentes';
     const fechaLarga = new Date().toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
 
     return (

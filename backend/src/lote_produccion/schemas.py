@@ -28,6 +28,10 @@ class LoteProduccion(LoteProduccionBase):
 
     model_config = ConfigDict(from_attributes=True)
 
+class LoteProduccionHistorial(BaseModel):
+    lotes: list[LoteProduccion]
+    total_producido: int | None = None
+    
 class EstadisticaProduccion(BaseModel):
     producto_id: int
     producto_nombre: str

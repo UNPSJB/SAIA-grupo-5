@@ -154,7 +154,7 @@ export function ListPage() {
                             size="sm"
                             tooltip="Ver"
                             icon="bi bi-eye"
-                            onClick={() => navigate(`/lotes-produccion/${row.id}`)}
+                            onClick={() => navigate(`/lotes-produccion/${row.id}`, { state: { origen: "lista" }})}
                         />
                         {currentUser?.operar && (
                             <>

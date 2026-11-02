@@ -122,6 +122,7 @@ import { NuevoProductoPage } from './feature/Productos/pages/NuevoProductoPage.t
 import { EditarProductoPage } from './feature/Productos/pages/EditarProductoPage.tsx'
 import { VerProductoPage } from './feature/Productos/pages/VerProductoPage.tsx'
 
+import { LotesHistorialPage } from './feature/LoteProduccionHistorial/pages/ListPage.tsx'
 import { ListPage as LoteProduccionListPage } from './feature/LotesProduccion/pages/ListPage.tsx'
 import { NuevoLoteProduccionPage } from './feature/LotesProduccion/pages/NuevoLoteProduccionPage.tsx'
 import { EditarLoteProduccionPage } from './feature/LotesProduccion/pages/EditarLoteProduccionPage.tsx'
