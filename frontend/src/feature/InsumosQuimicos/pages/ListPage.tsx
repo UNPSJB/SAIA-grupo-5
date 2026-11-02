@@ -14,7 +14,15 @@ import { useAuth } from '../../../hooks/useAuth';
 
 import { DeleteInsumoQuimicoModal } from '../components/DeleteInsumoQuimicoModal';
 import type { InsumoQuimico } from '../types';
+import { ListFilter } from "../../../components/ListFilter";
 
+type EstadoFiltro = "todos" | "activo" | "inactivo";
+
+const ESTADO_FILTRO_LABELS: Record<EstadoFiltro, string> = {
+    todos: "Todos",
+    activo: "Activos",
+    inactivo: "Inactivos",
+};
 
 export function ListPage() {
     const navigate = useNavigate();     // Esto se usa para cambiar de pagina cuando cree el insumo
@@ -22,18 +30,26 @@ export function ListPage() {
     const [search, setSearch] = useState('');
     const { data: insumosQuimicos, error, isLoading } = useApi<InsumoQuimico[]>("/insumos-quimicos/")    
     const [insumoQuimicoToDelete, setInsumoQuimicoToDelete] = useState<InsumoQuimico | null>(null);
+    const [estadoFiltro, setEstadoFiltro] = useState<EstadoFiltro>("todos");
 
     // useMemo infiere que retorna un array de tipo Insumo[]
     const filteredInsumosQuimicos = useMemo(() => {
-        if (!Array.isArray(insumosQuimicos)) return [];     // Se agrego una validacion para preguntar si insumos es un array
-        return (insumosQuimicos ?? []).filter((insumoQuimico) => {
-            return (
+        if (!Array.isArray(insumosQuimicos)) return [];
+
+        return insumosQuimicos.filter((insumoQuimico) => {
+            const coincideBusqueda =
                 insumoQuimico.nombre.toLowerCase().includes(search.toLowerCase()) ||
                 insumoQuimico.unidad_medida.nombre.toLowerCase().includes(search.toLowerCase()) ||
-                insumoQuimico.tipo.nombre.toLowerCase().includes(search.toLocaleLowerCase())
-            );
+                insumoQuimico.tipo.nombre.toLowerCase().includes(search.toLowerCase());
+
+            const coincideEstado =
+                estadoFiltro === "todos" ||
+                (estadoFiltro === "activo" && insumoQuimico.activo) ||
+                (estadoFiltro === "inactivo" && !insumoQuimico.activo);
+
+            return coincideBusqueda && coincideEstado;
         });
-    }, [search, insumosQuimicos]);
+    }, [search, estadoFiltro, insumosQuimicos]);
 
     const subHeaderComponentMemo = useMemo(() => {
         return (
@@ -185,7 +201,13 @@ export function ListPage() {
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
                 </Col>
-
+                <Col xs="auto" className="align-self-center">
+                    <ListFilter
+                        value={estadoFiltro}
+                        options={ESTADO_FILTRO_LABELS}
+                        onChange={(value) => setEstadoFiltro(value as EstadoFiltro)}
+                    />
+                </Col>
                 {currentUser?.administrar && (
                     <Col xs="auto" className="d-flex justify-content-end">
                         <Button

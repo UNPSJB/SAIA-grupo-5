@@ -465,14 +465,16 @@ export function HomePage() {
                     </Card>
                 </Col>}
             </Row>
-            {currentUser?.administrar &&
-                <Row className="g-3 dashboard-charts mt-0">
-                    <Col xs={12}>
-                        <CumplimientoChart />
-                    </Col>
-                </Row>
-            }
-            {currentUser?.administrar && <EstadisticasLotes />}
+            {currentUser?.administrar && (
+                <>
+                    <EstadisticasLotes />
+                    <Row className="g-3 dashboard-charts mt-0">
+                        <Col xs={12}>
+                            <CumplimientoChart />
+                        </Col>
+                    </Row>
+                </>
+            )}
         </Container>
     );
 }

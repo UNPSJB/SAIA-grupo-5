@@ -103,12 +103,6 @@ export function EstadisticasLotes() {
 
     return (
         <section aria-label="Estadísticas de producción" className="mb-4">
-            <div className="dashboard-section-heading">
-                <div>
-                    <h2>Producción</h2>
-                    <span>Seguimiento de cantidades producidas por producto</span>
-                </div>
-            </div>
 
             <Card className="dashboard-chart-card">
                 <Card.Body>
