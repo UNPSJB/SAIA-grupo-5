@@ -35,13 +35,6 @@ export function VerTipoIncidentePage() {
             <Row className="justify-content-center mt-3">
                 <Col md={8}>
                     <Card className="shadow-sm border-0 rounded-3">
-                        <Card.Header className="bg-white border-bottom p-4">
-                            <h5 className="mb-0 fw-bold text-primary">
-                                <i className="bi bi-info-circle me-2"></i>
-                                Información del Tipo Incidente
-                            </h5>
-                        </Card.Header>
-                        
                         <Card.Body className="p-4">
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
                                 <Col sm={4} className="fw-bold text-secondary">Nombre</Col>
