@@ -1,5 +1,5 @@
 import { Container, Alert, Row, Col, Card, Button } from "react-bootstrap";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 import type { LoteProduccion, EstadoLote } from "../types";
@@ -17,6 +17,12 @@ export function VerLoteProduccionPage() {
     const { id } = useParams();
 
     const { data: lote, isLoading, error } = useApi<LoteProduccion>(`/lotes-produccion/${id}`);
+    
+    const location = useLocation();
+    const origen = location.state?.origen;
+    const volverA = origen === "historial"
+        ? "/lotes-historial"
+        : "/lotes-produccion/";
 
     const tituloPagina = "Detalle del Lote de Produccion";
 
@@ -118,7 +124,7 @@ export function VerLoteProduccionPage() {
                         <Card.Footer className="bg-light border-top p-3 d-flex justify-content-start gap-2">
                             <Button
                                 variant="outline-secondary"
-                                onClick={() => navigate('/lotes-produccion')}
+                                onClick={() => navigate(volverA)}
                             >
                                 <i className="bi bi-arrow-left me-1"></i>Volver a la lista
                             </Button>
