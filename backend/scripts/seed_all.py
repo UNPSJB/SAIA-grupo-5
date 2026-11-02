@@ -1,13 +1,14 @@
-# scripts/seed_all.py
-import src.all_models
 """
-Corre todos los scripts de seed
-
+Corre todos los scripts de seed.
 Uso: python -m scripts.seed_all
 """
+import src.all_models
+
 from scripts import (
+    seed_unidad_medida,
     seed_insumos,
     seed_personal,
+    seed_productos,
     seed_planes_limpieza,
     seed_sectores,
     seed_superficies,
@@ -18,23 +19,25 @@ from scripts import (
     seed_vencimientoPersonal,
     seed_planCalibracion,
     seed_documentos,
-   # seed_tareas_ocurrencia, para probar generador automatico
+    seed_lote_produccion,
 )
 
 ORDEN = [
+    seed_unidad_medida,
     seed_insumos,
     seed_personal,
+    seed_productos,
     seed_planes_limpieza,
-    seed_sectores,            # requiere nada
-    seed_superficies,         # requiere seed_sectores
-    seed_equipos,             # requiere seed_sectores
-    seed_tareas,              # requiere seed_planes_limpieza, seed_sectores, seed_superficies, seed_equipos
-    seed_elementos_limpieza,  # requiere nada
-    seed_incidentes,          # requiere seed_personal (sectores es opcional)
-    seed_vencimientoPersonal, # requiere seed_personal
-    seed_planCalibracion,     # requiere seed_sectores, seed_equipos
-    seed_documentos,          # requiere seed_personal
-    # seed_tareas_ocurrencia,  # requiere seed_tareas
+    seed_sectores,
+    seed_superficies,
+    seed_equipos,
+    seed_tareas,
+    seed_elementos_limpieza,
+    seed_incidentes,
+    seed_vencimientoPersonal,
+    seed_planCalibracion,
+    seed_documentos,
+    seed_lote_produccion,
 ]
 
 

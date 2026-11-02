@@ -1,4 +1,3 @@
-
 """
 Pobla la base de datos con insumos de prueba y sus unidades de medida.
 
@@ -9,8 +8,6 @@ Uso: python -m scripts.seed_insumos
 
 from faker import Faker
 from sqlalchemy import select
-
-import src.all_models  # noqa: F401
 
 from src.database import SessionLocal
 from src.insumos.models import Insumo
@@ -63,55 +60,38 @@ NOMBRES_INSUMOS = {
 }
 
 
-def generar_unidades_medida(db) -> dict[str, UnidadMedida]:
-    unidades = {}
-
-    for nombre in set(NOMBRES_INSUMOS.values()):
-        unidad = db.scalar(
-            select(UnidadMedida).where(UnidadMedida.nombre == nombre)
-        )
-
-        if unidad is None:
-            unidad = UnidadMedida(nombre=nombre, activo=True)
-            db.add(unidad)
-            db.flush()
-
-        unidades[nombre] = unidad
-
-    return unidades
-
-
-def generar_insumos(db, cantidad: int) -> list[Insumo]:
+def generar_insumos(cantidad: int, db) -> list[Insumo]:
     cantidad = min(cantidad, len(NOMBRES_INSUMOS))
+    nombres = fake.random_elements(elements=list(NOMBRES_INSUMOS), length=cantidad, unique=True)
 
-    nombres = fake.random_elements(
-        elements=list(NOMBRES_INSUMOS),
-        length=cantidad,
+    inactivos = set(fake.random_elements(
+        elements=nombres,
+        length=min(CANTIDAD_INSUMOS_INACTIVOS, cantidad),
         unique=True
-    )
+    ))
 
-    inactivos = set(
-        fake.random_elements(
-            elements=nombres,
-            length=min(CANTIDAD_INSUMOS_INACTIVOS, len(nombres)),
-            unique=True
-        )
-    )
+    unidades = {
+        unidad.nombre: unidad.id
+        for unidad in db.scalars(select(UnidadMedida)).all()
+    }
 
-    unidades = generar_unidades_medida(db)
+    existentes = {
+        insumo.nombre
+        for insumo in db.scalars(select(Insumo)).all()
+    }
 
-    insumos_existentes = set(
-        db.scalars(select(Insumo.nombre)).all()
-    )
+    faltantes = {NOMBRES_INSUMOS[nombre] for nombre in nombres} - unidades.keys()
+    if faltantes:
+        raise ValueError(f"Faltan unidades de medida: {', '.join(sorted(faltantes))}")
 
     return [
         Insumo(
             nombre=nombre,
-            unidad_medida_id=unidades[NOMBRES_INSUMOS[nombre]].id,
-            activo=nombre not in inactivos
+            unidad_medida_id=unidades[NOMBRES_INSUMOS[nombre]],
+            activo=nombre not in inactivos,
         )
         for nombre in nombres
-        if nombre not in insumos_existentes
+        if nombre not in existentes
     ]
 
 
@@ -119,7 +99,7 @@ def main():
     db = SessionLocal()
 
     try:
-        insumos = generar_insumos(db, CANTIDAD_INSUMOS)
+        insumos = generar_insumos(CANTIDAD_INSUMOS, db)
 
         db.add_all(insumos)
         db.commit()
