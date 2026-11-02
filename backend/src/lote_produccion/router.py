@@ -13,12 +13,7 @@ logger = logging.getLogger(__name__)
 router = PermissionedRouter(prefix="/lotes-produccion", tags=["lotes_produccion"])
 
 @router.get("/estadisticas", response_model=list[schemas.EstadisticaProduccion], dependencies=[Depends(tiene_permiso_administrar)])
-def read_estadisticas_produccion(
-    fecha_desde: date = Query(...),
-    fecha_hasta: date = Query(...),
-    producto_id: int | None = None,
-    db: Session = Depends(get_db)
-):
+def read_estadisticas_produccion(fecha_desde: date = Query(...), fecha_hasta: date = Query(...), producto_id: int | None = None, db: Session = Depends(get_db)):
     if fecha_hasta < fecha_desde:
         raise HTTPException(
             status_code=400,

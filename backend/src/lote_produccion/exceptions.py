@@ -1,25 +1,14 @@
-from fastapi import HTTPException
+from src.lote_produccion.constants import ErrorCode
+from src.exceptions import NotFound, BadRequest
 
 
-class ProductoDadoDeBaja(HTTPException):
-    def __init__(self):
-        super().__init__(
-            status_code=400,
-            detail="No se puede registrar un lote de un producto dado de baja."
-        )
+class LoteProduccionNoEncontrado(NotFound):
+    DETAIL = ErrorCode.LOTE_PRODUCCION_NO_ENCONTRADO
 
 
-class LoteProduccionNoEncontrado(HTTPException):
-    def __init__(self):
-        super().__init__(
-            status_code=404,
-            detail="El lote de producción no fue encontrado."
-        )
+class LoteProduccionDadoDeBaja(BadRequest):
+    DETAIL = ErrorCode.LOTE_PRODUCCION_DADO_DE_BAJA
 
 
-class LoteProduccionDadoDeBaja(HTTPException):
-    def __init__(self):
-        super().__init__(
-            status_code=400,
-            detail="No se puede modificar un lote de producción dado de baja."
-        )
+class ProductoDadoDeBaja(BadRequest):
+    DETAIL = ErrorCode.PRODUCTO_DADO_DE_BAJA

@@ -12,12 +12,7 @@ from sqlalchemy import func
 logger = logging.getLogger(__name__)
 
 
-def obtener_estadisticas_produccion(
-    db: Session,
-    fecha_desde: date,
-    fecha_hasta: date,
-    producto_id: int | None = None
-) -> List[schemas.EstadisticaProduccion]:
+def obtener_estadisticas_produccion(db: Session, fecha_desde: date, fecha_hasta: date, producto_id: int | None = None) -> List[schemas.EstadisticaProduccion]:
 
     query = (
         select(
