@@ -194,8 +194,17 @@ export function ListPage() {
 
     return (
         <Container>
-            <Row className="p-2 align-items-center" >
-                <Col>
+            <Row className="p-2 align-items-center justify-content-between" >
+                <Col xs={2}>
+                    <Button
+                        variant="outline-secondary"
+                        size="sm"
+                        onClick={() => navigate('/documentos')}
+                    >
+                        <i className="bi bi-arrow-left me-1"></i> Volver
+                    </Button>
+                </Col>
+                <Col className="text-center">
                     <PageHeader title="Listado de Versiones" />
                 </Col>
                 <Col xs="auto" className="align-self-center">
@@ -209,16 +218,6 @@ export function ListPage() {
                         checked={incluirHistoricas}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setIncluirHistoricas(e.target.checked)}
                     />
-                </Col>
-                <Col xs="auto" className="d-flex justify-content-end">
-                    <Button
-                        variant="outline-secondary"
-                        size="sm"
-                        onClick={() => navigate('/documentos')}
-                    >
-                        <i className="bi bi-arrow-left me-1"></i>
-                        Volver a Documentos
-                    </Button>
                 </Col>
                 {currentUser?.administrar &&(
                     <Col xs="auto" className="d-flex justify-content-end">
