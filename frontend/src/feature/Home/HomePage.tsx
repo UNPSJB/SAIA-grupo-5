@@ -21,6 +21,7 @@ import type { ConfiguracionSistema } from "../ConfiguracionSistema/types";
 import type { PlanCalibracion } from "../PlanesCalibracion/types";
 import type { IncidenteSeguimiento } from "../Incidentes/types";
 import { getEstadoHistorial } from "../Historial/types";
+import { EstadisticasLotes } from "../EstadisticasProduccion/components/EstadisticaLote";
 import { clasificarPorDiasRestantes } from "../VencimientosConsolidados/utils/estado";
 import { toDateKey, dateFromKey } from "../../libs/date";
 import { MetricCard } from "./components/MetricCard";
@@ -464,13 +465,16 @@ export function HomePage() {
                     </Card>
                 </Col>}
             </Row>
-            {currentUser?.administrar &&
-                <Row className="g-3 dashboard-charts mt-0">
-                    <Col xs={12}>
-                        <CumplimientoChart />
-                    </Col>
-                </Row>
-            }
+            {currentUser?.administrar && (
+                <>
+                    <EstadisticasLotes />
+                    <Row className="g-3 dashboard-charts mt-0">
+                        <Col xs={12}>
+                            <CumplimientoChart />
+                        </Col>
+                    </Row>
+                </>
+            )}
         </Container>
     );
 }

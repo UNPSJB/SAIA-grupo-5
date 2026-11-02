@@ -3,12 +3,18 @@ from typing import List, Literal
 from datetime import date
 from sqlalchemy import select, func
 from sqlalchemy.orm import Session, joinedload, selectinload
-from src.lote_produccion.models import LoteProduccion
+from src.lote_produccion.models import LoteProduccion, EstadoLote
 from src.lote_produccion import schemas, exceptions
 from src.producto.models import Producto
 from src.producto import services as producto_services
 
 logger = logging.getLogger(__name__)
+
+SIGUIENTE_ESTADO ={
+    EstadoLote.EN_PRODUCCION.value: EstadoLote.EMPAQUETANDO.value,
+    EstadoLote.EMPAQUETANDO.value: EstadoLote.TERMINADO.value,
+    EstadoLote.TERMINADO.value: EstadoLote.ENVIADO.value
+}
 
 
 def crear_lote_produccion(db: Session, lote: schemas.LoteProduccionCreate) -> schemas.LoteProduccion:
@@ -43,10 +49,10 @@ def listar_lotes_por_producto(db: Session, producto_id: int) -> List[schemas.Lot
 def cambiar_estado_lote_produccion(db: Session, lote_id: int) -> schemas.LoteProduccion:
     db_lote = leer_lote_produccion(db, lote_id)
 
-    if not db_lote.activo and not db_lote.producto.activo:
-        raise exceptions.ProductoDadoDeBaja()
+    if db_lote.estado == EstadoLote.ENVIADO.value:
+        raise exceptions.LoteYaEnviado()
 
-    db_lote.activo = not db_lote.activo
+    db_lote.estado = SIGUIENTE_ESTADO[db_lote.estado]
     db.commit()
     db.refresh(db_lote)
     return db_lote
@@ -54,7 +60,7 @@ def cambiar_estado_lote_produccion(db: Session, lote_id: int) -> schemas.LotePro
 
 def modificar_lote_produccion(db: Session, lote_id: int, lote: schemas.LoteProduccionUpdate) -> schemas.LoteProduccion:
     db_lote = leer_lote_produccion(db, lote_id)
-    if not db_lote.activo:
+    if not db_lote.activo or db_lote.estado == EstadoLote.ENVIADO.value:
         raise exceptions.LoteProduccionDadoDeBaja()
 
     db_producto = producto_services.leer_producto(db, lote.producto_id)
@@ -102,3 +108,53 @@ def listar_lotes_historial(
     
     return schemas.LoteProduccionHistorial(lotes=lotes, total_producido=total_producido)
 
+from src.lote_produccion.models import LoteProduccion
+from src.lote_produccion import schemas, exceptions
+from src.producto.models import Producto
+from src.producto import services as producto_services
+from datetime import date
+from sqlalchemy import func
+
+logger = logging.getLogger(__name__)
+
+
+def obtener_estadisticas_produccion(db: Session, fecha_desde: date, fecha_hasta: date, producto_id: int | None = None) -> List[schemas.EstadisticaProduccion]:
+
+    query = (
+        select(
+            LoteProduccion.producto_id,
+            Producto.nombre.label("producto_nombre"),
+            LoteProduccion.fecha_produccion.label("fecha"),
+            func.sum(LoteProduccion.cantidad_producida).label("cantidad")
+        )
+        .join(Producto, LoteProduccion.producto_id == Producto.id)
+        .where(
+            LoteProduccion.fecha_produccion >= fecha_desde,
+            LoteProduccion.fecha_produccion <= fecha_hasta,
+            LoteProduccion.activo == True
+        )
+    )
+
+    if producto_id is not None:
+        query = query.where(LoteProduccion.producto_id == producto_id)
+
+    query = query.group_by(
+        LoteProduccion.producto_id,
+        Producto.nombre,
+        LoteProduccion.fecha_produccion
+    ).order_by(
+        LoteProduccion.fecha_produccion.asc(),
+        Producto.nombre.asc()
+    )
+
+    resultados = db.execute(query).all()
+
+    return [
+        schemas.EstadisticaProduccion(
+            producto_id=registro.producto_id,
+            producto_nombre=registro.producto_nombre,
+            fecha=registro.fecha,
+            cantidad=registro.cantidad
+        )
+        for registro in resultados
+    ]

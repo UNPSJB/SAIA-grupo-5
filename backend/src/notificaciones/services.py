@@ -7,9 +7,13 @@ from sqlalchemy.orm import Session
 from src.configuracion_sistema.services import obtener_o_crear_configuracion
 from src.elementosLimpieza.models import ElementoLimpieza
 from src.elementosLimpieza.services import calcular_dias_restantes
+from src.equipos.models import Equipo
 from src.notificaciones.constants import TipoNotificacion
 from src.notificaciones.models import Notificacion
 from src.personal.models import Persona
+from src.planesCalibracion.constants import DIAS_ALERTA_CALIBRACION
+from src.planesCalibracion.models import PlanCalibracion
+from src.planesCalibracion.services import calcular_dias_restantes as calcular_dias_restantes_calibracion
 from src.vencimiento_personal.models import VencimientoPersonal
 
 
@@ -275,6 +279,124 @@ def resolver_notificaciones_vencimiento_personal(db: Session, vencimiento_id: in
         select(Notificacion).where(
             Notificacion.tipo == TipoNotificacion.VENCIMIENTO_PERSONAL.value,
             Notificacion.entidad_id == vencimiento_id,
+            Notificacion.resuelta.is_(False),
+        )
+    ).all()
+
+    for notificacion in pendientes:
+        notificacion.resuelta = True
+        notificacion.resuelta_en = datetime.now()
+
+    if pendientes:
+        db.commit()
+
+    return len(pendientes)
+
+
+def _notificacion_calibracion_equipo_si_corresponde(
+    db: Session, plan: PlanCalibracion, hoy: date, administradores: list[Persona]
+) -> list[Notificacion]:
+
+    dias_restantes = calcular_dias_restantes_calibracion(db, plan)
+    if dias_restantes > DIAS_ALERTA_CALIBRACION:
+        return []
+
+    equipo_nombre = plan.equipo.nombre
+
+    if dias_restantes < 0:
+        dias_vencido = abs(dias_restantes)
+        dia_o_dias = "día" if dias_vencido == 1 else "días"
+        titulo = f"Calibración vencida hace {dias_vencido} {dia_o_dias}: {equipo_nombre}"
+        descripcion = f"La calibración del equipo {equipo_nombre} está vencida hace {dias_vencido} {dia_o_dias}."
+    elif dias_restantes == 0:
+        titulo = f"Calibración vence hoy: {equipo_nombre}"
+        descripcion = f"La calibración del equipo {equipo_nombre} vence hoy."
+    else:
+        dia_o_dias = "día" if dias_restantes == 1 else "días"
+        titulo = f"Calibración vence en {dias_restantes} {dia_o_dias}: {equipo_nombre}"
+        descripcion = f"La calibración del equipo {equipo_nombre} vence en {dias_restantes} {dia_o_dias}."
+
+    clave_origen = f"calibracion_equipo:{plan.id}:{hoy.isoformat()}"
+
+    creadas: list[Notificacion] = []
+    for administrador in administradores:
+        ya_existe = db.scalar(
+            select(Notificacion).where(
+                Notificacion.administrador_id == administrador.id,
+                Notificacion.clave_origen == clave_origen,
+            )
+        )
+        if ya_existe:
+            continue
+
+        creadas.append(
+            Notificacion(
+                administrador_id=administrador.id,
+                clave_origen=clave_origen,
+                tipo=TipoNotificacion.CALIBRACION_EQUIPO.value,
+                entidad_id=plan.id,
+                entidad="PlanCalibracion",
+                titulo=titulo,
+                descripcion=descripcion,
+                url="/planes-calibracion",
+                leida=False,
+                resuelta=False,
+            )
+        )
+
+    return creadas
+
+
+def generar_notificaciones_calibracion_equipos(db: Session) -> list[Notificacion]:
+    # Chequeo diario
+
+    hoy = date.today()
+    planes_activos = db.scalars(
+        select(PlanCalibracion)
+        .join(PlanCalibracion.equipo)
+        .where(PlanCalibracion.estado.is_(True), Equipo.estado.is_(True))
+    ).all()
+    administradores = _listar_administradores(db)
+
+    creadas: list[Notificacion] = []
+    for plan in planes_activos:
+        creadas.extend(_notificacion_calibracion_equipo_si_corresponde(db, plan, hoy, administradores))
+
+    if creadas:
+        db.add_all(creadas)
+        db.commit()
+        for notificacion in creadas:
+            db.refresh(notificacion)
+
+    return creadas
+
+
+def generar_notificacion_calibracion_equipo_individual(db: Session, plan_id: int) -> list[Notificacion]:
+    # Chequeo puntual 
+
+    plan = db.get(PlanCalibracion, plan_id)
+    if plan is None or not plan.estado or not plan.equipo.estado:
+        return []
+
+    hoy = date.today()
+    administradores = _listar_administradores(db)
+    creadas = _notificacion_calibracion_equipo_si_corresponde(db, plan, hoy, administradores)
+
+    if creadas:
+        db.add_all(creadas)
+        db.commit()
+        for notificacion in creadas:
+            db.refresh(notificacion)
+
+    return creadas
+
+
+def resolver_notificaciones_calibracion_equipo(db: Session, plan_id: int) -> int:
+
+    pendientes = db.scalars(
+        select(Notificacion).where(
+            Notificacion.tipo == TipoNotificacion.CALIBRACION_EQUIPO.value,
+            Notificacion.entidad_id == plan_id,
             Notificacion.resuelta.is_(False),
         )
     ).all()

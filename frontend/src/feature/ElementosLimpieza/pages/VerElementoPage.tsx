@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import { Container, Spinner, Alert, Row, Col, Card, Button } from "react-bootstrap";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 import type { ElementoLimpieza } from "../types";
@@ -14,6 +14,11 @@ export function VerElementoPage() {
     const { id } = useParams();
     const { currentUser } = useAuth();
     const [mostrarHistorial, setMostrarHistorial] = useState(false);
+    const location = useLocation();
+    const origen = location.state?.origen;
+    const volverA = origen === "vencimiento"
+        ? "/vencimientos?default=elementos"
+        : "/elementos-limpieza/";
 
     const { data: elementoLimpieza, isLoading, error } = useApi<ElementoLimpieza>(`/elementos-limpieza/${id}`);
     const { data: recambios } = useApi<RecambioElementoLimpieza[]>(`/recambios-elementos-limpieza/elemento/${id}`);
@@ -51,13 +56,6 @@ export function VerElementoPage() {
             <Row className="justify-content-center mt-3">
                 <Col md={8}>
                     <Card className="shadow-sm border-0 rounded-3">
-                        <Card.Header className="bg-white border-bottom p-4">
-                            <h5 className="mb-0 fw-bold text-primary">
-                                <i className="bi bi-info-circle me-2"></i>
-                                Información del Elemento de Limpieza
-                            </h5>
-                        </Card.Header>
-
                         <Card.Body className="p-4">
                             <Row className="mb-3 border-bottom pb-3 align-items-center ">
                                 <Col sm={4} className="fw-bold text-secondary">Código</Col>
@@ -130,10 +128,10 @@ export function VerElementoPage() {
                             </Row>
                         </Card.Body>
 
-                        <Card.Footer className="bg-light border-top p-3 d-flex justify-content-end gap-2">
+                        <Card.Footer className="bg-light border-top p-3 d-flex justify-content-start gap-2">
                             <Button
                                 variant="outline-secondary"
-                                onClick={() => navigate("/elementos-limpieza")}
+                                onClick={() => navigate(volverA)}
                             >
                                 <i className="bi bi-arrow-left me-1"></i>
                                 Volver a la lista

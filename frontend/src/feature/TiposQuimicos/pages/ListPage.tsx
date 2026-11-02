@@ -14,7 +14,15 @@ import { useAuth } from '../../../hooks/useAuth';
 
 import { DeleteTipoQuimicoModal } from '../components/DeleteTipoQuimicoModal'; 
 import type { TipoQuimico } from '../types';
+import { ListFilter } from "../../../components/ListFilter";
 
+type EstadoFiltro = "todos" | "activo" | "inactivo";
+
+const ESTADO_FILTRO_LABELS: Record<EstadoFiltro, string> = {
+    todos: "Todos",
+    activo: "Activos",
+    inactivo: "Inactivos",
+};
 
 export function ListPage() {
     const navigate = useNavigate();     // Esto se usa para cambiar de pagina cuando cree el insumo
@@ -22,16 +30,25 @@ export function ListPage() {
     const [search, setSearch] = useState('');
     const { data: tiposQuimicos, error, isLoading } = useApi<TipoQuimico[]>("/tipos-quimicos/")    
     const [tipoQuimicoToDelete, setTipoQuimicoToDelete] = useState<TipoQuimico | null>(null);
+    const [estadoFiltro, setEstadoFiltro] = useState<EstadoFiltro>("todos");
 
     // useMemo infiere que retorna un array de tipo Insumo[]
     const filteredTiposQuimicos = useMemo(() => {
-        if (!Array.isArray(tiposQuimicos)) return [];     // Se agrego una validacion para preguntar si insumos es un array
-        return (tiposQuimicos ?? []).filter((tipoQuimico) => {
-            return (
-                tipoQuimico.nombre.toLowerCase().includes(search.toLowerCase())
-            );
+        if (!Array.isArray(tiposQuimicos)) return [];
+
+        return tiposQuimicos.filter((tipoQuimico) => {
+            const coincideBusqueda = tipoQuimico.nombre
+                .toLowerCase()
+                .includes(search.toLowerCase());
+
+            const coincideEstado =
+                estadoFiltro === "todos" ||
+                (estadoFiltro === "activo" && tipoQuimico.activo) ||
+                (estadoFiltro === "inactivo" && !tipoQuimico.activo);
+
+            return coincideBusqueda && coincideEstado;
         });
-    }, [search, tiposQuimicos]);
+    }, [search, estadoFiltro, tiposQuimicos]);
 
     const subHeaderComponentMemo = useMemo(() => {
         return (
@@ -131,6 +148,13 @@ export function ListPage() {
                 </Col>
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
+                </Col>
+                <Col xs="auto" className="align-self-center">
+                    <ListFilter
+                        value={estadoFiltro}
+                        options={ESTADO_FILTRO_LABELS}
+                        onChange={(value) => setEstadoFiltro(value as EstadoFiltro)}
+                    />
                 </Col>
                 {currentUser?.administrar &&(
                     <Col xs="auto" className="d-flex justify-content-end">

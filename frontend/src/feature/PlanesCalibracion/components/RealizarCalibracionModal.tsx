@@ -176,7 +176,7 @@ export function RealizarCalibracionModal({ plan, onHide, onRealizado }: Realizar
                     </Form.Group>
                 </Modal.Body>
 
-                <Modal.Footer>
+                <Modal.Footer className="justify-content-start">
                     <Button variant="secondary" onClick={handleClose} disabled={cargando}>
                         <i className="bi bi-x-circle me-1"></i>Cancelar
                     </Button>
