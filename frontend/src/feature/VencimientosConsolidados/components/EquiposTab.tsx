@@ -11,8 +11,11 @@ import { useAuth } from "../../../hooks/useAuth"
 import type { Equipo } from "../../Equipos/types"
 import type { PlanCalibracion } from "../../PlanesCalibracion/types"
 import { RealizarCalibracionModal } from "../../PlanesCalibracion/components/RealizarCalibracionModal"
-import { clasificarPorDiasRestantes, ESTADO_VENCIMIENTOS_ORDEN, type EstadoVencimientos } from "../utils/estado"
+import { clasificarPorDiasRestantes, ESTADO_VENCIMIENTOS_ORDEN, FILTRO_VENCIMIENTOS_LABELS, type FiltroVencimientos, type EstadoVencimientos } from "../utils/estado"
 import { EstadoVencimiento } from "./EstadoVencimiento"
+import { Col, Form, Row } from "react-bootstrap";
+import { ListFilter } from "../../../components/ListFilter";
+
 
 type FilaEquipo = {
     equipo: Equipo
@@ -26,6 +29,8 @@ export function EquiposTab({ diasAntelacion }: { diasAntelacion: number }) {
     const { data: planes, error: errorPlanes, isLoading: isLoadingPlanes } = useApi<PlanCalibracion[]>("/planes-calibracion/")
     const { data: equipos, error: errorEquipos, isLoading: isLoadingEquipos } = useApi<Equipo[]>("/equipos/")
     const [planToCalibrar, setPlanToCalibrar] = useState<PlanCalibracion | null>(null)
+    const [search, setSearch] = useState("");
+    const [estadoFiltro, setEstadoFiltro] = useState<FiltroVencimientos>("todos");
 
     const filas = useMemo<FilaEquipo[]>(() => {
         if (!Array.isArray(equipos)) return []
@@ -45,6 +50,23 @@ export function EquiposTab({ diasAntelacion }: { diasAntelacion: number }) {
             })
             .sort((a, b) => ESTADO_VENCIMIENTOS_ORDEN[a.estadoVencimiento] - ESTADO_VENCIMIENTOS_ORDEN[b.estadoVencimiento])
     }, [equipos, planes, diasAntelacion])
+
+    const filasFiltradas = useMemo(() => {
+        const busqueda = search.toLowerCase();
+
+        return filas.filter((fila) => {
+            const coincideBusqueda =
+                fila.equipo.nombre.toLowerCase().includes(busqueda) ||
+                fila.equipo.categoria.toLowerCase().includes(busqueda) ||
+                fila.equipo.ubicacion.toLowerCase().includes(busqueda);
+
+            const coincideEstado =
+                estadoFiltro === "todos" ||
+                fila.estadoVencimiento === estadoFiltro;
+
+            return coincideBusqueda && coincideEstado;
+        });
+    }, [filas, search, estadoFiltro]);
 
     const isLoading = isLoadingPlanes || isLoadingEquipos
     const error = errorPlanes || errorEquipos
@@ -100,19 +122,38 @@ export function EquiposTab({ diasAntelacion }: { diasAntelacion: number }) {
 
     return (
         <>
+            <Row className="mb-3 g-2 justify-content-end">
+                <Col xs="auto">
+                    <Form.Control
+                        type="text"
+                        placeholder="Buscar equipo..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                </Col>
+
+                <Col xs="auto">
+                    <ListFilter
+                        value={estadoFiltro}
+                        options={FILTRO_VENCIMIENTOS_LABELS}
+                        onChange={(value) => setEstadoFiltro(value as FiltroVencimientos)}
+                    />
+                </Col>
+            </Row>
+
             <AppTable
                 columns={columns}
-                data={filas}
+                data={filasFiltradas}
             />
 
             <RealizarCalibracionModal
                 plan={planToCalibrar}
                 onHide={() => setPlanToCalibrar(null)}
                 onRealizado={() => {
-                    mutate("/planes-calibracion/")
-                    setPlanToCalibrar(null)
+                    mutate("/planes-calibracion/");
+                    setPlanToCalibrar(null);
                 }}
             />
         </>
-    )
+    );
 }

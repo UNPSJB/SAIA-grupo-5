@@ -209,7 +209,7 @@ export function PersonaForm({ textoBoton, onSubmit, valoresIniciales, isEditing 
           )}
         </Form.Group>
 
-        <div className="d-flex justify-content-end gap-2">
+        <div className="d-flex justify-content-start gap-2">
           <Button variant="secondary" type="button" onClick={() => navigate('/personal')}>
             <i className="bi bi-x-circle me-1"></i>Cancelar
           </Button>

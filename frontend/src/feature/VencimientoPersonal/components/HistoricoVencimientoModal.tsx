@@ -96,7 +96,7 @@ export function HistoricoVencimientoModal({ vencimiento, onHide }: HistoricoVenc
                     <AppTable columns={columns} data={historico ?? []} />
                 )}
             </Modal.Body>
-            <Modal.Footer>
+            <Modal.Footer className="justify-content-start">
                 <Button variant="secondary" onClick={onHide}>
                     <i className="bi bi-x-circle me-1"></i>Cerrar
                 </Button>
