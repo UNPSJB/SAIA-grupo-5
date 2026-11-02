@@ -95,7 +95,7 @@ export function ConsumoAcumuladoPage() {
             </Row>
             <Row className="p-2 align-items-end">
                 <Col xs={3}>
-                    <Form.Group className="mb-3 text-start">
+                    <Form.Group className="mb-3 text-start" data-tour="filtro-fecha-desde-consumo">
                         <Form.Label className="p-1 fw-bold">Fecha desde: </Form.Label>
                         <Form.Control
                             type="date"
@@ -105,7 +105,7 @@ export function ConsumoAcumuladoPage() {
                     </Form.Group>
                 </Col>
                 <Col xs={3}>
-                    <Form.Group className="mb-3 text-start">
+                    <Form.Group className="mb-3 text-start" data-tour="filtro-fecha-hasta-consumo">
                         <Form.Label className="p-1 fw-bold">Fecha hasta: </Form.Label>
                         <Form.Control
                             type="date"
@@ -115,7 +115,7 @@ export function ConsumoAcumuladoPage() {
                     </Form.Group>
                 </Col>
                 <Col xs="auto">
-                    <Button className="ms-2" variant="primary"
+                    <Button data-tour="btn-consultar-consumo" className="ms-2" variant="primary"
                         onClick={() => { setFechaDesdeConsultada(fecha_desde); setFechaHastaConsultada(fecha_hasta); }}
                     >
                         <i className="bi bi-search me-1"></i> Consultar
@@ -127,7 +127,9 @@ export function ConsumoAcumuladoPage() {
                 <Alert variant="danger"> No hay consumos registrados para el periodo seleccionado.</Alert>
             )}
             {consumos && consumos.length > 0 && (
-                <AppTable columns={columns} data={consumos} />
+                <div data-tour="tabla-consumo-acumulado">
+                    <AppTable columns={columns} data={consumos} />
+                </div>
             )}
         </Container>
     );

@@ -46,7 +46,7 @@ export function VerDocumentoPage() {
 
             <Row className="justify-content-center mt-3">
                 <Col md={8}>
-                    <Card className="shadow-sm border-0 rounded-3">                       
+                    <Card data-tour="info-documento" className="shadow-sm border-0 rounded-3">                       
                         <Card.Body className="p-4">
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
                                 <Col sm={4} className="fw-bold text-secondary">Nombre</Col>
@@ -69,6 +69,7 @@ export function VerDocumentoPage() {
                                 <Col sm={4} className="fw-bold text-secondary">Versiones</Col>
                                 <Col sm={8} className="d-flex flex-wrap gap-2">
                                     <Button
+                                        data-tour={isAdmin ? 'btn-historial-versiones' : undefined}
                                         variant="outline-info"
                                         size="sm"
                                         disabled={!documento.activo || (!isAdmin && (cargandoVersiones || !versionVigente))}
@@ -85,6 +86,7 @@ export function VerDocumentoPage() {
 
                                     {!isAdmin && (
                                         <Button
+                                            data-tour="btn-historial-versiones"
                                             variant="outline-secondary"
                                             size="sm"
                                             disabled={!documento.activo}

@@ -57,6 +57,7 @@ export function ListPage() {
     const subHeaderComponentMemo = useMemo(() => {
         return (
             <Form.Control
+                data-tour="buscador-sectores"
                 type="text"
                 placeholder="Buscar sector..."
                 className=" mr-sm-2"
@@ -103,7 +104,9 @@ export function ListPage() {
             minWidth: "160px",
             cell: (row) => (
                 <Button
+                    data-tour="btn-ver-equipos-sector"
                     variant="outline-info"
+
                     size="sm"
                     onClick={() => setSectorEquipos(row)}
                 >
@@ -118,7 +121,9 @@ export function ListPage() {
             minWidth: "160px",
             cell: (row) => (
                 <Button
+                    data-tour="btn-ver-superficies-sector"
                     variant="outline-info"
+
                     size="sm"
                     onClick={() => setSectorSuperficies(row)}
                 >
@@ -135,6 +140,7 @@ export function ListPage() {
             cell: row => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div
+                        data-tour="estado-sector"
                         style={{
                             padding: '4px 12px',
                             borderRadius: '16px',
@@ -163,31 +169,35 @@ export function ListPage() {
                 minWidth: "220px",
                 cell: (row) => (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <ActionButton
-                            variant="outline-primary"
-                            size="sm"
-                            tooltip="Editar"
-                            icon="bi-pencil"
-                            disabled={!row.activo}
-                            onClick={() => navigate(`/sectores/${row.id}/edit`)}
-                        />
-                        {row.activo ? (
+                        <span data-tour="btn-editar-sector">
                             <ActionButton
-                                variant="outline-danger"
+                                variant="outline-primary"
                                 size="sm"
-                                tooltip="Dar de baja"
-                                icon="bi-dash-circle"
-                                onClick={() => setSectorToDelete(row)}
+                                tooltip="Editar"
+                                icon="bi-pencil"
+                                disabled={!row.activo}
+                                onClick={() => navigate(`/sectores/${row.id}/edit`)}
                             />
-                        ) : (
-                            <ActionButton
-                                variant="outline-success"
-                                size="sm"
-                                tooltip="Dar de alta"
-                                icon="bi-check-circle"
-                                onClick={() => cambiarEstado(row)}
-                            />
-                        )}
+                        </span>
+                        <span data-tour="btn-baja-sector">
+                            {row.activo ? (
+                                <ActionButton
+                                    variant="outline-danger"
+                                    size="sm"
+                                    tooltip="Dar de baja"
+                                    icon="bi-dash-circle"
+                                    onClick={() => setSectorToDelete(row)}
+                                />
+                            ) : (
+                                <ActionButton
+                                    variant="outline-success"
+                                    size="sm"
+                                    tooltip="Dar de alta"
+                                    icon="bi-check-circle"
+                                    onClick={() => cambiarEstado(row)}
+                                />
+                            )}
+                        </span>
                     </div>
                 )
             }
@@ -218,6 +228,7 @@ export function ListPage() {
                 {currentUser?.administrar && (
                     <Col xs="auto" className="d-flex justify-content-end">
                         <Button
+                            data-tour="btn-nuevo-sector"
                             variant="primary"
                             size='sm'
                             onClick={() => navigate("/sectores/new")}
@@ -228,7 +239,9 @@ export function ListPage() {
                     </Col>
                 )}
             </Row>
-            <AppTable columns={columns} data={filteredSectores} />
+            <div data-tour="tabla-sectores">
+                <AppTable columns={columns} data={filteredSectores} />
+            </div>
             <DeleteSectorModal
                 sector={sectorToDelete}
                 onHide={() => setSectorToDelete(null)}

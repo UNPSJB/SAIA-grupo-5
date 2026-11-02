@@ -55,6 +55,7 @@ export function TiposElementoLimpiezaPage() {
     const subHeaderComponentMemo = useMemo(() => {
         return (
             <Form.Control
+                data-tour="buscador-tipos-elemento"
                 type="text"
                 placeholder="Buscar tipo..."
                 className="mr-sm-2"
@@ -89,6 +90,7 @@ export function TiposElementoLimpiezaPage() {
             center: true,
             cell: row => (
                 <div
+                    data-tour="estado-tipo-elemento"
                     style={{
                         padding: "4px 12px",
                         borderRadius: "16px",
@@ -113,22 +115,26 @@ export function TiposElementoLimpiezaPage() {
                 cell: row => (
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
                         {row.estado && (
+                            <span data-tour="btn-editar-tipo-elemento">
+                                <ActionButton
+                                    variant="outline-primary"
+                                    size="sm"
+                                    tooltip="Editar"
+                                    icon="bi-pencil"
+                                    onClick={() => navigate(`/tipos-elementos-limpieza/${row.id}/edit`)}
+                                />
+                            </span>
+                            )}
+                        
+                        <span data-tour="btn-baja-tipo-elemento">
                             <ActionButton
-                                variant="outline-primary"
+                                variant={row.estado ? "outline-danger" : "outline-success"}
                                 size="sm"
-                                tooltip="Editar"
-                                icon="bi-pencil"
-                                onClick={() => navigate(`/tipos-elementos-limpieza/${row.id}/edit`)}
+                                tooltip={row.estado ? "Dar de baja" : "Dar de alta"}
+                                icon={row.estado ? "bi-dash-circle" : "bi-check-circle"}
+                                onClick={() => setTipoToDelete(row)}
                             />
-                        )}
-
-                        <ActionButton
-                            variant={row.estado ? "outline-danger" : "outline-success"}
-                            size="sm"
-                            tooltip={row.estado ? "Dar de baja" : "Dar de alta"}
-                            icon={row.estado ? "bi-dash-circle" : "bi-check-circle"}
-                            onClick={() => setTipoToDelete(row)}
-                        />
+                        </span>
                     </div>
                 ),
             },
@@ -159,6 +165,7 @@ export function TiposElementoLimpiezaPage() {
                 {currentUser?.administrar && (
                     <Col xs="auto" className="d-flex justify-content-end">
                         <Button
+                            data-tour="btn-nuevo-tipo-elemento"
                             variant="primary"
                             size="sm"
                             onClick={() => navigate("/tipos-elementos-limpieza/new")}
@@ -168,11 +175,12 @@ export function TiposElementoLimpiezaPage() {
                     </Col>
                 )}
             </Row>
-
-            <AppTable
-                columns={columns}
-                data={filteredTipos}
-            />
+            <div data-tour="tabla-tipos-elemento">
+                <AppTable
+                    columns={columns}
+                    data={filteredTipos}
+                />
+            </div>
 
             <EstadoTipoElementoModal
                 tipoElementoLimpieza={tipoToDelete}

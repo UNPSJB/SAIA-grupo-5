@@ -51,6 +51,7 @@ export function ListPage() {
     const subHeaderComponentMemo = useMemo(() => {
         return (
             <Form.Control
+                data-tour="buscador-documentos"
                 type="text"
                 placeholder="Buscar documento..."
                 className=" mr-sm-2"
@@ -88,6 +89,7 @@ export function ListPage() {
             cell: row => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10}}>
                     <div
+                        data-tour="estado-documento"
                         style={{
                             padding: '4px 12px',
                             borderRadius: '16px',
@@ -110,33 +112,41 @@ export function ListPage() {
             center: true,
             minWidth: "180px",
             cell: (row) => (
+
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
-                    <ActionButton
-                        variant="outline-info"
-                        size="sm"
-                        tooltip="Ver"
-                        icon="bi-eye"
-                        onClick={() => navigate(`/documentos/${row.id}`)}
-                    />
+                    <span>
+                        <ActionButton
+                            data-tour="btn-ver-documento"
+                            variant="outline-info"
+                            size="sm"
+                            tooltip="Ver"
+                            icon="bi-eye"
+                            onClick={() => navigate(`/documentos/${row.id}`)}
+                        />
+                    </span>
 
                     {currentUser?.administrar && (
                         <>
-                            <ActionButton
-                                variant="outline-primary"
-                                size="sm"
-                                tooltip="Editar"
-                                icon="bi-pencil"
-                                disabled={!row.activo}
-                                onClick={() => navigate(`/documentos/${row.id}/edit`)}
-                            />
-
-                            <ActionButton
-                                variant={row.activo ? "outline-danger" : "outline-success"}
-                                size="sm"
-                                tooltip={row.activo ? "Dar de baja" : "Dar de alta"}
-                                icon={row.activo ? "bi-dash-circle" : "bi-check-circle"}
-                                onClick={() => setDocumentoToDelete(row)}
-                            />
+                            <span data-tour="btn-editar-documento">
+                                <ActionButton
+                                    variant="outline-primary"
+                                    size="sm"
+                                    tooltip="Editar"
+                                    icon="bi-pencil"
+                                    disabled={!row.activo}
+                                    onClick={() => navigate(`/documentos/${row.id}/edit`)}
+                                />
+                            </span>
+                                
+                            <span data-tour="btn-baja-documento">
+                                <ActionButton
+                                    variant={row.activo ? "outline-danger" : "outline-success"}
+                                    size="sm"
+                                    tooltip={row.activo ? "Dar de baja" : "Dar de alta"}
+                                    icon={row.activo ? "bi-dash-circle" : "bi-check-circle"}
+                                    onClick={() => setDocumentoToDelete(row)}
+                                />
+                            </span>
                         </>
                     )}
                 </div>
@@ -167,6 +177,7 @@ export function ListPage() {
                 {currentUser?.administrar &&(
                     <Col xs="auto" className="d-flex justify-content-end">
                         <Button
+                            data-tour="btn-nuevo-documento"
                             variant="primary"
                             size='sm'
                             onClick={() => navigate("/documentos/new")}
@@ -178,7 +189,9 @@ export function ListPage() {
                 )}
 
             </Row>
-            <AppTable columns={columns} data={filteredDocumentos} />
+                <div data-tour="tabla-documentos">
+                    <AppTable columns={columns} data={filteredDocumentos} />
+                </div>  
             <DeleteDocumentoModal
                 documento={documentoToDelete}
                 onHide={() => setDocumentoToDelete(null)}

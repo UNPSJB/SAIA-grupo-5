@@ -69,14 +69,14 @@ export function NotificacionesPage() {
             selector: (notification) => notification.resuelta ? 'Resuelta' : notification.leida ? 'Leída' : 'Pendiente',
             sortable: true,
             minWidth: '120px',
-            cell: (notification) => notification.resuelta ? <Badge bg="secondary">Resuelta</Badge> : notification.leida ? <Badge bg="light" text="dark">Leída</Badge> : <Badge bg="warning" text="dark">Pendiente</Badge>,
+            cell: (notification) => (<span data-tour="estado-notificacion"> {notification.resuelta ? <Badge bg="secondary">Resuelta</Badge> : notification.leida ? <Badge bg="light" text="dark">Leída</Badge> : <Badge bg="warning" text="dark">Pendiente</Badge>}</span>),
         },
         {
             name: 'Acción',
             button: true,
             minWidth: '145px',
             cell: (notification) => !notification.leida && !notification.resuelta ? (
-                <Button variant="outline-primary" size="sm" onClick={() => void markRead(notification)}>
+                <Button data-tour="btn-marcar-leida" variant="outline-primary" size="sm" onClick={() => void markRead(notification)}>
                     <i className="bi bi-check2 me-1" />Marcar leída
                 </Button>
             ) : null,
@@ -104,14 +104,14 @@ export function NotificacionesPage() {
                     <h1 className="h3 mb-1">Notificaciones</h1>
                     <p className="text-muted mb-0">Historial de novedades operativas y condiciones pendientes.</p>
                 </div>
-                <Badge bg="success" className="fs-6">{(notifications ?? []).filter((notification) => !notification.leida && !notification.resuelta).length} pendientes</Badge>
+                <Badge bg="success" className="fs-6" data-tour="contador-pendientes">{(notifications ?? []).filter((notification) => !notification.leida && !notification.resuelta).length} pendientes</Badge>
             </div>
 
             <Card className="notification-history-card">
                 <Card.Body>
                     <div className="d-flex flex-column flex-md-row gap-2 mb-3">
-                        <InputGroup>
-                            <InputGroup.Text><i className="bi bi-search" aria-hidden="true" /></InputGroup.Text>
+                        <InputGroup data-tour="buscador-notificaciones">
+                            <InputGroup.Text ><i className="bi bi-search" aria-hidden="true" /></InputGroup.Text>
                             <Form.Control
                                 type="search"
                                 placeholder="Buscar por tipo, elemento o detalle..."
@@ -120,7 +120,7 @@ export function NotificacionesPage() {
                                 aria-label="Buscar notificaciones"
                             />
                         </InputGroup>
-                        <Form.Select aria-label="Filtrar notificaciones" value={filter} onChange={(event) => setFilter(event.target.value as typeof filter)} className="notification-filter">
+                        <Form.Select data-tour="filtro-notificaciones" aria-label="Filtrar notificaciones" value={filter} onChange={(event) => setFilter(event.target.value as typeof filter)} className="notification-filter">
                             <option value="todas">Todas</option>
                             <option value="pendientes">Pendientes</option>
                             <option value="leidas">Leídas</option>
@@ -130,13 +130,13 @@ export function NotificacionesPage() {
 
                     {(notifications ?? []).some((notification) => !notification.leida) && (
                         <div className="d-flex justify-content-end mb-3">
-                            <Button variant="outline-primary" size="sm" onClick={() => void markAllRead()}>
+                            <Button data-tour="btn-marcar-todas-leidas" variant="outline-primary" size="sm" onClick={() => void markAllRead()}>
                                 <i className="bi bi-check2-all me-1" />Marcar todas como leídas
                             </Button>
                         </div>
                     )}
 
-                    <div className="notification-table">
+                    <div className="notification-table" data-tour="tabla-notificaciones">
                         <AppTable
                             columns={columns}
                             data={filteredNotifications}
