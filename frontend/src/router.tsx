@@ -127,7 +127,6 @@ import { ListPage as LoteProduccionListPage } from './feature/LotesProduccion/pa
 import { NuevoLoteProduccionPage } from './feature/LotesProduccion/pages/NuevoLoteProduccionPage.tsx'
 import { EditarLoteProduccionPage } from './feature/LotesProduccion/pages/EditarLoteProduccionPage.tsx'
 import { VerLoteProduccionPage } from './feature/LotesProduccion/pages/VerLoteProduccionPage.tsx'
-import { LotesHistorialPage } from './feature/LoteProduccionHistorial/pages/ListPage.tsx'
 
 import { Login, NoAutorizado } from './feature/auth'
 import AuthLayout from './layouts/AuthLayout.tsx'
