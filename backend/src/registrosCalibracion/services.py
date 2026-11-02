@@ -8,6 +8,10 @@ from src.registrosCalibracion.models import RegistroCalibracion
 from src.registrosCalibracion import schemas, exceptions
 from src.planesCalibracion.models import PlanCalibracion
 from src.planesCalibracion import exceptions as plan_exceptions
+from src.notificaciones.services import (
+    generar_notificacion_calibracion_equipo_individual,
+    resolver_notificaciones_calibracion_equipo,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +37,9 @@ def crear_registro_calibracion(db: Session, plan_calibracion_id: int, registro: 
     db.add(_registro)
     db.commit()
     db.refresh(_registro)
+
+    resolver_notificaciones_calibracion_equipo(db, plan_calibracion_id)
+    generar_notificacion_calibracion_equipo_individual(db, plan_calibracion_id)
 
     return _registro
 
