@@ -108,16 +108,6 @@ def listar_lotes_historial(
     
     return schemas.LoteProduccionHistorial(lotes=lotes, total_producido=total_producido)
 
-from src.lote_produccion.models import LoteProduccion
-from src.lote_produccion import schemas, exceptions
-from src.producto.models import Producto
-from src.producto import services as producto_services
-from datetime import date
-from sqlalchemy import func
-
-logger = logging.getLogger(__name__)
-
-
 def obtener_estadisticas_produccion(db: Session, fecha_desde: date, fecha_hasta: date, producto_id: int | None = None) -> List[schemas.EstadisticaProduccion]:
 
     query = (

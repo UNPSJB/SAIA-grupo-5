@@ -3,14 +3,12 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 from typing import Literal
 from datetime import date
-from src.auth.dependencies import get_current_persona, requiere_permiso_administrar
+from src.auth.dependencies import get_current_persona, requiere_permiso_administrar, tiene_permiso_administrar
 from src.database import get_db
 from src.lote_produccion import schemas, services
 from src.auth.router_base import PermissionedRouter
 from src.auth.dependencies import tiene_permiso_operar
-from src.auth.dependencies import tiene_permiso_administrar
-from src.lote_produccion import schemas, services
-from src.auth.router_base import PermissionedRouter
+
 from datetime import date
 from fastapi import Query, HTTPException
 
