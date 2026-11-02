@@ -14,6 +14,15 @@ import { useAuth } from '../../../hooks/useAuth';
 
 import { DeleteInsumoModal } from '../components/DeleteInsumoModal';
 import type { Insumo } from '../types';
+import { ListFilter } from "../../../components/ListFilter";
+
+type EstadoFiltro = "todos" | "activo" | "inactivo";
+
+const ESTADO_FILTRO_LABELS: Record<EstadoFiltro, string> = {
+    todos: "Todos",
+    activo: "Activos",
+    inactivo: "Inactivos",
+};
 
 export function ListPage() {
     const navigate = useNavigate();
@@ -21,16 +30,24 @@ export function ListPage() {
     const [search, setSearch] = useState('');
     const { data: insumos, error, isLoading } = useApi<Insumo[]>("/insumos/");
     const [insumoToDelete, setInsumoToDelete] = useState<Insumo | null>(null);
+    const [estadoFiltro, setEstadoFiltro] = useState<EstadoFiltro>("todos");
 
     const filteredInsumos = useMemo(() => {
         if (!Array.isArray(insumos)) return [];
-        return (insumos ?? []).filter((insumo) => {
-            return (
+
+        return insumos.filter((insumo) => {
+            const coincideBusqueda =
                 insumo.nombre.toLowerCase().includes(search.toLowerCase()) ||
-                insumo.unidad_medida.nombre.toLowerCase().includes(search.toLowerCase())
-            );
+                insumo.unidad_medida.nombre.toLowerCase().includes(search.toLowerCase());
+
+            const coincideEstado =
+                estadoFiltro === "todos" ||
+                (estadoFiltro === "activo" && insumo.activo) ||
+                (estadoFiltro === "inactivo" && !insumo.activo);
+
+            return coincideBusqueda && coincideEstado;
         });
-    }, [search, insumos]);
+    }, [search, estadoFiltro, insumos]);
 
     const subHeaderComponentMemo = useMemo(() => {
         return (
@@ -160,6 +177,14 @@ export function ListPage() {
                 </Col>
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
+                </Col>
+
+                <Col xs="auto" className="align-self-center">
+                    <ListFilter
+                        value={estadoFiltro}
+                        options={ESTADO_FILTRO_LABELS}
+                        onChange={(value) => setEstadoFiltro(value as EstadoFiltro)}
+                    />
                 </Col>
                 {currentUser?.administrar && (
                     <Col xs="auto" className="d-flex justify-content-end">

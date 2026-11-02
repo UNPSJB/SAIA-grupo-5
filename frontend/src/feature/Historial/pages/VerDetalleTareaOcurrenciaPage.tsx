@@ -157,7 +157,7 @@ export function VerDetalleTareaOcurrenciaPage() {
                             </Row>
                         </Card.Body>
 
-                        <Card.Footer className="bg-light border-top p-3 d-flex justify-content-end">
+                        <Card.Footer className="bg-light border-top p-3 d-flex justify-content-start gap-2">
                             <Button 
                                 variant="outline-secondary" 
                                 onClick={() => navigate('/historial')}

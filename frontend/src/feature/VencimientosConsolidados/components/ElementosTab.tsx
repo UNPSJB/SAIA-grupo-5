@@ -1,4 +1,4 @@
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import type { TableColumn } from "react-data-table-component"
 import { AppTable } from "../../../components/AppTable"
@@ -8,6 +8,16 @@ import { ActionButton } from "../../../components/ActionButton"
 import { useApi } from "../../../hooks/useApi"
 import { useAuth } from "../../../hooks/useAuth"
 import type { ElementoLimpieza } from "../../ElementosLimpieza/types"
+import { Col, Form, Row } from "react-bootstrap";
+import { ListFilter } from "../../../components/ListFilter";
+import { clasificarPorDiasRestantes, FILTRO_VENCIMIENTOS_LABELS, type FiltroVencimientos } from "../utils/estado";
+
+const FILTRO_LABELS = {
+    todos: FILTRO_VENCIMIENTOS_LABELS.todos,
+    vencido: FILTRO_VENCIMIENTOS_LABELS.vencido,
+    proximo: FILTRO_VENCIMIENTOS_LABELS.proximo,
+    vigente: FILTRO_VENCIMIENTOS_LABELS.vigente,
+};
 
 function celdaEstadoVencimiento(diasRestantes: number | null, diasAntelacion: number) {
     if (diasRestantes === null) {
@@ -49,13 +59,35 @@ export function ElementosTab({ diasAntelacion }: { diasAntelacion: number }) {
     const navigate = useNavigate()
     const { currentUser } = useAuth()
     const { data: elementos, error, isLoading } = useApi<ElementoLimpieza[]>("/elementos-limpieza/")
+    const [search, setSearch] = useState("");
+    const [estadoFiltro, setEstadoFiltro] = useState<FiltroVencimientos>("todos");
 
     const ordenados = useMemo(() => {
-        if (!Array.isArray(elementos)) return []
+        if (!Array.isArray(elementos)) return [];
+
+        const busqueda = search.toLowerCase();
+
         return elementos
-            .filter((elemento) => elemento.estado)
-            .sort((a, b) => (a.dias_restantes ?? Infinity) - (b.dias_restantes ?? Infinity))
-    }, [elementos])
+            .filter((elemento) => {
+                const coincideBusqueda =
+                    elemento.codigo.toLowerCase().includes(busqueda) ||
+                    elemento.nombre.toLowerCase().includes(busqueda) ||
+                    (elemento.ubicacion ?? "").toLowerCase().includes(busqueda);
+
+                const coincideEstado =
+                    estadoFiltro === "todos" ||
+                    (elemento.dias_restantes !== null &&
+                        clasificarPorDiasRestantes(
+                            elemento.dias_restantes,
+                            diasAntelacion
+                        ) === estadoFiltro);
+
+                return elemento.estado && coincideBusqueda && coincideEstado;
+            })
+            .sort((a, b) =>
+                (a.dias_restantes ?? Infinity) - (b.dias_restantes ?? Infinity)
+            );
+    }, [elementos, search, estadoFiltro, diasAntelacion]);
 
     if (isLoading) return <PageLoading title="Elementos de Limpieza" />
     if (!elementos || error) return <PageError title="Elementos de Limpieza" message="Ocurrió un error al cargar los elementos de limpieza" />
@@ -84,7 +116,7 @@ export function ElementosTab({ diasAntelacion }: { diasAntelacion: number }) {
                         size="sm"
                         tooltip="Ver elemento"
                         icon="bi bi-eye"
-                        onClick={() => navigate(`/elementos-limpieza/${row.id}`)}
+                        onClick={() => navigate(`/elementos-limpieza/${row.id}`, { state: { origen: "vencimiento" }})}
                     />
                     {currentUser?.administrar && (
                         <ActionButton
@@ -101,9 +133,30 @@ export function ElementosTab({ diasAntelacion }: { diasAntelacion: number }) {
     ]
 
     return (
-        <AppTable
-            columns={columns}
-            data={ordenados}
-        />
-    )
+        <>
+            <Row className="mb-3 g-2 justify-content-end">
+                <Col xs="auto">
+                    <Form.Control
+                        type="text"
+                        placeholder="Buscar elemento..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                </Col>
+
+                <Col xs="auto">
+                    <ListFilter
+                        value={estadoFiltro}
+                        options={FILTRO_LABELS}
+                        onChange={(value) => setEstadoFiltro(value as FiltroVencimientos)}
+                    />
+                </Col>
+            </Row>
+
+            <AppTable
+                columns={columns}
+                data={ordenados}
+            />
+        </>
+    );
 }

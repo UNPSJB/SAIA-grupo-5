@@ -5,9 +5,9 @@ from sqlalchemy import String, Boolean, Integer, ForeignKey, Text, Date
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from src.lote_produccion.models import LoteProduccion
     from src.unidad_medida.models import UnidadMedida
     from src.receta.models import Receta
+    from src.lote_produccion.models import LoteProduccion
 
 
 class Producto(ModeloBase):

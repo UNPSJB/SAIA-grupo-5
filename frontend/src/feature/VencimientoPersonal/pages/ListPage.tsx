@@ -15,13 +15,22 @@ import type { Persona } from '../../Personal/types';
 import type { ConfiguracionSistema } from '../../ConfiguracionSistema/types';
 import { RenovarVencimientoModal } from '../components/RenovarVencimientoModal';
 import { HistoricoVencimientoModal } from '../components/HistoricoVencimientoModal';
+import { ListFilter } from "../../../components/ListFilter";
+import {clasificarPorDiasRestantes, FILTRO_VENCIMIENTOS_LABELS, type FiltroVencimientos} from "../../VencimientosConsolidados/utils/estado";
 
+const FILTRO_LABELS = {
+    todos: FILTRO_VENCIMIENTOS_LABELS.todos,
+    vencido: FILTRO_VENCIMIENTOS_LABELS.vencido,
+    proximo: FILTRO_VENCIMIENTOS_LABELS.proximo,
+    vigente: FILTRO_VENCIMIENTOS_LABELS.vigente,
+};
 
 export function ListPage() {
     const navigate = useNavigate();    
     const { currentUser } = useAuth();
     const { personaId } = useParams();
     const [search, setSearch] = useState('');
+    const [estadoFiltro, setEstadoFiltro] = useState<FiltroVencimientos>("todos");
 
     const { data: persona } = useApi<Persona>(`/personal/${personaId}`);
     const { data: vencimientos, error, isLoading } = useApi<VencimientoPersonal[]>(`/vencimiento-personal/persona/${personaId}`);
@@ -31,16 +40,29 @@ export function ListPage() {
 
     const [vencimientoToRenovar, setVencimientoToRenovar] = useState<VencimientoPersonal | null>(null);
     const [vencimientoHistorico, setVencimientoHistorico] = useState<VencimientoPersonal | null>(null);
-
+    
     // useMemo infiere que retorna un array de tipo Insumo[]
     const filteredVencimientos = useMemo(() => {
-        if (!Array.isArray(vencimientos)) return [];     // Se agrego una validacion para preguntar si insumos es un array
-        return (vencimientos ?? []).filter((vencimiento) => {
-            return (
-                vencimiento.tipo_vencimiento.nombre.toLowerCase().includes(search.toLowerCase())
-            );
+        if (!Array.isArray(vencimientos)) return [];
+
+        const busqueda = search.toLowerCase();
+
+        return vencimientos.filter((vencimiento) => {
+            const coincideBusqueda =
+                vencimiento.tipo_vencimiento.nombre
+                    .toLowerCase()
+                    .includes(busqueda);
+
+            const coincideEstado =
+                estadoFiltro === "todos" ||
+                clasificarPorDiasRestantes(
+                    vencimiento.dias_restantes,
+                    diasAntelacion
+                ) === estadoFiltro;
+
+            return coincideBusqueda && coincideEstado;
         });
-    }, [search, vencimientos]);
+    }, [search, estadoFiltro, vencimientos, diasAntelacion]);
 
     const subHeaderComponentMemo = useMemo(() => {
         return (
@@ -220,7 +242,13 @@ export function ListPage() {
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
                 </Col>
-
+                <Col xs="auto" className="align-self-center">
+                    <ListFilter
+                        value={estadoFiltro}
+                        options={FILTRO_LABELS}
+                        onChange={(value) => setEstadoFiltro(value as FiltroVencimientos)}
+                    />
+                </Col>
                 {currentUser?.administrar && (
                     <Col xs="auto" className="d-flex justify-content-end">
                         <Button

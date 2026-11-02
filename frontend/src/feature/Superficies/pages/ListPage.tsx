@@ -16,6 +16,15 @@ import { api } from '../../../libs/axios';
 import { DeleteSuperficieModal } from '../components/DeleteSuperficieModal';
 import { VerSectoresModal } from '../components/VerSectoresModal';
 import type { Superficie } from "../types";
+import { ListFilter } from "../../../components/ListFilter";
+
+type EstadoFiltro = "todos" | "activo" | "inactivo";
+
+const ESTADO_FILTRO_LABELS: Record<EstadoFiltro, string> = {
+    todos: "Todos",
+    activo: "Activos",
+    inactivo: "Inactivos",
+};
 
 export function SuperficiesPage() {
     const navigate = useNavigate();
@@ -24,16 +33,24 @@ export function SuperficiesPage() {
     const { data: superficies, error, isLoading } = useApi<Superficie[]>("/superficies/")
     const [superficieToDelete, setSuperficieToDelete] = useState<Superficie | null>(null);
     const [superficieSectores, setSuperficieSectores] = useState<Superficie | null>(null);
+    const [estadoFiltro, setEstadoFiltro] = useState<EstadoFiltro>("todos");
 
     const filteredSuperficies = useMemo(() => {
         if (!Array.isArray(superficies)) return [];
-        return (superficies ?? []).filter((superficie) => {
-            return (
+
+        return superficies.filter((superficie) => {
+            const coincideBusqueda =
                 superficie.nombre.toLowerCase().includes(search.toLowerCase()) ||
-                superficie.tipo_contacto.toLowerCase().includes(search.toLowerCase())
-            );
+                superficie.tipo_contacto.toLowerCase().includes(search.toLowerCase());
+
+            const coincideEstado =
+                estadoFiltro === "todos" ||
+                (estadoFiltro === "activo" && superficie.activo) ||
+                (estadoFiltro === "inactivo" && !superficie.activo);
+
+            return coincideBusqueda && coincideEstado;
         });
-    }, [search, superficies]);
+    }, [search, estadoFiltro, superficies]);
 
     const subHeaderComponentMemo = useMemo(() => {
         return (
@@ -171,6 +188,13 @@ export function SuperficiesPage() {
                 </Col>
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
+                </Col>
+                <Col xs="auto" className="align-self-center">
+                    <ListFilter
+                        value={estadoFiltro}
+                        options={ESTADO_FILTRO_LABELS}
+                        onChange={(value) => setEstadoFiltro(value as EstadoFiltro)}
+                    />
                 </Col>
                 {currentUser?.administrar && (
                     <Col xs="auto" className="d-flex justify-content-end">

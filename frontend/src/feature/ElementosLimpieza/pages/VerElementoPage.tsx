@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import { Container, Spinner, Alert, Row, Col, Card, Button } from "react-bootstrap";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 import type { ElementoLimpieza } from "../types";
@@ -14,6 +14,11 @@ export function VerElementoPage() {
     const { id } = useParams();
     const { currentUser } = useAuth();
     const [mostrarHistorial, setMostrarHistorial] = useState(false);
+    const location = useLocation();
+    const origen = location.state?.origen;
+    const volverA = origen === "vencimiento"
+        ? "/vencimientos?default=elementos"
+        : "/elementos-limpieza/";
 
     const { data: elementoLimpieza, isLoading, error } = useApi<ElementoLimpieza>(`/elementos-limpieza/${id}`);
     const { data: recambios } = useApi<RecambioElementoLimpieza[]>(`/recambios-elementos-limpieza/elemento/${id}`);
@@ -130,10 +135,10 @@ export function VerElementoPage() {
                             </Row>
                         </Card.Body>
 
-                        <Card.Footer className="bg-light border-top p-3 d-flex justify-content-end gap-2">
+                        <Card.Footer className="bg-light border-top p-3 d-flex justify-content-start gap-2">
                             <Button
                                 variant="outline-secondary"
-                                onClick={() => navigate("/elementos-limpieza")}
+                                onClick={() => navigate(volverA)}
                             >
                                 <i className="bi bi-arrow-left me-1"></i>
                                 Volver a la lista

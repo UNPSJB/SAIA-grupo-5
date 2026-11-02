@@ -87,7 +87,7 @@ export function AccionCorrectivaModal({ incidente, onHide, onRegistrada }: Accio
                         Al registrar la acción correctiva, el incidente se marca como cerrado.
                     </Form.Text>
                 </Modal.Body>
-                <Modal.Footer>
+                <Modal.Footer className="justify-content-start">
                     <Button variant="secondary" onClick={handleClose} disabled={guardando}>
                         <i className="bi bi-x-circle me-1"></i>Cancelar
                     </Button>
