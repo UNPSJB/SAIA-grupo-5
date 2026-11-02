@@ -11,7 +11,6 @@ from src.documentos.models import Documento
 from src.elementosLimpieza.models import ElementoLimpieza, TipoElementoLimpieza
 from src.equipos.models import Equipo
 from src.lote_produccion.migrations import migrar_esquema_lote_produccion
-from src.lote_produccion.models import LoteProduccion
 from src.personal.models import Persona
 from src.plan_limpieza.models import PlanLimpieza
 from src.planesCalibracion.models import PlanCalibracion
@@ -25,6 +24,7 @@ from src.tareas_ocurrencia.models import TareaOcurrencia
 from src.tipo_documento.models import TipoDocumento
 from src.unidad_medida.models import UnidadMedida
 from src.version_documento.models import VersionDocumento
+from scripts.seed_lote_produccion import generar_lotes_produccion
 
 
 PRODUCTOS_SEMILLA = [
@@ -264,43 +264,17 @@ def _productos_para_lotes(db: SessionLocal) -> list[Producto]:
 
 
 def seed_lotes_produccion(db: SessionLocal):
-    # Lotes dentro del mes en curso para que la vista pública muestre
-    # "Productos distintos elaborados" y "Lotes producidos"
-    hoy = date.today()
-    inicio_mes = hoy.replace(day=1)
+    # Reutiliza el generador de scripts.seed_lote_produccion: histórico de los últimos
+    # 30 días con varios lotes por día, estados por defecto y algunos lotes dados de baja.
     productos = _productos_para_lotes(db)
     if not productos:
         return
 
-    fechas = []
-    for dias_atras in range(0, 28, 3):
-        fecha = hoy - timedelta(days=dias_atras)
-        if fecha < inicio_mes:
-            break
-        fechas.append(fecha)
+    lotes = generar_lotes_produccion(db)
+    if not lotes:
+        return
 
-    for indice, fecha in enumerate(fechas):
-        # Dos lotes por fecha disponible, rotando productos para que haya variedades
-        for turno in range(2):
-            posicion = indice * 2 + turno
-            producto = productos[posicion % len(productos)]
-            existe = db.scalar(
-                select(LoteProduccion.id).where(
-                    LoteProduccion.producto_id == producto.id,
-                    LoteProduccion.fecha_produccion == fecha,
-                )
-            )
-            if existe is not None:
-                continue
-
-            db.add(LoteProduccion(
-                producto_id=producto.id,
-                fecha_produccion=fecha,
-                fecha_vencimiento=fecha + timedelta(days=30),
-                cantidad_producida=20 + posicion * 15,
-                activo=True,
-            ))
-
+    db.add_all(lotes)
     db.commit()
 
 
