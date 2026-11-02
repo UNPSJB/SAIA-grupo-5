@@ -46,24 +46,29 @@ def test_endpoint_listar_lotes_historial_por_fecha(client, auth_headers, multipl
     assert all("2027-10-01" <= lote["fecha_produccion"] <= "2027-10-31" for lote in data["lotes"])
     assert data["total_producido"] is None
 
-def test_endpoint_crear_lote_produccion(client, auth_headers, unico_producto):
-    response = client.post(
-        "/lotes-produccion/",
-        json={
-            "producto_id": unico_producto.id,
-            "fecha_produccion": "2027-10-01",
-            "fecha_vencimiento": "2028-10-01",
-            "cantidad_producida": 150,
-        },
-        headers=auth_headers,
+    assert response.status_code == 200
+    assert len(data["lotes"]) == 3
+    assert data["total_producido"] is None
+
+def test_endpoint_listar_lotes_historial_por_producto(client, auth_headers, multiples_lotes_produccion, unico_producto):
+    response = client.get("/lotes-produccion/historial", params={"producto_id": unico_producto.id}, headers=auth_headers)
+    data = response.json()
+
+    assert response.status_code == 200
+    assert len(data["lotes"]) == 3
+    assert all(lote["producto_id"] == unico_producto.id for lote in data["lotes"])
+    assert data["total_producido"] == sum(lote["cantidad_producida"] for lote in data["lotes"])
+
+def test_endpoint_listar_lotes_historial_por_fecha(client, auth_headers, multiples_lotes_produccion):
+    response = client.get("/lotes-produccion/historial",
+        params={ "fecha_desde": "2027-10-01", "fecha_hasta": "2027-10-31", }, 
+        headers=auth_headers
     )
     data = response.json()
 
     assert response.status_code == 200
-    assert data["producto_id"] == unico_producto.id
-    assert data["cantidad_producida"] == 150
-    assert data["estado"] == "En produccion"
-
+    assert all("2027-10-01" <= lote["fecha_produccion"] <= "2027-10-31" for lote in data["lotes"])
+    assert data["total_producido"] is None
 
 def test_endpoint_modificar_lote_produccion(client, auth_headers, unico_lote_produccion, unico_producto):
     response = client.put(

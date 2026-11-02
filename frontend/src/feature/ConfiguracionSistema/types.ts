@@ -13,6 +13,11 @@ export type ConfiguracionSistema = {
     vista_publica_mostrar_recambios: boolean
     vista_publica_mostrar_tiempo_recambio: boolean
     vista_publica_mostrar_planes_limpieza: boolean
+    vista_publica_mostrar_tareas_realizadas: boolean
+    vista_publica_mostrar_dias_limpieza: boolean
+    vista_publica_mostrar_documentos_tecnicos: boolean
+    vista_publica_mostrar_productos_elaborados: boolean
+    vista_publica_mostrar_lotes_producidos: boolean
 }
 
 export type ConfiguracionSistemaUpdate = {

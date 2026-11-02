@@ -24,6 +24,8 @@ from src.planesCalibracion.models import PlanCalibracion
 from src.registrosCalibracion.models import RegistroCalibracion
 from src.configuracion_sistema.models import ConfiguracionSistema
 from src.notificaciones.models import Notificacion
+from src.tipos_vencimientos.models import TipoVencimiento
+from src.vencimiento_personal.models import VencimientoPersonal
 
 from src.tipo_incidente.models import TipoIncidente
 from src.incidentes.models import Incidente

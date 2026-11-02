@@ -249,3 +249,159 @@ def test_indicador_planes_limpieza(client, auth_headers, plan_limpieza):
     indicador = data["indicadores"][0]
     assert indicador["clave"] == "planes_limpieza"
     assert indicador["valor"] == "1"
+
+
+def _crear_documento_con_version(db_session, nombre: str, vigente: bool):
+    from src.tipo_documento.models import TipoDocumento
+    from src.documentos.models import Documento
+    from src.version_documento.models import VersionDocumento
+
+    tipo = db_session.query(TipoDocumento).first()
+    if not tipo:
+        tipo = TipoDocumento(nombre="Procedimiento")
+        db_session.add(tipo)
+        db_session.commit()
+        db_session.refresh(tipo)
+
+    doc = Documento(nombre=nombre, tipo_id=tipo.id, activo=True)
+    db_session.add(doc)
+    db_session.commit()
+    db_session.refresh(doc)
+
+    version = VersionDocumento(
+        documento_id=doc.id,
+        version=1,
+        vigente=vigente,
+        activo=True,
+        fecha_subida=date(2026, 11, 1),
+        archivo="/archivos/doc.pdf",
+    )
+    db_session.add(version)
+    db_session.commit()
+    db_session.refresh(version)
+    return doc
+
+
+def test_indicador_tareas_realizadas(client, auth_headers, db_session):
+    update_configuracion(
+        client,
+        auth_headers,
+        vista_publica_activa=True,
+        vista_publica_mostrar_tareas_realizadas=True,
+    )
+    _crear_ocurrencia(db_session, "Lavar pisos", HOY_FICTICIO, EstadoTareaOcurrencia.COMPLETADA)
+    _crear_ocurrencia(db_session, "Limpiar mesadas", date(2026, 11, 13), EstadoTareaOcurrencia.PENDIENTE)
+    token = client.get("/configuracion-sistema/", headers=auth_headers).json()["vista_publica_token"]
+
+    with _fijar_hoy(HOY_FICTICIO):
+        response = client.get(f"/vista-publica/{token}")
+
+    data = response.json()
+    assert len(data["indicadores"]) == 1
+    indicador = data["indicadores"][0]
+    assert indicador["clave"] == "tareas_realizadas"
+    assert indicador["valor"] == "1"
+
+
+def test_indicador_dias_limpieza(client, auth_headers, db_session):
+    update_configuracion(
+        client,
+        auth_headers,
+        vista_publica_activa=True,
+        vista_publica_mostrar_dias_limpieza=True,
+    )
+    _crear_ocurrencia(db_session, "Lavar pisos", HOY_FICTICIO, EstadoTareaOcurrencia.COMPLETADA)
+    _crear_ocurrencia(db_session, "Limpiar hornos", HOY_FICTICIO, EstadoTareaOcurrencia.COMPLETADA)
+    token = client.get("/configuracion-sistema/", headers=auth_headers).json()["vista_publica_token"]
+
+    with _fijar_hoy(HOY_FICTICIO):
+        response = client.get(f"/vista-publica/{token}")
+
+    data = response.json()
+    assert len(data["indicadores"]) == 1
+    indicador = data["indicadores"][0]
+    assert indicador["clave"] == "dias_limpieza"
+    assert indicador["valor"] == f"1 / {HOY_FICTICIO.day}"
+
+
+def test_indicador_documentos_tecnicos(client, auth_headers, db_session):
+    update_configuracion(
+        client,
+        auth_headers,
+        vista_publica_activa=True,
+        vista_publica_mostrar_documentos_tecnicos=True,
+    )
+    _crear_documento_con_version(db_session, "Manual de Limpieza", vigente=True)
+    _crear_documento_con_version(db_session, "Protocolo de Sanitización", vigente=False)
+    token = client.get("/configuracion-sistema/", headers=auth_headers).json()["vista_publica_token"]
+
+    response = client.get(f"/vista-publica/{token}")
+
+    data = response.json()
+    assert len(data["indicadores"]) == 1
+    indicador = data["indicadores"][0]
+    assert indicador["clave"] == "documentos_tecnicos"
+    assert indicador["valor"] == "50%"
+
+
+def _crear_lote(db_session, producto, fecha: date, activo: bool = True):
+    from src.lote_produccion.models import LoteProduccion
+
+    _lote = LoteProduccion(
+        producto_id=producto.id,
+        fecha_produccion=fecha,
+        fecha_vencimiento=date(2028, 12, 31),
+        cantidad_producida=100,
+        activo=activo,
+    )
+    db_session.add(_lote)
+    db_session.commit()
+    db_session.refresh(_lote)
+    return _lote
+
+
+# dos lotes activos en el mes: se cuentan; el lote de octubre y el dado de baja no
+def test_indicador_lotes_producidos(client, auth_headers, db_session, unico_producto):
+    update_configuracion(
+        client,
+        auth_headers,
+        vista_publica_activa=True,
+        vista_publica_mostrar_lotes_producidos=True,
+    )
+    _crear_lote(db_session, unico_producto, HOY_FICTICIO)
+    _crear_lote(db_session, unico_producto, date(2026, 11, 2))
+    _crear_lote(db_session, unico_producto, date(2026, 10, 31))
+    _crear_lote(db_session, unico_producto, HOY_FICTICIO, activo=False)
+    token = client.get("/configuracion-sistema/", headers=auth_headers).json()["vista_publica_token"]
+
+    with _fijar_hoy(HOY_FICTICIO):
+        response = client.get(f"/vista-publica/{token}")
+
+    data = response.json()
+    assert len(data["indicadores"]) == 1
+    indicador = data["indicadores"][0]
+    assert indicador["clave"] == "lotes_producidos"
+    assert indicador["valor"] == "2"
+
+
+# tres lotes de dos productos distintos: dos variedades elaboradas
+def test_indicador_productos_elaborados(client, auth_headers, db_session, multiples_productos):
+    update_configuracion(
+        client,
+        auth_headers,
+        vista_publica_activa=True,
+        vista_publica_mostrar_productos_elaborados=True,
+    )
+    _crear_lote(db_session, multiples_productos[0], HOY_FICTICIO)
+    _crear_lote(db_session, multiples_productos[1], date(2026, 11, 5))
+    _crear_lote(db_session, multiples_productos[0], date(2026, 11, 7))
+    token = client.get("/configuracion-sistema/", headers=auth_headers).json()["vista_publica_token"]
+
+    with _fijar_hoy(HOY_FICTICIO):
+        response = client.get(f"/vista-publica/{token}")
+
+    data = response.json()
+    assert len(data["indicadores"]) == 1
+    indicador = data["indicadores"][0]
+    assert indicador["clave"] == "productos_elaborados"
+    assert indicador["valor"] == "2"

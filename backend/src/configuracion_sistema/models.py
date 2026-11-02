@@ -30,3 +30,8 @@ class ConfiguracionSistema(ModeloBase):
     vista_publica_mostrar_recambios: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     vista_publica_mostrar_tiempo_recambio: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     vista_publica_mostrar_planes_limpieza: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    vista_publica_mostrar_tareas_realizadas: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    vista_publica_mostrar_dias_limpieza: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    vista_publica_mostrar_documentos_tecnicos: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    vista_publica_mostrar_productos_elaborados: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    vista_publica_mostrar_lotes_producidos: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
