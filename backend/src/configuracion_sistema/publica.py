@@ -1,19 +1,22 @@
 import secrets
 from datetime import date, datetime, timedelta
 
-from sqlalchemy import func, select
+from sqlalchemy import and_, func, select
 from sqlalchemy.orm import Session
 
 from src.configuracion_sistema.models import ConfiguracionSistema
 from src.configuracion_sistema.schemas import IndicadorVistaPublica, VistaPublica
 from src.configuracion_sistema.services import obtener_o_crear_configuracion
+from src.documentos.models import Documento
 from src.elementosLimpieza.models import ElementoLimpieza
+from src.lote_produccion.models import LoteProduccion
 from src.plan_limpieza.models import PlanLimpieza
 from src.planesCalibracion.models import PlanCalibracion
 from src.recambiosElementosLimpieza.models import RecambioElementoLimpieza
 from src.registrosCalibracion.models import RegistroCalibracion
 from src.tareas_ocurrencia.constants import EstadoTareaOcurrencia
 from src.tareas_ocurrencia.models import TareaOcurrencia
+from src.version_documento.models import VersionDocumento
 
 
 def actualizar_vista_publica(db: Session, datos) -> ConfiguracionSistema:
@@ -67,7 +70,11 @@ def leer_vista_publica(db: Session, token: str) -> VistaPublica | None:
     hoy = date.today()
     inicio_mes = hoy.replace(day=1)
 
-    if configuracion.vista_publica_mostrar_cumplimiento:
+    if (
+        configuracion.vista_publica_mostrar_cumplimiento
+        or configuracion.vista_publica_mostrar_tareas_realizadas
+        or configuracion.vista_publica_mostrar_dias_limpieza
+    ):
         ocurrencias = db.scalars(
             select(TareaOcurrencia).where(
                 TareaOcurrencia.fecha >= inicio_mes,
@@ -81,11 +88,26 @@ def leer_vista_publica(db: Session, token: str) -> VistaPublica | None:
             for ocurrencia in ocurrencias
         )
         cumplimiento = round(completadas * 100 / resueltas) if resueltas else None
-        if cumplimiento is not None and cumplimiento > 0:
+        if configuracion.vista_publica_mostrar_cumplimiento and cumplimiento is not None and cumplimiento > 0:
             indicadores.append(_indicador(
                 "cumplimiento", "Cumplimiento de limpieza", "Tareas completadas durante este mes",
                 f"{cumplimiento}%", "bi-check2-circle",
             ))
+        if configuracion.vista_publica_mostrar_tareas_realizadas and completadas > 0:
+            indicadores.append(_indicador(
+                "tareas_realizadas", "Tareas realizadas", "Tareas completadas durante este mes",
+                str(completadas), "bi-clipboard-check",
+            ))
+        if configuracion.vista_publica_mostrar_dias_limpieza:
+            dias_con_limpieza = len({
+                ocurrencia.fecha for ocurrencia in ocurrencias
+                if ocurrencia.estado == EstadoTareaOcurrencia.COMPLETADA
+            })
+            if dias_con_limpieza > 0:
+                indicadores.append(_indicador(
+                    "dias_limpieza", "Días con limpieza registrada", "Días con al menos una tarea realizada este mes",
+                    f"{dias_con_limpieza} / {hoy.day}", "bi-calendar-check",
+                ))
 
     if configuracion.vista_publica_mostrar_calibraciones or configuracion.vista_publica_mostrar_tiempo_calibracion:
         planes = db.scalars(select(PlanCalibracion).where(PlanCalibracion.estado.is_(True))).all()
@@ -160,6 +182,57 @@ def leer_vista_publica(db: Session, token: str) -> VistaPublica | None:
             indicadores.append(_indicador(
                 "planes_limpieza", "Planes de limpieza activos",
                 "Cantidad de planes de limpieza vigentes", str(planes_activos), "bi-clipboard-check",
+            ))
+
+    if configuracion.vista_publica_mostrar_documentos_tecnicos:
+        total_documentos = db.scalar(
+            select(func.count(Documento.id)).where(Documento.activo.is_(True))
+        ) or 0
+        con_vigente = db.scalar(
+            select(func.count(Documento.id)).where(
+                Documento.activo.is_(True),
+                Documento.versiones.any(
+                    and_(
+                        VersionDocumento.vigente.is_(True),
+                        VersionDocumento.activo.is_(True),
+                    )
+                ),
+            )
+        ) or 0
+        if total_documentos > 0 and con_vigente > 0:
+            porcentaje = round(con_vigente * 100 / total_documentos)
+            indicadores.append(_indicador(
+                "documentos_tecnicos", "Documentos técnicos con versión vigente",
+                "Proporción de documentos con versión vigente",
+                f"{porcentaje}%", "bi-file-earmark-check",
+            ))
+
+    if (
+        configuracion.vista_publica_mostrar_productos_elaborados
+        or configuracion.vista_publica_mostrar_lotes_producidos
+    ):
+        filtros_lotes = (
+            LoteProduccion.fecha_produccion >= inicio_mes,
+            LoteProduccion.fecha_produccion <= hoy,
+            LoteProduccion.activo.is_(True),
+        )
+        lotes_producidos, productos_elaborados = db.execute(
+            select(
+                func.count(LoteProduccion.id),
+                func.count(func.distinct(LoteProduccion.producto_id)),
+            ).where(*filtros_lotes)
+        ).one()
+        if configuracion.vista_publica_mostrar_productos_elaborados and productos_elaborados:
+            indicadores.append(_indicador(
+                "productos_elaborados", "Productos distintos elaborados",
+                "Variedades de productos presentes en los lotes de este mes",
+                str(productos_elaborados), "bi-box-seam",
+            ))
+        if configuracion.vista_publica_mostrar_lotes_producidos and lotes_producidos:
+            indicadores.append(_indicador(
+                "lotes_producidos", "Lotes producidos",
+                "Lotes de producción elaborados durante este mes",
+                str(lotes_producidos), "bi-boxes",
             ))
 
     return VistaPublica(
