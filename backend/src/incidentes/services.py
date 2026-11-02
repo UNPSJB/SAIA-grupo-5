@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, time
 from typing import Literal
 
 from sqlalchemy import func, select
@@ -121,16 +121,19 @@ def cambiar_estado_incidente(db: Session, incidente_id: int) -> Incidente:
     db.refresh(db_incidente)
     return db_incidente
 
-
 def listar_incidentes(
     db: Session,
     estado: str | None = None,
     orden: Literal["asc", "desc"] = "desc",
+    tipo_id: int | None = None,
+    fecha_desde: date | None = None,
+    fecha_hasta: date | None = None,
 ) -> list[dict]:
     accion_registrada = select(AccionCorrectiva.id).where(
         AccionCorrectiva.incidente_id == Incidente.id,
         AccionCorrectiva.activo.is_(True),
     ).exists()
+
     consulta = (
         select(Incidente)
         .options(
@@ -144,10 +147,22 @@ def listar_incidentes(
         consulta = consulta.where(~accion_registrada)
     elif estado in ("cerrado", EstadoIncidente.CERRADO.value):
         consulta = consulta.where(accion_registrada)
-    fecha = Incidente.fecha_abierto.asc() if orden == "asc" else Incidente.fecha_abierto.desc()
-    incidentes = db.scalars(consulta.order_by(fecha, Incidente.id.asc())).all()
-    return [_incidente_a_respuesta(incidente) for incidente in incidentes]
 
+    if tipo_id is not None:
+        consulta = consulta.where(Incidente.tipo_id == tipo_id)
+    if fecha_desde is not None:
+        consulta = consulta.where(
+            Incidente.fecha_abierto >= datetime.combine(fecha_desde, time.min)
+        )
+    if fecha_hasta is not None:
+        consulta = consulta.where(
+            Incidente.fecha_abierto <= datetime.combine(fecha_hasta, time.max)
+        )
+
+    fecha = (Incidente.fecha_abierto.asc() if orden == "asc" else Incidente.fecha_abierto.desc())
+    incidentes = db.scalars(consulta.order_by(fecha, Incidente.id.asc())).all()
+
+    return [_incidente_a_respuesta(incidente) for incidente in incidentes]
 
 def _listar_incidentes_crud(db: Session, estado: EstadoIncidente | None = None) -> list[Incidente]:
     consulta = select(Incidente).options(

@@ -27,3 +27,9 @@ class LoteProduccion(LoteProduccionBase):
     producto: Producto
 
     model_config = ConfigDict(from_attributes=True)
+
+class EstadisticaProduccion(BaseModel):
+    producto_id: int
+    producto_nombre: str
+    fecha: date
+    cantidad: int

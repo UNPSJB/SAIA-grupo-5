@@ -31,6 +31,10 @@ from src.unidad_medida.models import UnidadMedida
 from src.producto.models import Producto
 from src.lote_produccion.models import LoteProduccion
 from src.lote_produccion.router import router as lote_produccion_router
+from src.receta.models import Receta
+from src.etapa_receta.models import EtapaReceta
+from src.paso_etapa.models import PasoEtapa
+from src.lote_produccion.models import LoteProduccion
 
 from src.config import settings
 from src.settings import ROOT_PATH
@@ -60,6 +64,7 @@ from src.registrosCalibracion.router import router as registros_calibracion_rout
 from src.tipos_vencimientos.router import router as tipos_vencimientos_router
 from src.vencimiento_personal.router import router as vencimiento_personal_router
 from src.configuracion_sistema.router import router as configuracion_sistema_router
+from src.configuracion_sistema.router import public_router as vista_publica_router
 from src.notificaciones.router import router as notificaciones_router
 from src.tipo_incidente.router import router as tipo_incidente_router
 from src.incidentes.router import router as incidentes_router
@@ -67,6 +72,10 @@ from src.accion_correctiva.router import router as accion_correctiva_router
 from src.historial_incidente.router import router as historial_incidente_router
 from src.unidad_medida.router import router as unidad_medida_router
 from src.producto.router import router as producto_router
+from src.receta.router import router as receta_router
+from src.etapa_receta.router import router as etapa_receta_router
+from src.paso_etapa.router import router as paso_etapa_router
+from src.lote_produccion.router import router as lote_router
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -109,6 +118,7 @@ app.include_router(registros_calibracion_router)
 app.include_router(tipos_vencimientos_router)
 app.include_router(vencimiento_personal_router)
 app.include_router(configuracion_sistema_router)
+app.include_router(vista_publica_router)
 app.include_router(notificaciones_router)
 app.include_router(documentos_router)
 app.include_router(tipo_documento_router)
@@ -121,3 +131,7 @@ app.include_router(historial_incidente_router)
 app.include_router(unidad_medida_router)
 app.include_router(producto_router)
 app.include_router(lote_produccion_router)
+app.include_router(receta_router)
+app.include_router(etapa_receta_router)
+app.include_router(paso_etapa_router)
+app.include_router(lote_router)

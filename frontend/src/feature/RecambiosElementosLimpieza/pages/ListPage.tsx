@@ -90,7 +90,7 @@ export function RecambiosElementoLimpiezaPage() {
             center: true,
             cell: row => (
                 <ActionButton
-                    variant="outline-secondary"
+                    variant="outline-info"
                     size="sm"
                     tooltip="Ver"
                     icon="bi-eye"

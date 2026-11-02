@@ -119,7 +119,7 @@ export function TipoElementoLimpiezaForm({
                     </Form.Control.Feedback>
                 </Form.Group>
 
-                <div className="d-flex justify-content-center gap-2">
+                <div className="d-flex justify-content-start gap-2">
                     {onCancelar && (
                         <Button
                             variant="secondary"

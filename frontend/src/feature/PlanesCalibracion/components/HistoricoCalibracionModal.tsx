@@ -82,7 +82,7 @@ export function HistoricoCalibracionModal({ plan, onHide }: HistoricoCalibracion
                 )}
             </Modal.Body>
 
-            <Modal.Footer>
+            <Modal.Footer className="justify-content-start">
                 <Button variant="secondary" onClick={onHide}>
                     <i className="bi bi-x-circle me-1"></i>Cerrar
                 </Button>
