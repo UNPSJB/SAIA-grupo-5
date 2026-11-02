@@ -1,6 +1,9 @@
 import logging
 from fastapi import Depends
 from sqlalchemy.orm import Session
+from typing import Literal
+from datetime import date
+from src.auth.dependencies import get_current_persona, requiere_permiso_administrar
 from src.database import get_db
 from src.lote_produccion import schemas, services
 from src.auth.router_base import PermissionedRouter
@@ -25,6 +28,18 @@ def create_lote_produccion(lote: schemas.LoteProduccionCreate, db: Session = Dep
 def read_lotes_produccion(db: Session = Depends(get_db)):
     return services.listar_lotes_produccion(db)
 
+@router.get("/historial", response_model=schemas.LoteProduccionHistorial, dependencies=[Depends(requiere_permiso_administrar)])
+def read_lotes_historial(
+    orden: Literal["asc", "desc"] = "desc",
+    producto_id: int | None = None,
+    fecha_desde: date | None = None,
+    fecha_hasta: date | None = None,
+    db: Session = Depends(get_db),
+):
+    return services.listar_lotes_historial(
+        db, orden=orden,
+        producto_id=producto_id, fecha_desde=fecha_desde, fecha_hasta=fecha_hasta,
+    )
 
 @router.get("/{lote_id}", response_model=schemas.LoteProduccion)
 def read_lote_produccion(lote_id: int, db: Session = Depends(get_db)):

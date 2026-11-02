@@ -21,9 +21,7 @@ export const navGroups: NavGroup[] = [
         items: [
             { label: 'Tareas', to: '/tareas', icon: 'bi-list-check' },
             { label: 'Checklist', to: '/checklist', icon: 'bi-check2-square' },
-            { label: 'Historial', to: '/historial', icon: 'bi-clock-history', adminOnly: true },
             { label: 'Incidentes', to: '/incidentes', icon: 'bi-exclamation-diamond', adminOnly: true },
-            { label: 'Historial de Incidentes', to: '/incidentes-historial', icon: 'bi-clock-history', adminOnly: true },
         ],
     },
     {
@@ -44,6 +42,17 @@ export const navGroups: NavGroup[] = [
             { label: 'Personal', to: '/personal', icon: 'bi-people', adminOnly: true },
             { label: 'Consulta de consumo', to: '/consumos-productos/consulta', icon: 'bi-droplet-half', adminOnly: true },
             { label: 'Lotes de Produccion', to: '/lotes-produccion', icon: 'bi bi-box2-fill'}
+        ],
+    },
+    {
+        id: 'historiales',
+        label: 'Historiales',
+        icon: 'bi-clock-history',
+        adminOnly: true,
+        items: [
+            { label: 'Checklist', to: '/historial', icon: 'bi-check2-square', adminOnly: true },
+            { label: 'Incidentes', to: '/incidentes-historial', icon: 'bi-exclamation-diamond', adminOnly: true },
+            { label: 'Lotes', to: '/lotes-historial', icon: 'bi-boxes', adminOnly: true },
         ],
     },
     {

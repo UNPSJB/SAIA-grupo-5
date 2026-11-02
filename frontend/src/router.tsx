@@ -100,7 +100,7 @@ import { VerTipoIncidentePage } from './feature/TiposIncidentes/pages/VerTipoInc
 import { EditarIncidentePage } from './feature/Incidentes/pages/EditarIncidentePage.tsx'
 import { NuevoIncidentePage } from './feature/Incidentes/pages/NuevoIncidentePage.tsx'
 import { VerIncidentePage } from './feature/Incidentes/pages/VerIncidentePage.tsx'
-import { IncidentesHistorialPage } from './feature/IncidentesHistorial/pages/ListPage.tsx';
+import { IncidentesHistorialPage } from './feature/IncidentesHistorial/pages/ListPage.tsx'
 
 import { ConfiguracionSistemaPage } from './feature/ConfiguracionSistema/pages/ConfiguracionSistemaPage.tsx'
 import { VistaPublicaPage } from './feature/ConfiguracionSistema/pages/VistaPublicaPage.tsx'
@@ -126,6 +126,7 @@ import { ListPage as LoteProduccionListPage } from './feature/LotesProduccion/pa
 import { NuevoLoteProduccionPage } from './feature/LotesProduccion/pages/NuevoLoteProduccionPage.tsx'
 import { EditarLoteProduccionPage } from './feature/LotesProduccion/pages/EditarLoteProduccionPage.tsx'
 import { VerLoteProduccionPage } from './feature/LotesProduccion/pages/VerLoteProduccionPage.tsx'
+import { LotesHistorialPage } from './feature/LoteProduccionHistorial/pages/ListPage.tsx'
 
 import { Login, NoAutorizado } from './feature/auth'
 import AuthLayout from './layouts/AuthLayout.tsx'
@@ -402,6 +403,13 @@ const router = createBrowserRouter([
               { path: 'new', element: <NuevoProductoPage />},
               { path: ':id/edit', element: <EditarProductoPage />},
               { path: ':id', element: <VerProductoPage />},
+            ],
+          },
+          {
+            path: 'lotes-historial',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <LotesHistorialPage /> },
             ],
           },
           {

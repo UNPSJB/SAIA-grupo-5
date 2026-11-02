@@ -41,6 +41,25 @@ def test_listar_lotes_produccion(db_session, multiples_lotes_produccion, unico_p
     assert len(lotes) == 3
     assert lotes[0].producto_id == unico_producto.id
 
+def test_listar_lotes_historial(db_session, multiples_lotes_produccion, unico_producto):
+    historial = services.listar_lotes_historial(db=db_session)
+
+    assert len(historial.lotes) == 3
+    assert historial.lotes[0].producto_id == unico_producto.id
+    assert historial.total_producido is None
+
+def test_listar_lotes_historial_por_producto(db_session, multiples_lotes_produccion, unico_producto):
+    historial = services.listar_lotes_historial(db=db_session, producto_id=unico_producto.id,)
+
+    assert len(historial.lotes) == 3
+    assert all(lote.producto_id == unico_producto.id for lote in historial.lotes)
+    assert historial.total_producido == sum(lote.cantidad_producida for lote in historial.lotes)
+
+def test_listar_lotes_historial_por_fecha(db_session, multiples_lotes_produccion):
+    historial = services.listar_lotes_historial(db=db_session, fecha_desde=date(2027, 10, 1), fecha_hasta=date(2027, 10, 31),)
+
+    assert all(date(2027, 10, 1) <= lote.fecha_produccion <= date(2027, 10, 31) for lote in historial.lotes)
+    assert historial.total_producido is None
 
 def test_leer_lote_produccion(db_session, unico_lote_produccion, unico_producto):
     lote = services.leer_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id)
