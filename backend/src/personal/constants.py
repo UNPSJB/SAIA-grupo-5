@@ -9,6 +9,7 @@ class Capacidades(str, Enum):
 
 class ErrorCode:
     PERSONA_NO_ENCONTRADA = "La persona no fue encontrada."
+    PASSWORD_ACTUAL_INCORRECTA = "Password actual incorrecta"
     USERNAME_EXISTENTE = "El nombre de usuario ya está en uso."
     DNI_EXISTENTE = "El DNI ingresado ya está registrado."
     MAIL_EXISTENTE = "El correo electrónico ya está registrado."
