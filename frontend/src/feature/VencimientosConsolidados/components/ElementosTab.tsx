@@ -116,7 +116,7 @@ export function ElementosTab({ diasAntelacion }: { diasAntelacion: number }) {
                         size="sm"
                         tooltip="Ver elemento"
                         icon="bi bi-eye"
-                        onClick={() => navigate(`/elementos-limpieza/${row.id}`)}
+                        onClick={() => navigate(`/elementos-limpieza/${row.id}`, { state: { origen: "vencimiento" }})}
                     />
                     {currentUser?.administrar && (
                         <ActionButton

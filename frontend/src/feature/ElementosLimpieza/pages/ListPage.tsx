@@ -204,7 +204,7 @@ const filteredElementos = useMemo(() => {
                         size="sm"
                         tooltip="Ver"
                         icon="bi-eye"
-                        onClick={() => navigate(`/elementos-limpieza/${row.id}`)}
+                        onClick={() => navigate(`/elementos-limpieza/${row.id}`, { state: { origen: "lista" }})}
                     />
 
                     {currentUser?.administrar && (
