@@ -43,7 +43,7 @@ export function HistorialRecambiosModal({ show, onHide, recambios }: HistorialRe
                 )}
             </Modal.Body>
 
-            <Modal.Footer>
+            <Modal.Footer className="justify-content-start">
                 <Button variant="secondary" onClick={onHide}>
                     Cerrar
                 </Button>

@@ -2,6 +2,17 @@ import type { ConditionalStyles } from "react-data-table-component"
 import { ESTADO_VENCIMIENTOS_ESTILOS, ESTADO_VENCIMIENTOS_ORDEN } from "../../VencimientoPersonal/types"
 import type { EstadoVencimientos } from "../../VencimientoPersonal/types"
 
+export type FiltroVencimientos =
+    "todos" | "vencido" | "proximo" | "vigente" | "sin-vencimientos";
+
+export const FILTRO_VENCIMIENTOS_LABELS: Record<FiltroVencimientos, string> = {
+    todos: "Todos",
+    vencido: "Vencidos",
+    proximo: "Próximos a vencer",
+    vigente: "Vigentes",
+    "sin-vencimientos": "Sin vencimientos",
+};
+
 export type { EstadoVencimientos }
 export { ESTADO_VENCIMIENTOS_ESTILOS, ESTADO_VENCIMIENTOS_ORDEN }
 

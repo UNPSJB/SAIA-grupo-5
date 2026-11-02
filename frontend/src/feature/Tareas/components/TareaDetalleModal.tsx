@@ -75,7 +75,7 @@ export function TareaDetalleModal({ tarea, onHide, onEditar, onEliminar, onCambi
                 )}
             </Modal.Body>
             {currentUser?.administrar && (
-                <Modal.Footer>
+                <Modal.Footer className="justify-content-start">
                     {tarea?.activo ? (
                         <Button variant="outline-danger" onClick={onEliminar}>
                             <i className="bi bi-trash3 me-1"></i>Eliminar tarea

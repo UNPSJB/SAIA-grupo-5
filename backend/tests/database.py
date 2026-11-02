@@ -1,4 +1,5 @@
 import pytest
+
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
@@ -8,13 +9,14 @@ from datetime import date
 from src.config import settings
 from src.models import Base
 from src.database import get_db
-from src.main import app
+import src.all_models
 from src.personal.models import Persona
 from src.auth.utils import get_password_hash
 from src.unidad_medida.models import UnidadMedida
 from src.producto.models import Producto
 from src.lote_produccion.models import LoteProduccion
 
+from src.main import app
 engine = create_engine(
     settings.DB_URL_TEST, 
     connect_args={"check_same_thread": False},

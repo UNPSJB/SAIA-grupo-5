@@ -29,3 +29,8 @@ class LoteProduccion(LoteProduccionBase):
 class LoteProduccionHistorial(BaseModel):
     lotes: list[LoteProduccion]
     total_producido: int | None = None
+class EstadisticaProduccion(BaseModel):
+    producto_id: int
+    producto_nombre: str
+    fecha: date
+    cantidad: int

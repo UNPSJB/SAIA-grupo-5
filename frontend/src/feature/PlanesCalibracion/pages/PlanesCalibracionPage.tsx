@@ -15,7 +15,17 @@ import { RealizarCalibracionModal } from "../components/RealizarCalibracionModal
 import { HistoricoCalibracionModal } from "../components/HistoricoCalibracionModal";
 import type { PlanCalibracion } from "../types";
 import type { Equipo } from "../../Equipos/types";
+import { ListFilter } from "../../../components/ListFilter";
 
+type EstadoFiltro = "todos" | "activo" | "inactivo" | "vencido" | "por-vencer";
+
+const ESTADO_FILTRO_LABELS: Record<EstadoFiltro, string> = {
+    todos: "Todos",
+    activo: "Activos",
+    inactivo: "Inactivos",
+    vencido: "Vencidos",
+    "por-vencer": "Por vencer",
+};
 
 export function PlanesCalibracionPage() {
     const navigate = useNavigate();
@@ -27,6 +37,7 @@ export function PlanesCalibracionPage() {
 
     const { data: planes, error, isLoading } = useApi<PlanCalibracion[]>("/planes-calibracion");
     const { data: equipos } = useApi<Equipo[]>("/equipos");
+    const [estadoFiltro, setEstadoFiltro] = useState<EstadoFiltro>("todos");
 
     const obtenerEquipo = (equipoId: number) => {
         return equipos?.find((equipo) => equipo.id === equipoId);
@@ -44,13 +55,28 @@ export function PlanesCalibracionPage() {
         return planes.filter((plan) => {
             const nombreEquipo = obtenerNombreEquipo(plan.equipo_id);
 
-            return (
+            const coincideBusqueda =
                 nombreEquipo.toLowerCase().includes(busqueda) ||
                 plan.fecha_inicio.includes(busqueda) ||
-                plan.periodicidad.toString().includes(busqueda)
-            );
+                plan.periodicidad.toString().includes(busqueda);
+
+            const coincideEstado =
+                estadoFiltro === "todos" ||
+                (estadoFiltro === "activo" && plan.estado) ||
+                (estadoFiltro === "inactivo" && !plan.estado) ||
+                (estadoFiltro === "vencido" &&
+                    plan.estado &&
+                    plan.dias_restantes !== null &&
+                    plan.dias_restantes < 0) ||
+                (estadoFiltro === "por-vencer" &&
+                    plan.estado &&
+                    plan.dias_restantes !== null &&
+                    plan.dias_restantes >= 0 &&
+                    plan.dias_restantes <= 7);
+
+            return coincideBusqueda && coincideEstado;
         });
-    }, [search, planes, equipos]);
+    }, [search, estadoFiltro, planes, equipos]);
 
     const subHeaderComponentMemo = useMemo(() => {
         return (
@@ -242,7 +268,13 @@ export function PlanesCalibracionPage() {
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
                 </Col>
-
+                <Col xs="auto" className="align-self-center">
+                    <ListFilter
+                        value={estadoFiltro}
+                        options={ESTADO_FILTRO_LABELS}
+                        onChange={(value) => setEstadoFiltro(value as EstadoFiltro)}
+                    />
+                </Col>
                 {currentUser?.administrar && (
                     <Col xs="auto" className="d-flex justify-content-end">
                         <Button
