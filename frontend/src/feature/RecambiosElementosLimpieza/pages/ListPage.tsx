@@ -89,6 +89,7 @@ export function RecambiosElementoLimpiezaPage() {
             name: "Acciones",
             center: true,
             cell: row => (
+<<<<<<< HEAD
                 <span data-tour="btn-ver-recambio">
                     <ActionButton
                         variant="outline-secondary"
@@ -98,6 +99,15 @@ export function RecambiosElementoLimpiezaPage() {
                         onClick={() => navigate(`/recambios-elementos-limpieza/${row.id}`)}
                     />
                 </span>
+=======
+                <ActionButton
+                    variant="outline-info"
+                    size="sm"
+                    tooltip="Ver"
+                    icon="bi-eye"
+                    onClick={() => navigate(`/recambios-elementos-limpieza/${row.id}`)}
+                />
+>>>>>>> origin/dev
             ),
         },
     ];

@@ -24,8 +24,18 @@ from src.planesCalibracion.models import PlanCalibracion
 from src.registrosCalibracion.models import RegistroCalibracion
 from src.configuracion_sistema.models import ConfiguracionSistema
 from src.notificaciones.models import Notificacion
+from src.tipos_vencimientos.models import TipoVencimiento
+from src.vencimiento_personal.models import VencimientoPersonal
 
 from src.tipo_incidente.models import TipoIncidente
 from src.incidentes.models import Incidente
 from src.accion_correctiva.models import AccionCorrectiva
 from src.historial_incidente.models import HistorialIncidente
+
+from src.unidad_medida.models import UnidadMedida
+from src.producto.models import Producto
+from src.lote_produccion.models import LoteProduccion
+
+from src.receta.models import Receta
+from src.etapa_receta.models import EtapaReceta
+from src.paso_etapa.models import PasoEtapa

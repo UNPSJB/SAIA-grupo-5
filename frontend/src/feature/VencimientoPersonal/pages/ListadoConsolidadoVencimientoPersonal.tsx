@@ -15,12 +15,26 @@ import type { VencimientoPersonal } from '../types';
 import type { ConfiguracionSistema } from '../../ConfiguracionSistema/types';
 import { RenovarVencimientoModal } from '../components/RenovarVencimientoModal';
 import { HistoricoVencimientoModal } from '../components/HistoricoVencimientoModal';
+import { ListFilter } from "../../../components/ListFilter";
 
+import {
+    clasificarPorDiasRestantes,
+    FILTRO_VENCIMIENTOS_LABELS,
+    type FiltroVencimientos,
+} from "../../VencimientosConsolidados/utils/estado";
+
+const FILTRO_LABELS = {
+    todos: FILTRO_VENCIMIENTOS_LABELS.todos,
+    vencido: FILTRO_VENCIMIENTOS_LABELS.vencido,
+    proximo: FILTRO_VENCIMIENTOS_LABELS.proximo,
+    vigente: FILTRO_VENCIMIENTOS_LABELS.vigente,
+};
 
 export function VencimientoConsolidadoPage() {
     const navigate = useNavigate();    
     const { currentUser } = useAuth();
     const [search, setSearch] = useState('');
+    const [estadoFiltro, setEstadoFiltro] = useState<FiltroVencimientos>("todos");
 
     const { data: vencimientos, error, isLoading } = useApi<VencimientoPersonal[]>(`/vencimiento-personal/`);
 
@@ -31,22 +45,37 @@ export function VencimientoConsolidadoPage() {
     const [vencimientoHistorico, setVencimientoHistorico] = useState<VencimientoPersonal | null>(null);
 
     const filteredVencimientos = useMemo(() => {
-        if (!Array.isArray(vencimientos)) return [];     // Se agrego una validacion para preguntar si insumos es un array
-        const termino = search.toLowerCase().trim();        // Limpia lo que se escribio en la busqueda
+        if (!Array.isArray(vencimientos)) return [];
 
-        return[...vencimientos].filter((vencimiento) => {       // Creamos una copia de la lista original antes de filtrarla pq el sort modificaria el arreglo original
-            const nombreCompleto = `${vencimiento.persona.nombre} ${vencimiento.persona.apellido}`.toLowerCase();
-            const apellidoNombre = `${vencimiento.persona.apellido} ${vencimiento.persona.nombre}`.toLowerCase();
-            const tipoNombre = vencimiento.tipo_vencimiento.nombre.toLowerCase();
+        const termino = search.toLowerCase().trim();
 
-            {/* Si lo que buscaste coincide con cualquiera de los 3 deja esa fila en la tabla */}
-            return (
-                nombreCompleto.includes(termino) ||
-                apellidoNombre.includes(termino) ||
-                tipoNombre.includes(termino)
-            );
-        }).sort((v1, v2) => v1.dias_restantes - v2.dias_restantes)      // Ordena las filas de mas urgente a menos urgente
-    }, [search, vencimientos]);
+        return vencimientos
+            .filter((vencimiento) => {
+                const nombreCompleto =
+                    `${vencimiento.persona.nombre} ${vencimiento.persona.apellido}`.toLowerCase();
+
+                const apellidoNombre =
+                    `${vencimiento.persona.apellido} ${vencimiento.persona.nombre}`.toLowerCase();
+
+                const tipoNombre = vencimiento.tipo_vencimiento.nombre.toLowerCase();
+
+                const coincideBusqueda =
+                    nombreCompleto.includes(termino) ||
+                    apellidoNombre.includes(termino) ||
+                    tipoNombre.includes(termino);
+
+                const coincideEstado =
+                    estadoFiltro === "todos" ||
+                    clasificarPorDiasRestantes(
+                        vencimiento.dias_restantes,
+                        diasAntelacion
+                    ) === estadoFiltro;
+
+                return coincideBusqueda && coincideEstado;
+            })
+            .sort((a, b) => a.dias_restantes - b.dias_restantes);
+
+    }, [search, estadoFiltro, vencimientos, diasAntelacion]);
 
     const subHeaderComponentMemo = useMemo(() => {
         return (
@@ -238,6 +267,13 @@ export function VencimientoConsolidadoPage() {
                 </Col>
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
+                </Col>
+                <Col xs="auto" className="align-self-center">
+                    <ListFilter
+                        value={estadoFiltro}
+                        options={FILTRO_LABELS}
+                        onChange={(value) => setEstadoFiltro(value as FiltroVencimientos)}
+                    />
                 </Col>
             </Row>
             <div data-tour="tabla-vencimiento-consolidado">

@@ -100,7 +100,7 @@ import { VerTipoIncidentePage } from './feature/TiposIncidentes/pages/VerTipoInc
 import { EditarIncidentePage } from './feature/Incidentes/pages/EditarIncidentePage.tsx'
 import { NuevoIncidentePage } from './feature/Incidentes/pages/NuevoIncidentePage.tsx'
 import { VerIncidentePage } from './feature/Incidentes/pages/VerIncidentePage.tsx'
-import { IncidentesHistorialPage } from './feature/IncidentesHistorial/pages/ListPage.tsx';
+import { IncidentesHistorialPage } from './feature/IncidentesHistorial/pages/ListPage.tsx'
 
 import { ConfiguracionSistemaPage } from './feature/ConfiguracionSistema/pages/ConfiguracionSistemaPage.tsx'
 import { VistaPublicaPage } from './feature/ConfiguracionSistema/pages/VistaPublicaPage.tsx'
@@ -121,6 +121,13 @@ import { ListPage as ProductoListPage } from './feature/Productos/pages/ListPage
 import { NuevoProductoPage } from './feature/Productos/pages/NuevoProductoPage.tsx'
 import { EditarProductoPage } from './feature/Productos/pages/EditarProductoPage.tsx'
 import { VerProductoPage } from './feature/Productos/pages/VerProductoPage.tsx'
+
+import { LotesHistorialPage } from './feature/LoteProduccionHistorial/pages/ListPage.tsx'
+import { ListPage as LoteProduccionListPage } from './feature/LotesProduccion/pages/ListPage.tsx'
+import { NuevoLoteProduccionPage } from './feature/LotesProduccion/pages/NuevoLoteProduccionPage.tsx'
+import { EditarLoteProduccionPage } from './feature/LotesProduccion/pages/EditarLoteProduccionPage.tsx'
+import { VerLoteProduccionPage } from './feature/LotesProduccion/pages/VerLoteProduccionPage.tsx'
+import { LotesHistorialPage } from './feature/LoteProduccionHistorial/pages/ListPage.tsx'
 
 import { Login, NoAutorizado } from './feature/auth'
 import AuthLayout from './layouts/AuthLayout.tsx'
@@ -400,6 +407,13 @@ const router = createBrowserRouter([
             ],
           },
           {
+            path: 'lotes-historial',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <LotesHistorialPage /> },
+            ],
+          },
+          {
             path: 'vencimiento-personal',
             element: <ProtectedRoute requireAdmin />,
             children: [
@@ -431,6 +445,15 @@ const router = createBrowserRouter([
             element: <ProtectedRoute requireAdmin />,
             children: [
               { index: true, element: <VencimientosConsolidadosPage /> },
+            ],
+          },
+          {
+            path: 'lotes-produccion',
+            children: [
+              { index: true, element: <LoteProduccionListPage />},
+              { path: 'new', element: <NuevoLoteProduccionPage />},
+              { path: ':id/edit', element: <EditarLoteProduccionPage />},
+              { path: ':id', element: <VerLoteProduccionPage />},
             ],
           },
           { path: '*', element: <Page404 /> },

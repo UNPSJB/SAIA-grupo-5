@@ -13,7 +13,19 @@ import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
 
 import { DeleteProductoModal } from '../components/DeleteProductoModal';
+import { RecetaFormModal } from '../../Recetas/components/RecetaFormModal';
+import { VerRecetaModal } from '../../Recetas/components/VerRecetaModal';
 import type { Producto } from '../types';
+import type { Receta } from '../../Recetas/types';
+import { ListFilter } from "../../../components/ListFilter";
+
+type EstadoFiltro = "todos" | "activo" | "inactivo";
+
+const ESTADO_FILTRO_LABELS: Record<EstadoFiltro, string> = {
+    todos: "Todos",
+    activo: "Vigentes",
+    inactivo: "Descontinuados",
+};
 
 export function ListPage() {
     const navigate = useNavigate();
@@ -21,15 +33,37 @@ export function ListPage() {
     const [search, setSearch] = useState('');
     const { data: productos, error, isLoading } = useApi<Producto[]>("/productos/");
     const [productoToDelete, setProductoToDelete] = useState<Producto | null>(null);
-
+    const [productoReceta, setProductoReceta] = useState<Producto | null>(null);
+    const [productoVerReceta, setProductoVerReceta] = useState<Producto | null>(null);
+    const [recetaEditar, setRecetaEditar] = useState<Receta | null>(null);
+    const [estadoFiltro, setEstadoFiltro] = useState<EstadoFiltro>("todos");
+    
     const filteredProducto = useMemo(() => {
         if (!Array.isArray(productos)) return [];
-        return (productos ?? []).filter((producto) => {
-            return (
-                producto.nombre.toLowerCase().includes(search.toLowerCase())
-            );
+
+        const busqueda = search.toLowerCase().trim();
+
+        return productos.filter((producto) => {
+            const fechaFormateada = producto.fecha_lanzamiento
+                .split("-")
+                .reverse()
+                .join("/");
+
+            const coincideBusqueda =
+                producto.nombre.toLowerCase().includes(busqueda) ||
+                producto.unidad_medida.nombre.toLowerCase().includes(busqueda) ||
+                producto.cantidad_neta.toString().includes(busqueda) ||
+                producto.fecha_lanzamiento.includes(busqueda) ||
+                fechaFormateada.includes(busqueda);
+
+            const coincideEstado =
+                estadoFiltro === "todos" ||
+                (estadoFiltro === "activo" && producto.activo) ||
+                (estadoFiltro === "inactivo" && !producto.activo);
+
+            return coincideBusqueda && coincideEstado;
         });
-    }, [search, productos]);
+    }, [search, estadoFiltro, productos]);
 
     const subHeaderComponentMemo = useMemo(() => {
         return (
@@ -141,6 +175,15 @@ export function ListPage() {
                             onClick={() => navigate(`/productos/${row.id}`)}
                         />
                     </span>
+                    {row.receta != null && (
+                        <ActionButton
+                            variant="outline-secondary"
+                            size="sm"
+                            tooltip="Ver receta"
+                            icon="bi bi-journal-text"
+                            onClick={() => setProductoVerReceta(row)}
+                        />
+                    )}
 
                     {currentUser?.administrar && (
                         <>
@@ -154,6 +197,16 @@ export function ListPage() {
                                     onClick={() => navigate(`/productos/${row.id}/edit`)}
                                 />
                             </span>
+                            {row.receta == null && (
+                                <ActionButton
+                                    variant="outline-secondary"
+                                    size="sm"
+                                    tooltip="Agregar receta"
+                                    icon="bi bi-journal-plus"
+                                    disabled={!row.activo}
+                                    onClick={() => setProductoReceta(row)}
+                                />
+                            )}
                             <span data-tour="btn-baja-producto">
                                 <ActionButton
                                     variant={row.activo ? 'outline-danger' : 'outline-success'}
@@ -183,6 +236,13 @@ export function ListPage() {
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
                 </Col>
+                <Col xs="auto" className="align-self-center">
+                    <ListFilter
+                        value={estadoFiltro}
+                        options={ESTADO_FILTRO_LABELS}
+                        onChange={(value) => setEstadoFiltro(value as EstadoFiltro)}
+                    />
+                </Col>
                 {currentUser?.administrar && (
                     <Col xs="auto" className="d-flex justify-content-end">
                         <Button
@@ -204,6 +264,27 @@ export function ListPage() {
                 producto={productoToDelete}
                 onHide={() => setProductoToDelete(null)}
                 onDeleted={() => mutate("/productos/")}
+            />
+            <RecetaFormModal
+                producto={productoReceta}
+                receta={recetaEditar}
+                onHide={() => {
+                    setProductoReceta(null);
+                    setRecetaEditar(null);
+                }}
+                onSaved={(receta) => {
+                    mutate(`/recetas/producto/${receta.producto_id}`, receta, false);
+                    mutate("/productos/");
+                }}
+            />
+            <VerRecetaModal
+                producto={productoVerReceta}
+                onHide={() => setProductoVerReceta(null)}
+                onEditar={currentUser?.administrar ? (receta) => {
+                    setRecetaEditar(receta);
+                    setProductoReceta(productoVerReceta);
+                    setProductoVerReceta(null);
+                } : undefined}
             />
         </Container>
     );

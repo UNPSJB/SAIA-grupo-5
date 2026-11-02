@@ -13,7 +13,15 @@ import { useAuth } from '../../../hooks/useAuth';
 
 import { DeleteTipoIncidenteModal } from '../components/DeleteTipoIncidenteModal'; 
 import type { TipoIncidente } from '../types';
+import { ListFilter } from "../../../components/ListFilter";
 
+type EstadoFiltro = "todos" | "activo" | "inactivo";
+
+const ESTADO_FILTRO_LABELS: Record<EstadoFiltro, string> = {
+    todos: "Todos",
+    activo: "Activos",
+    inactivo: "Inactivos",
+};
 
 export function ListPage() {
     const navigate = useNavigate();     
@@ -21,15 +29,24 @@ export function ListPage() {
     const [search, setSearch] = useState('');
     const { data: tiposIncidentes, error, isLoading } = useApi<TipoIncidente[]>("/tipos-incidentes/")    
     const [tipoIncidenteToDelete, setTipoIncidenteToDelete] = useState<TipoIncidente | null>(null);
+    const [estadoFiltro, setEstadoFiltro] = useState<EstadoFiltro>("todos");
 
     const filteredTiposIncidentes = useMemo(() => {
-        if (!Array.isArray(tiposIncidentes)) return [];     
-        return (tiposIncidentes ?? []).filter((tipoIncidente) => {
-            return (
-                tipoIncidente.nombre.toLowerCase().includes(search.toLowerCase())
-            );
+        if (!Array.isArray(tiposIncidentes)) return [];
+
+        return tiposIncidentes.filter((tipoIncidente) => {
+            const coincideBusqueda = tipoIncidente.nombre
+                .toLowerCase()
+                .includes(search.toLowerCase());
+
+            const coincideEstado =
+                estadoFiltro === "todos" ||
+                (estadoFiltro === "activo" && tipoIncidente.activo) ||
+                (estadoFiltro === "inactivo" && !tipoIncidente.activo);
+
+            return coincideBusqueda && coincideEstado;
         });
-    }, [search, tiposIncidentes]);
+    }, [search, estadoFiltro, tiposIncidentes]);
 
     const subHeaderComponentMemo = useMemo(() => {
         return (
@@ -145,6 +162,13 @@ export function ListPage() {
                 </Col>
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
+                </Col>
+                <Col xs="auto" className="align-self-center">
+                    <ListFilter
+                        value={estadoFiltro}
+                        options={ESTADO_FILTRO_LABELS}
+                        onChange={(value) => setEstadoFiltro(value as EstadoFiltro)}
+                    />
                 </Col>
                 {currentUser?.administrar &&(
                     <Col xs="auto" className="d-flex justify-content-end">

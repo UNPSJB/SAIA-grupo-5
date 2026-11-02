@@ -14,6 +14,16 @@ import { useAuth } from '../../../hooks/useAuth';
 
 import { DeleteEquipoModal } from '../components/DeleteEquipoModal';
 import type { Equipo } from "../types";
+import { ListFilter } from "../../../components/ListFilter";
+
+
+type EstadoFiltro = "todos" | "activo" | "inactivo";
+
+const ESTADO_FILTRO_LABELS: Record<EstadoFiltro, string> = {
+    todos: "Todos",
+    activo: "Activos",
+    inactivo: "Inactivos",
+};
 
 export function EquiposPage() {
     const navigate = useNavigate();
@@ -22,16 +32,25 @@ export function EquiposPage() {
     const { data: equipos, error, isLoading } = useApi<Equipo[]>("/equipos");
     const [equipoToDelete, setEquipoToDelete] = useState<Equipo | null>(null);
 
-    const filteredInsumos = useMemo(() => {
+    const [estadoFiltro, setEstadoFiltro] = useState<EstadoFiltro>("todos");
+
+    const filteredEquipos = useMemo(() => {
         if (!Array.isArray(equipos)) return [];
-        return (equipos ?? []).filter((equipo) => {
-            return (
+
+        return equipos.filter((equipo) => {
+            const coincideBusqueda =
                 equipo.nombre.toLowerCase().includes(search.toLowerCase()) ||
                 equipo.categoria.toLowerCase().includes(search.toLowerCase()) ||
-                equipo.ubicacion.toLowerCase().includes(search.toLowerCase())
-            );
+                equipo.ubicacion.toLowerCase().includes(search.toLowerCase());
+
+            const coincideEstado =
+                estadoFiltro === "todos" ||
+                (estadoFiltro === "activo" && equipo.estado) ||
+                (estadoFiltro === "inactivo" && !equipo.estado);
+
+            return coincideBusqueda && coincideEstado;
         });
-    }, [search, equipos]);
+    }, [search, estadoFiltro, equipos]);
 
     const subHeaderComponentMemo = useMemo(() => {
         return (
@@ -71,6 +90,20 @@ export function EquiposPage() {
             sortable: true,
             center: true,
             grow: 2,
+            cell: row => (
+                <div
+                    style={{
+                        padding: "4px 12px",
+                        borderRadius: "16px",
+                        background: "#dbeafe",
+                        color: "#1d4ed8",
+                        fontWeight: 700,
+                        whiteSpace: "nowrap",
+                    }}
+                >
+                    {row.sector.nombre}
+                </div>
+            ),
         },
         {
             name: 'Estado',
@@ -150,6 +183,14 @@ export function EquiposPage() {
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
                 </Col>
+
+                <Col xs="auto" className="align-self-center">
+                    <ListFilter
+                        value={estadoFiltro}
+                        options={ESTADO_FILTRO_LABELS}
+                        onChange={(value) => setEstadoFiltro(value as EstadoFiltro)}
+                    />
+                </Col>
                 {currentUser?.administrar && (
                     <Col xs="auto" className="d-flex justify-content-end">
                         <Button
@@ -165,8 +206,9 @@ export function EquiposPage() {
                 )}
             </Row>
             <div data-tour="tabla-equipos">
-                <AppTable columns={columns} data={filteredInsumos} />
+                <AppTable columns={columns} data={filteredEquipos} />
             </div>
+
             <DeleteEquipoModal
                 equipo={equipoToDelete}
                 onHide={() => setEquipoToDelete(null)}

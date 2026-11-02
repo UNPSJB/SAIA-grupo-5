@@ -17,7 +17,15 @@ import { DeleteSectorModal } from '../components/DeleteSectorModal';
 import { EquiposDeSectorModal } from '../components/EquiposDeSectorModal';
 import { SuperficiesDeSectorModal } from '../components/SuperficiesDeSectorModal';
 import type { Sector } from '../types';
+import { ListFilter } from "../../../components/ListFilter";
 
+type EstadoFiltro = "todos" | "activo" | "inactivo";
+
+const ESTADO_FILTRO_LABELS: Record<EstadoFiltro, string> = {
+    todos: "Todos",
+    activo: "Activos",
+    inactivo: "Inactivos",
+};
 
 export function ListPage() {
     const navigate = useNavigate();     // Esto se usa para cambiar de pagina cuando cree el sector
@@ -27,13 +35,24 @@ export function ListPage() {
     const [sectorToDelete, setSectorToDelete] = useState<Sector | null>(null);
     const [sectorEquipos, setSectorEquipos] = useState<Sector | null>(null);
     const [sectorSuperficies, setSectorSuperficies] = useState<Sector | null>(null);
+    const [estadoFiltro, setEstadoFiltro] = useState<EstadoFiltro>("todos");
 
     const filteredSectores = useMemo(() => {
-        if (!Array.isArray(sectores)) return [];     // Se agrego una validacion para preguntar si sectores es un array
-        return (sectores ?? []).filter((sector) => {
-            return sector.nombre.toLowerCase().includes(search.toLowerCase());
+        if (!Array.isArray(sectores)) return [];
+
+        return sectores.filter((sector) => {
+            const coincideBusqueda = sector.nombre
+                .toLowerCase()
+                .includes(search.toLowerCase());
+
+            const coincideEstado =
+                estadoFiltro === "todos" ||
+                (estadoFiltro === "activo" && sector.activo) ||
+                (estadoFiltro === "inactivo" && !sector.activo);
+
+            return coincideBusqueda && coincideEstado;
         });
-    }, [search, sectores]);
+    }, [search, estadoFiltro, sectores]);
 
     const subHeaderComponentMemo = useMemo(() => {
         return (
@@ -86,11 +105,13 @@ export function ListPage() {
             cell: (row) => (
                 <Button
                     data-tour="btn-ver-equipos-sector"
-                    variant="outline-primary"
+                    variant="outline-info"
+
                     size="sm"
                     onClick={() => setSectorEquipos(row)}
                 >
-                    <i className="bi bi-eye me-1"></i>Ver equipos
+                    <i className="bi bi-eye me-1"></i>
+                    Ver equipos
                 </Button>
             )
         },
@@ -101,11 +122,13 @@ export function ListPage() {
             cell: (row) => (
                 <Button
                     data-tour="btn-ver-superficies-sector"
-                    variant="outline-primary"
+                    variant="outline-info"
+
                     size="sm"
                     onClick={() => setSectorSuperficies(row)}
                 >
-                    <i className="bi bi-eye me-1"></i>Ver superficies
+                    <i className="bi bi-eye me-1"></i>
+                    Ver superficies
                 </Button>
             )
         },
@@ -193,6 +216,14 @@ export function ListPage() {
                 </Col>
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
+                </Col>
+
+                <Col xs="auto" className="align-self-center">
+                    <ListFilter
+                        value={estadoFiltro}
+                        options={ESTADO_FILTRO_LABELS}
+                        onChange={(value) => setEstadoFiltro(value as EstadoFiltro)}
+                    />
                 </Col>
                 {currentUser?.administrar && (
                     <Col xs="auto" className="d-flex justify-content-end">

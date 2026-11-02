@@ -12,7 +12,16 @@ import { useAuth } from '../../../hooks/useAuth';
 
 import { DeleteDocumentoModal } from '../components/DeleteDocumentoModal'; 
 import type { Documento } from '../types';
+import { ListFilter } from "../../../components/ListFilter";
+import { ActionButton } from "../../../components/ActionButton";
 
+type EstadoFiltro = "todos" | "activo" | "inactivo";
+
+const ESTADO_FILTRO_LABELS: Record<EstadoFiltro, string> = {
+    todos: "Todos",
+    activo: "Activos",
+    inactivo: "Inactivos",
+};
 
 export function ListPage() {
     const navigate = useNavigate();     
@@ -20,15 +29,24 @@ export function ListPage() {
     const [search, setSearch] = useState('');
     const { data: documentos, error, isLoading } = useApi<Documento[]>("/documentos/")    
     const [documentoToDelete, setDocumentoToDelete] = useState<Documento | null>(null);
+    const [estadoFiltro, setEstadoFiltro] = useState<EstadoFiltro>("todos");
 
     const filteredDocumentos = useMemo(() => {
-        if (!Array.isArray(documentos)) return [];     
-        return (documentos ?? []).filter((documento) => {
-            return (
-                documento.nombre.toLowerCase().includes(search.toLowerCase())
-            );
+        if (!Array.isArray(documentos)) return [];
+
+        return documentos.filter((documento) => {
+            const coincideBusqueda = documento.nombre
+                .toLowerCase()
+                .includes(search.toLowerCase());
+
+            const coincideEstado =
+                estadoFiltro === "todos" ||
+                (estadoFiltro === "activo" && documento.activo) ||
+                (estadoFiltro === "inactivo" && !documento.activo);
+
+            return coincideBusqueda && coincideEstado;
         });
-    }, [search, documentos]);
+    }, [search, estadoFiltro, documentos]);
 
     const subHeaderComponentMemo = useMemo(() => {
         return (
@@ -92,38 +110,44 @@ export function ListPage() {
         {
             name: "Acciones",
             center: true,
+            minWidth: "180px",
             cell: (row) => (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <Button
-                        data-tour="btn-ver-documento"
-                        variant="outline-info"
-                        size="sm"
-                        onClick={() => navigate(`/documentos/${row.id}`)}
-                    >
-                        <i className="bi bi-eye me-1"></i>Ver
-                    </Button>
+
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
+                    <span>
+                        <ActionButton
+                            data-tour="btn-ver-documento"
+                            variant="outline-info"
+                            size="sm"
+                            tooltip="Ver"
+                            icon="bi-eye"
+                            onClick={() => navigate(`/documentos/${row.id}`)}
+                        />
+                    </span>
 
                     {currentUser?.administrar && (
                         <>
-                            <Button
-                                data-tour="btn-editar-documento"
-                                variant="outline-primary"
-                                size="sm"
-                                disabled={!row.activo}      // Si no esta activo se muestra en gris y no se puede editar
-                                onClick={() => navigate(`/documentos/${row.id}/edit`)}
-                            >
-                                <i className="bi bi-pencil me-1"></i>Editar
-                            </Button>
-                            <Button
-                                data-tour="btn-baja-documento"
-                                variant={row.activo ? 'outline-danger' : 'outline-success'}
-                                size="sm"
-                                onClick={() => setDocumentoToDelete(row)}
-                            >
-                                <i className={`bi ${row.activo ? 'bi-dash-circle' : 'bi-check-circle'} me-1`}></i>
-                                {row.activo ? 'Dar de baja' : 'Dar de alta'}
-                            </Button>
-                        </>  
+                            <span data-tour="btn-editar-documento">
+                                <ActionButton
+                                    variant="outline-primary"
+                                    size="sm"
+                                    tooltip="Editar"
+                                    icon="bi-pencil"
+                                    disabled={!row.activo}
+                                    onClick={() => navigate(`/documentos/${row.id}/edit`)}
+                                />
+                            </span>
+                                
+                            <span data-tour="btn-baja-documento">
+                                <ActionButton
+                                    variant={row.activo ? "outline-danger" : "outline-success"}
+                                    size="sm"
+                                    tooltip={row.activo ? "Dar de baja" : "Dar de alta"}
+                                    icon={row.activo ? "bi-dash-circle" : "bi-check-circle"}
+                                    onClick={() => setDocumentoToDelete(row)}
+                                />
+                            </span>
+                        </>
                     )}
                 </div>
             )
@@ -142,6 +166,13 @@ export function ListPage() {
                 </Col>
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
+                </Col>
+                <Col xs="auto" className="align-self-center">
+                    <ListFilter
+                        value={estadoFiltro}
+                        options={ESTADO_FILTRO_LABELS}
+                        onChange={(value) => setEstadoFiltro(value as EstadoFiltro)}
+                    />
                 </Col>
                 {currentUser?.administrar &&(
                     <Col xs="auto" className="d-flex justify-content-end">

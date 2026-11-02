@@ -14,7 +14,15 @@ import { useAuth } from '../../../hooks/useAuth';
 
 import { DeleteUnidadMedidaModal } from '../components/DeleteUnidadMedidaModal';
 import type { UnidadMedida } from '../types';
+import { ListFilter } from "../../../components/ListFilter";
 
+type EstadoFiltro = "todos" | "activo" | "inactivo";
+
+const ESTADO_FILTRO_LABELS: Record<EstadoFiltro, string> = {
+    todos: "Todos",
+    activo: "Activos",
+    inactivo: "Inactivos",
+};
 
 export function ListPage() {
     const navigate = useNavigate();    
@@ -22,16 +30,25 @@ export function ListPage() {
     const [search, setSearch] = useState('');
     const { data: unidadesMedida, error, isLoading } = useApi<UnidadMedida[]>("/unidades-medida/")    
     const [unidadMedidaToDelete, setUnidadMedidaToDelete] = useState<UnidadMedida | null>(null);
+    const [estadoFiltro, setEstadoFiltro] = useState<EstadoFiltro>("todos");
 
     // useMemo infiere que retorna un array de tipo Insumo[]
-    const filteredUnidadesMedida = useMemo(() => {
-        if (!Array.isArray(unidadesMedida)) return [];     // Se agrego una validacion para preguntar si insumos es un array
-        return (unidadesMedida ?? []).filter((unidadMedida) => {
-            return (
-                unidadMedida.nombre.toLowerCase().includes(search.toLowerCase())
-            );
-        });
-    }, [search, unidadesMedida]);
+const filteredUnidadesMedida = useMemo(() => {
+    if (!Array.isArray(unidadesMedida)) return [];
+
+    return unidadesMedida.filter((unidadMedida) => {
+        const coincideBusqueda = unidadMedida.nombre
+            .toLowerCase()
+            .includes(search.toLowerCase());
+
+        const coincideEstado =
+            estadoFiltro === "todos" ||
+            (estadoFiltro === "activo" && unidadMedida.activo) ||
+            (estadoFiltro === "inactivo" && !unidadMedida.activo);
+
+        return coincideBusqueda && coincideEstado;
+    });
+}, [search, estadoFiltro, unidadesMedida]);
 
     const subHeaderComponentMemo = useMemo(() => {
         return (
@@ -139,6 +156,13 @@ export function ListPage() {
                 </Col>
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
+                </Col>
+                <Col xs="auto" className="align-self-center">
+                    <ListFilter
+                        value={estadoFiltro}
+                        options={ESTADO_FILTRO_LABELS}
+                        onChange={(value) => setEstadoFiltro(value as EstadoFiltro)}
+                    />
                 </Col>
                 {currentUser?.administrar &&(
                     <Col xs="auto" className="d-flex justify-content-end">

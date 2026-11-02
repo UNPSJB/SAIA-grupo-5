@@ -15,11 +15,16 @@ type AjustesPublicos = Pick<ConfiguracionSistema,
     | "vista_publica_activa"
     | "vista_publica_nombre_establecimiento"
     | "vista_publica_mostrar_cumplimiento"
+    | "vista_publica_mostrar_tareas_realizadas"
+    | "vista_publica_mostrar_dias_limpieza"
     | "vista_publica_mostrar_calibraciones"
     | "vista_publica_mostrar_tiempo_calibracion"
     | "vista_publica_mostrar_recambios"
     | "vista_publica_mostrar_tiempo_recambio"
     | "vista_publica_mostrar_planes_limpieza"
+    | "vista_publica_mostrar_documentos_tecnicos"
+    | "vista_publica_mostrar_productos_elaborados"
+    | "vista_publica_mostrar_lotes_producidos"
 >;
 type IndicadorToggle = {
     clave: keyof Omit<AjustesPublicos, "vista_publica_activa" | "vista_publica_nombre_establecimiento">;
@@ -29,11 +34,16 @@ type IndicadorToggle = {
 
 const indicadores: IndicadorToggle[] = [
     { clave: "vista_publica_mostrar_cumplimiento", titulo: "Cumplimiento de limpieza", detalle: "Porcentaje del mes" },
+    { clave: "vista_publica_mostrar_tareas_realizadas", titulo: "Tareas realizadas", detalle: "Cantidad de tareas completadas este mes" },
+    { clave: "vista_publica_mostrar_dias_limpieza", titulo: "Días con limpieza registrada", detalle: "Días con al menos una tarea realizada este mes" },
     { clave: "vista_publica_mostrar_calibraciones", titulo: "Equipos con calibración al día", detalle: "Porcentaje de equipos activos" },
     { clave: "vista_publica_mostrar_tiempo_calibracion", titulo: "Tiempo promedio para calibrar", detalle: "Días desde la fecha programada hasta el registro" },
     { clave: "vista_publica_mostrar_recambios", titulo: "Elementos dentro del período de recambio", detalle: "Porcentaje de elementos activos" },
     { clave: "vista_publica_mostrar_tiempo_recambio", titulo: "Tiempo promedio para realizar el recambio", detalle: "Días desde la fecha programada hasta el registro" },
     { clave: "vista_publica_mostrar_planes_limpieza", titulo: "Planes de limpieza activos", detalle: "Cantidad de planes vigentes" },
+    { clave: "vista_publica_mostrar_documentos_tecnicos", titulo: "Documentos técnicos con versión vigente", detalle: "Porcentaje de documentos con versión vigente" },
+    { clave: "vista_publica_mostrar_productos_elaborados", titulo: "Productos distintos elaborados", detalle: "Variedades de productos presentes en los lotes del mes" },
+    { clave: "vista_publica_mostrar_lotes_producidos", titulo: "Lotes producidos", detalle: "Lotes de producción elaborados en el mes" },
 ];
 
 export function VistaPublicaPage() {

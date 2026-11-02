@@ -22,6 +22,11 @@ class ConfiguracionSistemaBase(BaseModel):
     vista_publica_mostrar_recambios: bool = False
     vista_publica_mostrar_tiempo_recambio: bool = False
     vista_publica_mostrar_planes_limpieza: bool = False
+    vista_publica_mostrar_tareas_realizadas: bool = False
+    vista_publica_mostrar_dias_limpieza: bool = False
+    vista_publica_mostrar_documentos_tecnicos: bool = False
+    vista_publica_mostrar_productos_elaborados: bool = False
+    vista_publica_mostrar_lotes_producidos: bool = False
 
 
 class ConfiguracionSistemaUpdate(BaseModel):
@@ -37,6 +42,11 @@ class ConfiguracionSistemaUpdate(BaseModel):
     vista_publica_mostrar_recambios: bool | None = None
     vista_publica_mostrar_tiempo_recambio: bool | None = None
     vista_publica_mostrar_planes_limpieza: bool | None = None
+    vista_publica_mostrar_tareas_realizadas: bool | None = None
+    vista_publica_mostrar_dias_limpieza: bool | None = None
+    vista_publica_mostrar_documentos_tecnicos: bool | None = None
+    vista_publica_mostrar_productos_elaborados: bool | None = None
+    vista_publica_mostrar_lotes_producidos: bool | None = None
 
 
 class IndicadorVistaPublica(BaseModel):

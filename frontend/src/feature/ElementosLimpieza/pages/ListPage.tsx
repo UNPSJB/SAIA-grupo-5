@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { mutate } from "swr";
 import { useAuth } from "../../../hooks/useAuth";
-import { Button, ButtonGroup, Col, Container, Dropdown, Form, Row } from "react-bootstrap";
+import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { type TableColumn } from "react-data-table-component";
 
@@ -15,11 +15,14 @@ import { useApi } from "../../../hooks/useApi";
 import { EstadoElementoLimpiezaModal } from "../components/DeleteElementoLimpiezaModal";
 import type { ElementoLimpieza } from "../types";
 import type { TipoElementoLimpieza } from "../../TiposElementoLimpieza/types";
+import { ListFilter } from "../../../components/ListFilter";
 
-type EstadoFiltro = "todos" | "vencido" | "por-vencer";
+type EstadoFiltro = "todos" | "activo" | "inactivo" | "vencido" | "por-vencer";
 
 const ESTADO_FILTRO_LABELS: Record<EstadoFiltro, string> = {
     todos: "Todos",
+    activo: "Activos",
+    inactivo: "Inactivos",
     vencido: "Vencidos",
     "por-vencer": "Por vencer",
 };
@@ -30,7 +33,9 @@ export function ElementosLimpiezaPage() {
     const [searchParams, setSearchParams] = useSearchParams();
     const estadoFiltro: EstadoFiltro = (() => {
         const valor = searchParams.get("estado");
-        return valor === "vencido" || valor === "por-vencer" ? valor : "todos";
+        return valor === "activo" || valor === "inactivo" || valor === "vencido" || valor === "por-vencer"
+            ? valor
+            : "todos";
     })();
     const [search, setSearch] = useState("");
     const [elementoToDelete, setElementoToDelete] = useState<ElementoLimpieza | null>(null);
@@ -42,32 +47,39 @@ export function ElementosLimpiezaPage() {
         return tipos?.find((tipo) => tipo.id === tipoId)?.nombre ?? "Sin tipo";
     };
 
-    const filteredElementos = useMemo(() => {
-        if (!Array.isArray(elementos)) return [];
+const filteredElementos = useMemo(() => {
+    if (!Array.isArray(elementos)) return [];
 
-        const busqueda = search.toLowerCase();
+    const busqueda = search.toLowerCase();
 
-        return elementos.filter((elemento) => {
-            const nombreTipo = obtenerNombreTipo(elemento.tipo_id);
+    return elementos.filter((elemento) => {
+        const nombreTipo = obtenerNombreTipo(elemento.tipo_id);
 
-            const coincideBusqueda = (
-                elemento.codigo.toLowerCase().includes(busqueda) ||
-                elemento.nombre.toLowerCase().includes(busqueda) ||
-                nombreTipo.toLowerCase().includes(busqueda) ||
-                (elemento.material ?? "").toLowerCase().includes(busqueda) ||
-                (elemento.ubicacion ?? "").toLowerCase().includes(busqueda)
-            );
+        const coincideBusqueda =
+            elemento.codigo.toLowerCase().includes(busqueda) ||
+            elemento.nombre.toLowerCase().includes(busqueda) ||
+            nombreTipo.toLowerCase().includes(busqueda) ||
+            (elemento.material ?? "").toLowerCase().includes(busqueda) ||
+            (elemento.ubicacion ?? "").toLowerCase().includes(busqueda);
 
-            const coincideEstado = estadoFiltro === "vencido"
-                ? elemento.dias_restantes !== null && elemento.dias_restantes < 0
-                : estadoFiltro === "por-vencer"
-                ? elemento.dias_restantes !== null && elemento.dias_restantes >= 0 && elemento.dias_restantes <= 7
-                : true;
+        const coincideEstado =
+            estadoFiltro === "todos" ||
+            (estadoFiltro === "activo" && elemento.estado) ||
+            (estadoFiltro === "inactivo" && !elemento.estado) ||
+            (estadoFiltro === "vencido" &&
+                elemento.estado &&
+                elemento.dias_restantes !== null &&
+                elemento.dias_restantes < 0) ||
+            (estadoFiltro === "por-vencer" &&
+                elemento.estado &&
+                elemento.dias_restantes !== null &&
+                elemento.dias_restantes >= 0 &&
+                elemento.dias_restantes <= 7);
 
-            return coincideBusqueda && coincideEstado;
-        })
-        .sort((a, b) => a.codigo.localeCompare(b.codigo));
-    }, [search, elementos, tipos, estadoFiltro]);
+        return coincideBusqueda && coincideEstado;
+    }).sort((a, b) => a.codigo.localeCompare(b.codigo));
+
+}, [search, elementos, tipos, estadoFiltro]);
 
     const subHeaderComponentMemo = useMemo(() => {
         return (
@@ -178,11 +190,12 @@ export function ElementosLimpiezaPage() {
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
                     <span data-tour="btn-ver-elemento">
                         <ActionButton
-                            variant="outline-secondary"
+                            variant="outline-info"
                             size="sm"
                             tooltip="Ver"
                             icon="bi-eye"
-                            onClick={() => navigate(`/elementos-limpieza/${row.id}`)}
+                            onClick={() => navigate(`/elementos-limpieza/${row.id}`, { state: { origen: "lista" }})}
+
                     />
                     </span>
 
@@ -192,13 +205,13 @@ export function ElementosLimpiezaPage() {
                             {row.estado && (
                                 <>  
                                     <span data-tour="btn-editar-elemento">
-                                    <ActionButton
-                                        variant="outline-primary"
-                                        size="sm"
-                                        tooltip="Editar"
-                                        icon="bi-pencil"
-                                        onClick={() => navigate(`/elementos-limpieza/${row.id}/edit`)}
-                                    />
+                                        <ActionButton
+                                            variant="outline-primary"
+                                            size="sm"
+                                            tooltip="Editar"
+                                            icon="bi-pencil"
+                                            onClick={() => navigate(`/elementos-limpieza/${row.id}/edit`)}
+                                        />
                                     </span>
                                     <span data-tour="btn-recambio-elemento">
 
@@ -244,33 +257,15 @@ export function ElementosLimpiezaPage() {
                     {subHeaderComponentMemo}
                 </Col>
 
-                <Col xs="auto" className="align-self-center" data-tour="filtro-estado-elementos"> 
-                        <Dropdown as={ButtonGroup}>
-                        <Button
-                            variant="outline-secondary"
-                            size="sm"
-                            onClick={() => setSearchParams({})}
-                        >
-                            Filtrar por: {ESTADO_FILTRO_LABELS[estadoFiltro]}
-                        </Button>
-                        <Dropdown.Toggle
-                            split
-                            variant="outline-secondary"
-                            size="sm"
-                            id="dropdown-filtro-elementos"
-                        />
-                        <Dropdown.Menu>
-                            {(Object.entries(ESTADO_FILTRO_LABELS) as [EstadoFiltro, string][]).map(([valor, label]) => (
-                                <Dropdown.Item
-                                    key={valor}
-                                    active={estadoFiltro === valor}
-                                    onClick={() => setSearchParams(valor === "todos" ? {} : { estado: valor })}
-                                >
-                                    {label}
-                                </Dropdown.Item>
-                            ))}
-                        </Dropdown.Menu>
-                    </Dropdown>
+
+                <Col xs="auto" className="align-self-center"data-tour="filtro-estado-elementos">
+                    <ListFilter
+                        value={estadoFiltro}
+                        options={ESTADO_FILTRO_LABELS}
+                        onChange={(value) =>
+                            setSearchParams(value === "todos" ? {} : { estado: value })
+                        }
+                    />
                 </Col>
 
                 {currentUser?.administrar && (

@@ -7,12 +7,14 @@ from src.personal.models import Persona
 from src.auth.utils import get_password_hash
 from src.scheduler.scheduler import scheduler, iniciar_scheduler
 from src.incidentes.migrations import migrar_esquema_incidentes
+from src.lote_produccion.migrations import migrar_esquema_lote_produccion
 
 
 @asynccontextmanager
 async def db_creation_lifespan(app: FastAPI):
     ModeloBase.metadata.create_all(bind=engine)
     migrar_esquema_incidentes(engine)
+    migrar_esquema_lote_produccion(engine)
     inspector = inspect(engine)
     tablas = inspector.get_table_names()
 
@@ -28,6 +30,11 @@ async def db_creation_lifespan(app: FastAPI):
             "vista_publica_mostrar_recambios": "BOOLEAN NOT NULL DEFAULT 0",
             "vista_publica_mostrar_tiempo_recambio": "BOOLEAN NOT NULL DEFAULT 0",
             "vista_publica_mostrar_planes_limpieza": "BOOLEAN NOT NULL DEFAULT 0",
+            "vista_publica_mostrar_tareas_realizadas": "BOOLEAN NOT NULL DEFAULT 0",
+            "vista_publica_mostrar_dias_limpieza": "BOOLEAN NOT NULL DEFAULT 0",
+            "vista_publica_mostrar_documentos_tecnicos": "BOOLEAN NOT NULL DEFAULT 0",
+            "vista_publica_mostrar_productos_elaborados": "BOOLEAN NOT NULL DEFAULT 0",
+            "vista_publica_mostrar_lotes_producidos": "BOOLEAN NOT NULL DEFAULT 0",
         }
         with engine.begin() as connection:
             for columna, definicion in migraciones_configuracion.items():
@@ -67,6 +74,20 @@ async def db_creation_lifespan(app: FastAPI):
     ):
         with engine.begin() as connection:
             connection.execute(text("ALTER TABLE acciones_correctivas ADD COLUMN activo BOOLEAN NOT NULL DEFAULT 1"))
+
+    if "registros_calibracion" in tablas and not any(
+        column["name"] == "certificado" for column in inspector.get_columns("registros_calibracion")
+    ):
+        with engine.begin() as connection:
+            connection.execute(text("ALTER TABLE registros_calibracion ADD COLUMN certificado TEXT"))
+
+    if "versiones_documentos" in tablas:
+        columnas_versiones = [col["name"] for col in inspector.get_columns("versiones_documentos")]
+        with engine.begin() as connection:
+            if "aprobador_id" not in columnas_versiones:
+                connection.execute(text("ALTER TABLE versiones_documentos ADD COLUMN aprobador_id INTEGER"))
+            if "fecha_aprobacion" not in columnas_versiones:
+                connection.execute(text("ALTER TABLE versiones_documentos ADD COLUMN fecha_aprobacion DATETIME"))
 
     # Crear administrador por defecto si no existe
     with SessionLocal() as db:
