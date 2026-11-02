@@ -122,6 +122,11 @@ import { NuevoProductoPage } from './feature/Productos/pages/NuevoProductoPage.t
 import { EditarProductoPage } from './feature/Productos/pages/EditarProductoPage.tsx'
 import { VerProductoPage } from './feature/Productos/pages/VerProductoPage.tsx'
 
+import { ListPage as LoteProduccionListPage } from './feature/LotesProduccion/pages/ListPage.tsx'
+import { NuevoLoteProduccionPage } from './feature/LotesProduccion/pages/NuevoLoteProduccionPage.tsx'
+import { EditarLoteProduccionPage } from './feature/LotesProduccion/pages/EditarLoteProduccionPage.tsx'
+import { VerLoteProduccionPage } from './feature/LotesProduccion/pages/VerLoteProduccionPage.tsx'
+
 import { Login, NoAutorizado } from './feature/auth'
 import AuthLayout from './layouts/AuthLayout.tsx'
 import { ProtectedRoute } from './components/ProtectedRoute.tsx'
@@ -431,6 +436,15 @@ const router = createBrowserRouter([
             element: <ProtectedRoute requireAdmin />,
             children: [
               { index: true, element: <VencimientosConsolidadosPage /> },
+            ],
+          },
+          {
+            path: 'lotes-produccion',
+            children: [
+              { index: true, element: <LoteProduccionListPage />},
+              { path: 'new', element: <NuevoLoteProduccionPage />},
+              { path: ':id/edit', element: <EditarLoteProduccionPage />},
+              { path: ':id', element: <VerLoteProduccionPage />},
             ],
           },
           { path: '*', element: <Page404 /> },

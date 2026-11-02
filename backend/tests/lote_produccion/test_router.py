@@ -1,35 +1,75 @@
-def test_endpoint_estadistica_produccion(client, auth_headers, lotes_estadistica):
-    response = client.get(
-        "/lotes-produccion/estadisticas",
-        params={
-            "fecha_desde": "2026-10-10",
-            "fecha_hasta": "2026-10-10"
-        },
-        headers=auth_headers
-    )
-
+def test_endpoint_get_lote_produccion(client, auth_headers, unico_lote_produccion):
+    response = client.get(f"/lotes-produccion/{unico_lote_produccion.id}", headers=auth_headers)
     data = response.json()
 
     assert response.status_code == 200
-    assert len(data) == 2
-
-    cantidades = {
-        estadistica["producto_id"]: estadistica["cantidad"]
-        for estadistica in data
-    }
-
-    assert cantidades[lotes_estadistica[0].producto_id] == 150
-    assert cantidades[lotes_estadistica[3].producto_id] == 70
+    assert data["id"] == unico_lote_produccion.id
+    assert data["producto_id"] == unico_lote_produccion.producto_id
+    assert data["estado"] == "En produccion"
 
 
-def test_endpoint_estadistica_sin_permiso(client, auth_headers_sin_permiso):
-    response = client.get(
-        "/lotes-produccion/estadisticas",
-        params={
-            "fecha_desde": "2026-10-01",
-            "fecha_hasta": "2026-10-31"
+def test_endpoint_listar_lotes_produccion(client, auth_headers, multiples_lotes_produccion):
+    response = client.get("/lotes-produccion/", headers=auth_headers)
+    data = response.json()
+
+    assert response.status_code == 200
+    assert len(data) == 3
+
+
+def test_endpoint_crear_lote_produccion(client, auth_headers, unico_producto):
+    response = client.post(
+        "/lotes-produccion/",
+        json={
+            "producto_id": unico_producto.id,
+            "fecha_produccion": "2027-10-01",
+            "fecha_vencimiento": "2028-10-01",
+            "cantidad_producida": 150,
         },
-        headers=auth_headers_sin_permiso
+        headers=auth_headers,
     )
+    data = response.json()
 
-    assert response.status_code == 403
+    assert response.status_code == 200
+    assert data["producto_id"] == unico_producto.id
+    assert data["cantidad_producida"] == 150
+    assert data["estado"] == "En produccion"
+
+
+def test_endpoint_modificar_lote_produccion(client, auth_headers, unico_lote_produccion, unico_producto):
+    response = client.put(
+        f"/lotes-produccion/{unico_lote_produccion.id}",
+        json={
+            "producto_id": unico_producto.id,
+            "fecha_produccion": "2027-11-01",
+            "fecha_vencimiento": "2028-11-01",
+            "cantidad_producida": 200,
+        },
+        headers=auth_headers,
+    )
+    data = response.json()
+
+    assert response.status_code == 200
+    assert data["cantidad_producida"] == 200
+
+
+def test_endpoint_cambiar_estado_lote_produccion(client, auth_headers, unico_lote_produccion):
+    response = client.patch(
+        f"/lotes-produccion/{unico_lote_produccion.id}/estado",
+        headers=auth_headers,
+    )
+    data = response.json()
+
+    assert response.status_code == 200
+    assert data["estado"] == "Empaquetando"
+
+
+def test_endpoint_cambiar_estado_lote_ya_enviado_error_400(client, auth_headers, unico_lote_produccion):
+    client.patch(f"/lotes-produccion/{unico_lote_produccion.id}/estado", headers=auth_headers) # Empaquetando
+    client.patch(f"/lotes-produccion/{unico_lote_produccion.id}/estado", headers=auth_headers) # Terminado
+    client.patch(f"/lotes-produccion/{unico_lote_produccion.id}/estado", headers=auth_headers) # Enviado
+
+    response = client.patch(
+        f"/lotes-produccion/{unico_lote_produccion.id}/estado",
+        headers=auth_headers,
+    )
+    assert response.status_code == 400
