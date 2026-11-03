@@ -68,6 +68,7 @@ export function ListPage() {
     const subHeaderComponentMemo = useMemo(() => {
         return (
             <Form.Control
+                data-tour="buscador-productos"
                 type="text"
                 placeholder="Buscar producto..."
                 className="mr-sm-2"
@@ -99,6 +100,7 @@ export function ListPage() {
             cell: row => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div
+                        data-tour="unidad-medida-producto"
                         style={{
                             padding: '4px 12px',
                             borderRadius: '16px',
@@ -139,6 +141,7 @@ export function ListPage() {
             cell: row => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10}}>
                     <div
+                        data-tour="estado-producto"
                         style={{
                             padding: '4px 12px',
                             borderRadius: '16px',
@@ -163,14 +166,15 @@ export function ListPage() {
             minWidth: '220px',
             cell: (row) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center' }}>
-                    
-                    <ActionButton
-                        variant="outline-info"
-                        size="sm"
-                        tooltip="Ver"
-                        icon="bi bi-eye"
-                        onClick={() => navigate(`/productos/${row.id}`)}
-                    />
+                    <span data-tour="btn-ver-producto">
+                        <ActionButton
+                            variant="outline-info"
+                            size="sm"
+                            tooltip="Ver"
+                            icon="bi bi-eye"
+                            onClick={() => navigate(`/productos/${row.id}`)}
+                        />
+                    </span>
                     {row.receta != null && (
                         <ActionButton
                             variant="outline-secondary"
@@ -183,14 +187,16 @@ export function ListPage() {
 
                     {currentUser?.administrar && (
                         <>
-                            <ActionButton
-                                variant="outline-primary"
-                                size="sm"
-                                tooltip="Editar"
-                                icon="bi bi-pencil"
-                                disabled={!row.activo}
-                                onClick={() => navigate(`/productos/${row.id}/edit`)}
-                            />
+                            <span data-tour="btn-editar-producto">
+                                <ActionButton
+                                    variant="outline-primary"
+                                    size="sm"
+                                    tooltip="Editar"
+                                    icon="bi bi-pencil"
+                                    disabled={!row.activo}
+                                    onClick={() => navigate(`/productos/${row.id}/edit`)}
+                                />
+                            </span>
                             {row.receta == null && (
                                 <ActionButton
                                     variant="outline-secondary"
@@ -201,13 +207,15 @@ export function ListPage() {
                                     onClick={() => setProductoReceta(row)}
                                 />
                             )}
-                            <ActionButton
-                                variant={row.activo ? 'outline-danger' : 'outline-success'}
-                                size="sm"
-                                tooltip={row.activo ? 'Dar de baja' : 'Dar de alta'}
-                                icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
-                                onClick={() => setProductoToDelete(row)}
-                            />
+                            <span data-tour="btn-baja-producto">
+                                <ActionButton
+                                    variant={row.activo ? 'outline-danger' : 'outline-success'}
+                                    size="sm"
+                                    tooltip={row.activo ? 'Dar de baja' : 'Dar de alta'}
+                                    icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
+                                    onClick={() => setProductoToDelete(row)}
+                                />
+                            </span>
                         </>
                     )}
                 </div>
@@ -238,6 +246,7 @@ export function ListPage() {
                 {currentUser?.administrar && (
                     <Col xs="auto" className="d-flex justify-content-end">
                         <Button
+                            data-tour="btn-nuevo-producto"
                             variant="primary"
                             size='sm'
                             onClick={() => navigate("/productos/new")}
@@ -248,7 +257,9 @@ export function ListPage() {
                     </Col>
                 )}
             </Row>
-            <AppTable columns={columns} data={filteredProducto} />
+            <div data-tour="tabla-productos">
+                <AppTable columns={columns} data={filteredProducto} />
+            </div>
             <DeleteProductoModal
                 producto={productoToDelete}
                 onHide={() => setProductoToDelete(null)}

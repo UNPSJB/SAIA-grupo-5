@@ -51,6 +51,7 @@ export function ListPage() {
     const subHeaderComponentMemo = useMemo(() => {
         return (
             <Form.Control
+                data-tour="buscador-tipos-documentos"
                 type="text"
                 placeholder="Buscar tipo documento..."
                 className=" mr-sm-2"
@@ -88,6 +89,7 @@ export function ListPage() {
             cell: row => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10}}>
                     <div
+                        data-tour="estado-tipo-documento"
                         style={{
                             padding: '4px 12px',
                             borderRadius: '16px',
@@ -110,33 +112,40 @@ export function ListPage() {
             center: true,
             minWidth: "180px",
             cell: (row) => (
+
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
-                    <ActionButton
-                        variant="outline-info"
-                        size="sm"
-                        tooltip="Ver"
-                        icon="bi-eye"
-                        onClick={() => navigate(`/tipos-documentos/${row.id}`)}
-                    />
+                    <span data-tour="btn-ver-tipo-documento">
+                        <ActionButton
+                            variant="outline-info"
+                            size="sm"
+                            tooltip="Ver"
+                            icon="bi-eye"
+                            onClick={() => navigate(`/tipos-documentos/${row.id}`)}
+                        />
+                    </span>
 
                     {currentUser?.administrar && (
                         <>
-                            <ActionButton
-                                variant="outline-primary"
-                                size="sm"
-                                tooltip="Editar"
-                                icon="bi-pencil"
-                                disabled={!row.activo}
-                                onClick={() => navigate(`/tipos-documentos/${row.id}/edit`)}
-                            />
+                            <span data-tour="btn-editar-tipo-documento">
+                                <ActionButton
+                                    variant="outline-primary"
+                                    size="sm"
+                                    tooltip="Editar"
+                                    icon="bi-pencil"
+                                    disabled={!row.activo}
+                                    onClick={() => navigate(`/tipos-documentos/${row.id}/edit`)}
+                                />
+                            </span>
+                            <span data-tour="btn-baja-tipo-documento">
 
-                            <ActionButton
-                                variant={row.activo ? "outline-danger" : "outline-success"}
-                                size="sm"
-                                tooltip={row.activo ? "Dar de baja" : "Dar de alta"}
-                                icon={row.activo ? "bi-dash-circle" : "bi-check-circle"}
-                                onClick={() => setTipoDocumentoToDelete(row)}
-                            />
+                                <ActionButton
+                                    variant={row.activo ? "outline-danger" : "outline-success"}
+                                    size="sm"
+                                    tooltip={row.activo ? "Dar de baja" : "Dar de alta"}
+                                    icon={row.activo ? "bi-dash-circle" : "bi-check-circle"}
+                                    onClick={() => setTipoDocumentoToDelete(row)}
+                                />
+                            </span>
                         </>
                     )}
                 </div>
@@ -167,6 +176,7 @@ export function ListPage() {
                 {currentUser?.administrar &&(
                     <Col xs="auto" className="d-flex justify-content-end">
                         <Button
+                            data-tour="btn-nuevo-tipo-documento"
                             variant="primary"
                             size='sm'
                             onClick={() => navigate("/tipos-documentos/new")}
@@ -178,7 +188,9 @@ export function ListPage() {
                 )}
 
             </Row>
-            <AppTable columns={columns} data={filteredTiposDocumentos} />
+            <div data-tour="tabla-tipos-documentos">
+                <AppTable columns={columns} data={filteredTiposDocumentos} />
+            </div>
             <DeleteTipoDocumentoModal
                 tipoDocumento={tipoDocumentoToDelete}
                 onHide={() => setTipoDocumentoToDelete(null)}

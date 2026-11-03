@@ -67,6 +67,7 @@ export function ListPage() {
   const subHeaderComponentMemo = useMemo(() => {
     return (
       <Form.Control
+        data-tour="buscador-personal"
         type="text"
         placeholder="Buscar personal..."
         className="mr-sm-2"
@@ -113,7 +114,7 @@ export function ListPage() {
       center: true,
       grow: 2,
       cell: (row) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <div data-tour="capacidades-personal" style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
           {!row.capacidades || row.capacidades.length === 0 ? (
             <span className="text-muted">Sin capacidades</span>
           ) : (
@@ -148,6 +149,7 @@ export function ListPage() {
       cell: (row) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div
+            data-tour="estado-personal"
             style={{
               padding: '3px 10px',
               borderRadius: '14px',
@@ -177,45 +179,53 @@ export function ListPage() {
         minWidth: '260px',
         cell: (row) => (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <ActionButton
-              variant="outline-info"
-              size="sm"
-              tooltip="Ver"
-              icon="bi bi-eye"
-              onClick={() => navigate(`/personal/${row.id}`)}
-            />
-            <ActionButton
-              variant="outline-warning"
-              size="sm"
-              tooltip="Ver vencimientos"
-              icon="bi-calendar-check"
-              onClick={() => navigate(`/personal/${row.id}/vencimientos`)}
-            />
-            <ActionButton
-              variant="outline-primary"
-              size="sm"
-              tooltip="Editar"
-              icon="bi-pencil"
-              disabled={!row.activo}
-              onClick={() => navigate(`/personal/${row.id}/edit`)}
-            />
-            {row.activo ? (
+            <span data-tour="btn-ver-personal">
               <ActionButton
-                variant="outline-danger"
+                variant="outline-info"
                 size="sm"
-                tooltip="Dar de baja"
-                icon="bi-dash-circle"
-                onClick={() => setPersonaToDelete(row)}
+                tooltip="Ver"
+                icon="bi bi-eye"
+                onClick={() => navigate(`/personal/${row.id}`)}
               />
-            ) : (
+            </span>
+            <span data-tour="btn-vencimientos-personal">
               <ActionButton
-                variant="outline-success"
+                variant="outline-warning"
                 size="sm"
-                tooltip="Dar de alta"
-                icon="bi-check-circle"
-                onClick={() => setPersonaToDelete(row)}
+                tooltip="Ver vencimientos"
+                icon="bi-calendar-check"
+                onClick={() => navigate(`/personal/${row.id}/vencimientos`)}
               />
-            )}
+            </span>
+            <span data-tour="btn-editar-personal">
+              <ActionButton
+                variant="outline-primary"
+                size="sm"
+                tooltip="Editar"
+                icon="bi-pencil"
+                disabled={!row.activo}
+                onClick={() => navigate(`/personal/${row.id}/edit`)}
+              />
+            </span>
+            <span data-tour="btn-baja-personal">
+              {row.activo ? (
+                  <ActionButton
+                    variant="outline-danger"
+                    size="sm"
+                    tooltip="Dar de baja"
+                    icon="bi-dash-circle"
+                    onClick={() => setPersonaToDelete(row)}
+                  />
+                ) : (
+                  <ActionButton
+                    variant="outline-success"
+                    size="sm"
+                    tooltip="Dar de alta"
+                    icon="bi-check-circle"
+                    onClick={() => setPersonaToDelete(row)}
+                  />
+              )}
+            </span>
           </div>
         ),
       },
@@ -245,6 +255,7 @@ export function ListPage() {
         {currentUser?.administrar && (
           <Col xs="auto" className="d-flex justify-content-end gap-2">
             <Button
+              data-tour="btn-vencimientos-general"
               variant="warning"
               size="sm"
               onClick={() => navigate('/vencimiento-personal')}
@@ -253,6 +264,7 @@ export function ListPage() {
               <i className="bi-calendar-check me-1"></i>Ver Vencimientos
             </Button>
             <Button
+              data-tour="btn-nuevo-personal"
               variant="primary"
               size="sm"
               onClick={() => navigate('/personal/new')}
@@ -263,7 +275,9 @@ export function ListPage() {
           </Col>
         )}
       </Row>
-      <AppTable columns={columns} data={filteredPersonal} />
+      <div data-tour="tabla-personal">
+        <AppTable columns={columns} data={filteredPersonal} />
+      </div>
       <DeletePersonaModal
         persona={personaToDelete}
         onHide={() => setPersonaToDelete(null)}

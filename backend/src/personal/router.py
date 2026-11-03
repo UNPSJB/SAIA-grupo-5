@@ -16,12 +16,23 @@ router = PermissionedRouter(prefix="/personal", tags=["personal"])
 def create_persona(persona: schemas.PersonaCreate, db: Session = Depends(get_db)):
     return services.crear_persona(db, persona)
 
-
 # Excepción a la regla por default: el listado completo también requiere admin.
 @router.get("/", response_model=list[schemas.Persona], dependencies=[Depends(tiene_permiso_administrar)])
 def read_personas(db: Session = Depends(get_db)):
     logger.info("Consultando la lista de personal desde endpoint...")
     return services.listar_personas(db)
+
+@router.put(
+    "/me",
+    response_model=schemas.Persona,
+    dependencies=[Depends(get_current_persona)],
+)
+def update_mi_cuenta(
+    datos: schemas.CuentaUpdate,
+    db: Session = Depends(get_db),
+    current_persona: models.Persona = Depends(get_current_persona),
+):
+    return services.modificar_cuenta(db, current_persona.id, datos)
 
 
 @router.get("/{persona_id}", response_model=schemas.Persona)

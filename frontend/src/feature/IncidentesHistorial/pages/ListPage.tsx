@@ -133,7 +133,7 @@ export function IncidentesHistorialPage() {
             selector: (incidente) => incidente.estado,
             sortable: true,
             minWidth: '110px',
-            cell: (incidente) => <Badge bg={incidente.estado === 'Abierto' ? 'warning' : 'success'} text={incidente.estado === 'Abierto' ? 'dark' : undefined}>{incidente.estado}</Badge>,
+            cell: (incidente) => <Badge data-tour="estado-historial-incidente" bg={incidente.estado === 'Abierto' ? 'warning' : 'success'} text={incidente.estado === 'Abierto' ? 'dark' : undefined}>{incidente.estado}</Badge>,
         },
         {
             name: 'Acciones',
@@ -143,20 +143,24 @@ export function IncidentesHistorialPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, padding: '6px 0' }}>
                     {currentUser?.administrar && (
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                            <ActionButton
-                                variant="outline-secondary"
-                                size="sm"
-                                tooltip="Ver historial"
-                                icon="bi-clock-history"
-                                onClick={() => setIncidenteParaHistorial(incidente)}
-                            />
-                            <ActionButton
-                                variant="outline-info"
-                                size="sm"
-                                tooltip="Ver"
-                                icon="bi-eye"
-                                onClick={() => navigate(`/incidentes/${incidente.id}`, { state: { origen: "historial" }})}
-                            />
+                            <span data-tour="btn-historial-incidente-hist">
+                                <ActionButton
+                                    variant="outline-secondary"
+                                    size="sm"
+                                    tooltip="Ver historial"
+                                    icon="bi-clock-history"
+                                    onClick={() => setIncidenteParaHistorial(incidente)}
+                                />
+                            </span>
+                            <span data-tour="btn-ver-incidente-hist">
+                                <ActionButton
+                                    variant="outline-info"
+                                    size="sm"
+                                    tooltip="Ver"
+                                    icon="bi-eye"
+                                    onClick={() => navigate(`/incidentes/${incidente.id}`, { state: { origen: "historial" }})}
+                                />
+                            </span>
                         </div>
                     )}
                 </div>
@@ -185,7 +189,7 @@ export function IncidentesHistorialPage() {
                     </div>
                 )}
             />
-            <Row className="p-2 align-items-end g-3">
+            <Row className="p-2 align-items-end g-3" data-tour="filtros-historial-incidentes">
                 <Col xs="auto">
                     <Form.Label className="mb-1 small fw-semibold"> Desde </Form.Label>
                     <Form.Control
@@ -223,7 +227,7 @@ export function IncidentesHistorialPage() {
             </Row>
 
             {rangoValido && incidentesEstadisticas && !errorEstadisticas && (
-                <Row className="p-2 g-3">
+                <Row className="p-2 g-3" data-tour="resumen-historial-incidentes">
                     <Col xs={6} lg={3}>
                         <Card className="text-center h-100">
                             <Card.Body>
@@ -277,6 +281,7 @@ export function IncidentesHistorialPage() {
                             </div>
                             <div className="d-flex flex-column flex-sm-row gap-2 incident-filters">
                                 <Form.Select
+                                    data-tour="filtro-estado-historial-incidentes"
                                     aria-label="Filtrar incidentes por estado"
                                     value={estado}
                                     onChange={(event) => setEstado(event.target.value as FiltroEstado)}
@@ -286,7 +291,7 @@ export function IncidentesHistorialPage() {
                                     <option value="Abierto">Abiertos</option>
                                     <option value="Cerrado">Cerrados</option>
                                 </Form.Select>
-                                <InputGroup className="incident-search">
+                                <InputGroup className="incident-search" data-tour="buscador-historial-incidentes">
                                     <InputGroup.Text><i className="bi bi-search" aria-hidden="true" /></InputGroup.Text>
                                     <Form.Control
                                         type="search"
@@ -299,7 +304,7 @@ export function IncidentesHistorialPage() {
                             </div>
                         </div>
 
-                        <div className="incident-table">
+                        <div className="incident-table" data-tour="tabla-historial-incidentes">
                             <AppTable
                                 columns={columnas}
                                 data={incidentesFiltrados}

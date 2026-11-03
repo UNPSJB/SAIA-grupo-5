@@ -20,6 +20,7 @@ import { NuevoSectorPage } from './feature/Sectores/pages/NuevoSectorPage.tsx';
 import { ListPage as PersonalListPage } from './feature/Personal/pages/ListPage.tsx'
 import { EditarPersonaPage } from './feature/Personal/pages/EditarPersonaPage.tsx'
 import { NuevaPersonaPage } from './feature/Personal/pages/NuevaPersonaPage.tsx'
+import { ConfiguracionCuentaPage } from './feature/Personal/pages/ConfiguracionCuentaPage.tsx'
 import { VerPersonalPage } from './feature/Personal/pages/VerPersonalPage.tsx'
 
 import { ElementosLimpiezaPage } from './feature/ElementosLimpieza/pages/ListPage.tsx';
@@ -430,6 +431,10 @@ const router = createBrowserRouter([
               { path: ':id', element: <VerTipoIncidentePage /> },
               { path: ':id/edit', element: <EditarTipoIncidentePage /> },
             ],
+          },
+          {
+            path: 'configuracion-cuenta',
+            element: <ConfiguracionCuentaPage />,
           },
           {
             path: 'configuracion-sistema',

@@ -52,6 +52,7 @@ export function ListPage() {
     const subHeaderComponentMemo = useMemo(() => {
         return (
             <Form.Control
+                data-tour="buscador-insumos"
                 type="text"
                 placeholder="Buscar insumo..."
                 className="mr-sm-2"
@@ -83,6 +84,7 @@ export function ListPage() {
             cell: row => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div
+                        data-tour="unidad-medida-insumo"
                         style={{
                             padding: '4px 12px',
                             borderRadius: '16px',
@@ -108,6 +110,7 @@ export function ListPage() {
             cell: row => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10}}>
                     <div
+                        data-tour="estado-insumo"
                         style={{
                             padding: '4px 12px',
                             borderRadius: '16px',
@@ -132,32 +135,37 @@ export function ListPage() {
             minWidth: '220px',
             cell: (row) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center' }}>
-                    
-                    <ActionButton
-                        variant="outline-info"
-                        size="sm"
-                        tooltip="Ver"
-                        icon="bi bi-eye"
-                        onClick={() => navigate(`/insumos/${row.id}`)}
-                    />
+                    <span data-tour="btn-ver-insumo">
+                        <ActionButton
+                            variant="outline-info"
+                            size="sm"
+                            tooltip="Ver"
+                            icon="bi bi-eye"
+                            onClick={() => navigate(`/insumos/${row.id}`)}
+                        />
+                    </span>
 
                     {currentUser?.administrar && (
                         <>
-                            <ActionButton
-                                variant="outline-primary"
-                                size="sm"
-                                tooltip="Editar"
-                                icon="bi bi-pencil"
-                                disabled={!row.activo}
-                                onClick={() => navigate(`/insumos/${row.id}/edit`)}
-                            />
-                            <ActionButton
-                                variant={row.activo ? 'outline-danger' : 'outline-success'}
-                                size="sm"
-                                tooltip={row.activo ? 'Dar de baja' : 'Dar de alta'}
-                                icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
-                                onClick={() => setInsumoToDelete(row)}
-                            />
+                            <span data-tour="btn-editar-insumo">
+                                <ActionButton
+                                    variant="outline-primary"
+                                    size="sm"
+                                    tooltip="Editar"
+                                    icon="bi bi-pencil"
+                                    disabled={!row.activo}
+                                    onClick={() => navigate(`/insumos/${row.id}/edit`)}
+                                />
+                            </span>
+                            <span data-tour="btn-baja-insumo">
+                                <ActionButton
+                                    variant={row.activo ? 'outline-danger' : 'outline-success'}
+                                    size="sm"
+                                    tooltip={row.activo ? 'Dar de baja' : 'Dar de alta'}
+                                    icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
+                                    onClick={() => setInsumoToDelete(row)}
+                                />
+                            </span>
                         </>
                     )}
                 </div>
@@ -189,6 +197,7 @@ export function ListPage() {
                 {currentUser?.administrar && (
                     <Col xs="auto" className="d-flex justify-content-end">
                         <Button
+                            data-tour="btn-nuevo-insumo"
                             variant="primary"
                             size='sm'
                             onClick={() => navigate("/insumos/new")}
@@ -199,7 +208,9 @@ export function ListPage() {
                     </Col>
                 )}
             </Row>
-            <AppTable columns={columns} data={filteredInsumos} />
+            <div data-tour="tabla-insumos">
+                <AppTable columns={columns} data={filteredInsumos} />
+            </div>
             <DeleteInsumoModal
                 insumo={insumoToDelete}
                 onHide={() => setInsumoToDelete(null)}

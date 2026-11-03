@@ -4,7 +4,7 @@ from sqlalchemy import select, update, func
 from sqlalchemy.orm import Session
 from src.personal.models import Persona
 from src.personal import schemas, exceptions
-from src.auth.utils import get_password_hash
+from src.auth.utils import get_password_hash, verify_password
 
 logger = logging.getLogger(__name__)
 
@@ -102,6 +102,38 @@ def modificar_persona(db: Session, persona_id: int, persona: schemas.PersonaUpda
             valores["hashed_password"] = get_password_hash(password)
 
     db.execute(update(Persona).where(Persona.id == persona_id).values(**valores))
+    db.commit()
+    db.refresh(db_persona)
+    return db_persona
+
+
+def modificar_cuenta(db: Session, persona_id: int, datos: schemas.CuentaUpdate) -> Persona:
+    """Permite a una persona modificar los datos de su propia cuenta.
+
+    Campos: nombre, apellido, mail y contraseña (requiere la contraseña actual).
+    No se puede modificar el username, el DNI ni las capacidades.
+    """
+    db_persona = leer_persona(db, persona_id)
+    if not db_persona.activo:
+        raise exceptions.PersonaDadaDeBaja()
+
+    valores = datos.model_dump(exclude_unset=True)
+    password = valores.pop("password", None)
+    password_actual = valores.pop("password_actual", None)
+
+    if valores.get("mail"):
+        valores["mail"] = str(valores["mail"])
+        if valores["mail"] != db_persona.mail:
+            if db.scalar(select(Persona).where(Persona.mail == valores["mail"], Persona.id != persona_id)):
+                raise exceptions.MailExistente()
+
+    if password:
+        if not verify_password(password_actual, db_persona.hashed_password):
+            raise exceptions.PasswordActualIncorrecta()
+        valores["hashed_password"] = get_password_hash(password)
+
+    for campo, valor in valores.items():
+        setattr(db_persona, campo, valor)
     db.commit()
     db.refresh(db_persona)
     return db_persona

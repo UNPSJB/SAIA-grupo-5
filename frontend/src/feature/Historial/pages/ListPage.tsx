@@ -117,6 +117,7 @@ export function HistorialPage() {
             center: true,
             cell: row => (
                 <Button
+                    data-tour="btn-ver-historial"
                     variant="outline-info"
                     size="sm"
                     onClick={() => navigate(`/tareas-ocurrencia/${row.id}`)}
@@ -155,25 +156,30 @@ export function HistorialPage() {
 
             <Row className="p-2 align-items-end g-3">
                 <Col xs="auto">
-                    <Form.Label className="mb-1 small fw-semibold">Desde</Form.Label>
-                    <Form.Control
-                        type="date"
-                        value={fechaDesde}
-                        max={fechaHasta}
-                        onChange={(e) => setFechaDesde(e.target.value)}
-                    />
-                </Col>
-                <Col xs="auto">
-                    <Form.Label className="mb-1 small fw-semibold">Hasta</Form.Label>
-                    <Form.Control
-                        type="date"
-                        value={fechaHasta}
-                        min={fechaDesde}
-                        onChange={(e) => setFechaHasta(e.target.value)}
-                    />
+                    <div data-tour="filtro-fechas-historial" className="d-flex gap-3">
+                        <div> 
+                            <Form.Label className="mb-1 small fw-semibold">Desde</Form.Label>
+                            <Form.Control
+                                type="date"
+                                value={fechaDesde}
+                                max={fechaHasta}
+                                onChange={(e) => setFechaDesde(e.target.value)}
+                        /   >
+                        </div>
+                        <div>
+                            <Form.Label className="mb-1 small fw-semibold">Hasta</Form.Label>
+                            <Form.Control
+                                type="date"
+                                value={fechaHasta}
+                                min={fechaDesde}
+                                onChange={(e) => setFechaHasta(e.target.value)}
+                            />
+                        </div>
+                    </div>
                 </Col>
                 <Col className="d-flex justify-content-end">
                     <Button
+                        data-tour="btn-solo-incumplidas"
                         variant="outline-danger"
                         active={soloIncumplidas}
                         onClick={() => setSoloIncumplidas((prev) => !prev)}
@@ -185,8 +191,8 @@ export function HistorialPage() {
             </Row>
 
             {!rangoValido && (
-                <Row className="p-2">
-                    <Col>
+                <Row className="p-2 g-3">
+                        <Col>
                         <Alert variant="warning">
                             Seleccioná un rango de fechas válido (la fecha "Desde" debe ser anterior o igual a "Hasta").
                         </Alert>
@@ -214,7 +220,7 @@ export function HistorialPage() {
 
             {rangoValido && historial && !error && (
                 <>
-                    <Row className="p-2 g-3">
+                    <Row className="p-2 g-3" data-tour="resumen-historial">
                         <Col md={3} sm={6}>
                             <Card className="text-center h-100">
                                 <Card.Body>
@@ -253,7 +259,7 @@ export function HistorialPage() {
 
 
                     <Row className="p-2">
-                        <Col>
+                        <Col data-tour="tabla-historial">
                             <AppTable
                                 columns={columns}
                                 data={soloIncumplidas ? incumplidas : historial}

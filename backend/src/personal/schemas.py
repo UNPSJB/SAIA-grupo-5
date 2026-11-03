@@ -29,6 +29,22 @@ class PersonaUpdate(BaseModel):
     password: Optional[Annotated[str, Field(min_length=4)]] = None
 
 
+class CuentaUpdate(BaseModel):
+    """Datos que una persona puede modificar de su propia cuenta."""
+
+    nombre: Optional[Annotated[str, Field(min_length=1, max_length=50)]] = None
+    apellido: Optional[Annotated[str, Field(min_length=1, max_length=50)]] = None
+    mail: Optional[EmailStr] = None
+    password_actual: Optional[str] = None
+    password: Optional[Annotated[str, Field(min_length=4)]] = None
+
+    @model_validator(mode="after")
+    def password_actual_requerida(self):
+        if self.password and not self.password_actual:
+            raise ValueError("Debe indicar la contraseña actual para cambiarla")
+        return self
+
+
 class Persona(PersonaBase):
     id: int
     activo: bool
