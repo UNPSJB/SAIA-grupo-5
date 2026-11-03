@@ -12,6 +12,8 @@ import { ActionButton } from '../../../components/ActionButton';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
 import { CambiarEstadoLoteModal } from '../components/CambiarEstadoLoteProduccionModal';
+import { ListFilter } from '../../../components/ListFilter';
+import { AsociarInsumosModal } from '../components/AsociarInsumosModal';
 import type { EstadoLote, LoteProduccion } from '../types';
 
 const ESTILOS_ESTADO: Record<EstadoLote, { bg: string; color: string }> = {
@@ -41,11 +43,16 @@ export function ListPage() {
     const [search, setSearch] = useState('');
     const { data: lotes, error, isLoading } = useApi<LoteProduccion[]>("/lotes-produccion/");
     const [loteToChange, setLoteToChange] = useState<LoteProduccion | null>(null);
+    const [loteInsumos, setLoteInsumos] = useState<LoteProduccion | null>(null);
+    const [filtroEstado, setFiltroEstado] = useState("todos");
 
     const filteredLoteProduccion = useMemo(() => {
         if (!Array.isArray(lotes)) return [];
 
-        return lotes.filter((lote) => lote.producto.nombre.toLowerCase().includes(search.toLowerCase())).sort((a, b) => {
+        return lotes.filter((lote) =>
+            lote.producto.nombre.toLowerCase().includes(search.toLowerCase()) &&
+            (filtroEstado === "todos" || lote.estado === filtroEstado)
+        ).sort((a, b) => {
             const pesoA = ORDEN_ESTADOS[a.estado] ?? 99;
             const pesoB = ORDEN_ESTADOS[b.estado] ?? 99;
 
@@ -55,7 +62,7 @@ export function ListPage() {
 
             return b.id - a.id;
         });
-}, [search, lotes]);
+    }, [search, filtroEstado, lotes]);
 
     const subHeaderComponentMemo = useMemo(() => {
         return (
@@ -67,6 +74,12 @@ export function ListPage() {
             />
         );
     }, []);
+
+    const handleInsumosAsociados = () => {
+        mutate("/lotes-produccion/");
+        if (loteInsumos) mutate(`/lotes-produccion/${loteInsumos.id}`);
+        setLoteInsumos(null);
+    };
 
     if (isLoading) return <PageLoading title="Listado de Lotes de Produccion" />;
 
@@ -142,10 +155,12 @@ export function ListPage() {
         {
             name: "Acciones",
             center: true,
-            minWidth: '150px',
+            minWidth: '190px',
             cell: (row) => {
                 const config = CONFIG_BOTON[row.estado] || CONFIG_BOTON["En produccion"];
                 const completado = row.estado === "Enviado";
+                const tieneInsumos = (row.insumos_utilizados?.length ?? 0) > 0;
+                const puedeModificarInsumos = row.activo && row.estado === "En produccion";
 
                 return (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center' }}>
@@ -165,6 +180,14 @@ export function ListPage() {
                                     icon="bi bi-pencil"
                                     disabled={completado}
                                     onClick={() => navigate(`/lotes-produccion/${row.id}/edit`)}
+                                />
+                                <ActionButton
+                                    variant="outline-success"
+                                    size="sm"
+                                    tooltip={tieneInsumos ? "Modificar insumos" : "Asociar insumos"}
+                                    icon={tieneInsumos ? "bi bi-pencil-square" : "bi bi-plus-circle"}
+                                    disabled={!puedeModificarInsumos}
+                                    onClick={() => setLoteInsumos(row)}
                                 />
                                 <ActionButton
                                     variant={config.variant}
@@ -195,6 +218,19 @@ export function ListPage() {
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
                 </Col>
+                <Col xs="auto" className="align-self-center">
+                    <ListFilter
+                        value={filtroEstado}
+                        onChange={setFiltroEstado}
+                        options={{
+                            todos: "Todos",
+                            "En produccion": "En producción",
+                            Empaquetando: "Empaquetando",
+                            Terminado: "Terminado",
+                            Enviado: "Enviado"
+                        }}
+                    />
+                </Col>
                 {currentUser?.operar && (
                     <Col xs="auto" className="d-flex justify-content-end">
                         <Button
@@ -214,6 +250,14 @@ export function ListPage() {
                 onHide={() => setLoteToChange(null)}
                 onChanged={() => mutate("/lotes-produccion/")}
             />
+            {loteInsumos && (
+                <AsociarInsumosModal
+                    loteId={loteInsumos.id}
+                    insumosAsociados={loteInsumos.insumos_utilizados ?? []}
+                    onHide={() => setLoteInsumos(null)}
+                    onAsociado={handleInsumosAsociados}
+                />
+            )}
         </Container>
     );
 }

@@ -140,7 +140,7 @@ export function RecetaFormModal({ producto, receta, onHide, onSaved }: RecetaFor
                         <i className="bi bi-plus-lg me-1"></i>Agregar etapa
                     </Button>
                 </Modal.Body>
-                <Modal.Footer>
+                <Modal.Footer className="justify-content-start">
                     <Button variant="secondary" onClick={onHide} disabled={cargando}>Cancelar</Button>
                     <Button variant="success" type="submit" disabled={cargando}>
                         {cargando ? "Guardando..." : "Guardar receta"}

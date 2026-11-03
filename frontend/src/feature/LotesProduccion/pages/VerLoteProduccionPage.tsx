@@ -1,9 +1,14 @@
-import { Container, Alert, Row, Col, Card, Button } from "react-bootstrap";
+
+import { useState } from "react";
+import { mutate } from "swr";
+import { Container, Alert, Row, Col, Card, Button, Table } from "react-bootstrap";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
+import { useAuth } from "../../../hooks/useAuth";
 import type { LoteProduccion, EstadoLote } from "../types";
 import { PageLoading } from "../../../components/PageLoading";
+import { AsociarInsumosModal } from "../components/AsociarInsumosModal";
 
 const ESTILOS_ESTADO: Record<EstadoLote, { bg: string; color: string; icon: string }> = {
     "En produccion": { bg: "#fef9c3", color: "#854d0e", icon: "bi-gear-wide-connected" },
@@ -15,9 +20,11 @@ const ESTILOS_ESTADO: Record<EstadoLote, { bg: string; color: string; icon: stri
 export function VerLoteProduccionPage() {
     const navigate = useNavigate();
     const { id } = useParams();
+    const { currentUser } = useAuth();
+    const [mostrarAsociarInsumos, setMostrarAsociarInsumos] = useState(false);
 
     const { data: lote, isLoading, error } = useApi<LoteProduccion>(`/lotes-produccion/${id}`);
-    
+
     const location = useLocation();
     const origen = location.state?.origen;
     const volverA = origen === "historial"
@@ -45,6 +52,13 @@ export function VerLoteProduccionPage() {
     const estilo = ESTILOS_ESTADO[lote.estado] || ESTILOS_ESTADO["En produccion"];
     const fechaProdFormateada = lote.fecha_produccion.split("-").reverse().join("/");
     const fechaVencFormateada = lote.fecha_vencimiento.split("-").reverse().join("/");
+    const insumosUtilizados = lote.insumos_utilizados ?? [];
+    const puedeAsociar = currentUser?.operar && lote.activo && lote.estado === "En produccion";
+
+    const handleAsociado = () => {
+        mutate(`/lotes-produccion/${id}`);
+        setMostrarAsociarInsumos(false);
+    };
 
     return (
         <Container>
@@ -119,6 +133,41 @@ export function VerLoteProduccionPage() {
                                     </div>
                                 </Col>
                             </Row>
+
+                            <hr className="my-4" />
+
+                            <div className="d-flex justify-content-between align-items-center mb-3">
+                                <h5 className="mb-0">Insumos utilizados</h5>
+                                {puedeAsociar && (
+                                    <Button variant="outline-primary" size="sm" onClick={() => setMostrarAsociarInsumos(true)}>
+                                        <i className={`bi ${insumosUtilizados.length > 0 ? "bi-pencil" : "bi-plus-circle"} me-1`}></i>
+                                        {insumosUtilizados.length > 0 ? "Modificar insumos" : "Asociar insumos"}
+                                    </Button>
+                                )}
+                            </div>
+
+                            {insumosUtilizados.length === 0 ? (
+                                <p className="text-muted mb-0">Este lote todavía no tiene insumos asociados.</p>
+                            ) : (
+                                <Table responsive bordered hover size="sm" className="mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Insumo</th>
+                                            <th>Cantidad utilizada</th>
+                                            <th>Unidad de medida</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {insumosUtilizados.map((registro) => (
+                                            <tr key={registro.id}>
+                                                <td>{registro.insumo.nombre}</td>
+                                                <td>{Number(registro.cantidad_utilizada).toLocaleString("es-AR", { maximumFractionDigits: 3 })}</td>
+                                                <td>{registro.insumo.unidad_medida.nombre}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </Table>
+                            )}
                         </Card.Body>
 
                         <Card.Footer className="bg-light border-top p-3 d-flex justify-content-start gap-2">
@@ -129,17 +178,28 @@ export function VerLoteProduccionPage() {
                                 <i className="bi bi-arrow-left me-1"></i>Volver a la lista
                             </Button>
 
-                            <Button
-                                variant="primary"
-                                disabled={lote.estado === "Enviado"}
-                                onClick={() => navigate(`/lotes-produccion/${lote.id}/edit`)}
-                            >
-                                <i className="bi bi-pencil me-1"></i>Editar Lote
-                            </Button>
+                            {currentUser?.operar && (
+                                <Button
+                                    variant="primary"
+                                    disabled={lote.estado === "Enviado"}
+                                    onClick={() => navigate(`/lotes-produccion/${lote.id}/edit`)}
+                                >
+                                    <i className="bi bi-pencil me-1"></i>Editar Lote
+                                </Button>
+                            )}
                         </Card.Footer>
                     </Card>
                 </Col>
             </Row>
+
+            {mostrarAsociarInsumos && (
+                <AsociarInsumosModal
+                    loteId={lote.id}
+                    insumosAsociados={insumosUtilizados}
+                    onHide={() => setMostrarAsociarInsumos(false)}
+                    onAsociado={handleAsociado}
+                />
+            )}
         </Container>
     );
 }

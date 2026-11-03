@@ -41,12 +41,14 @@ def test_listar_lotes_produccion(db_session, multiples_lotes_produccion, unico_p
     assert len(lotes) == 3
     assert lotes[0].producto_id == unico_producto.id
 
+
 def test_listar_lotes_historial(db_session, multiples_lotes_produccion, unico_producto):
     historial = services.listar_lotes_historial(db=db_session)
 
     assert len(historial.lotes) == 3
     assert historial.lotes[0].producto_id == unico_producto.id
     assert historial.total_producido is None
+
 
 def test_listar_lotes_historial_por_producto(db_session, multiples_lotes_produccion, unico_producto):
     historial = services.listar_lotes_historial(db=db_session, producto_id=unico_producto.id,)
@@ -55,11 +57,13 @@ def test_listar_lotes_historial_por_producto(db_session, multiples_lotes_producc
     assert all(lote.producto_id == unico_producto.id for lote in historial.lotes)
     assert historial.total_producido == sum(lote.cantidad_producida for lote in historial.lotes)
 
+
 def test_listar_lotes_historial_por_fecha(db_session, multiples_lotes_produccion):
     historial = services.listar_lotes_historial(db=db_session, fecha_desde=date(2027, 10, 1), fecha_hasta=date(2027, 10, 31),)
 
     assert all(date(2027, 10, 1) <= lote.fecha_produccion <= date(2027, 10, 31) for lote in historial.lotes)
     assert historial.total_producido is None
+
 
 def test_leer_lote_produccion(db_session, unico_lote_produccion, unico_producto):
     lote = services.leer_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id)
@@ -123,8 +127,6 @@ def test_reactivar_lote_con_producto_inactivo(db_session, unico_lote_produccion,
 
     with pytest.raises(exceptions.ProductoDadoDeBaja):
         services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id)
-from datetime import date
-from src.lote_produccion import services
 
 
 def test_estadistica_produccion(db_session, lotes_estadistica):
@@ -168,3 +170,62 @@ def test_estadistica_filtrar_fechas(db_session, lotes_estadistica):
     assert len(estadisticas) == 1
     assert estadisticas[0].fecha == date(2026, 10, 11)
     assert estadisticas[0].cantidad == 30
+
+
+def test_asociar_insumos_correctamente(db_session, unico_lote_produccion, insumos_para_lote):
+    insumo1, insumo2 = insumos_para_lote
+
+    datos = schemas.InsumosUtilizadosCreate(insumos=[
+        schemas.InsumoUtilizadoCreate(insumo_id=insumo1.id, cantidad_utilizada=100),
+        schemas.InsumoUtilizadoCreate(insumo_id=insumo2.id, cantidad_utilizada=2.5)
+    ])
+
+    resultado = services.asociar_insumos_lote(db=db_session, lote_id=unico_lote_produccion.id, datos=datos)
+
+    assert len(resultado) == 2
+    assert resultado[0].insumo_id == insumo1.id
+    assert resultado[0].cantidad_utilizada == 100
+    assert resultado[1].insumo_id == insumo2.id
+    assert resultado[1].cantidad_utilizada == 2.5
+
+    asociados = services.listar_insumos_lote(db=db_session, lote_id=unico_lote_produccion.id)
+    assert len(asociados) == 2
+
+
+def test_asociar_insumo_duplicado(db_session, unico_lote_produccion, insumos_para_lote):
+    insumo = insumos_para_lote[0]
+
+    datos = schemas.InsumosUtilizadosCreate(insumos=[
+        schemas.InsumoUtilizadoCreate(insumo_id=insumo.id, cantidad_utilizada=100),
+        schemas.InsumoUtilizadoCreate(insumo_id=insumo.id, cantidad_utilizada=50)
+    ])
+
+    with pytest.raises(exceptions.InsumoRepetido):
+        services.asociar_insumos_lote(db=db_session, lote_id=unico_lote_produccion.id, datos=datos)
+
+    asociados = services.listar_insumos_lote(db=db_session, lote_id=unico_lote_produccion.id)
+    assert len(asociados) == 0
+
+
+def test_modificar_insumos_asociados(db_session, unico_lote_produccion, insumos_para_lote):
+    insumo1, insumo2 = insumos_para_lote
+
+    datos = schemas.InsumosUtilizadosCreate(insumos=[
+        schemas.InsumoUtilizadoCreate(insumo_id=insumo1.id, cantidad_utilizada=100),
+        schemas.InsumoUtilizadoCreate(insumo_id=insumo2.id, cantidad_utilizada=20)
+    ])
+
+    services.asociar_insumos_lote(db=db_session, lote_id=unico_lote_produccion.id, datos=datos)
+
+    datos_actualizados = schemas.InsumosUtilizadosUpdate(insumos=[
+        schemas.InsumoUtilizadoCreate(insumo_id=insumo1.id, cantidad_utilizada=150)
+    ])
+
+    resultado = services.actualizar_insumos_lote(db=db_session, lote_id=unico_lote_produccion.id, datos=datos_actualizados)
+
+    assert len(resultado) == 1
+    assert resultado[0].insumo_id == insumo1.id
+    assert resultado[0].cantidad_utilizada == 150
+
+    asociados = services.listar_insumos_lote(db=db_session, lote_id=unico_lote_produccion.id)
+    assert len(asociados) == 1

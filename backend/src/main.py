@@ -29,12 +29,10 @@ from src.accion_correctiva.models import AccionCorrectiva
 from src.historial_incidente.models import HistorialIncidente
 from src.unidad_medida.models import UnidadMedida
 from src.producto.models import Producto
-from src.lote_produccion.models import LoteProduccion
-from src.lote_produccion.router import router as lote_produccion_router
+from src.lote_produccion.models import LoteProduccion, InsumoUtilizado
 from src.receta.models import Receta
 from src.etapa_receta.models import EtapaReceta
 from src.paso_etapa.models import PasoEtapa
-from src.lote_produccion.models import LoteProduccion
 
 from src.config import settings
 from src.settings import ROOT_PATH
@@ -75,7 +73,7 @@ from src.producto.router import router as producto_router
 from src.receta.router import router as receta_router
 from src.etapa_receta.router import router as etapa_receta_router
 from src.paso_etapa.router import router as paso_etapa_router
-from src.lote_produccion.router import router as lote_router
+from src.lote_produccion.router import router as lote_produccion_router
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -134,4 +132,3 @@ app.include_router(lote_produccion_router)
 app.include_router(receta_router)
 app.include_router(etapa_receta_router)
 app.include_router(paso_etapa_router)
-app.include_router(lote_router)
