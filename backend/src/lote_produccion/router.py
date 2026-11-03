@@ -1,16 +1,12 @@
 import logging
-from fastapi import Depends
+from fastapi import Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from typing import Literal
 from datetime import date
-from src.auth.dependencies import get_current_persona, requiere_permiso_administrar, tiene_permiso_administrar
+from src.auth.dependencies import requiere_permiso_administrar, tiene_permiso_administrar, tiene_permiso_operar
 from src.database import get_db
 from src.lote_produccion import schemas, services
 from src.auth.router_base import PermissionedRouter
-from src.auth.dependencies import tiene_permiso_operar
-
-from datetime import date
-from fastapi import Query, HTTPException
 
 logger = logging.getLogger(__name__)
 
@@ -39,24 +35,6 @@ def read_lotes_historial(
         producto_id=producto_id, fecha_desde=fecha_desde, fecha_hasta=fecha_hasta,
     )
 
-@router.get("/{lote_id}", response_model=schemas.LoteProduccion)
-def read_lote_produccion(lote_id: int, db: Session = Depends(get_db)):
-    return services.leer_lote_produccion(db, lote_id)
-
-@router.get("/producto/{producto_id}", response_model=list[schemas.LoteProduccion])
-def read_lotes_por_producto(producto_id: int, db: Session = Depends(get_db)):
-    return services.listar_lotes_por_producto(db, producto_id)
-
-
-@router.patch("/{lote_id}/estado", response_model=schemas.LoteProduccion, dependencies=[Depends(tiene_permiso_operar)])
-def cambiar_estado_lote_produccion(lote_id: int, db: Session = Depends(get_db)):
-    return services.cambiar_estado_lote_produccion(db, lote_id)
-
-
-@router.put("/{lote_id}", response_model=schemas.LoteProduccion, dependencies=[Depends(tiene_permiso_operar)])
-def update_lote_produccion(lote_id: int, lote: schemas.LoteProduccionUpdate, db: Session = Depends(get_db)):
-    return services.modificar_lote_produccion(db, lote_id, lote)
-
 @router.get("/estadisticas", response_model=list[schemas.EstadisticaProduccion], dependencies=[Depends(tiene_permiso_administrar)])
 def read_estadisticas_produccion(fecha_desde: date = Query(...), fecha_hasta: date = Query(...), producto_id: int | None = None, db: Session = Depends(get_db)):
     if fecha_hasta < fecha_desde:
@@ -69,3 +47,32 @@ def read_estadisticas_produccion(fecha_desde: date = Query(...), fecha_hasta: da
         db, fecha_desde, fecha_hasta, producto_id
     )
 
+
+@router.get("/producto/{producto_id}", response_model=list[schemas.LoteProduccion])
+def read_lotes_por_producto(producto_id: int, db: Session = Depends(get_db)):
+    return services.listar_lotes_por_producto(db, producto_id)
+
+@router.get("/{lote_id}", response_model=schemas.LoteProduccionDetalle)
+def read_lote_produccion(lote_id: int, db: Session = Depends(get_db)):
+    return services.leer_lote_produccion(db, lote_id)
+
+@router.patch("/{lote_id}/estado", response_model=schemas.LoteProduccion, dependencies=[Depends(tiene_permiso_operar)])
+def cambiar_estado_lote_produccion(lote_id: int, db: Session = Depends(get_db)):
+    return services.cambiar_estado_lote_produccion(db, lote_id)
+
+@router.put("/{lote_id}", response_model=schemas.LoteProduccion, dependencies=[Depends(tiene_permiso_operar)])
+def update_lote_produccion(lote_id: int, lote: schemas.LoteProduccionUpdate, db: Session = Depends(get_db)):
+    return services.modificar_lote_produccion(db, lote_id, lote)
+
+#routers de insumo
+@router.get("/{lote_id}/insumos", response_model=list[schemas.InsumoUtilizado])
+def read_insumos_lote(lote_id: int, db: Session = Depends(get_db)):
+    return services.listar_insumos_lote(db, lote_id)
+
+@router.post("/{lote_id}/insumos", response_model=list[schemas.InsumoUtilizado], dependencies=[Depends(tiene_permiso_operar)])
+def create_insumos_lote(lote_id: int, datos: schemas.InsumosUtilizadosCreate, db: Session = Depends(get_db)):
+    return services.asociar_insumos_lote(db, lote_id, datos)
+
+@router.put("/{lote_id}/insumos", response_model=list[schemas.InsumoUtilizado], dependencies=[Depends(tiene_permiso_operar)])
+def update_insumos_lote(lote_id: int, datos: schemas.InsumosUtilizadosUpdate, db: Session = Depends(get_db)):
+    return services.actualizar_insumos_lote(db, lote_id, datos)
