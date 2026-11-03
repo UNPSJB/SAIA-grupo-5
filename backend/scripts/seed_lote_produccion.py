@@ -6,6 +6,7 @@ from datetime import date, timedelta
 from random import Random
 from sqlalchemy import select
 
+import src.all_models  # noqa: F401
 from src.database import SessionLocal
 from src.producto.models import Producto
 from src.lote_produccion.models import LoteProduccion
@@ -58,6 +59,8 @@ def main():
     db = SessionLocal()
     try:
         lotes = generar_lotes_produccion(db)
+        
+        print(f"lotes: {len(lotes)}")
 
         db.add_all(lotes)
         db.commit()
