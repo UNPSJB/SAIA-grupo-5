@@ -18,7 +18,7 @@ def create_lote_produccion(lote: schemas.LoteProduccionCreate, db: Session = Dep
     return services.crear_lote_produccion(db, lote)
 
 
-@router.get("/", response_model=list[schemas.LoteProduccion])
+@router.get("/", response_model=list[schemas.LoteProduccionDetalle])
 def read_lotes_produccion(db: Session = Depends(get_db)):
     return services.listar_lotes_produccion(db)
 

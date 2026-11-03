@@ -107,7 +107,7 @@ export function SuperficiesPage() {
                     size="sm"
                     onClick={() => setSuperficieSectores(row)}
                 >
-                    <i className="bi bi-eye me-1"></i>Ver sectores
+                    <i className="bi bi-eye me-1"></i>Ver
                 </Button>
             ),
         },

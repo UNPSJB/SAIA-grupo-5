@@ -30,9 +30,11 @@ def crear_lote_produccion(db: Session, lote: schemas.LoteProduccionCreate) -> sc
     return leer_lote_produccion(db, _lote.id)
 
 
-def listar_lotes_produccion(db: Session) -> List[schemas.LoteProduccion]:
+def listar_lotes_produccion(db: Session) -> List[schemas.LoteProduccionDetalle]:
     return db.scalars(select(LoteProduccion).options(joinedload(LoteProduccion.producto).
-                                                joinedload(Producto.unidad_medida))).all()
+                                                joinedload(Producto.unidad_medida),
+                                                selectinload(LoteProduccion.insumos_utilizados).joinedload(InsumoUtilizado.insumo).
+                                                joinedload(Insumo.unidad_medida))).all()
 
 
 def leer_lote_produccion(db: Session, lote_id: int) -> schemas.LoteProduccionDetalle:
@@ -216,8 +218,9 @@ def asociar_insumos_lote(db: Session, lote_id: int, datos: schemas.InsumosUtiliz
 def actualizar_insumos_lote(db: Session, lote_id: int, datos: schemas.InsumosUtilizadosUpdate) -> list[InsumoUtilizado]:
     validar_lote_para_insumos(db, lote_id)
     validar_insumos(db, datos.insumos)
+
     db.execute(delete(InsumoUtilizado).where(InsumoUtilizado.lote_produccion_id == lote_id))
-    
+
     for insumo in datos.insumos:
         db.add(InsumoUtilizado(
             lote_produccion_id=lote_id,
@@ -226,4 +229,7 @@ def actualizar_insumos_lote(db: Session, lote_id: int, datos: schemas.InsumosUti
         ))
 
     db.commit()
+    db.expire_all()
+
     return listar_insumos_lote(db, lote_id)
+
