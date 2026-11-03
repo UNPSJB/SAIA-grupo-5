@@ -35,6 +35,7 @@ def read_lotes_historial(
         producto_id=producto_id, fecha_desde=fecha_desde, fecha_hasta=fecha_hasta,
     )
 
+#estadisticas para la pagina principal
 @router.get("/estadisticas", response_model=list[schemas.EstadisticaProduccion], dependencies=[Depends(tiene_permiso_administrar)])
 def read_estadisticas_produccion(fecha_desde: date = Query(...), fecha_hasta: date = Query(...), producto_id: int | None = None, db: Session = Depends(get_db)):
     if fecha_hasta < fecha_desde:
@@ -42,35 +43,7 @@ def read_estadisticas_produccion(fecha_desde: date = Query(...), fecha_hasta: da
             status_code=400,
             detail="La fecha hasta no puede ser menor a la fecha desde."
         )
-<<<<<<< HEAD
-=======
-
-    return services.obtener_estadisticas_produccion(
-        db, fecha_desde, fecha_hasta, producto_id
-    )
-
-
-@router.get("/{lote_id}", response_model=schemas.LoteProduccion)
-def read_lote_produccion(lote_id: int, db: Session = Depends(get_db)):
-    return services.leer_lote_produccion(db, lote_id)
-
-@router.get("/producto/{producto_id}", response_model=list[schemas.LoteProduccion])
-def read_lotes_por_producto(producto_id: int, db: Session = Depends(get_db)):
-    return services.listar_lotes_por_producto(db, producto_id)
-
-
-@router.patch("/{lote_id}/estado", response_model=schemas.LoteProduccion, dependencies=[Depends(tiene_permiso_operar)])
-def cambiar_estado_lote_produccion(lote_id: int, db: Session = Depends(get_db)):
-    return services.cambiar_estado_lote_produccion(db, lote_id)
-
-
-@router.put("/{lote_id}", response_model=schemas.LoteProduccion, dependencies=[Depends(tiene_permiso_operar)])
-def update_lote_produccion(lote_id: int, lote: schemas.LoteProduccionUpdate, db: Session = Depends(get_db)):
-    return services.modificar_lote_produccion(db, lote_id, lote)
-
->>>>>>> origin/dev
-
-
+    return services.obtener_estadisticas_produccion(db, fecha_desde, fecha_hasta, producto_id)
 
 @router.get("/producto/{producto_id}", response_model=list[schemas.LoteProduccion])
 def read_lotes_por_producto(producto_id: int, db: Session = Depends(get_db)):
