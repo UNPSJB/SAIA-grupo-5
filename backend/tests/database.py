@@ -15,6 +15,8 @@ from src.auth.utils import get_password_hash
 from src.unidad_medida.models import UnidadMedida
 from src.producto.models import Producto
 from src.lote_produccion.models import LoteProduccion
+from src.clientes.models import Cliente
+from src.direcciones_cliente.models import DireccionCliente
 
 from src.main import app
 engine = create_engine(
@@ -202,3 +204,57 @@ def multiples_productos(db_session, unica_unidad_medida):
     db_session.add_all(productos)
     db_session.commit()
     return productos
+
+
+
+@pytest.fixture(scope="function")
+def unico_cliente(db_session):
+    cliente = Cliente(
+        razon_social="Distribuidora Sur",
+        cuit="30-11223344-5",
+        telefono="2804123456",
+        email="contacto@distribuidorasur.com",
+        activo=True,
+    )
+    db_session.add(cliente)
+    db_session.commit()
+    db_session.refresh(cliente)
+    return cliente
+
+
+@pytest.fixture(scope="function")
+def multiples_clientes(db_session):
+    clientes = [
+        Cliente(razon_social="Supermercado Trelew", cuit="30-55667788-9", activo=True),
+        Cliente(razon_social="Almacen Central", cuit="30-99887766-5", activo=True),
+        Cliente(razon_social="Kiosco Madryn", cuit="30-12344321-0", activo=False),
+    ]
+    db_session.add_all(clientes)
+    db_session.commit()
+    return clientes
+
+
+@pytest.fixture(scope="function")
+def unica_direccion_cliente(db_session, unico_cliente):
+    direccion = DireccionCliente(
+        cliente_id=unico_cliente.id,
+        calle_altura="Av. Fontana 123",
+        descripcion="Deposito Central",
+        activo=True,
+    )
+    db_session.add(direccion)
+    db_session.commit()
+    db_session.refresh(direccion)
+    return direccion
+
+
+@pytest.fixture(scope="function")
+def multiples_direcciones_cliente(db_session, unico_cliente):
+    direcciones = [
+        DireccionCliente(cliente_id=unico_cliente.id, calle_altura="Ruta 3 Km 1400", descripcion="Planta Industrial", activo=True),
+        DireccionCliente(cliente_id=unico_cliente.id, calle_altura="Mitre 450", descripcion="Sucursal Centro", activo=True),
+        DireccionCliente(cliente_id=unico_cliente.id, calle_altura="Belgrano 890", descripcion="Oficina Administrativa", activo=False),
+    ]
+    db_session.add_all(direcciones)
+    db_session.commit()
+    return direcciones
