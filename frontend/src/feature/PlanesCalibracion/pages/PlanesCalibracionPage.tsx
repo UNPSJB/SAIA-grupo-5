@@ -1,0 +1,312 @@
+import { useMemo, useState } from "react";
+import { mutate } from "swr";
+import { Alert, Button, Col, Container, Form, Row, Spinner } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+import { type TableColumn } from "react-data-table-component";
+import { ActionButton } from "../../../components/ActionButton";
+
+import { AppTable } from "../../../components/AppTable";
+import { PageHeader } from "../../../components/PageHeader";
+import { useApi } from "../../../hooks/useApi";
+import { useAuth } from "../../../hooks/useAuth";
+
+import { EstadoPlanCalibracionModal } from "../components/EstadoPlanCalibracionModal";
+import { RealizarCalibracionModal } from "../components/RealizarCalibracionModal";
+import { HistoricoCalibracionModal } from "../components/HistoricoCalibracionModal";
+import type { PlanCalibracion } from "../types";
+import type { Equipo } from "../../Equipos/types";
+import { ListFilter } from "../../../components/ListFilter";
+
+type EstadoFiltro = "todos" | "activo" | "inactivo" | "vencido" | "por-vencer";
+
+const ESTADO_FILTRO_LABELS: Record<EstadoFiltro, string> = {
+    todos: "Todos",
+    activo: "Activos",
+    inactivo: "Inactivos",
+    vencido: "Vencidos",
+    "por-vencer": "Por vencer",
+};
+
+export function PlanesCalibracionPage() {
+    const navigate = useNavigate();
+    const { currentUser } = useAuth();
+    const [search, setSearch] = useState("");
+    const [planToDelete, setPlanToDelete] = useState<PlanCalibracion | null>(null);
+    const [planToCalibrar, setPlanToCalibrar] = useState<PlanCalibracion | null>(null);
+    const [planHistorico, setPlanHistorico] = useState<PlanCalibracion | null>(null);
+
+    const { data: planes, error, isLoading } = useApi<PlanCalibracion[]>("/planes-calibracion");
+    const { data: equipos } = useApi<Equipo[]>("/equipos");
+    const [estadoFiltro, setEstadoFiltro] = useState<EstadoFiltro>("todos");
+
+    const obtenerEquipo = (equipoId: number) => {
+        return equipos?.find((equipo) => equipo.id === equipoId);
+    };
+
+    const obtenerNombreEquipo = (equipoId: number) => {
+        return obtenerEquipo(equipoId)?.nombre ?? "Equipo no encontrado";
+    };
+
+    const filteredPlanes = useMemo(() => {
+        if (!Array.isArray(planes)) return [];
+
+        const busqueda = search.toLowerCase();
+
+        return planes.filter((plan) => {
+            const nombreEquipo = obtenerNombreEquipo(plan.equipo_id);
+
+            const coincideBusqueda =
+                nombreEquipo.toLowerCase().includes(busqueda) ||
+                plan.fecha_inicio.includes(busqueda) ||
+                plan.periodicidad.toString().includes(busqueda);
+
+            const coincideEstado =
+                estadoFiltro === "todos" ||
+                (estadoFiltro === "activo" && plan.estado) ||
+                (estadoFiltro === "inactivo" && !plan.estado) ||
+                (estadoFiltro === "vencido" &&
+                    plan.estado &&
+                    plan.dias_restantes !== null &&
+                    plan.dias_restantes < 0) ||
+                (estadoFiltro === "por-vencer" &&
+                    plan.estado &&
+                    plan.dias_restantes !== null &&
+                    plan.dias_restantes >= 0 &&
+                    plan.dias_restantes <= 7);
+
+            return coincideBusqueda && coincideEstado;
+        });
+    }, [search, estadoFiltro, planes, equipos]);
+
+    const subHeaderComponentMemo = useMemo(() => {
+        return (
+            <Form.Control
+                data-tour="buscador-planes-calibracion"
+                type="text"
+                placeholder="Buscar plan..."
+                className="mr-sm-2"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
+            />
+        );
+    }, []);
+
+    if (isLoading) return (
+        <>
+            <PageHeader title="Planes de Calibración" />
+            <Spinner animation="border" role="status">
+                <span className="visually-hidden">Loading...</span>
+            </Spinner>
+        </>
+    );
+
+    if (!planes || error) return (
+        <Container>
+            <PageHeader title="Planes de Calibración" />
+            <Row className="justify-content-center">
+                <Col md={6}>
+                    <Alert variant="danger">
+                        Ocurrió un error al cargar los planes de calibración
+                    </Alert>
+                </Col>
+            </Row>
+        </Container>
+    );
+
+    const columns: TableColumn<PlanCalibracion>[] = [
+        {
+            name: "Equipo",
+            selector: row => obtenerNombreEquipo(row.equipo_id),
+            sortable: true,
+            center: true,
+            grow: 2,
+            minWidth: "90px",
+        },
+        {
+            name: "Periodicidad",
+            selector: row => row.periodicidad,
+            sortable: true,
+            center: true,
+            minWidth: "130px",
+            cell: row => (
+                <span>
+                    {row.periodicidad} {row.periodicidad === 1 ? "día" : "días"}
+                </span>
+            ),
+        },
+        {
+            name: "Próxima Calibración",
+            selector: row => row.proxima_fecha ?? "",
+            sortable: true,
+            center: true,
+            minWidth: "170px",
+            cell: row => (
+                <span>{row.proxima_fecha ?? "Sin definir"}</span>
+            ),
+        },
+        {
+            name: "Días para Calibración",
+            sortable: true,
+            center: true,
+            minWidth: "190px",
+            selector: row => row.dias_restantes ?? 999999,
+            cell: row => {
+                const contenido = (() => {
+                    if (row.dias_restantes === null) return <span>Sin definir</span>;
+                    if (row.dias_restantes < 0) {
+                        return (
+                            <div style={{ padding: "4px 12px", borderRadius: "16px", background: "#fef3c7", color: "#92400e", fontWeight: 700, whiteSpace: "nowrap" }}>
+                                Vencido
+                            </div>
+                        );
+                    }
+                    if (row.dias_restantes === 0) return <span>Calibración hoy</span>;
+                    if (row.dias_restantes === 1) return <span>{row.dias_restantes} día</span>;
+                    return <span>{row.dias_restantes} días</span>;
+                })();
+
+                return <div data-tour="dias-calibracion">{contenido}</div>;
+            },
+        },
+        {
+            name: "Estado",
+            selector: row => row.estado ? "Activo" : "Inactivo",
+            sortable: true,
+            center: true,
+            cell: row => (
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div
+                        data-tour="estado-plan-calibracion"
+                        style={{
+                            padding: "4px 12px",
+                            borderRadius: "16px",
+                            background: row.estado ? "#dcfce7" : "#fee2e2",
+                            color: row.estado ? "#166534" : "#991b1b",
+                            fontWeight: 700,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            whiteSpace: "nowrap",
+                        }}
+                    >
+                        {row.estado ? "Activo" : "Inactivo"}
+                    </div>
+                </div>
+            ),
+        },
+        {
+            name: "Acciones",
+            center: true,
+            minWidth: "200px",
+            cell: row => (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                    {currentUser?.administrar && (
+                        <>
+                        <span data-tour="btn-historico-calibracion">
+                            <ActionButton
+                                variant="outline-warning"
+                                size="sm"
+                                tooltip="Histórico"
+                                icon="bi bi-clock-history"
+                                onClick={() => setPlanHistorico(row)}
+                            />
+                        </span>
+                        <span data-tour="btn-editar-plan-calibracion">
+                            <ActionButton
+                                variant="outline-primary"
+                                size="sm"
+                                tooltip="Editar"
+                                icon="bi bi-pencil"
+                                disabled={!row.estado}
+                                onClick={() => navigate(`/planes-calibracion/${row.id}/edit`)}
+                            />
+                        </span>    
+                        <span data-tour="btn-registrar-calibracion">
+                            <ActionButton
+                                variant="outline-success"
+                                size="sm"
+                                tooltip="Registrar calibración"
+                                icon="bi bi-tools"
+                                disabled={!row.estado}
+                                onClick={() => setPlanToCalibrar(row)}
+                            />
+                        </span>
+                        <span data-tour="btn-baja-plan-calibracion">
+
+                            <ActionButton
+                                variant={row.estado ? "outline-danger" : "outline-success"}
+                                size="sm"
+                                tooltip={row.estado ? "Dar de baja" : "Dar de alta"}
+                                icon={`bi ${row.estado ? "bi-dash-circle" : "bi-check-circle"}`}
+                                onClick={() => setPlanToDelete(row)}
+                            />
+                        </span>
+                        </>
+                    )}
+                </div>
+            ),
+        },
+    ];
+
+    return (
+        <Container>
+            <Row className="p-2 align-items-center">
+                <Col>
+                    <PageHeader
+                        eyebrow="GESTIÓN"
+                        title="Planes de Calibración"
+                        subtitle="Revisá los Planes de Calibración y crea nuevos."
+                    />
+                </Col>
+
+                <Col xs="auto" className="align-self-center">
+                    {subHeaderComponentMemo}
+                </Col>
+                <Col xs="auto" className="align-self-center">
+                    <ListFilter
+                        value={estadoFiltro}
+                        options={ESTADO_FILTRO_LABELS}
+                        onChange={(value) => setEstadoFiltro(value as EstadoFiltro)}
+                    />
+                </Col>
+                {currentUser?.administrar && (
+                    <Col xs="auto" className="d-flex justify-content-end">
+                        <Button
+                            data-tour="btn-nuevo-plan-calibracion"
+                            variant="primary"
+                            size="sm"
+                            onClick={() => navigate("/planes-calibracion/new")}
+                            style={{ whiteSpace: "nowrap" }}
+                        >
+                            + Nuevo Plan
+                        </Button>
+                    </Col>
+                )}
+            </Row>
+            <div data-tour="tabla-planes-calibracion">
+                <AppTable
+                    columns={columns}
+                    data={filteredPlanes}
+                />
+            </div>
+
+            <EstadoPlanCalibracionModal
+                planCalibracion={planToDelete}
+                onHide={() => setPlanToDelete(null)}
+                onDeleted={() => mutate("/planes-calibracion")}
+            />
+            <RealizarCalibracionModal
+                plan={planToCalibrar}
+                onHide={() => setPlanToCalibrar(null)}
+                onRealizado={() => {
+                    mutate("/planes-calibracion");
+                    setPlanToCalibrar(null);
+                }}
+            />
+            <HistoricoCalibracionModal
+                plan={planHistorico}
+                onHide={() => setPlanHistorico(null)}
+            />
+
+        </Container>
+    );
+}

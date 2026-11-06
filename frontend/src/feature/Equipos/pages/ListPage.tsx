@@ -1,0 +1,219 @@
+import { useState, useMemo } from "react";
+import { mutate } from 'swr';
+import { Button, Col, Container, Form, Row } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
+import { type TableColumn } from 'react-data-table-component';
+
+import { AppTable } from '../../../components/AppTable';
+import { PageHeader } from '../../../components/PageHeader';
+import { PageLoading } from '../../../components/PageLoading';
+import { PageError } from '../../../components/PageError';
+import { ActionButton } from '../../../components/ActionButton';
+import { useApi } from '../../../hooks/useApi';
+import { useAuth } from '../../../hooks/useAuth';
+
+import { DeleteEquipoModal } from '../components/DeleteEquipoModal';
+import type { Equipo } from "../types";
+import { ListFilter } from "../../../components/ListFilter";
+
+
+type EstadoFiltro = "todos" | "activo" | "inactivo";
+
+const ESTADO_FILTRO_LABELS: Record<EstadoFiltro, string> = {
+    todos: "Todos",
+    activo: "Activos",
+    inactivo: "Inactivos",
+};
+
+export function EquiposPage() {
+    const navigate = useNavigate();
+    const { currentUser } = useAuth();
+    const [search, setSearch] = useState('');
+    const { data: equipos, error, isLoading } = useApi<Equipo[]>("/equipos");
+    const [equipoToDelete, setEquipoToDelete] = useState<Equipo | null>(null);
+
+    const [estadoFiltro, setEstadoFiltro] = useState<EstadoFiltro>("todos");
+
+    const filteredEquipos = useMemo(() => {
+        if (!Array.isArray(equipos)) return [];
+
+        return equipos.filter((equipo) => {
+            const coincideBusqueda =
+                equipo.nombre.toLowerCase().includes(search.toLowerCase()) ||
+                equipo.categoria.toLowerCase().includes(search.toLowerCase()) ||
+                equipo.ubicacion.toLowerCase().includes(search.toLowerCase());
+
+            const coincideEstado =
+                estadoFiltro === "todos" ||
+                (estadoFiltro === "activo" && equipo.estado) ||
+                (estadoFiltro === "inactivo" && !equipo.estado);
+
+            return coincideBusqueda && coincideEstado;
+        });
+    }, [search, estadoFiltro, equipos]);
+
+    const subHeaderComponentMemo = useMemo(() => {
+        return (
+            <Form.Control
+                data-tour="buscador-equipos"
+                type="text"
+                placeholder="Buscar equipo..."
+                className="mr-sm-2"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
+            />
+        );
+    }, []);
+
+    if (isLoading) return <PageLoading title="Listado de Equipos" />;
+
+    if (!equipos || error) return (
+        <PageError title="Listado de Equipos" message="Ocurrió un error al cargar los Equipos" />
+    );
+
+    const baseColumns: TableColumn<Equipo>[] = [
+        {
+            name: "Nombre",
+            selector: row => row.nombre,
+            sortable: true,
+            grow: 2,
+        },
+        {
+            name: "Categoría",
+            selector: row => row.categoria,
+            sortable: true,
+            center: true,
+            grow: 2,
+        },
+        {
+            name: "Sector",
+            selector: row => row.sector.nombre,
+            sortable: true,
+            center: true,
+            grow: 2,
+            cell: row => (
+                <div
+                    style={{
+                        padding: "4px 12px",
+                        borderRadius: "16px",
+                        background: "#dbeafe",
+                        color: "#1d4ed8",
+                        fontWeight: 700,
+                        whiteSpace: "nowrap",
+                    }}
+                >
+                    {row.sector.nombre}
+                </div>
+            ),
+        },
+        {
+            name: 'Estado',
+            selector: row => row.estado ? 'Activo' : 'Inactivo',
+            sortable: true,
+            center: true,
+            cell: row => (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div
+                        data-tour="estado-equipo"
+                        style={{
+                            padding: '4px 12px',
+                            borderRadius: '16px',
+                            background: row.estado ? '#dcfce7' : '#fee2e2',
+                            color: row.estado ? '#166534' : '#991b1b',
+                            fontWeight: 700,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            whiteSpace: 'nowrap',
+                        }}
+                    >
+                        {row.estado ? 'Activo' : 'Inactivo'}
+                    </div>
+                </div>
+            )
+        },
+    ];
+
+    const columns: TableColumn<Equipo>[] = currentUser?.administrar
+        ? [
+            ...baseColumns,
+            {
+                name: "Acciones",
+                center: true,
+                minWidth: "220px",
+                cell: (row) => (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        
+                        <ActionButton
+                            data-tour="btn-editar-equipo"
+                            variant="outline-primary"
+                            size="sm"
+                            tooltip="Editar"
+                            icon="bi-pencil"
+                            disabled={!row.estado}
+                            onClick={() => navigate(`/equipos/${row.id}/edit`)}
+                        />
+
+                        {row.estado && (
+                            <span data-tour="btn-baja-equipo">
+                                <ActionButton
+                                    variant="outline-danger"
+                                    size="sm"
+                                    tooltip="Dar de baja"
+                                    icon="bi-dash-circle"
+                                    onClick={() => setEquipoToDelete(row)}
+                                />
+                            </span>
+                        )}
+                    </div>
+                )
+            }
+        ]
+        : baseColumns;
+
+    return (
+        <Container>
+            <Row className="p-2 align-items-center">
+                <Col>
+                    <PageHeader
+                        eyebrow="GESTIÓN"
+                        title="Listado de Equipos"
+                        subtitle="Revisá el Listado de Equipos creados hasta la fecha."
+                    />
+                </Col>
+                <Col xs="auto" className="align-self-center">
+                    {subHeaderComponentMemo}
+                </Col>
+
+                <Col xs="auto" className="align-self-center">
+                    <ListFilter
+                        value={estadoFiltro}
+                        options={ESTADO_FILTRO_LABELS}
+                        onChange={(value) => setEstadoFiltro(value as EstadoFiltro)}
+                    />
+                </Col>
+                {currentUser?.administrar && (
+                    <Col xs="auto" className="d-flex justify-content-end">
+                        <Button
+                            data-tour="btn-nuevo-equipo"
+                            variant="primary"
+                            size="sm"
+                            onClick={() => navigate("/equipos/new")}     
+                            style={{whiteSpace: "nowrap"}}               
+                        >
+                            + Nuevo Equipo
+                        </Button>
+                    </Col>
+                )}
+            </Row>
+            <div data-tour="tabla-equipos">
+                <AppTable columns={columns} data={filteredEquipos} />
+            </div>
+
+            <DeleteEquipoModal
+                equipo={equipoToDelete}
+                onHide={() => setEquipoToDelete(null)}
+                onDeleted={() => mutate("/equipos")}
+            />
+        </Container>
+    );
+}

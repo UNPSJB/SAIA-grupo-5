@@ -1,0 +1,192 @@
+import React, { useState, useMemo } from 'react';
+import { mutate } from 'swr';
+import { Button, Col, Container, Form, Row } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
+import { type TableColumn } from 'react-data-table-component';
+
+import { AppTable } from '../../../components/AppTable';
+import { PageHeader } from '../../../components/PageHeader';
+import { PageLoading } from '../../../components/PageLoading';
+import { PageError } from '../../../components/PageError';
+import { ActionButton } from '../../../components/ActionButton';
+import { useApi } from '../../../hooks/useApi';
+import { useAuth } from '../../../hooks/useAuth';
+
+import { DeleteTipoQuimicoModal } from '../components/DeleteTipoQuimicoModal'; 
+import type { TipoQuimico } from '../types';
+import { ListFilter } from "../../../components/ListFilter";
+
+type EstadoFiltro = "todos" | "activo" | "inactivo";
+
+const ESTADO_FILTRO_LABELS: Record<EstadoFiltro, string> = {
+    todos: "Todos",
+    activo: "Activos",
+    inactivo: "Inactivos",
+};
+
+export function ListPage() {
+    const navigate = useNavigate();     // Esto se usa para cambiar de pagina cuando cree el insumo
+    const { currentUser } = useAuth();
+    const [search, setSearch] = useState('');
+    const { data: tiposQuimicos, error, isLoading } = useApi<TipoQuimico[]>("/tipos-quimicos/")    
+    const [tipoQuimicoToDelete, setTipoQuimicoToDelete] = useState<TipoQuimico | null>(null);
+    const [estadoFiltro, setEstadoFiltro] = useState<EstadoFiltro>("todos");
+
+    // useMemo infiere que retorna un array de tipo Insumo[]
+    const filteredTiposQuimicos = useMemo(() => {
+        if (!Array.isArray(tiposQuimicos)) return [];
+
+        return tiposQuimicos.filter((tipoQuimico) => {
+            const coincideBusqueda = tipoQuimico.nombre
+                .toLowerCase()
+                .includes(search.toLowerCase());
+
+            const coincideEstado =
+                estadoFiltro === "todos" ||
+                (estadoFiltro === "activo" && tipoQuimico.activo) ||
+                (estadoFiltro === "inactivo" && !tipoQuimico.activo);
+
+            return coincideBusqueda && coincideEstado;
+        });
+    }, [search, estadoFiltro, tiposQuimicos]);
+
+    const subHeaderComponentMemo = useMemo(() => {
+        return (
+            <Form.Control
+                data-tour="buscador-tipos-quimicos"
+                type="text"
+                placeholder="Buscar tipo químico..."
+                className=" mr-sm-2"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
+            />
+        );
+    }, [search]);
+
+    if (isLoading) return <PageLoading title="Listado de Tipos Químicos" />;
+    if (!tiposQuimicos || error) return (
+        <PageError title="Listado de Tipos Químicos" message="Ocurrió un error al cargar Tipos Químicos" />
+    );
+
+    const columns: TableColumn<TipoQuimico>[] = [
+        {
+            name: 'Nombre',
+            selector: row => row.nombre,
+            sortable: true,
+            center: true,
+            minWidth: '200px',
+        },
+        {
+            name: 'Estado',
+            selector: row => row.activo ? 'Activo' : 'Inactivo',
+            sortable: true,
+            center: true,
+            cell: row => (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10}}>
+                    <div
+                        data-tour="estado-tipo-quimico"
+                        style={{
+                            padding: '4px 12px',
+                            borderRadius: '16px',
+                            background: row.activo ? '#dcfce7' : '#fee2e2',
+                            color: row.activo ? '#166534' : '#991b1b',
+                            fontWeight: 700,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            whiteSpace: 'nowrap',
+                        }}
+                    >
+                        {row.activo ? 'Activo' : 'Inactivo'}
+                    </div>
+                </div>
+            )
+        },
+        {
+            name: "Acciones",
+            center: true,
+            cell: (row) => (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span data-tour="btn-ver-tipo-quimico">
+                        <ActionButton
+                            variant="outline-info"
+                            size="sm"
+                            tooltip="Ver"
+                            icon="bi-eye"
+                            onClick={() => navigate(`/tipos-quimicos/${row.id}`)}
+                        />
+                    </span>
+
+                    {currentUser?.administrar && (
+                        <>
+                            <span data-tour="btn-editar-tipo-quimico">
+                                <ActionButton
+                                    variant="outline-primary"
+                                    size="sm"
+                                    tooltip="Editar"
+                                    icon="bi-pencil"
+                                    disabled={!row.activo}      // Si no esta activo se muestra en gris y no se puede editar
+                                    onClick={() => navigate(`/tipos-quimicos/${row.id}/edit`)}
+                                />
+                            </span>
+                            <span data-tour="btn-baja-tipo-quimico">
+                                <ActionButton
+                                    variant={row.activo ? 'outline-danger' : 'outline-success'}
+                                    size="sm"
+                                    tooltip={row.activo ? 'Dar de baja' : 'Dar de alta'}
+                                    icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
+                                    onClick={() => setTipoQuimicoToDelete(row)}
+                                />
+                            </span>
+                        </>
+                    )}
+                </div>
+            )
+        },
+    ];
+
+    return (
+        <Container>
+            <Row className="p-2 align-items-center" >
+                <Col>
+                    <PageHeader
+                        eyebrow="DATOS MAESTROS"
+                        title="Listado de Tipos Químicos"
+                        subtitle="Revisá el Listado de Tipos Químicos creados hasta la fecha."
+                    />
+                </Col>
+                <Col xs="auto" className="align-self-center">
+                    {subHeaderComponentMemo}
+                </Col>
+                <Col xs="auto" className="align-self-center">
+                    <ListFilter
+                        value={estadoFiltro}
+                        options={ESTADO_FILTRO_LABELS}
+                        onChange={(value) => setEstadoFiltro(value as EstadoFiltro)}
+                    />
+                </Col>
+                {currentUser?.administrar &&(
+                    <Col xs="auto" className="d-flex justify-content-end">
+                        <Button
+                            data-tour="btn-nuevo-tipo-quimico"
+                            variant="primary"
+                            size='sm'
+                            onClick={() => navigate("/tipos-quimicos/new")}
+                            style={{ whiteSpace: "nowrap" }}
+                        >
+                            + Nuevo Tipo Químico
+                        </Button>
+                    </Col>
+                )}
+
+            </Row>
+            <div data-tour="tabla-tipos-quimicos">
+                <AppTable columns={columns} data={filteredTiposQuimicos} />
+            </div>
+            <DeleteTipoQuimicoModal
+                tipoQuimico={tipoQuimicoToDelete}
+                onHide={() => setTipoQuimicoToDelete(null)}
+                onDeleted={() => mutate("/tipos-quimicos/")}
+            />
+        </Container>
+    );
+}

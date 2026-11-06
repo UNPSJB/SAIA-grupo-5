@@ -1,45 +1,134 @@
-from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from sqlalchemy import inspect, text
 from src.database import engine
 from src.models import ModeloBase
 
-# Importamos la configuración validada por Pydantic
+# Registra todos los modelos antes de armar las relaciones entre ellos.
+from src.insumos.models import Insumo
+from src.personal.models import Persona
+from src.equipos.models import Equipo
+from src.sector.models import Sector
+from src.plan_limpieza.models import PlanLimpieza
+from src.tarea.models import Tarea
+from src.tareas_ocurrencia.models import TareaOcurrencia
+from src.superficies.models import Superficie
+from src.elementosLimpieza.models import ElementoLimpieza, TipoElementoLimpieza
+from src.recambiosElementosLimpieza.models import RecambioElementoLimpieza
+from src.insumo_quimico.models import InsumoQuimico
+from src.tipo_quimico.models import TipoQuimico
+from src.consumo_producto.models import ConsumoProducto
+from src.planesCalibracion.models import PlanCalibracion
+from src.registrosCalibracion.models import RegistroCalibracion
+from src.tipos_vencimientos.models import TipoVencimiento
+from src.vencimiento_personal.models import VencimientoPersonal
+from src.configuracion_sistema.models import ConfiguracionSistema
+from src.notificaciones.models import Notificacion
+from src.tipo_incidente.models import TipoIncidente
+from src.incidentes.models import Incidente
+from src.accion_correctiva.models import AccionCorrectiva
+from src.historial_incidente.models import HistorialIncidente
+from src.unidad_medida.models import UnidadMedida
+from src.producto.models import Producto
+from src.lote_produccion.models import LoteProduccion, InsumoUtilizado
+from src.receta.models import Receta
+from src.etapa_receta.models import EtapaReceta
+from src.paso_etapa.models import PasoEtapa
+
 from src.config import settings
-
-# Importamos configuracion de logger
+from src.settings import ROOT_PATH
 from src.logger import setup_logging
+from src.lifespan import db_creation_lifespan
 
-# Importamos los routers desde nuestros modulos
-from src.personas.router import router as personas_router
-from src.mascotas.router import router as mascotas_router
+# Routers
+from src.auth.router import router as auth_router
+from src.personal.router import router as personal_router
+from src.insumos.router import router as insumos_router
+from src.equipos.router import router as equipos_router
+from src.sector.router import router as sector_router
+from src.plan_limpieza.router import router as plan_limpieza_router
+from src.tarea.router import router as tarea_router
+from src.tareas_ocurrencia.router import router as tareas_ocurrencia_router
+from src.superficies.router import router as superficies_router
+from src.insumo_quimico.router import router as insumo_quimico_router
+from src.tipo_quimico.router import router as tipo_quimico_router
+from src.elementosLimpieza.router import router as elementos_limpieza_router
+from src.recambiosElementosLimpieza.router import router as recambios_elementos_limpieza_router
+from src.consumo_producto.router import router as consumos_router
+from src.documentos.router import router as documentos_router
+from src.tipo_documento.router import router as tipo_documento_router
+from src.version_documento.router import router as version_documento_router
+from src.planesCalibracion.router import router as planes_calibracion_router
+from src.registrosCalibracion.router import router as registros_calibracion_router
+from src.tipos_vencimientos.router import router as tipos_vencimientos_router
+from src.vencimiento_personal.router import router as vencimiento_personal_router
+from src.configuracion_sistema.router import router as configuracion_sistema_router
+from src.configuracion_sistema.router import public_router as vista_publica_router
+from src.notificaciones.router import router as notificaciones_router
+from src.tipo_incidente.router import router as tipo_incidente_router
+from src.incidentes.router import router as incidentes_router
+from src.accion_correctiva.router import router as accion_correctiva_router
+from src.historial_incidente.router import router as historial_incidente_router
+from src.unidad_medida.router import router as unidad_medida_router
+from src.producto.router import router as producto_router
+from src.receta.router import router as receta_router
+from src.etapa_receta.router import router as etapa_receta_router
+from src.paso_etapa.router import router as paso_etapa_router
+from src.lote_produccion.router import router as lote_produccion_router
+
 from fastapi.middleware.cors import CORSMiddleware
 
-ENV = settings.ENV.upper()
-ROOT_PATH = getattr(settings, f"ROOT_PATH_{ENV}", "")
-
 setup_logging()
-
-@asynccontextmanager
-async def db_creation_lifespan(app: FastAPI):
-    ModeloBase.metadata.create_all(bind=engine)
-    yield
-
 
 app = FastAPI(root_path=ROOT_PATH, lifespan=db_creation_lifespan)
 
 origins = [
-    "http://localhost:5173", # para recibir requests desde app React (puerto: 5173)
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Asociamos los routers a nuestra app
+app.include_router(auth_router)
+app.include_router(personal_router)
+app.include_router(insumos_router)
+app.include_router(equipos_router)
+app.include_router(sector_router)
+app.include_router(plan_limpieza_router)
+app.include_router(tarea_router)
+app.include_router(tareas_ocurrencia_router)
+app.include_router(superficies_router)
+app.include_router(insumo_quimico_router)
+app.include_router(tipo_quimico_router)
+app.include_router(elementos_limpieza_router)
+app.include_router(recambios_elementos_limpieza_router)
+app.include_router(consumos_router)
+app.include_router(planes_calibracion_router)
+app.include_router(registros_calibracion_router)
+app.include_router(tipos_vencimientos_router)
+app.include_router(vencimiento_personal_router)
+app.include_router(configuracion_sistema_router)
+app.include_router(vista_publica_router)
+app.include_router(notificaciones_router)
+app.include_router(documentos_router)
+app.include_router(tipo_documento_router)
+app.include_router(version_documento_router)
 
-# asociamos los routers a nuestra app
-app.include_router(personas_router)
-app.include_router(mascotas_router)
+app.include_router(tipo_incidente_router)
+app.include_router(incidentes_router)
+app.include_router(accion_correctiva_router)
+app.include_router(historial_incidente_router)
+app.include_router(unidad_medida_router)
+app.include_router(producto_router)
+app.include_router(lote_produccion_router)
+app.include_router(receta_router)
+app.include_router(etapa_receta_router)
+app.include_router(paso_etapa_router)

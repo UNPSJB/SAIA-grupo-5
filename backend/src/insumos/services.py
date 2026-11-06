@@ -1,0 +1,53 @@
+import logging
+from typing import List
+from sqlalchemy import  select, update
+from sqlalchemy.orm import Session, joinedload
+from src.insumos.models import Insumo
+from src.insumos import schemas, exceptions
+
+# Creamos un logger para este módulo específico. Más info.: https://docs.python.org/3/library/logging.html
+logger = logging.getLogger(__name__)
+
+# operaciones CRUD para Insumos
+
+def crear_insumo(db: Session, insumo: schemas.InsumoCreate) -> schemas.Insumo:
+    insumo_existente = db.scalars(select(Insumo).where(Insumo.nombre == insumo.nombre, Insumo.unidad_medida_id == insumo.unidad_medida_id)).first()
+
+    if insumo_existente:
+        raise exceptions.InsumoDuplicado()
+
+
+    _insumo = Insumo(**insumo.model_dump())
+    db.add(_insumo)
+    db.commit()
+    db.refresh(_insumo)
+    return _insumo
+
+def listar_insumos(db: Session) -> List[schemas.Insumo]:
+    return db.scalars(select(Insumo).where(Insumo.tipo_herencia == "general").options(joinedload(Insumo.unidad_medida))).all()
+
+def leer_insumo(db: Session, insumo_id: int) -> schemas.Insumo:
+    db_insumo = db.scalar(select(Insumo).where(Insumo.id == insumo_id).options(joinedload(Insumo.unidad_medida)))
+    if db_insumo is None:
+        raise exceptions.InsumoNoEncontrado()
+    return db_insumo
+
+def cambiar_estado_insumo(db: Session, insumo_id: int) -> schemas.Insumo:
+    db_insumo = leer_insumo(db, insumo_id)
+
+    if not db_insumo.activo and not db_insumo.unidad_medida.activo:
+        raise exceptions.UnidadMedidaDadaDeBaja()
+
+    db_insumo.activo = not db_insumo.activo
+    db.commit()
+    db.refresh(db_insumo)
+    return db_insumo
+
+def modificar_insumo(db: Session, insumo_id: int, insumo: schemas.InsumoUpdate) -> schemas.Insumo:  # Permite modificar el insumo pero si o si se tienen que enviar todos los campos
+    db_insumo = leer_insumo(db, insumo_id)
+    if not db_insumo.activo:
+        raise exceptions.InsumoDadoDeBaja()
+    db.execute(update(Insumo).where(Insumo.id == insumo_id).values(**insumo.model_dump()))
+    db.commit()
+    db.refresh(db_insumo)
+    return db_insumo

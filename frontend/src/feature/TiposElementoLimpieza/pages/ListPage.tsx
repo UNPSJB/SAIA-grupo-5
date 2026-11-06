@@ -1,0 +1,192 @@
+import { useMemo, useState } from "react";
+import { mutate } from "swr";
+import { Button, Col, Container, Form, Row } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+import { type TableColumn } from "react-data-table-component";
+
+import { AppTable } from "../../../components/AppTable";
+import { PageHeader } from "../../../components/PageHeader";
+import { PageLoading } from "../../../components/PageLoading";
+import { PageError } from "../../../components/PageError";
+import { ActionButton } from "../../../components/ActionButton";
+import { useApi } from "../../../hooks/useApi";
+import { useAuth } from "../../../hooks/useAuth";
+
+import { EstadoTipoElementoModal } from "../components/DeleteTipoElementoModal";
+import type { TipoElementoLimpieza } from "../types";
+import { ListFilter } from "../../../components/ListFilter";
+
+type EstadoFiltro = "todos" | "activo" | "inactivo";
+
+const ESTADO_FILTRO_LABELS: Record<EstadoFiltro, string> = {
+    todos: "Todos",
+    activo: "Activos",
+    inactivo: "Inactivos",
+};
+
+export function TiposElementoLimpiezaPage() {
+    const navigate = useNavigate();
+    const { currentUser } = useAuth();
+    const [search, setSearch] = useState("");
+    const [tipoToDelete, setTipoToDelete] = useState<TipoElementoLimpieza | null>(null);
+
+    const { data: tipos, error, isLoading } = useApi<TipoElementoLimpieza[]>("/elementos-limpieza/tipos");
+    const [estadoFiltro, setEstadoFiltro] = useState<EstadoFiltro>("todos");
+
+    const filteredTipos = useMemo(() => {
+        if (!Array.isArray(tipos)) return [];
+
+        const busqueda = search.toLowerCase();
+
+        return tipos.filter((tipo) => {
+            const coincideBusqueda =
+                tipo.nombre.toLowerCase().includes(busqueda) ||
+                tipo.prefijo.toLowerCase().includes(busqueda);
+
+            const coincideEstado =
+                estadoFiltro === "todos" ||
+                (estadoFiltro === "activo" && tipo.estado) ||
+                (estadoFiltro === "inactivo" && !tipo.estado);
+
+            return coincideBusqueda && coincideEstado;
+        });
+    }, [search, estadoFiltro, tipos]);
+
+    const subHeaderComponentMemo = useMemo(() => {
+        return (
+            <Form.Control
+                data-tour="buscador-tipos-elemento"
+                type="text"
+                placeholder="Buscar tipo..."
+                className="mr-sm-2"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
+            />
+        );
+    }, []);
+
+    if (isLoading) return <PageLoading title="Tipos de Elementos de Limpieza" />;
+
+    if (!tipos || error) return (
+        <PageError title="Tipos de Elementos de Limpieza" message="Ocurrió un error al cargar los tipos de elementos" />
+    );
+
+    const baseColumns: TableColumn<TipoElementoLimpieza>[] = [
+        {
+            name: "Nombre",
+            selector: row => row.nombre,
+            sortable: true,
+            center: true,
+        },
+        {
+            name: "Prefijo",
+            selector: row => row.prefijo,
+            sortable: true,
+            center: true,
+        },
+        {
+            name: "Estado",
+            selector: row => row.estado ? "Activo" : "Inactivo",
+            sortable: true,
+            center: true,
+            cell: row => (
+                <div
+                    data-tour="estado-tipo-elemento"
+                    style={{
+                        padding: "4px 12px",
+                        borderRadius: "16px",
+                        background: row.estado ? "#dcfce7" : "#fee2e2",
+                        color: row.estado ? "#166534" : "#991b1b",
+                        fontWeight: 700,
+                        whiteSpace: "nowrap",
+                    }}
+                >
+                    {row.estado ? "Activo" : "Inactivo"}
+                </div>
+            ),
+        },
+    ];
+    const columns: TableColumn<TipoElementoLimpieza>[] = currentUser?.administrar
+        ? [
+            ...baseColumns,
+            {
+                name: "Acciones",
+                center: true,
+                minWidth: "220px",
+                cell: row => (
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                        {row.estado && (
+                            <span data-tour="btn-editar-tipo-elemento">
+                                <ActionButton
+                                    variant="outline-primary"
+                                    size="sm"
+                                    tooltip="Editar"
+                                    icon="bi-pencil"
+                                    onClick={() => navigate(`/tipos-elementos-limpieza/${row.id}/edit`)}
+                                />
+                            </span>
+                            )}
+                        
+                        <span data-tour="btn-baja-tipo-elemento">
+                            <ActionButton
+                                variant={row.estado ? "outline-danger" : "outline-success"}
+                                size="sm"
+                                tooltip={row.estado ? "Dar de baja" : "Dar de alta"}
+                                icon={row.estado ? "bi-dash-circle" : "bi-check-circle"}
+                                onClick={() => setTipoToDelete(row)}
+                            />
+                        </span>
+                    </div>
+                ),
+            },
+        ]
+        : baseColumns;
+
+    return (
+        <Container>
+            <Row className="p-2 align-items-center">
+                <Col>
+                    <PageHeader
+                        eyebrow="DATOS MAESTROS"
+                        title="Tipos de Elementos de Limpieza"
+                        subtitle="Revisá los Tipos de Elementos de Limpieza creados hasta la fecha."
+                    />
+                </Col>
+
+                <Col xs="auto" className="align-self-center">
+                    {subHeaderComponentMemo}
+                </Col>
+                <Col xs="auto" className="align-self-center">
+                    <ListFilter
+                        value={estadoFiltro}
+                        options={ESTADO_FILTRO_LABELS}
+                        onChange={(value) => setEstadoFiltro(value as EstadoFiltro)}
+                    />
+                </Col>
+                {currentUser?.administrar && (
+                    <Col xs="auto" className="d-flex justify-content-end">
+                        <Button
+                            data-tour="btn-nuevo-tipo-elemento"
+                            variant="primary"
+                            size="sm"
+                            onClick={() => navigate("/tipos-elementos-limpieza/new")}
+                        >
+                            + Nuevo Tipo
+                        </Button>
+                    </Col>
+                )}
+            </Row>
+            <div data-tour="tabla-tipos-elemento">
+                <AppTable
+                    columns={columns}
+                    data={filteredTipos}
+                />
+            </div>
+
+            <EstadoTipoElementoModal
+                tipoElementoLimpieza={tipoToDelete}
+                onHide={() => setTipoToDelete(null)}
+                onDeleted={() => mutate("/elementos-limpieza/tipos")}
+            />
+        </Container>
+    );
+}

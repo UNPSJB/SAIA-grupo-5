@@ -1,0 +1,299 @@
+import { useMemo, useState } from "react";
+import { mutate } from "swr";
+import { useAuth } from "../../../hooks/useAuth";
+import { Button, Col, Container, Form, Row } from "react-bootstrap";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { type TableColumn } from "react-data-table-component";
+
+import { AppTable } from "../../../components/AppTable";
+import { PageHeader } from "../../../components/PageHeader";
+import { PageLoading } from "../../../components/PageLoading";
+import { PageError } from "../../../components/PageError";
+import { ActionButton } from "../../../components/ActionButton";
+import { useApi } from "../../../hooks/useApi";
+
+import { EstadoElementoLimpiezaModal } from "../components/DeleteElementoLimpiezaModal";
+import type { ElementoLimpieza } from "../types";
+import type { TipoElementoLimpieza } from "../../TiposElementoLimpieza/types";
+import { ListFilter } from "../../../components/ListFilter";
+
+type EstadoFiltro = "todos" | "activo" | "inactivo" | "vencido" | "por-vencer";
+
+const ESTADO_FILTRO_LABELS: Record<EstadoFiltro, string> = {
+    todos: "Todos",
+    activo: "Activos",
+    inactivo: "Inactivos",
+    vencido: "Vencidos",
+    "por-vencer": "Por vencer",
+};
+
+export function ElementosLimpiezaPage() {
+    const navigate = useNavigate();
+    const { currentUser } = useAuth();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const estadoFiltro: EstadoFiltro = (() => {
+        const valor = searchParams.get("estado");
+        return valor === "activo" || valor === "inactivo" || valor === "vencido" || valor === "por-vencer"
+            ? valor
+            : "todos";
+    })();
+    const [search, setSearch] = useState("");
+    const [elementoToDelete, setElementoToDelete] = useState<ElementoLimpieza | null>(null);
+
+    const { data: elementos, error, isLoading } = useApi<ElementoLimpieza[]>("/elementos-limpieza");
+    const { data: tipos } = useApi<TipoElementoLimpieza[]>("/elementos-limpieza/tipos");
+
+    const obtenerNombreTipo = (tipoId: number) => {
+        return tipos?.find((tipo) => tipo.id === tipoId)?.nombre ?? "Sin tipo";
+    };
+
+const filteredElementos = useMemo(() => {
+    if (!Array.isArray(elementos)) return [];
+
+    const busqueda = search.toLowerCase();
+
+    return elementos.filter((elemento) => {
+        const nombreTipo = obtenerNombreTipo(elemento.tipo_id);
+
+        const coincideBusqueda =
+            elemento.codigo.toLowerCase().includes(busqueda) ||
+            elemento.nombre.toLowerCase().includes(busqueda) ||
+            nombreTipo.toLowerCase().includes(busqueda) ||
+            (elemento.material ?? "").toLowerCase().includes(busqueda) ||
+            (elemento.ubicacion ?? "").toLowerCase().includes(busqueda);
+
+        const coincideEstado =
+            estadoFiltro === "todos" ||
+            (estadoFiltro === "activo" && elemento.estado) ||
+            (estadoFiltro === "inactivo" && !elemento.estado) ||
+            (estadoFiltro === "vencido" &&
+                elemento.estado &&
+                elemento.dias_restantes !== null &&
+                elemento.dias_restantes < 0) ||
+            (estadoFiltro === "por-vencer" &&
+                elemento.estado &&
+                elemento.dias_restantes !== null &&
+                elemento.dias_restantes >= 0 &&
+                elemento.dias_restantes <= 7);
+
+        return coincideBusqueda && coincideEstado;
+    }).sort((a, b) => a.codigo.localeCompare(b.codigo));
+
+}, [search, elementos, tipos, estadoFiltro]);
+
+    const subHeaderComponentMemo = useMemo(() => {
+        return (
+            <Form.Control
+                data-tour="buscador-elementos"
+                type="text"
+                placeholder="Buscar elemento..."
+                className="mr-sm-2"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
+            />
+        );
+    }, []);
+
+    if (isLoading) return <PageLoading title="Elementos de Limpieza" />;
+
+    if (!elementos || error) return (
+        <PageError title="Elementos de Limpieza" message="Ocurrió un error al cargar los elementos de limpieza" />
+    );
+
+    const columns: TableColumn<ElementoLimpieza>[] = [
+        {
+            name: "Código",
+            selector: row => row.codigo,
+            sortable: true,
+            center: true,
+            minWidth: "110px",
+        },
+        {
+            name: "Nombre",
+            selector: row => row.nombre,
+            sortable: true,
+            center: true,
+            grow: 2,
+            minWidth: "150px",
+        },
+        {
+            name: "Tipo",
+            selector: row => obtenerNombreTipo(row.tipo_id),
+            sortable: true,
+            center: true,
+            grow: 2,
+            maxWidth: "80px",
+        },
+        {
+            name: "Ubicación",
+            selector: row => row.ubicacion ?? "-",
+            sortable: true,
+            center: true,
+            grow: 2,
+        },
+        {
+            name: "Dias para Recambio",
+            sortable: true,
+            center: true,
+            minWidth: "180px",
+            selector: row => row.dias_restantes ?? 999999,
+            cell: row => {
+            const contenido = (() => {
+                if (row.dias_restantes === null) return <span>Sin definir</span>;
+
+                if (row.dias_restantes < 0) {
+                    return (
+                        <div style={{ padding: "4px 12px", borderRadius: "16px", background: "#fef3c7", color: "#92400e", fontWeight: 700, whiteSpace: "nowrap" }}>
+                            Vencido
+                        </div>
+                    );
+                }
+
+                if (row.dias_restantes === 0) return <span>Recambio hoy</span>;
+                if (row.dias_restantes === 1) return <span>{row.dias_restantes} dia</span>;
+                return <span>{row.dias_restantes} días</span>;
+            })();
+
+            return <div data-tour="dias-recambio-elemento">{contenido}</div>;
+        },
+        },
+        {
+            name: "Estado",
+            selector: row => row.estado ? "Activo" : "Inactivo",
+            sortable: true,
+            center: true,
+            cell: row => (
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div
+                        data-tour="estado-elemento"
+                        style={{
+                            padding: "4px 12px",
+                            borderRadius: "16px",
+                            background: row.estado ? "#dcfce7" : "#fee2e2",
+                            color: row.estado ? "#166534" : "#991b1b",
+                            fontWeight: 700,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            whiteSpace: "nowrap",
+                        }}
+                    >
+                        {row.estado ? "Activo" : "Inactivo"}
+                    </div>
+                </div>
+            ),
+        },
+        {
+            name: "Acciones",
+            center: true,
+            minWidth: "180px",
+            cell: row => (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                    <span data-tour="btn-ver-elemento">
+                        <ActionButton
+                            variant="outline-info"
+                            size="sm"
+                            tooltip="Ver"
+                            icon="bi-eye"
+                            onClick={() => navigate(`/elementos-limpieza/${row.id}`, { state: { origen: "lista" }})}
+
+                    />
+                    </span>
+
+
+                    {currentUser?.administrar && (
+                        <>
+                            {row.estado && (
+                                <>  
+                                    <span data-tour="btn-editar-elemento">
+                                        <ActionButton
+                                            variant="outline-primary"
+                                            size="sm"
+                                            tooltip="Editar"
+                                            icon="bi-pencil"
+                                            onClick={() => navigate(`/elementos-limpieza/${row.id}/edit`)}
+                                        />
+                                    </span>
+                                    <span data-tour="btn-recambio-elemento">
+
+                                    <ActionButton
+                                        variant="outline-success"
+                                        size="sm"
+                                        tooltip="Recambio"
+                                        icon="bi-arrow-repeat"
+                                        onClick={() => navigate(`/recambios-elementos-limpieza/new/${row.id}`)}
+                                    />
+                                    </span>
+                                </>
+                            )}
+                            <span data-tour="btn-baja-elemento">
+
+                            <ActionButton
+                                variant={row.estado ? "outline-danger" : "outline-success"}
+                                size="sm"
+                                tooltip={row.estado ? "Dar de baja" : "Dar de alta"}
+                                icon={row.estado ? "bi-dash-circle" : "bi-check-circle"}
+                                onClick={() => setElementoToDelete(row)}
+                            />
+                            </span>
+                        </>
+                    )}
+                </div>
+            ),
+        },
+    ];
+
+    return (
+        <Container>
+            <Row className="p-2 align-items-center">
+                <Col>
+                    <PageHeader
+                        eyebrow="GESTIÓN"
+                        title="Elementos de Limpieza"
+                        subtitle="Revisá el Elementos de Limpieza creados hasta la fecha."
+                    />
+                </Col>
+
+                <Col xs="auto" className="align-self-center">
+                    {subHeaderComponentMemo}
+                </Col>
+
+
+                <Col xs="auto" className="align-self-center"data-tour="filtro-estado-elementos">
+                    <ListFilter
+                        value={estadoFiltro}
+                        options={ESTADO_FILTRO_LABELS}
+                        onChange={(value) =>
+                            setSearchParams(value === "todos" ? {} : { estado: value })
+                        }
+                    />
+                </Col>
+
+                {currentUser?.administrar && (
+                    <Col xs="auto" className="d-flex justify-content-end">
+                        <Button
+                            data-tour="btn-nuevo-elemento"
+                            variant="primary"
+                            size="sm"
+                            onClick={() => navigate("/elementos-limpieza/new")}
+                            style={{ whiteSpace: "nowrap" }}
+                        >
+                            + Nuevo Elemento
+                        </Button>
+                    </Col>
+                )} 
+            </Row>
+<           div data-tour="tabla-elementos">
+                <AppTable
+                    columns={columns}
+                    data={filteredElementos}
+                />
+            </div>
+
+            <EstadoElementoLimpiezaModal
+                elementoLimpieza={elementoToDelete}
+                onHide={() => setElementoToDelete(null)}
+                onDeleted={() => mutate("/elementos-limpieza")}
+            />
+        </Container>
+    );
+}

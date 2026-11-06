@@ -1,0 +1,291 @@
+import React, { useState, useMemo } from 'react';
+import { mutate } from 'swr';
+import { Alert, Button, Col, Container, Form, Row, Spinner } from 'react-bootstrap';
+import { useNavigate, useParams } from 'react-router-dom';
+import { type TableColumn } from 'react-data-table-component';
+import { ActionButton } from '../../../components/ActionButton';
+
+import { AppTable } from '../../../components/AppTable';
+import { PageHeader } from '../../../components/PageHeader';
+import { useApi } from '../../../hooks/useApi';
+import { useAuth } from '../../../hooks/useAuth';
+
+import type { VencimientoPersonal } from '../types';
+import type { Persona } from '../../Personal/types';
+import type { ConfiguracionSistema } from '../../ConfiguracionSistema/types';
+import { RenovarVencimientoModal } from '../components/RenovarVencimientoModal';
+import { HistoricoVencimientoModal } from '../components/HistoricoVencimientoModal';
+import { ListFilter } from "../../../components/ListFilter";
+import {clasificarPorDiasRestantes, FILTRO_VENCIMIENTOS_LABELS, type FiltroVencimientos} from "../../VencimientosConsolidados/utils/estado";
+
+const FILTRO_LABELS = {
+    todos: FILTRO_VENCIMIENTOS_LABELS.todos,
+    vencido: FILTRO_VENCIMIENTOS_LABELS.vencido,
+    proximo: FILTRO_VENCIMIENTOS_LABELS.proximo,
+    vigente: FILTRO_VENCIMIENTOS_LABELS.vigente,
+};
+
+export function ListPage() {
+    const navigate = useNavigate();    
+    const { currentUser } = useAuth();
+    const { personaId } = useParams();
+    const [search, setSearch] = useState('');
+    const [estadoFiltro, setEstadoFiltro] = useState<FiltroVencimientos>("todos");
+
+    const { data: persona } = useApi<Persona>(`/personal/${personaId}`);
+    const { data: vencimientos, error, isLoading } = useApi<VencimientoPersonal[]>(`/vencimiento-personal/persona/${personaId}`);
+
+    const { data: configuracion } = useApi<ConfiguracionSistema>(currentUser?.administrar ? '/configuracion-sistema/' : null);
+    const diasAntelacion = configuracion?.dias_antelacion_vencimiento ?? 15;
+
+    const [vencimientoToRenovar, setVencimientoToRenovar] = useState<VencimientoPersonal | null>(null);
+    const [vencimientoHistorico, setVencimientoHistorico] = useState<VencimientoPersonal | null>(null);
+    
+    // useMemo infiere que retorna un array de tipo Insumo[]
+    const filteredVencimientos = useMemo(() => {
+        if (!Array.isArray(vencimientos)) return [];
+
+        const busqueda = search.toLowerCase();
+
+        return vencimientos.filter((vencimiento) => {
+            const coincideBusqueda =
+                vencimiento.tipo_vencimiento.nombre
+                    .toLowerCase()
+                    .includes(busqueda);
+
+            const coincideEstado =
+                estadoFiltro === "todos" ||
+                clasificarPorDiasRestantes(
+                    vencimiento.dias_restantes,
+                    diasAntelacion
+                ) === estadoFiltro;
+
+            return coincideBusqueda && coincideEstado;
+        });
+    }, [search, estadoFiltro, vencimientos, diasAntelacion]);
+
+    const subHeaderComponentMemo = useMemo(() => {
+        return (
+            <Form.Control
+                data-tour="buscador-vencimientos-persona"
+                type="text"
+                placeholder="Buscar tipo vencimiento..."
+                className=" mr-sm-2"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
+            />
+        );
+    }, [search]);
+
+    const tituloPagina = persona ? `Vencimientos de ${persona.nombre} ${persona.apellido}` : "Listado de Vencimientos";
+
+    if (isLoading) return (
+        <>
+            <PageHeader title={tituloPagina} />
+            <Spinner animation="border" role="status">
+                <span className="visually-hidden">Cargando...</span>
+            </Spinner>
+        </>
+    )
+    if (!vencimientos || error) return (
+        <Container>
+            <PageHeader title={tituloPagina} />
+            <Row className="justify-content-center">
+                <Col md={6}>
+                    <Alert variant="danger">Ocurrió un error al cargar los Vencimientos</Alert>
+                </Col>
+            </Row>
+        </Container>
+    )
+
+    const columns: TableColumn<VencimientoPersonal>[] = [
+        {
+            name: 'Tipo de Vencimiento',
+            selector: row => row.tipo_vencimiento.nombre,
+            sortable: true,
+            center: true,
+            grow: 1.2,
+            cell: row => (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div
+                        style={{
+                            padding: '4px 12px',
+                            borderRadius: '16px',
+                            background: '#00d9ff5b',
+                            color: '#000294',
+                            fontWeight: 700,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            whiteSpace: 'nowrap',
+                        }}
+                    >
+                        {row.tipo_vencimiento.nombre}
+                    </div>
+                </div>
+            ),
+        },
+        {
+            name: 'Fecha Desde',
+            selector: row => row.fecha_desde.split("-").reverse().join("/"),
+            sortable: true,
+            center: true,
+            grow: 0.6,
+        },
+        {
+            name: 'Fecha Hasta',
+            selector: row => row.fecha_hasta.split("-").reverse().join("/"),
+            sortable: true,
+            center: true,
+            grow: 0.6,
+        },
+        {
+            name: 'Estado',
+            selector: row => row.dias_restantes,
+            sortable: true,
+            center: true,
+            minWidth: '190px',
+            grow: 1,
+            cell: row => {
+                const vencido = row.dias_restantes <= 0;
+                const proximo = row.dias_restantes > 0 && row.dias_restantes <= diasAntelacion;
+                const badge = vencido ? '#fee2e2' : proximo ? '#fef3c7' : '#dcfce7';
+                const color = vencido ? '#991b1b' : proximo ? '#92400e' : '#166534';
+                const texto = vencido
+                    ? `Vencido (${Math.abs(row.dias_restantes)} dias)`
+                    : proximo
+                    ? `Proximo a vencer (${row.dias_restantes} dias)`
+                    : `Vigente (${row.dias_restantes} dias)`;
+
+                return (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div
+                            data-tour="estado-vencimiento-persona"
+                            style={{
+                                padding: '4px 12px',
+                                borderRadius: '16px',
+                                background: badge,
+                                color: color,
+                                fontWeight: 700,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                whiteSpace: 'nowrap',
+                            }}
+                        >
+                            {texto}
+                        </div>
+                    </div>
+                );
+            },
+        },
+        {
+            name: "Acciones",
+            center: true,
+            minWidth: '280px',
+            cell: (row) => (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span data-tour="btn-ver-vencimiento-persona">
+                        <ActionButton
+                            variant="outline-info"
+                            size="sm"
+                            tooltip="Ver vencimiento"
+                            icon="bi bi-eye"
+                            onClick={() => navigate (`/vencimiento-personal/${row.id}`)}
+                        />
+                    </span>
+                    <span data-tour="btn-historico-vencimiento">
+                        <ActionButton
+                            variant="outline-warning"
+                            size="sm"
+                            tooltip="Historico"
+                            icon="bi bi-clock-history"
+                            onClick={() => setVencimientoHistorico(row)}
+                        />
+                    </span>
+                    {currentUser?.administrar && (
+                        <>
+                            <span data-tour="btn-editar-vencimiento-persona">
+                                <ActionButton
+                                    variant="outline-primary"
+                                    size="sm"
+                                    tooltip="Editar"
+                                    icon="bi bi-pencil"
+                                    disabled={!persona?.activo}
+                                    onClick={() => navigate(`/vencimiento-personal/${row.id}/edit`)}
+                                />
+                            </span>
+                            <span data-tour="btn-renovar-vencimiento">
+                                <ActionButton
+                                    variant="outline-success"
+                                    size="sm"
+                                    tooltip="Renovar"
+                                    icon="bi bi-arrow-repeat"
+                                    disabled={!persona?.activo}
+                                    onClick={() => setVencimientoToRenovar(row)}
+                                />
+                            </span>
+                        </>
+                    )}
+                </div>
+            )
+        },
+    ];
+
+    return (
+        <Container>
+            <Row className="p-2 align-items-center" >
+                <Col>
+                    <Button 
+                        data-tour="btn-volver-personal"
+                        variant="outline-secondary" 
+                        size="sm" 
+                        onClick={() => navigate("/personal")}
+                    >
+                        <i className="bi bi-arrow-left me-1"></i>Volver
+                    </Button>               
+                </Col>
+                <Col>
+                    <div style={{ fontSize: "0.85rem", whiteSpace: "nowrap" }}>
+                        <PageHeader title={tituloPagina} />
+                    </div>
+                </Col>
+                <Col xs="auto" className="align-self-center">
+                    {subHeaderComponentMemo}
+                </Col>
+                <Col xs="auto" className="align-self-center">
+                    <ListFilter
+                        value={estadoFiltro}
+                        options={FILTRO_LABELS}
+                        onChange={(value) => setEstadoFiltro(value as FiltroVencimientos)}
+                    />
+                </Col>
+                {currentUser?.administrar && (
+                    <Col xs="auto" className="d-flex justify-content-end">
+                        <Button
+                            data-tour="btn-nuevo-vencimiento-persona"
+                            variant="primary"
+                            size='sm'
+                            disabled={!persona?.activo}
+                            onClick={() => navigate(`/personal/${personaId}/vencimientos/new`)}
+                            style={{ whiteSpace: "nowrap" }}
+                        >
+                            + Nuevo Vencimiento
+                        </Button>
+                    </Col>
+                )}
+            </Row>
+            <div data-tour="tabla-vencimientos-persona">
+                <AppTable columns={columns} data={filteredVencimientos} />
+            </div>
+            <RenovarVencimientoModal
+                vencimiento={vencimientoToRenovar}
+                onHide={() => setVencimientoToRenovar(null)}
+                onRenovado={() => mutate(`/vencimiento-personal/persona/${personaId}`)}
+            />
+            <HistoricoVencimientoModal
+                vencimiento={vencimientoHistorico}
+                onHide={() => setVencimientoHistorico(null)}
+            />
+        </Container>
+    );
+}
