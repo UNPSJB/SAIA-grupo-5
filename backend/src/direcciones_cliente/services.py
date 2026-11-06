@@ -1,10 +1,11 @@
 from typing import List
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.orm import Session
 from src.direcciones_cliente.models import DireccionCliente
 from src.direcciones_cliente import schemas, exceptions
 from src.clientes.models import Cliente
 from src.clientes.exceptions import ClienteNoEncontrado
+from src.direcciones_cliente.schemas import DireccionClienteDelete
 
 
 def leer_direccion_cliente(db: Session, direccion_id: int) -> schemas.DireccionCliente:
@@ -48,9 +49,9 @@ def modificar_direccion_cliente(db: Session, direccion_id: int, datos: schemas.D
     return direccion
 
 
-def cambiar_estado_direccion_cliente(db: Session, direccion_id: int) -> schemas.DireccionCliente:
+def eliminar_direccion_cliente(db: Session, direccion_id: int) -> DireccionClienteDelete:
     direccion = leer_direccion_cliente(db, direccion_id)
-    direccion.activo = not direccion.activo
+
+    db.execute(delete(DireccionCliente).where(DireccionCliente.id == direccion_id))
     db.commit()
-    db.refresh(direccion)
     return direccion

@@ -31,6 +31,6 @@ def update_direccion_cliente(direccion_id: int, datos: schemas.DireccionClienteU
     return services.modificar_direccion_cliente(db, direccion_id, datos)
 
 
-@router.patch("/{direccion_id}/estado",response_model=schemas.DireccionCliente)
-def cambiar_estado_direccion_cliente(direccion_id: int, db: Session = Depends(get_db)):
-    return services.cambiar_estado_direccion_cliente(db, direccion_id)
+@router.delete("/{direccion_id}", response_model = schemas.DireccionClienteDelete)
+def eliminar_direccion_cliente(direccion_id: int, db: Session = Depends(get_db)):
+    return services.eliminar_direccion_cliente(db, direccion_id)

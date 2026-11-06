@@ -238,7 +238,10 @@ def multiples_clientes(db_session):
 def unica_direccion_cliente(db_session, unico_cliente):
     direccion = DireccionCliente(
         cliente_id=unico_cliente.id,
-        calle_altura="Av. Fontana 123",
+        calle_altura="Avenida Fontana 123",
+        provincia="Chubut",
+        localidad="Trelew",
+        codigo_postal="9100",
         descripcion="Deposito Central",
         activo=True,
     )
@@ -251,9 +254,29 @@ def unica_direccion_cliente(db_session, unico_cliente):
 @pytest.fixture(scope="function")
 def multiples_direcciones_cliente(db_session, unico_cliente):
     direcciones = [
-        DireccionCliente(cliente_id=unico_cliente.id, calle_altura="Ruta 3 Km 1400", descripcion="Planta Industrial", activo=True),
-        DireccionCliente(cliente_id=unico_cliente.id, calle_altura="Mitre 450", descripcion="Sucursal Centro", activo=True),
-        DireccionCliente(cliente_id=unico_cliente.id, calle_altura="Belgrano 890", descripcion="Oficina Administrativa", activo=False),
+        DireccionCliente(cliente_id=unico_cliente.id,
+                        calle_altura="Ruta 3 Km 1400", 
+                        provincia="Chubut",
+                        localidad="Trelew",
+                        codigo_postal="9100",
+                        descripcion="Planta Industrial", 
+                        activo=True),
+
+        DireccionCliente(cliente_id=unico_cliente.id, 
+                        calle_altura="Mitre 450", 
+                        provincia="Chubut",
+                        localidad="Rawson",
+                        codigo_postal="9103",
+                        descripcion="Sucursal Centro", 
+                        activo=True),
+
+        DireccionCliente(cliente_id=unico_cliente.id, 
+                        calle_altura="Belgrano 890", 
+                        provincia="Chubut",
+                        localidad="Puerto Madryn",
+                        codigo_postal="9120",
+                        descripcion="Oficina Administrativa", 
+                        activo=False),
     ]
     db_session.add_all(direcciones)
     db_session.commit()
