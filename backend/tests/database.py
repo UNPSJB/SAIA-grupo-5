@@ -17,6 +17,8 @@ from src.producto.models import Producto
 from src.lote_produccion.models import LoteProduccion
 from src.clientes.models import Cliente
 from src.direcciones_cliente.models import DireccionCliente
+from src.envios_lote import services as envios_services
+from src.envios_lote import schemas as envios_schemas
 
 from src.main import app
 engine = create_engine(
@@ -130,7 +132,9 @@ def unico_lote_produccion(db_session, unico_producto):
         producto_id=unico_producto.id, 
         fecha_produccion=date(2026,10,1),
         fecha_vencimiento=date(2028, 10, 1), 
-        cantidad_producida=100)
+        cantidad_producida=100,
+        cantidad_disponible=100,
+        activo=True)
 
     db_session.add(lote)
     db_session.commit()
@@ -143,17 +147,20 @@ def multiples_lotes_produccion(db_session, unico_producto):
         LoteProduccion(producto_id=unico_producto.id, 
                         fecha_produccion=date(2026,11,12),
                         fecha_vencimiento=date(2028, 10, 1), 
-                        cantidad_producida=100),
+                        cantidad_producida=100,
+                        cantidad_disponible=100),
 
         LoteProduccion(producto_id=unico_producto.id, 
                         fecha_produccion=date(2026,12,14),
                         fecha_vencimiento=date(2028, 10, 1), 
-                        cantidad_producida=100),
+                        cantidad_producida=100,
+                        cantidad_disponible=100),
 
         LoteProduccion(producto_id=unico_producto.id, 
                         fecha_produccion=date(2026,9,13),
                         fecha_vencimiento=date(2028, 10, 1), 
-                        cantidad_producida=100)
+                        cantidad_producida=100,
+                        cantidad_disponible=100)
     ]
 
     db_session.add_all(lotes)
@@ -281,3 +288,71 @@ def multiples_direcciones_cliente(db_session, unico_cliente):
     db_session.add_all(direcciones)
     db_session.commit()
     return direcciones
+
+
+@pytest.fixture(scope="function")
+def unico_envio(db_session, unico_lote_produccion, unico_cliente, unica_direccion_cliente):
+    from src.lote_produccion import services as lote_services
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id)
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id)
+
+    datos = envios_schemas.EnvioLoteCreate(
+        lote_id=unico_lote_produccion.id,
+        cliente_id=unico_cliente.id,
+        direccion_cliente_id=unica_direccion_cliente.id,
+        cantidad=30,
+        numero_remito="R-0001-00000001",
+        transportista="Transporte Sur",
+        fecha_envio=date(2026, 10, 5),
+    )
+    return envios_services.crear_envio(db=db_session, datos=datos)
+
+@pytest.fixture(scope="function")
+def multiples_envios(db_session, unico_lote_produccion, unico_cliente, unica_direccion_cliente):
+    from src.lote_produccion import services as lote_services
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id)
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id)
+
+    envio_1 = envios_schemas.EnvioLoteCreate(
+        lote_id=unico_lote_produccion.id,
+        cliente_id=unico_cliente.id,
+        direccion_cliente_id=unica_direccion_cliente.id,
+        cantidad=30,
+        numero_remito="R-0001-00000001",
+        transportista="Transporte Sur",
+        fecha_envio=date(2026, 10, 5),
+    )
+    envio_2 = envios_schemas.EnvioLoteCreate(
+        lote_id=unico_lote_produccion.id,
+        cliente_id=unico_cliente.id,
+        direccion_cliente_id=unica_direccion_cliente.id,
+        cantidad=40,
+        numero_remito="R-0001-00000002",
+        transportista="Expreso Trelew",
+        fecha_envio=date(2026, 10, 8),
+    )
+
+    db_envio_1 = envios_services.crear_envio(db=db_session, datos=envio_1)
+    db_envio_2 = envios_services.crear_envio(db=db_session, datos=envio_2)
+
+    return [db_envio_1, db_envio_2]
+
+@pytest.fixture(scope="function")
+def auth_headers_sin_operar(client, db_session):
+    usuario_sin_operar = Persona(
+        nombre="Usuario",
+        apellido="Prueba",
+        dni="30111999",
+        mail="sin.operar@test.com",
+        username="sin_operar",
+        hashed_password=get_password_hash("test123"),
+        operar=False,
+        administrar=False,
+        activo=True,
+    )
+    db_session.add(usuario_sin_operar)
+    db_session.commit()
+
+    response = client.post("/auth/token", data={"username": "sin_operar", "password": "test123"})
+    token = response.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}

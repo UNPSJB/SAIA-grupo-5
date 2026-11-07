@@ -27,6 +27,7 @@ class LoteProduccion(LoteProduccionBase):
     estado: EstadoLote
     activo: bool
     producto: Producto
+    cantidad_disponible: int
 
     model_config = ConfigDict(from_attributes=True)
 

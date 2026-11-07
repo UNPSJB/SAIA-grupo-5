@@ -9,11 +9,13 @@ import enum
 if TYPE_CHECKING:
     from src.producto.models import Producto
     from src.insumos.models import Insumo
+    from src.envios_lote.models import EnvioLote
 
 class EstadoLote(str, enum.Enum):
     EN_PRODUCCION = "En produccion"
     EMPAQUETANDO = "Empaquetando"
     TERMINADO = "Terminado"
+    PARCIALMENTE_DESPACHADO = "Parcialmente despachado"
     ENVIADO = "Enviado"
 
 class LoteProduccion(ModeloBase):
@@ -30,9 +32,13 @@ class LoteProduccion(ModeloBase):
 
     estado: Mapped[str] = mapped_column(String, default=EstadoLote.EN_PRODUCCION.value, nullable=False)
 
+    cantidad_disponible: Mapped[int] = mapped_column(Integer, nullable=False)
+
     activo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
     insumos_utilizados: Mapped[list["InsumoUtilizado"]] = relationship(back_populates="lote_produccion")
+
+    envios: Mapped[list["EnvioLote"]] = relationship(back_populates="lote")
 
 
 class InsumoUtilizado(ModeloBase):
