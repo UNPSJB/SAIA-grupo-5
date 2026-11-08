@@ -33,6 +33,8 @@ from src.lote_produccion.models import LoteProduccion, InsumoUtilizado
 from src.receta.models import Receta
 from src.etapa_receta.models import EtapaReceta
 from src.paso_etapa.models import PasoEtapa
+from src.proveedor.models import Proveedor
+from src.lote_proveedor.models import LoteProveedor
 
 from src.config import settings
 from src.settings import ROOT_PATH
@@ -74,6 +76,8 @@ from src.receta.router import router as receta_router
 from src.etapa_receta.router import router as etapa_receta_router
 from src.paso_etapa.router import router as paso_etapa_router
 from src.lote_produccion.router import router as lote_produccion_router
+from src.proveedor.router import router as proveedor_router
+from src.lote_proveedor.router import router as lote_proveedor_router
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -132,3 +136,5 @@ app.include_router(lote_produccion_router)
 app.include_router(receta_router)
 app.include_router(etapa_receta_router)
 app.include_router(paso_etapa_router)
+app.include_router(proveedor_router)
+app.include_router(lote_proveedor_router)
