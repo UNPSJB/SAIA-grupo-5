@@ -1,7 +1,7 @@
 import type { Producto } from "../Productos/types";
 import type { Insumo } from "../Insumos/types";
 
-export type EstadoLote = "En produccion" | "Empaquetando" | "Terminado" | "Enviado";
+export type EstadoLote = "En produccion" | "Empaquetando" | "Terminado" | "Parcialmente despachado" | "Enviado";
 
 export type InsumoUtilizado = {
     id: number;
@@ -23,6 +23,7 @@ export type LoteProduccion = {
     fecha_produccion: string;
     fecha_vencimiento: string;
     cantidad_producida: number;
+    cantidad_disponible: number;
     estado: EstadoLote;
     activo: boolean;
     insumos_utilizados?: InsumoUtilizado[];
@@ -33,4 +34,18 @@ export type NewLoteProduccion = {
     fecha_produccion: string;
     fecha_vencimiento: string;
     cantidad_producida: number;
+}
+
+export interface HistorialEstadoLote {
+    id: number;
+    lote_id: number;
+    estado: string;
+    fecha_hora: string;
+    observacion?: string | null;
+    usuario: {
+        id: number;
+        nombre: string;
+        apellido: string;
+        username: string;
+    };
 }
