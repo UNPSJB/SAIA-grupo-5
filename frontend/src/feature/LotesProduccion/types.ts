@@ -35,3 +35,17 @@ export type NewLoteProduccion = {
     fecha_vencimiento: string;
     cantidad_producida: number;
 }
+
+export interface HistorialEstadoLote {
+    id: number;
+    lote_id: number;
+    estado: string;
+    fecha_hora: string;
+    observacion?: string | null;
+    usuario: {
+        id: number;
+        nombre: string;
+        apellido: string;
+        username: string;
+    };
+}

@@ -3,8 +3,8 @@ from src.lote_produccion import services as lote_services
 
 
 def test_endpoint_crear_envio(client, auth_headers, db_session, unico_lote_produccion, unico_cliente, unica_direccion_cliente):
-    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id)
-    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id)
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id, usuario_id=1)
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id, usuario_id=1)
 
     response = client.post(
         "/envios-lote/",
@@ -30,8 +30,8 @@ def test_endpoint_crear_envio(client, auth_headers, db_session, unico_lote_produ
 
 
 def test_endpoint_crear_envio_sin_permiso_operar(client, auth_headers_sin_operar, db_session, unico_lote_produccion, unico_cliente, unica_direccion_cliente):
-    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id)
-    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id)
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id, usuario_id=1)
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id, usuario_id=1)
 
     response = client.post(
         "/envios-lote/",
@@ -49,9 +49,9 @@ def test_endpoint_crear_envio_sin_permiso_operar(client, auth_headers_sin_operar
     assert response.status_code == 403
 
 
-def test_endpoint_crear_envio_stock_insuficiente_error_400(client, auth_headers, db_session, unico_lote_produccion, unico_cliente, unica_direccion_cliente):
-    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id)
-    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id)
+def test_endpoint_crear_envio_stock_insuficiente(client, auth_headers, db_session, unico_lote_produccion, unico_cliente, unica_direccion_cliente):
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id, usuario_id=1)
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id, usuario_id=1)
 
     response = client.post(
         "/envios-lote/",
@@ -69,7 +69,7 @@ def test_endpoint_crear_envio_stock_insuficiente_error_400(client, auth_headers,
     assert response.status_code == 400
 
 
-def test_endpoint_crear_envio_schema_invalido_error_422(client, auth_headers, unico_lote_produccion):
+def test_endpoint_crear_envio_schema_invalido(client, auth_headers, unico_lote_produccion):
     response = client.post(
         "/envios-lote/",
         json={
@@ -99,7 +99,7 @@ def test_endpoint_registrar_recepcion(client, auth_headers, unico_envio):
     assert data["observaciones"] == "Recepción conforme"
 
 
-def test_endpoint_registrar_recepcion_fecha_invalida_error_400(client, auth_headers, unico_envio):
+def test_endpoint_registrar_recepcion_fecha_invalida(client, auth_headers, unico_envio):
     response = client.patch(
         f"/envios-lote/{unico_envio.id}/recepcion",
         json={

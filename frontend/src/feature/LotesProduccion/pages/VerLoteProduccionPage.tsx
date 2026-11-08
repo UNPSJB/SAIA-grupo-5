@@ -14,6 +14,7 @@ import { CrearEnvioModal } from "../../EnviosLote/components/CrearEnvioLoteModal
 import { RecepcionEnvioModal } from "../../EnviosLote/components/RecepcionEnvioLoteModal";
 import { VerEnvioLoteModal } from "../../EnviosLote/components/VerEnvioLoteModal";
 import { ActionButton } from "../../../components/ActionButton";
+import { LineaTemporalEstadosLoteProduccion } from "../components/LineaTemporalEstadosLoteProduccion";
 
 const ESTILOS_ESTADO: Record<EstadoLote, { bg: string; color: string; icon: string }> = {
     "En produccion": { bg: "#fef9c3", color: "#854d0e", icon: "bi-gear-wide-connected" },
@@ -193,6 +194,10 @@ export function VerLoteProduccionPage() {
                                     </tbody>
                                 </Table>
                             )}
+
+                            <hr className="my-4" />
+
+                            <LineaTemporalEstadosLoteProduccion lote={lote} />
 
                             <hr className="my-4" />
 

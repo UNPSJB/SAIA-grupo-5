@@ -293,8 +293,8 @@ def multiples_direcciones_cliente(db_session, unico_cliente):
 @pytest.fixture(scope="function")
 def unico_envio(db_session, unico_lote_produccion, unico_cliente, unica_direccion_cliente):
     from src.lote_produccion import services as lote_services
-    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id)
-    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id)
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id, usuario_id=1)
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id, usuario_id=1)
 
     datos = envios_schemas.EnvioLoteCreate(
         lote_id=unico_lote_produccion.id,
@@ -310,8 +310,8 @@ def unico_envio(db_session, unico_lote_produccion, unico_cliente, unica_direccio
 @pytest.fixture(scope="function")
 def multiples_envios(db_session, unico_lote_produccion, unico_cliente, unica_direccion_cliente):
     from src.lote_produccion import services as lote_services
-    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id)
-    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id)
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id, usuario_id=1)
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id, usuario_id=1)
 
     envio_1 = envios_schemas.EnvioLoteCreate(
         lote_id=unico_lote_produccion.id,

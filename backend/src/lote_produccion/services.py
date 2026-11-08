@@ -8,6 +8,7 @@ from src.lote_produccion import schemas, exceptions
 from src.producto.models import Producto
 from src.producto import services as producto_services
 from src.insumos.models import Insumo
+from src.lote_produccion.models import HistorialEstadoLote
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +18,7 @@ SIGUIENTE_ESTADO ={
 }
 
 
-def crear_lote_produccion(db: Session, lote: schemas.LoteProduccionCreate) -> schemas.LoteProduccion:
+def crear_lote_produccion(db: Session, lote: schemas.LoteProduccionCreate, usuario_id: int) -> schemas.LoteProduccion:
     db_producto = producto_services.leer_producto(db, lote.producto_id)
     if not db_producto.activo:
         raise exceptions.ProductoDadoDeBaja()
@@ -30,6 +31,16 @@ def crear_lote_produccion(db: Session, lote: schemas.LoteProduccionCreate) -> sc
     db.add(_lote)
     db.commit()
     db.refresh(_lote)
+
+    primer_hito = HistorialEstadoLote(
+        lote_id=_lote.id,
+        estado=_lote.estado,
+        usuario_id=usuario_id,
+        observacion="Creacion del lote de producción e inicio de la produccion.")
+    
+    db.add(primer_hito)
+    db.commit()
+
     return leer_lote_produccion(db, _lote.id)
 
 
@@ -55,7 +66,7 @@ def listar_lotes_por_producto(db: Session, producto_id: int) -> List[schemas.Lot
                     .options(joinedload(LoteProduccion.producto).joinedload(Producto.unidad_medida))).all()
 
 
-def cambiar_estado_lote_produccion(db: Session, lote_id: int) -> schemas.LoteProduccion:
+def cambiar_estado_lote_produccion(db: Session, lote_id: int, usuario_id: int, observacion: str | None = None) -> schemas.LoteProduccion:
     db_lote = leer_lote_produccion(db, lote_id)
 
     if not db_lote.producto.activo:
@@ -64,7 +75,16 @@ def cambiar_estado_lote_produccion(db: Session, lote_id: int) -> schemas.LotePro
     if db_lote.estado not in SIGUIENTE_ESTADO:
         raise exceptions.LoteYaEnviado()
 
-    db_lote.estado = SIGUIENTE_ESTADO[db_lote.estado]
+    nuevo_estado = SIGUIENTE_ESTADO[db_lote.estado]
+    db_lote.estado = nuevo_estado
+
+    hito = HistorialEstadoLote(
+        lote_id=db_lote.id,
+        estado=nuevo_estado,
+        usuario_id=usuario_id,
+        observacion=observacion.strip() if observacion else None)
+
+    db.add(hito)
     db.commit()
     db.refresh(db_lote)
     return db_lote
@@ -241,3 +261,6 @@ def actualizar_insumos_lote(db: Session, lote_id: int, datos: schemas.InsumosUti
 
     return listar_insumos_lote(db, lote_id)
 
+def listar_historial_lote(db: Session, lote_id: int) -> list[HistorialEstadoLote]:
+    return db.scalars(select(HistorialEstadoLote).where(HistorialEstadoLote.lote_id == lote_id).options(joinedload(HistorialEstadoLote.usuario))
+        .order_by(HistorialEstadoLote.fecha_hora.asc())).all()

@@ -18,7 +18,6 @@ interface RecepcionEnvioFormData {
 }
 
 export function RecepcionEnvioModal({ envio, onHide, onRecepcionado }: RecepcionEnvioModalProps) {
-    const hoy = new Date().toISOString().split("T")[0];
     const [cargando, setCargando] = useState(false);
 
     const {register, handleSubmit, watch, formState: { errors }, reset} = useForm<RecepcionEnvioFormData>({
