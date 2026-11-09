@@ -8,6 +8,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
 import type { LoteProduccion, LoteProduccionHistorial } from '../types';
+import { SelectorConBusqueda } from '../../../components/SelectorConBusqueda';
+import type { Producto } from '../../Productos/types';
 
 function formatDate(value: string) {
     return new Intl.DateTimeFormat('es-AR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
@@ -20,7 +22,7 @@ export function LotesHistorialPage() {
     const [fechaDesde, setFechaDesde] = useState('');
     const [fechaHasta, setFechaHasta] = useState('');
     const [productoId, setProductoId] = useState('');
-    const { data: productos } = useApi('/productos/');
+    const { data: productos } = useApi<Producto[]>('/productos/');
 
     const { pathname } = useLocation();
 
@@ -157,21 +159,22 @@ export function LotesHistorialPage() {
                         onChange={(e) => setFechaHasta(e.target.value)}
                     />
                 </Col>
-                <Col xs="auto">
+                <Col xs="auto" style={{ minWidth: '240px' }}>
                     <Form.Label className="mb-1 small fw-semibold"> Producto </Form.Label>
-                    <Form.Select
+                    <SelectorConBusqueda
                         value={productoId}
-                        onChange={(e) => setProductoId(e.target.value)}
-                    >
-                        <option value="">Todos los productos</option>
-                        {(productos ?? [])
-                            .filter((producto: { activo: boolean }) => producto.activo)
-                            .map((producto: { id: number; nombre: string }) => (
-                                <option key={producto.id} value={producto.id}>
-                                    {producto.nombre}
-                                </option>
-                        ))}
-                    </Form.Select>
+                        onChange={setProductoId}
+                        placeholder="Todos los productos"
+                        options={[
+                            { value: '', label: 'Todos los productos' },
+                            ...(productos ?? [])
+                                .filter((producto) => producto.activo)
+                                .map((producto) => ({
+                                    value: String(producto.id),
+                                    label: producto.nombre
+                                }))
+                        ]}
+                    />
                 </Col>
             </Row>
 
@@ -228,9 +231,6 @@ export function LotesHistorialPage() {
                 <Card className="lote-list-card">
                     <Card.Body>
                         <div className="lote-toolbar">
-                            <div>
-                                <strong>{lotesFiltrados.length}</strong> {lotesFiltrados.length === 1 ? 'lote' : 'lotes'}
-                            </div>
                             <div className="d-flex justify-content-end flex-grow-1 mb-3">
                                 <InputGroup className="lote-search" style={{ maxWidth: '280px' }}>
                                     <InputGroup.Text><i className="bi bi-search" aria-hidden="true" /></InputGroup.Text>

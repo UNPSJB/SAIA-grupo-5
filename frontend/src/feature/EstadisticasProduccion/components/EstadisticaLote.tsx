@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { Alert, Card, Col, Form, Row, Spinner } from "react-bootstrap";
 import {Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
 import { SelectorConBusqueda} from "../../../components/SelectorConBusqueda";
+
 import { useApi } from "../../../hooks/useApi";
 import { toDateKey } from "../../../libs/date";
 import { SEAFOAM } from "../../Home/constants";

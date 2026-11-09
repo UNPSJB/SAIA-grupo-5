@@ -39,3 +39,6 @@ from src.lote_produccion.models import LoteProduccion, InsumoUtilizado
 from src.receta.models import Receta
 from src.etapa_receta.models import EtapaReceta
 from src.paso_etapa.models import PasoEtapa
+from src.clientes.models import Cliente
+from src.direcciones_cliente.models import DireccionCliente
+from src.envios_lote.models import EnvioLote
