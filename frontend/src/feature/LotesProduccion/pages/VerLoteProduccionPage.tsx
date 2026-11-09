@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { mutate } from "swr";
-import { Container, Alert, Row, Col, Card, Button, Table } from "react-bootstrap";
+import { Container, Alert, Row, Col, Card, Button, Table, Badge } from "react-bootstrap";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
@@ -9,12 +9,24 @@ import { useAuth } from "../../../hooks/useAuth";
 import type { LoteProduccion, EstadoLote } from "../types";
 import { PageLoading } from "../../../components/PageLoading";
 import { AsociarInsumosModal } from "../components/AsociarInsumosModal";
+import type { EnvioLote } from "../../EnviosLote/types";
+import { CrearEnvioModal } from "../../EnviosLote/components/CrearEnvioLoteModal";
+import { RecepcionEnvioModal } from "../../EnviosLote/components/RecepcionEnvioLoteModal";
+import { VerEnvioLoteModal } from "../../EnviosLote/components/VerEnvioLoteModal";
+import { ActionButton } from "../../../components/ActionButton";
 
 const ESTILOS_ESTADO: Record<EstadoLote, { bg: string; color: string; icon: string }> = {
     "En produccion": { bg: "#fef9c3", color: "#854d0e", icon: "bi-gear-wide-connected" },
     "Empaquetando": { bg: "#dbeafe", color: "#1e40af", icon: "bi-box-seam" },
     "Terminado": { bg: "#dcfce7", color: "#166534", icon: "bi-check2-circle" },
+    "Parcialmente despachado": { bg: "#e0e7ff", color: "#3730a3", icon: "bi-truck" },
     "Enviado": { bg: "#f3f4f6", color: "#374151", icon: "bi-truck" },
+};
+
+const BADGES_ENVIO: Record<string, string> = {
+    "En camino": "warning",
+    "Entregado": "success",
+    "Rechazado": "danger",
 };
 
 export function VerLoteProduccionPage() {
@@ -22,7 +34,11 @@ export function VerLoteProduccionPage() {
     const { id } = useParams();
     const { currentUser } = useAuth();
     const [mostrarAsociarInsumos, setMostrarAsociarInsumos] = useState(false);
+    const [mostrarCrearEnvio, setMostrarCrearEnvio] = useState(false);
+    const [envioParaRecepcion, setEnvioParaRecepcion] = useState<EnvioLote | null>(null);
+    const [envioParaDetalle, setEnvioParaDetalle] = useState<EnvioLote | null>(null);
 
+    const { data: envios } = useApi<EnvioLote[]>(id ? `/envios-lote/lote/${id}` : null);
     const { data: lote, isLoading, error } = useApi<LoteProduccion>(`/lotes-produccion/${id}`);
 
     const location = useLocation();
@@ -54,11 +70,18 @@ export function VerLoteProduccionPage() {
     const fechaVencFormateada = lote.fecha_vencimiento.split("-").reverse().join("/");
     const insumosUtilizados = lote.insumos_utilizados ?? [];
     const puedeAsociar = currentUser?.operar && lote.activo && lote.estado === "En produccion";
+    const stockActual = lote.cantidad_disponible ?? lote.cantidad_producida;
+    const puedeDespachar = currentUser?.operar && (lote.estado === "Terminado" || lote.estado === "Parcialmente despachado") && stockActual > 0;
 
     const handleAsociado = () => {
         mutate(`/lotes-produccion/${id}`);
         setMostrarAsociarInsumos(false);
     };
+
+    const handleEnvioActualizado = () => {
+    mutate(`/lotes-produccion/${id}`);
+    mutate(`/envios-lote/lote/${id}`);
+};
 
     return (
         <Container>
@@ -92,8 +115,10 @@ export function VerLoteProduccionPage() {
                             )}
 
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={5} className="fw-bold text-secondary">Cantidad Producida</Col>
-                                <Col sm={7} className="fs-6">{lote.cantidad_producida} unidades</Col>
+                                <Col sm={5} className="fw-bold text-secondary">Stock / Cantidad Producida</Col>
+                                <Col sm={7} className="fs-6">
+                                    <strong className="text-success">{lote.cantidad_disponible ?? lote.cantidad_producida}</strong> disponibles / {lote.cantidad_producida} producidas
+                                </Col>
                             </Row>
 
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
@@ -168,6 +193,69 @@ export function VerLoteProduccionPage() {
                                     </tbody>
                                 </Table>
                             )}
+
+                            <hr className="my-4" />
+
+                                <div className="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 className="mb-0">Despachos y Envios del Lote</h5>
+                                    {puedeDespachar && (
+                                        <Button variant="outline-success" size="sm" onClick={() => setMostrarCrearEnvio(true)}>
+                                            <i className="bi bi-truck me-1"></i>Nuevo Envío
+                                        </Button>
+                                    )}
+                                </div>
+
+                                {(!envios || envios.length === 0) ? (
+                                    <p className="text-muted mb-0">No se registran envios para este lote de producción.</p>
+                                ) : (
+                                    <Table responsive bordered hover size="sm" className="mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Remito</th>
+                                                <th>Cliente</th>
+                                                <th>Cantidad</th>
+                                                <th>Fecha Envio</th>
+                                                <th>Estado</th>
+                                                <th className="text-center">Accion</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {envios.map((env) => (
+                                                <tr key={env.id}>
+                                                    <td><strong>{env.numero_remito}</strong></td>
+                                                    <td>{env.cliente.razon_social}</td>
+                                                    <td>{env.cantidad}</td>
+                                                    <td>{env.fecha_envio.split("-").reverse().join("/")}</td>
+                                                    <td>
+                                                        <Badge bg={BADGES_ENVIO[env.estado] || "secondary"}>
+                                                            {env.estado}
+                                                        </Badge>
+                                                    </td>
+                                                    <td className="text-center">
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
+                                                            <ActionButton
+                                                                variant="outline-info"
+                                                                size="sm"
+                                                                tooltip="Ver detalle"
+                                                                icon="bi bi-eye"
+                                                                onClick={() => setEnvioParaDetalle(env)}
+                                                            />
+                                                            {currentUser?.operar && env.estado === "En camino" && (
+                                                                <ActionButton
+                                                                    variant="outline-success"
+                                                                    size="sm"
+                                                                    tooltip="Registrar recepcion"
+                                                                    icon="bi bi-check2-circle"
+                                                                    onClick={() => setEnvioParaRecepcion(env)}
+                                                                />
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </Table>
+                                )}
                         </Card.Body>
 
                         <Card.Footer className="bg-light border-top p-3 d-flex justify-content-start gap-2">
@@ -181,7 +269,7 @@ export function VerLoteProduccionPage() {
                             {currentUser?.operar && (
                                 <Button
                                     variant="primary"
-                                    disabled={lote.estado === "Enviado"}
+                                    disabled={lote.estado === "Enviado" || lote.estado === "Parcialmente despachado"}
                                     onClick={() => navigate(`/lotes-produccion/${lote.id}/edit`)}
                                 >
                                     <i className="bi bi-pencil me-1"></i>Editar Lote
@@ -200,6 +288,22 @@ export function VerLoteProduccionPage() {
                     onAsociado={handleAsociado}
                 />
             )}
+            <CrearEnvioModal
+                lote={mostrarCrearEnvio ? lote : null}
+                onHide={() => setMostrarCrearEnvio(false)}
+                onEnviado={handleEnvioActualizado}
+            />
+            {envioParaRecepcion && (
+                <RecepcionEnvioModal
+                    envio={envioParaRecepcion}
+                    onHide={() => setEnvioParaRecepcion(null)}
+                    onRecepcionado={handleEnvioActualizado}
+                />
+            )}
+            <VerEnvioLoteModal
+                envio={envioParaDetalle}
+                onHide={() => setEnvioParaDetalle(null)}
+            />
         </Container>
     );
 }

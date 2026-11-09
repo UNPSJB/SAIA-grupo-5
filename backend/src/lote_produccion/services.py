@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 SIGUIENTE_ESTADO ={
     EstadoLote.EN_PRODUCCION.value: EstadoLote.EMPAQUETANDO.value,
     EstadoLote.EMPAQUETANDO.value: EstadoLote.TERMINADO.value,
-    EstadoLote.TERMINADO.value: EstadoLote.ENVIADO.value
 }
 
 
@@ -23,7 +22,11 @@ def crear_lote_produccion(db: Session, lote: schemas.LoteProduccionCreate) -> sc
     if not db_producto.activo:
         raise exceptions.ProductoDadoDeBaja()
 
-    _lote = LoteProduccion(**lote.model_dump())
+    datos = lote.model_dump()
+    if "cantidad_disponible" not in datos or datos["cantidad_disponible"] is None:
+        datos["cantidad_disponible"] = lote.cantidad_producida
+
+    _lote = LoteProduccion(**datos)
     db.add(_lote)
     db.commit()
     db.refresh(_lote)
@@ -55,7 +58,10 @@ def listar_lotes_por_producto(db: Session, producto_id: int) -> List[schemas.Lot
 def cambiar_estado_lote_produccion(db: Session, lote_id: int) -> schemas.LoteProduccion:
     db_lote = leer_lote_produccion(db, lote_id)
 
-    if db_lote.estado == EstadoLote.ENVIADO.value:
+    if not db_lote.producto.activo:
+        raise exceptions.ProductoDadoDeBaja()
+
+    if db_lote.estado not in SIGUIENTE_ESTADO:
         raise exceptions.LoteYaEnviado()
 
     db_lote.estado = SIGUIENTE_ESTADO[db_lote.estado]
@@ -66,7 +72,9 @@ def cambiar_estado_lote_produccion(db: Session, lote_id: int) -> schemas.LotePro
 
 def modificar_lote_produccion(db: Session, lote_id: int, lote: schemas.LoteProduccionUpdate) -> schemas.LoteProduccion:
     db_lote = leer_lote_produccion(db, lote_id)
-    if not db_lote.activo or db_lote.estado == EstadoLote.ENVIADO.value:
+    if not db_lote.activo or db_lote.estado in [
+        EstadoLote.ENVIADO.value,
+        EstadoLote.PARCIALMENTE_DESPACHADO.value]:
         raise exceptions.LoteProduccionDadoDeBaja()
 
     db_producto = producto_services.leer_producto(db, lote.producto_id)

@@ -15,18 +15,21 @@ import { CambiarEstadoLoteModal } from '../components/CambiarEstadoLoteProduccio
 import { ListFilter } from '../../../components/ListFilter';
 import { AsociarInsumosModal } from '../components/AsociarInsumosModal';
 import type { EstadoLote, LoteProduccion } from '../types';
+import { CrearEnvioModal } from '../../EnviosLote/components/CrearEnvioLoteModal';
 
 const ESTILOS_ESTADO: Record<EstadoLote, { bg: string; color: string }> = {
     "En produccion": { bg: "#fef9c3", color: "#854d0e" },
     "Empaquetando": { bg: "#dbeafe", color: "#1e40af" },
     "Terminado": { bg: "#dcfce7", color: "#166534" },
+    "Parcialmente despachado": { bg: "#e0e7ff", color: "#3730a3" },
     "Enviado": { bg: "#f3f4f6", color: "#374151" }
 }
 
 const CONFIG_BOTON: Record<EstadoLote, { tooltip: string; icon: string; variant: string }> = {
     "En produccion": { tooltip: "Pasar a Empaquetando", icon: "bi bi-box-seam", variant: "outline-warning" },
     "Empaquetando": { tooltip: "Marcar como Terminado", icon: "bi bi-check2-circle", variant: "outline-success" },
-    "Terminado": { tooltip: "Marcar como Enviado", icon: "bi bi-truck", variant: "outline-secondary" },
+    "Terminado": { tooltip: "Lote terminado", icon: "bi bi-check2-all", variant: "outline-secondary" },
+"Parcialmente despachado": { tooltip: "Lote parcialmente despachado", icon: "bi bi-truck", variant: "outline-secondary" },
     "Enviado": { tooltip: "Lote enviado", icon: "bi bi-check-all", variant: "outline-secondary" },
 };
 
@@ -34,7 +37,8 @@ const ORDEN_ESTADOS: Record<EstadoLote, number> = {
     "En produccion": 1,
     "Empaquetando": 2,
     "Terminado": 3,
-    "Enviado": 4
+    "Parcialmente despachado": 4,
+    "Enviado": 5
 }
 
 export function ListPage() {
@@ -44,6 +48,7 @@ export function ListPage() {
     const { data: lotes, error, isLoading } = useApi<LoteProduccion[]>("/lotes-produccion/");
     const [loteToChange, setLoteToChange] = useState<LoteProduccion | null>(null);
     const [loteInsumos, setLoteInsumos] = useState<LoteProduccion | null>(null);
+    const [loteParaEnvio, setLoteParaEnvio] = useState<LoteProduccion | null>(null);
     const [filtroEstado, setFiltroEstado] = useState("todos");
 
     const filteredLoteProduccion = useMemo(() => {
@@ -120,12 +125,19 @@ export function ListPage() {
             grow: 1.2,
         },
         {
-            name: 'Cantidad producida',
-            selector: row => row.cantidad_producida,
+            name: 'Stock',
+            selector: row => row.cantidad_disponible ?? row.cantidad_producida,
             sortable: true,
             center: true,
-            minWidth: '185px',
-            grow: 1,
+            minWidth: '120px',
+            cell: row => {
+                const disponible = row.cantidad_disponible ?? row.cantidad_producida;
+                return (
+                    <span className={disponible === 0 ? "text-danger fw-bold" : "fw-bold text-success"}>
+                        {disponible} <span className="text-muted fw-normal">/ {row.cantidad_producida}</span>
+                    </span>
+                );
+            }
         },
         {
             name: 'Estado',
@@ -158,12 +170,16 @@ export function ListPage() {
             minWidth: '190px',
             cell: (row) => {
                 const config = CONFIG_BOTON[row.estado] || CONFIG_BOTON["En produccion"];
-                const completado = row.estado === "Enviado";
-                const tieneInsumos = (row.insumos_utilizados?.length ?? 0) > 0;
+                const stockActual = row.cantidad_disponible ?? row.cantidad_producida;
+                const puedeAvanzar = row.estado === "En produccion" || row.estado === "Empaquetando";
                 const puedeModificarInsumos = row.activo && row.estado === "En produccion";
-
+                const tieneInsumos = (row.insumos_utilizados?.length ?? 0) > 0;
+                const mostrarBotonAvanzar = row.estado === "En produccion" || row.estado === "Empaquetando";
+                const mostrarBotonDespacho = (row.estado === "Terminado" || row.estado === "Parcialmente despachado");
+                const puedeDespachar = currentUser?.operar && mostrarBotonDespacho && stockActual > 0;
+                
                 return (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
                         <ActionButton
                             variant="outline-info"
                             size="sm"
@@ -178,7 +194,7 @@ export function ListPage() {
                                     size="sm"
                                     tooltip="Editar"
                                     icon="bi bi-pencil"
-                                    disabled={completado}
+                                    disabled={row.estado === "Enviado" || row.estado === "Parcialmente despachado"}
                                     onClick={() => navigate(`/lotes-produccion/${row.id}/edit`)}
                                 />
                                 <ActionButton
@@ -189,14 +205,26 @@ export function ListPage() {
                                     disabled={!puedeModificarInsumos}
                                     onClick={() => setLoteInsumos(row)}
                                 />
-                                <ActionButton
-                                    variant={config.variant}
-                                    size="sm"
-                                    tooltip={config.tooltip}
-                                    icon={config.icon}
-                                    disabled={completado}
-                                    onClick={() => setLoteToChange(row)}
-                                />
+                                {mostrarBotonAvanzar && (
+                                    <ActionButton
+                                        variant={config.variant}
+                                        size="sm"
+                                        tooltip={config.tooltip}
+                                        icon={config.icon}
+                                        disabled={!puedeAvanzar}
+                                        onClick={() => setLoteToChange(row)}
+                                    />
+                                )}
+                                {mostrarBotonDespacho && (
+                                    <ActionButton
+                                        variant="outline-secondary"
+                                        size="sm"
+                                        tooltip="Despachar Envío"
+                                        icon="bi bi-truck"
+                                        disabled={!puedeDespachar}
+                                        onClick={() => setLoteParaEnvio(row)}
+                                    />
+                                )}
                             </>
                         )}
                     </div>
@@ -227,6 +255,7 @@ export function ListPage() {
                             "En produccion": "En producción",
                             Empaquetando: "Empaquetando",
                             Terminado: "Terminado",
+                            "Parcialmente despachado" : "Parcialmente despachado",
                             Enviado: "Enviado"
                         }}
                     />
@@ -258,6 +287,11 @@ export function ListPage() {
                     onAsociado={handleInsumosAsociados}
                 />
             )}
+            <CrearEnvioModal
+                lote={loteParaEnvio}
+                onHide={() => setLoteParaEnvio(null)}
+                onEnviado={() => mutate("/lotes-produccion/")}
+            />
         </Container>
     );
 }

@@ -10,6 +10,7 @@ def test_crear_lote_produccion(db_session, unico_producto):
         fecha_produccion=date(2027, 10, 1),
         fecha_vencimiento=date(2028, 10, 1),
         cantidad_producida=100,
+        cantidad_disponible=100
     )
     
     nuevo = services.crear_lote_produccion(db=db_session, lote=datos)
@@ -29,6 +30,7 @@ def test_crear_lote_con_producto_inactivo(db_session, unico_producto):
         fecha_produccion=date(2027, 10, 1),
         fecha_vencimiento=date(2028, 10, 1),
         cantidad_producida=50,
+        cantidad_disponible=50
     )
 
     with pytest.raises(exceptions.ProductoDadoDeBaja):
@@ -84,6 +86,7 @@ def test_modificar_lote_produccion(db_session, unico_lote_produccion, unico_prod
         fecha_produccion=date(2027, 11, 1),
         fecha_vencimiento=date(2028, 11, 1),
         cantidad_producida=250,
+        cantidad_disponible=250
     )
     actualizado = services.modificar_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id, lote=datos)
 
@@ -97,9 +100,6 @@ def test_cambiar_estado_secuencial_lote_produccion(db_session, unico_lote_produc
     lote = services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id)
     assert lote.estado == "Terminado"
 
-    lote = services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id)
-    assert lote.estado == "Enviado"
-
     with pytest.raises(exceptions.LoteYaEnviado):
         services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id)
 
@@ -107,7 +107,9 @@ def test_cambiar_estado_secuencial_lote_produccion(db_session, unico_lote_produc
 def test_modificar_lote_produccion_enviado(db_session, unico_lote_produccion, unico_producto):
     services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id)
     services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id)
-    services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id)
+    
+    unico_lote_produccion.estado = "Enviado"
+    db_session.commit()
 
     datos = schemas.LoteProduccionUpdate(
         producto_id=unico_producto.id,
