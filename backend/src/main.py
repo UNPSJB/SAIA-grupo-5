@@ -33,6 +33,8 @@ from src.lote_produccion.models import LoteProduccion, InsumoUtilizado
 from src.receta.models import Receta
 from src.etapa_receta.models import EtapaReceta
 from src.paso_etapa.models import PasoEtapa
+from src.proveedor.models import Proveedor
+from src.lote_proveedor.models import LoteProveedor
 from src.clientes.models import Cliente
 from src.direcciones_cliente.models import DireccionCliente
 from src.envios_lote.models import EnvioLote
@@ -77,6 +79,8 @@ from src.receta.router import router as receta_router
 from src.etapa_receta.router import router as etapa_receta_router
 from src.paso_etapa.router import router as paso_etapa_router
 from src.lote_produccion.router import router as lote_produccion_router
+from src.proveedor.router import router as proveedor_router
+from src.lote_proveedor.router import router as lote_proveedor_router
 from src.clientes.router import router as cliente_router
 from src.direcciones_cliente.router import router as direcciones_cliente_router
 from src.envios_lote.router import router as envios_lote_router
@@ -138,6 +142,9 @@ app.include_router(lote_produccion_router)
 app.include_router(receta_router)
 app.include_router(etapa_receta_router)
 app.include_router(paso_etapa_router)
+app.include_router(proveedor_router)
+app.include_router(lote_proveedor_router)
 app.include_router(cliente_router)
 app.include_router(direcciones_cliente_router)
 app.include_router(envios_lote_router)
+

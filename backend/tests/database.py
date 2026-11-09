@@ -4,7 +4,8 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.orm import sessionmaker
-from datetime import date
+from datetime import date, timedelta
+
 
 from src.config import settings
 from src.models import Base
@@ -15,10 +16,13 @@ from src.auth.utils import get_password_hash
 from src.unidad_medida.models import UnidadMedida
 from src.producto.models import Producto
 from src.lote_produccion.models import LoteProduccion
+from src.proveedor.models import Proveedor
+from src.lote_proveedor.models import LoteProveedor
 from src.clientes.models import Cliente
 from src.direcciones_cliente.models import DireccionCliente
 from src.envios_lote import services as envios_services
 from src.envios_lote import schemas as envios_schemas
+
 
 from src.main import app
 engine = create_engine(
@@ -213,6 +217,110 @@ def multiples_productos(db_session, unica_unidad_medida):
     return productos
 
 
+@pytest.fixture(scope="function")
+def unico_proveedor(db_session):
+    proveedor = Proveedor(
+        nombre="Distribuidora Patagonica",
+        cuit="30112233445",
+        telefono="2804123456",
+        email="contacto@distribuidorapatagonica.com",
+        numero_habilitacion="HAB-998877",
+        vencimiento_habilitacion=date.today() + timedelta(days=90),
+        activo=True,
+    )
+
+    db_session.add(proveedor)
+    db_session.commit()
+    db_session.refresh(proveedor)
+    return proveedor
+
+
+@pytest.fixture(scope="function")
+def multiples_proveedores(db_session):
+    prov1 = Proveedor(
+        nombre="Molino Central",
+        cuit="30554433221",
+        telefono="2804556677",
+        email="ventas@molinocentral.com",
+        numero_habilitacion="HAB-112233",
+        vencimiento_habilitacion=date.today() + timedelta(days=60),
+        activo=True,
+    )
+    prov2 = Proveedor(
+        nombre="Especias del Valle",
+        cuit="30998877665",
+        telefono="2804889900",
+        email="info@especiasvalle.com",
+        numero_habilitacion="HAB-445566",
+        vencimiento_habilitacion=date.today() - timedelta(days=10),  
+        activo=True,
+    )
+    prov3 = Proveedor(
+        nombre="Empaques Sur",
+        cuit="30778899001",
+        telefono="2804112233",
+        email="contacto@empaquessur.com",
+        numero_habilitacion=None,
+        vencimiento_habilitacion=None,
+        activo=False,  
+    )
+
+    db_session.add_all([prov1, prov2, prov3])
+    db_session.commit()
+    for p in [prov1, prov2, prov3]:
+        db_session.refresh(p)
+    return [prov1, prov2, prov3]
+
+
+@pytest.fixture(scope="function")
+def unico_lote_proveedor(db_session, unico_proveedor):
+    lote = LoteProveedor(
+        proveedor_id=unico_proveedor.id,
+        numero_lote="LP-2026-001",
+        numero_remito="R-0001-00004567",
+        fecha_recepcion=date.today(),
+        registrado_por_id=1,
+        activo=True,
+    )
+    db_session.add(lote)
+    db_session.commit()
+    db_session.refresh(lote)
+    return lote
+
+
+@pytest.fixture(scope="function")
+def multiples_lotes_proveedor(db_session, unico_proveedor):
+    lote1 = LoteProveedor(
+        proveedor_id=unico_proveedor.id,
+        numero_lote="LP-2026-101",
+        numero_remito="R-0001-00010001",
+        fecha_recepcion=date.today() - timedelta(days=5),
+        registrado_por_id=1,
+        activo=True,
+    )
+    lote2 = LoteProveedor(
+        proveedor_id=unico_proveedor.id,
+        numero_lote="LP-2026-102",
+        numero_remito="R-0001-00010002",
+        fecha_recepcion=date.today() - timedelta(days=2),
+        registrado_por_id=1,
+        activo=True,
+    )
+    lote3 = LoteProveedor(
+        proveedor_id=unico_proveedor.id,
+        numero_lote="LP-2026-103",
+        numero_remito=None,
+        fecha_recepcion=date.today(),
+        registrado_por_id=1,
+        activo=False,
+    )
+
+    db_session.add_all([lote1, lote2, lote3])
+    db_session.commit()
+    for l in [lote1, lote2, lote3]:
+        db_session.refresh(l)
+    return [lote1, lote2, lote3]
+
 
 @pytest.fixture(scope="function")
 def unico_cliente(db_session):
@@ -350,9 +458,17 @@ def auth_headers_sin_operar(client, db_session):
         administrar=False,
         activo=True,
     )
+
+    db_session.add(usuario_sin_operar)
+    db_session.commit()
+
+    r = client.post("/auth/token", data={"username": "pedro_sin_operar", "password": "pedro123"})
+    token = r.json()["access_token"]
+
     db_session.add(usuario_sin_operar)
     db_session.commit()
 
     response = client.post("/auth/token", data={"username": "sin_operar", "password": "test123"})
     token = response.json()["access_token"]
+
     return {"Authorization": f"Bearer {token}"}
