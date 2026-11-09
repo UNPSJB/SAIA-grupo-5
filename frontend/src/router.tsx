@@ -129,6 +129,11 @@ import { NuevoLoteProduccionPage } from './feature/LotesProduccion/pages/NuevoLo
 import { EditarLoteProduccionPage } from './feature/LotesProduccion/pages/EditarLoteProduccionPage.tsx'
 import { VerLoteProduccionPage } from './feature/LotesProduccion/pages/VerLoteProduccionPage.tsx'
 
+import { ListPage as ClientesListPage } from './feature/Clientes/pages/ListPage.tsx'
+import { NuevoClientePage } from './feature/Clientes/pages/NuevoClientePage.tsx'
+import { EditarClientePage } from './feature/Clientes/pages/EditarClientePage.tsx'
+import { VerClientePage } from './feature/Clientes/pages/VerClientePage.tsx'
+
 import { Login, NoAutorizado } from './feature/auth'
 import AuthLayout from './layouts/AuthLayout.tsx'
 import { ProtectedRoute } from './components/ProtectedRoute.tsx'
@@ -421,6 +426,16 @@ const router = createBrowserRouter([
               { path: ':id', element: <VerVencimientoPersonalPage /> },
               { path: ':id/edit', element: <EditarVencimientoPersonalPage /> },
             ],
+          },
+          {
+            path: 'clientes',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <ClientesListPage />},
+              { path: 'new', element: <NuevoClientePage />},
+              { path: ':id', element: <VerClientePage />},
+              { path: ':id/edit', element: <EditarClientePage />},
+            ]
           },
           {
             path: 'tipos-incidentes',

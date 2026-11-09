@@ -41,7 +41,8 @@ export const navGroups: NavGroup[] = [
             { label: 'Superficies', to: '/superficies', icon: 'bi-virus2' },
             { label: 'Personal', to: '/personal', icon: 'bi-people', adminOnly: true },
             { label: 'Consulta de consumo', to: '/consumos-productos/consulta', icon: 'bi-droplet-half', adminOnly: true },
-            { label: 'Lotes de Produccion', to: '/lotes-produccion', icon: 'bi bi-box2-fill'}
+            { label: 'Lotes de Produccion', to: '/lotes-produccion', icon: 'bi bi-box2-fill'},
+            { label: 'Clientes', to: '/clientes', icon: 'bi bi-shop'}
         ],
     },
     {
