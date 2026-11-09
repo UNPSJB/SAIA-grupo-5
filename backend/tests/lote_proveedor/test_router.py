@@ -55,6 +55,7 @@ def test_endpoint_crear_lote_proveedor_habilitacion_vencida_error_400(client, au
     payload = {
         "proveedor_id": proveedor_vencido.id,
         "numero_lote": "LOTE-RECHAZADO",
+        "numero_remito": "R-TEST-9999",
         "fecha_recepcion": str(date.today()),
     }
 

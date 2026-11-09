@@ -309,7 +309,7 @@ def multiples_lotes_proveedor(db_session, unico_proveedor):
     lote3 = LoteProveedor(
         proveedor_id=unico_proveedor.id,
         numero_lote="LP-2026-103",
-        numero_remito=None,
+        numero_remito="R-0001-00010003",
         fecha_recepcion=date.today(),
         registrado_por_id=1,
         activo=False,
@@ -462,7 +462,7 @@ def auth_headers_sin_operar(client, db_session):
     db_session.add(usuario_sin_operar)
     db_session.commit()
 
-    r = client.post("/auth/token", data={"username": "pedro_sin_operar", "password": "pedro123"})
+    r = client.post("/auth/token", data={"username": "sin_operar", "password": "test123"})
     token = r.json()["access_token"]
 
     db_session.add(usuario_sin_operar)

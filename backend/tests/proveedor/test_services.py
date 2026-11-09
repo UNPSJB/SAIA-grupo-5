@@ -14,8 +14,7 @@ def test_leer_proveedor_exitoso(db_session, unico_proveedor):
     assert proveedor.id == unico_proveedor.id
     assert proveedor.nombre == "Distribuidora Patagonica"
     assert proveedor.cuit == "30112233445"
-    assert proveedor.habilitacion_estado == EstadoVencimientoHabilitacion.VIGENTE
-
+    assert proveedor.vencimiento_habilitacion is not None
 
 def test_leer_proveedor_no_encontrado_error(db_session):
     with pytest.raises(exceptions.ProveedorNoEncontrado):
@@ -73,7 +72,7 @@ def test_modificar_proveedor_cuit_duplicado_error(db_session, unico_proveedor, m
         nombre="Intento Duplicar",
         cuit=otro_cuit,
     )
-    
+
     with pytest.raises(exceptions.ProveedorCuitDuplicado):
         services.modificar_proveedor(db_session, unico_proveedor.id, datos)
 

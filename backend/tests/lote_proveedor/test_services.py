@@ -40,6 +40,7 @@ def test_crear_lote_proveedor_inexistente_error(db_session):
     datos = schemas.LoteProveedorCreate(
         proveedor_id=99999,
         numero_lote="LP-FAIL-01",
+        numero_remito="R-FAIL-01",
         fecha_recepcion=date.today(),
     )
 
@@ -52,6 +53,7 @@ def test_crear_lote_proveedor_inactivo_error(db_session, multiples_proveedores):
     datos = schemas.LoteProveedorCreate(
         proveedor_id=proveedor_inactivo.id,
         numero_lote="LP-FAIL-02",
+        numero_remito="R-FAIL-02",
         fecha_recepcion=date.today(),
     )
 
@@ -64,6 +66,7 @@ def test_crear_lote_proveedor_habilitacion_vencida_bloqueo(db_session, multiples
     datos = schemas.LoteProveedorCreate(
         proveedor_id=proveedor_vencido.id,
         numero_lote="LP-BLOQUEADO-01",
+        numero_remito="R-BLOQ-01",
         fecha_recepcion=date.today(),
     )
 
@@ -79,7 +82,7 @@ def test_modificar_lote_proveedor_exitoso(db_session, unico_lote_proveedor):
     )
 
     modificado = services.modificar_lote_proveedor(db_session, unico_lote_proveedor.id, datos)
-    
+
     assert modificado.numero_lote == "LP-MODIFICADO"
     assert modificado.numero_remito == "R-MOD-0001"
 

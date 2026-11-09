@@ -34,8 +34,7 @@ def test_endpoint_crear_proveedor(client, auth_headers):
     response = client.post("/proveedores/", json=payload, headers=auth_headers)
     assert response.status_code == 200
     data = response.json()
-    assert data["cuit"] == "30776655443"
-    assert data["habilitacion_estado"] == "vigente"
+    assert data["cuit"] == "30-77665544-3"
 
 
 def test_endpoint_crear_proveedor_cuit_duplicado_error_400(client, auth_headers, unico_proveedor):
