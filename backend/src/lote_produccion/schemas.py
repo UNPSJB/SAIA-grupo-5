@@ -1,10 +1,11 @@
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
-from typing import Annotated
+from typing import Annotated, Optional
 from pydantic import BaseModel, ConfigDict, Field
 from src.producto.schemas import Producto
 from src.insumos.schemas import Insumo
 from src.lote_produccion.models import EstadoLote
+from src.personal.schemas import Persona
 
 
 class LoteProduccionBase(BaseModel):
@@ -27,6 +28,7 @@ class LoteProduccion(LoteProduccionBase):
     estado: EstadoLote
     activo: bool
     producto: Producto
+    cantidad_disponible: int
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -68,3 +70,18 @@ class InsumoUtilizado(BaseModel):
 
 class LoteProduccionDetalle(LoteProduccion):
     insumos_utilizados: list[InsumoUtilizado] = Field(default_factory=list)
+
+
+class AvanzarEstadoLote(BaseModel):
+    observacion: Annotated[Optional[str], Field(max_length=200)] = None
+
+class HistorialEstadoLoteResponse(BaseModel):
+    id: int
+    lote_id: int
+    usuario_id: int
+    estado: Annotated[str, Field(max_length=50)]
+    fecha_hora: datetime
+    usuario: Persona
+    observacion: Annotated[Optional[str], Field(max_length=200)] = None
+
+    model_config = ConfigDict(from_attributes=True)

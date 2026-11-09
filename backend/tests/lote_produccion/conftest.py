@@ -12,22 +12,22 @@ def lotes_estadistica(db_session, multiples_productos):
 
     lotes = [
         LoteProduccion(producto_id=producto1.id, fecha_produccion=date(2026, 10, 10),
-                    fecha_vencimiento=date(2026, 11, 10), cantidad_producida=100, activo=True),
+                    fecha_vencimiento=date(2026, 11, 10), cantidad_producida=100, cantidad_disponible=100, activo=True),
 
         LoteProduccion(producto_id=producto1.id, fecha_produccion=date(2026, 10, 10),
-                    fecha_vencimiento=date(2026, 11, 10), cantidad_producida=50, activo=True),
+                    fecha_vencimiento=date(2026, 11, 10), cantidad_producida=50, cantidad_disponible=100, activo=True),
 
         LoteProduccion(producto_id=producto1.id, fecha_produccion=date(2026, 10, 10),
-                    fecha_vencimiento=date(2026, 11, 10), cantidad_producida=40, activo=False),
+                    fecha_vencimiento=date(2026, 11, 10), cantidad_producida=40, cantidad_disponible=100, activo=False),
 
         LoteProduccion(producto_id=producto2.id, fecha_produccion=date(2026, 10, 10),
-                    fecha_vencimiento=date(2026, 11, 10), cantidad_producida=70, activo=True),
+                    fecha_vencimiento=date(2026, 11, 10), cantidad_producida=70, cantidad_disponible=100, activo=True),
 
         LoteProduccion(producto_id=producto1.id, fecha_produccion=date(2026, 10, 11),
-                    fecha_vencimiento=date(2026, 11, 11), cantidad_producida=30, activo=True),
+                    fecha_vencimiento=date(2026, 11, 11), cantidad_producida=30, cantidad_disponible=100, activo=True),
 
         LoteProduccion(producto_id=producto1.id, fecha_produccion=date(2026, 10, 20),
-                    fecha_vencimiento=date(2026, 11, 20), cantidad_producida=90, activo=True),
+                    fecha_vencimiento=date(2026, 11, 20), cantidad_producida=90, cantidad_disponible=100, activo=True),
     ]
 
     db_session.add_all(lotes)

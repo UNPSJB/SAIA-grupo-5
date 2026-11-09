@@ -4,7 +4,8 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.orm import sessionmaker
-from datetime import date
+from datetime import date, timedelta
+
 
 from src.config import settings
 from src.models import Base
@@ -15,6 +16,13 @@ from src.auth.utils import get_password_hash
 from src.unidad_medida.models import UnidadMedida
 from src.producto.models import Producto
 from src.lote_produccion.models import LoteProduccion
+from src.proveedor.models import Proveedor
+from src.lote_proveedor.models import LoteProveedor
+from src.clientes.models import Cliente
+from src.direcciones_cliente.models import DireccionCliente
+from src.envios_lote import services as envios_services
+from src.envios_lote import schemas as envios_schemas
+
 
 from src.main import app
 engine = create_engine(
@@ -128,7 +136,9 @@ def unico_lote_produccion(db_session, unico_producto):
         producto_id=unico_producto.id, 
         fecha_produccion=date(2026,10,1),
         fecha_vencimiento=date(2028, 10, 1), 
-        cantidad_producida=100)
+        cantidad_producida=100,
+        cantidad_disponible=100,
+        activo=True)
 
     db_session.add(lote)
     db_session.commit()
@@ -141,17 +151,20 @@ def multiples_lotes_produccion(db_session, unico_producto):
         LoteProduccion(producto_id=unico_producto.id, 
                         fecha_produccion=date(2026,11,12),
                         fecha_vencimiento=date(2028, 10, 1), 
-                        cantidad_producida=100),
+                        cantidad_producida=100,
+                        cantidad_disponible=100),
 
         LoteProduccion(producto_id=unico_producto.id, 
                         fecha_produccion=date(2026,12,14),
                         fecha_vencimiento=date(2028, 10, 1), 
-                        cantidad_producida=100),
+                        cantidad_producida=100,
+                        cantidad_disponible=100),
 
         LoteProduccion(producto_id=unico_producto.id, 
                         fecha_produccion=date(2026,9,13),
                         fecha_vencimiento=date(2028, 10, 1), 
-                        cantidad_producida=100)
+                        cantidad_producida=100,
+                        cantidad_disponible=100)
     ]
 
     db_session.add_all(lotes)
@@ -202,3 +215,260 @@ def multiples_productos(db_session, unica_unidad_medida):
     db_session.add_all(productos)
     db_session.commit()
     return productos
+
+
+@pytest.fixture(scope="function")
+def unico_proveedor(db_session):
+    proveedor = Proveedor(
+        nombre="Distribuidora Patagonica",
+        cuit="30112233445",
+        telefono="2804123456",
+        email="contacto@distribuidorapatagonica.com",
+        numero_habilitacion="HAB-998877",
+        vencimiento_habilitacion=date.today() + timedelta(days=90),
+        activo=True,
+    )
+
+    db_session.add(proveedor)
+    db_session.commit()
+    db_session.refresh(proveedor)
+    return proveedor
+
+
+@pytest.fixture(scope="function")
+def multiples_proveedores(db_session):
+    prov1 = Proveedor(
+        nombre="Molino Central",
+        cuit="30554433221",
+        telefono="2804556677",
+        email="ventas@molinocentral.com",
+        numero_habilitacion="HAB-112233",
+        vencimiento_habilitacion=date.today() + timedelta(days=60),
+        activo=True,
+    )
+    prov2 = Proveedor(
+        nombre="Especias del Valle",
+        cuit="30998877665",
+        telefono="2804889900",
+        email="info@especiasvalle.com",
+        numero_habilitacion="HAB-445566",
+        vencimiento_habilitacion=date.today() - timedelta(days=10),  
+        activo=True,
+    )
+    prov3 = Proveedor(
+        nombre="Empaques Sur",
+        cuit="30778899001",
+        telefono="2804112233",
+        email="contacto@empaquessur.com",
+        numero_habilitacion=None,
+        vencimiento_habilitacion=None,
+        activo=False,  
+    )
+
+    db_session.add_all([prov1, prov2, prov3])
+    db_session.commit()
+    for p in [prov1, prov2, prov3]:
+        db_session.refresh(p)
+    return [prov1, prov2, prov3]
+
+
+@pytest.fixture(scope="function")
+def unico_lote_proveedor(db_session, unico_proveedor):
+    lote = LoteProveedor(
+        proveedor_id=unico_proveedor.id,
+        numero_lote="LP-2026-001",
+        numero_remito="R-0001-00004567",
+        fecha_recepcion=date.today(),
+        registrado_por_id=1,
+        activo=True,
+    )
+    db_session.add(lote)
+    db_session.commit()
+    db_session.refresh(lote)
+    return lote
+
+
+@pytest.fixture(scope="function")
+def multiples_lotes_proveedor(db_session, unico_proveedor):
+    lote1 = LoteProveedor(
+        proveedor_id=unico_proveedor.id,
+        numero_lote="LP-2026-101",
+        numero_remito="R-0001-00010001",
+        fecha_recepcion=date.today() - timedelta(days=5),
+        registrado_por_id=1,
+        activo=True,
+    )
+    lote2 = LoteProveedor(
+        proveedor_id=unico_proveedor.id,
+        numero_lote="LP-2026-102",
+        numero_remito="R-0001-00010002",
+        fecha_recepcion=date.today() - timedelta(days=2),
+        registrado_por_id=1,
+        activo=True,
+    )
+    lote3 = LoteProveedor(
+        proveedor_id=unico_proveedor.id,
+        numero_lote="LP-2026-103",
+        numero_remito=None,
+        fecha_recepcion=date.today(),
+        registrado_por_id=1,
+        activo=False,
+    )
+
+    db_session.add_all([lote1, lote2, lote3])
+    db_session.commit()
+    for l in [lote1, lote2, lote3]:
+        db_session.refresh(l)
+    return [lote1, lote2, lote3]
+
+
+@pytest.fixture(scope="function")
+def unico_cliente(db_session):
+    cliente = Cliente(
+        razon_social="Distribuidora Sur",
+        cuit="30-11223344-5",
+        telefono="2804123456",
+        email="contacto@distribuidorasur.com",
+        activo=True,
+    )
+    db_session.add(cliente)
+    db_session.commit()
+    db_session.refresh(cliente)
+    return cliente
+
+
+@pytest.fixture(scope="function")
+def multiples_clientes(db_session):
+    clientes = [
+        Cliente(razon_social="Supermercado Trelew", cuit="30-55667788-9", activo=True),
+        Cliente(razon_social="Almacen Central", cuit="30-99887766-5", activo=True),
+        Cliente(razon_social="Kiosco Madryn", cuit="30-12344321-0", activo=False),
+    ]
+    db_session.add_all(clientes)
+    db_session.commit()
+    return clientes
+
+
+@pytest.fixture(scope="function")
+def unica_direccion_cliente(db_session, unico_cliente):
+    direccion = DireccionCliente(
+        cliente_id=unico_cliente.id,
+        calle_altura="Avenida Fontana 123",
+        provincia="Chubut",
+        localidad="Trelew",
+        codigo_postal="9100",
+        descripcion="Deposito Central",
+        activo=True,
+    )
+    db_session.add(direccion)
+    db_session.commit()
+    db_session.refresh(direccion)
+    return direccion
+
+
+@pytest.fixture(scope="function")
+def multiples_direcciones_cliente(db_session, unico_cliente):
+    direcciones = [
+        DireccionCliente(cliente_id=unico_cliente.id,
+                        calle_altura="Ruta 3 Km 1400", 
+                        provincia="Chubut",
+                        localidad="Trelew",
+                        codigo_postal="9100",
+                        descripcion="Planta Industrial", 
+                        activo=True),
+
+        DireccionCliente(cliente_id=unico_cliente.id, 
+                        calle_altura="Mitre 450", 
+                        provincia="Chubut",
+                        localidad="Rawson",
+                        codigo_postal="9103",
+                        descripcion="Sucursal Centro", 
+                        activo=True),
+
+        DireccionCliente(cliente_id=unico_cliente.id, 
+                        calle_altura="Belgrano 890", 
+                        provincia="Chubut",
+                        localidad="Puerto Madryn",
+                        codigo_postal="9120",
+                        descripcion="Oficina Administrativa", 
+                        activo=False),
+    ]
+    db_session.add_all(direcciones)
+    db_session.commit()
+    return direcciones
+
+
+@pytest.fixture(scope="function")
+def unico_envio(db_session, unico_lote_produccion, unico_cliente, unica_direccion_cliente):
+    from src.lote_produccion import services as lote_services
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id, usuario_id=1)
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id, usuario_id=1)
+
+    datos = envios_schemas.EnvioLoteCreate(
+        lote_id=unico_lote_produccion.id,
+        cliente_id=unico_cliente.id,
+        direccion_cliente_id=unica_direccion_cliente.id,
+        cantidad=30,
+        numero_remito="R-0001-00000001",
+        transportista="Transporte Sur",
+        fecha_envio=date(2026, 10, 5),
+    )
+    return envios_services.crear_envio(db=db_session, datos=datos)
+
+@pytest.fixture(scope="function")
+def multiples_envios(db_session, unico_lote_produccion, unico_cliente, unica_direccion_cliente):
+    from src.lote_produccion import services as lote_services
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id, usuario_id=1)
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id, usuario_id=1)
+
+    envio_1 = envios_schemas.EnvioLoteCreate(
+        lote_id=unico_lote_produccion.id,
+        cliente_id=unico_cliente.id,
+        direccion_cliente_id=unica_direccion_cliente.id,
+        cantidad=30,
+        numero_remito="R-0001-00000001",
+        transportista="Transporte Sur",
+        fecha_envio=date(2026, 10, 5),
+    )
+    envio_2 = envios_schemas.EnvioLoteCreate(
+        lote_id=unico_lote_produccion.id,
+        cliente_id=unico_cliente.id,
+        direccion_cliente_id=unica_direccion_cliente.id,
+        cantidad=40,
+        numero_remito="R-0001-00000002",
+        transportista="Expreso Trelew",
+        fecha_envio=date(2026, 10, 8),
+    )
+
+    db_envio_1 = envios_services.crear_envio(db=db_session, datos=envio_1)
+    db_envio_2 = envios_services.crear_envio(db=db_session, datos=envio_2)
+
+    return [db_envio_1, db_envio_2]
+
+@pytest.fixture(scope="function")
+def auth_headers_sin_operar(client, db_session):
+    usuario_sin_operar = Persona(
+        nombre="Usuario",
+        apellido="Prueba",
+        dni="30111999",
+        mail="sin.operar@test.com",
+        username="sin_operar",
+        hashed_password=get_password_hash("test123"),
+        operar=False,
+        administrar=False,
+        activo=True,
+    )
+
+    db_session.add(usuario_sin_operar)
+    db_session.commit()
+
+    r = client.post("/auth/token", data={"username": "pedro_sin_operar", "password": "pedro123"})
+    token = r.json()["access_token"]
+
+    db_session.add(usuario_sin_operar)
+    db_session.commit()
+
+    response = client.post("/auth/token", data={"username": "sin_operar", "password": "test123"})
+    token = response.json()["access_token"]
+
+    return {"Authorization": f"Bearer {token}"}
