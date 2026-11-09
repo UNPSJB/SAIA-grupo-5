@@ -1,18 +1,36 @@
 import { useState } from 'react';
-import { Container, Row, Col, Card, Button, Alert } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Alert, Spinner } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
 import { mutate } from 'swr';
 import { useApi, useAuth } from '../../../hooks';
 import { PageHeader } from '../../../components/PageHeader';
 import { PageLoading } from '../../../components/PageLoading';
+import { Stepper, type ItemStepper } from '../../../components/Stepper';
 import { AvanzarEtapaLoteProveedorModal } from '../componets/AvanzarEtapaLoteProveedorModal';
-import type { LoteProveedor } from '../types';
+import type { LoteProveedor, EstadoLoteProveedor, HistorialEstadoLoteProveedor } from '../types';
+
+const PASOS_FIJOS = ["Llegada", "Desempaque", "Acomodado"];
+
+const INDICE_ESTADO: Record<EstadoLoteProveedor, number> = {
+    llegada: 0,
+    desempaque: 1,
+    acomodado: 2,
+};
+
+const ESTILOS_ETAPA: Record<EstadoLoteProveedor, { label: string; bg: string; color: string }> = {
+    llegada: { label: "Llegada", bg: "#e0f2fe", color: "#0369a1" },
+    desempaque: { label: "Desempaque", bg: "#fef3c7", color: "#92400e" },
+    acomodado: { label: "Acomodado", bg: "#dcfce7", color: "#166534" },
+};
 
 export function VerLoteProveedorPage() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { currentUser } = useAuth();
+    
     const { data: lote, isLoading, error } = useApi<LoteProveedor>(`/lotes-proveedor/${id}`);
+    const { data: historial, isLoading: cargandoHistorial } = useApi<HistorialEstadoLoteProveedor[]>(id ? `/lotes-proveedor/${id}/historial-estados` : null);
+
     const [modalAvanzar, setModalAvanzar] = useState(false);
 
     if (isLoading) return <PageLoading title="Detalle de Lote" />;
@@ -23,144 +41,164 @@ export function VerLoteProveedorPage() {
         </Container>
     );
 
-    const PASOS = [
-        { key: 'llegada', label: '1. Llegada', desc: 'Recepción y Remito' },
-        { key: 'desempaque', label: '2. Desempaque', desc: 'Control de Bultos' },
-        { key: 'acomodado', label: '3. Acomodado', desc: 'Almacenado Final' },
-    ];
-
-    const pasoIndex = PASOS.findIndex((p) => p.key === lote.estado);
+    const pasoActual = INDICE_ESTADO[lote.estado] ?? 0;
     const esImagen = lote.archivo_adjunto?.startsWith('data:image/');
+    const confEtapa = ESTILOS_ETAPA[lote.estado] || { label: lote.estado, bg: '#f1f5f9', color: '#475569' };
+
+    const itemsHorizontal: ItemStepper[] = PASOS_FIJOS.map((paso) => {
+        const hito = historial?.find((h) => h.estado.toLowerCase() === paso.toLowerCase());
+        const fecha = hito?.fecha_hora ? new Date(hito.fecha_hora).toLocaleDateString("es-AR") : null;
+        return {
+            titulo: paso,
+            subtitulo: fecha,
+        };
+    });
+
+    const itemsVertical: ItemStepper[] = (historial ?? []).map((h) => {
+        const fechaObj = new Date(h.fecha_hora);
+        const fechaStr = fechaObj.toLocaleDateString("es-AR");
+        const horaStr = fechaObj.toLocaleTimeString("es-AR").slice(0, 5);
+
+        return {
+            titulo: h.estado === "Llegada" ? "Llegada / Recepcion" : h.estado,
+            subtitulo: `${fechaStr} a las ${horaStr} hs`,
+            observacion: h.observacion || "Sin observaciones registradas.",
+            autor: h.usuario ? `${h.usuario.nombre} ${h.usuario.apellido}` : 'Sistema',
+        };
+    });
+
+    const refrescarDatos = () => {
+        mutate(`/lotes-proveedor/${lote.id}`);
+        mutate(`/lotes-proveedor/${lote.id}/historial-estados`);
+    };
 
     return (
         <Container>
-            <PageHeader title={`Lote ${lote.numero_lote}`} subtitle={`Proveedor: ${lote.proveedor?.nombre || 'N/A'}`} />
+            <PageHeader 
+                title={`Recepción de Lote: ${lote.numero_lote}`} 
+                subtitle={`Proveedor: ${lote.proveedor?.nombre || 'N/A'}`} 
+            />
 
-            {/* STEPPER DE 3 PASOS */}
-            <Card className="shadow-sm border-0 mb-4">
+            <Card className="shadow-sm border-0 rounded-3 mb-4 text-start">
                 <Card.Body className="p-4">
-                    <div className="d-flex justify-content-between align-items-center position-relative">
-                        {PASOS.map((paso, idx) => {
-                            const completado = idx < pasoIndex;
-                            const activo = idx === pasoIndex;
-                            const bg = completado ? '#166534' : activo ? '#0284c7' : '#e2e8f0';
-                            const color = completado || activo ? '#ffffff' : '#64748b';
+                    <Row className="mb-3 border-bottom pb-3 align-items-center">
+                        <Col sm={4} className="fw-bold text-secondary">N° de Lote</Col>
+                        <Col sm={8} className="fs-6 fw-bold">{lote.numero_lote}</Col>
+                    </Row>
 
-                            return (
-                                <div key={paso.key} className="text-center flex-fill position-relative" style={{ zIndex: 1 }}>
-                                    <div
-                                        style={{
-                                            width: 44,
-                                            height: 44,
-                                            borderRadius: '50%',
-                                            background: bg,
-                                            color: color,
-                                            margin: '0 auto 8px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            fontWeight: 700,
-                                        }}
-                                    >
-                                        {completado ? <i className="bi bi-check-lg fs-5"></i> : idx + 1}
+                    <Row className="mb-3 border-bottom pb-3 align-items-center">
+                        <Col sm={4} className="fw-bold text-secondary">Proveedor</Col>
+                        <Col sm={8}>{lote.proveedor?.nombre} (CUIT: {lote.proveedor?.cuit})</Col>
+                    </Row>
+
+                    <Row className="mb-3 border-bottom pb-3 align-items-center">
+                        <Col sm={4} className="fw-bold text-secondary">N° de Remito</Col>
+                        <Col sm={8}>{lote.numero_remito || <span className="text-muted fst-italic">Sin remito</span>}</Col>
+                    </Row>
+
+                    <Row className="mb-3 border-bottom pb-3 align-items-center">
+                        <Col sm={4} className="fw-bold text-secondary">Fecha de Recepcion</Col>
+                        <Col sm={8}>{lote.fecha_recepcion.split("-").reverse().join("/")}</Col>
+                    </Row>
+
+                    <Row className="mb-3 border-bottom pb-3 align-items-center">
+                        <Col sm={4} className="fw-bold text-secondary">Etapa Actual</Col>
+                        <Col sm={8}>
+                            <div
+                                style={{
+                                    padding: '4px 14px',
+                                    borderRadius: '16px',
+                                    background: confEtapa.bg,
+                                    color: confEtapa.color,
+                                    fontWeight: 700,
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    fontSize: '0.85rem'
+                                }}
+                            >
+                                {confEtapa.label}
+                            </div>
+                        </Col>
+                    </Row>
+
+                    <Row className="mb-3 border-bottom pb-3 align-items-center">
+                        <Col sm={4} className="fw-bold text-secondary">Registrado por</Col>
+                        <Col sm={8}>
+                            {lote.registrado_por
+                                ? `${lote.registrado_por.nombre} ${lote.registrado_por.apellido}`
+                                : 'Sistema'}
+                        </Col>
+                    </Row>
+
+                    {lote.archivo_adjunto && (
+                        <Row className="align-items-center pt-2">
+                            <Col sm={4} className="fw-bold text-secondary">Comprobante de Remito</Col>
+                            <Col sm={8}>
+                                {esImagen ? (
+                                    <div>
+                                        <img
+                                            src={lote.archivo_adjunto}
+                                            alt="Remito Adjunto"
+                                            style={{ maxHeight: 180, borderRadius: '8px', objectFit: 'contain' }}
+                                            className="border shadow-sm p-1 bg-white"
+                                        />
                                     </div>
-                                    <div className="fw-bold">{paso.label}</div>
-                                    <small className="text-muted">{paso.desc}</small>
-                                </div>
-                            );
-                        })}
-                    </div>
+                                ) : (
+                                    <div className="p-2 px-3 border rounded bg-white d-inline-flex align-items-center gap-2 shadow-sm">
+                                        <i className="bi bi-file-earmark-pdf-fill text-danger fs-3"></i>
+                                        <span className="fw-semibold small">Remito_Recepcion.pdf</span>
+                                        <a
+                                            href={lote.archivo_adjunto}
+                                            download={`Remito_${lote.numero_lote}.pdf`}
+                                            className="btn btn-outline-success btn-sm ms-2 d-inline-flex align-items-center gap-1"
+                                        >
+                                            <i className="bi bi-download"></i> Ver / Descargar
+                                        </a>
+                                    </div>
+                                )}
+                            </Col>
+                        </Row>
+                    )}
                 </Card.Body>
             </Card>
 
-            {/* DETALLE Y DATOS DEL LOTE */}
-            <Row className="justify-content-center">
-                <Col md={8}>
-                    <Card className="shadow-sm border-0 rounded-3">
-                        <Card.Body className="p-4">
-                            <h6 className="fw-bold text-secondary border-bottom pb-2 mb-3">
-                                <i className="bi bi-box-seam me-2"></i>Información del Lote
-                            </h6>
+            <Card className="shadow-sm border-0 mb-4 rounded-3 text-start">
+                <Card.Body className="p-4">
+                    <h5 className="fw-bold mb-4">Linea de Tiempo del Lote</h5>
 
-                            <Row className="mb-2">
-                                <Col sm={4} className="fw-bold text-secondary">N° de Lote</Col>
-                                <Col sm={8} className="fw-bold">{lote.numero_lote}</Col>
-                            </Row>
-                            <Row className="mb-2">
-                                <Col sm={4} className="fw-bold text-secondary">Proveedor</Col>
-                                <Col sm={8}>{lote.proveedor?.nombre} (CUIT: {lote.proveedor?.cuit})</Col>
-                            </Row>
-                            <Row className="mb-2">
-                                <Col sm={4} className="fw-bold text-secondary">N° de Remito</Col>
-                                <Col sm={8}>{lote.numero_remito || <span className="text-muted fst-italic">Sin remito</span>}</Col>
-                            </Row>
-                            <Row className="mb-2">
-                                <Col sm={4} className="fw-bold text-secondary">Fecha de Recepción</Col>
-                                <Col sm={8}>{lote.fecha_recepcion.split("-").reverse().join("/")}</Col>
-                            </Row>
-                            <Row className="mb-2">
-                                <Col sm={4} className="fw-bold text-secondary">Registrado por</Col>
-                                <Col sm={8}>
-                                    {lote.registrado_por
-                                        ? `${lote.registrado_por.nombre} ${lote.registrado_por.apellido}`
-                                        : 'Sistema'}
-                                </Col>
-                            </Row>
+                    <Stepper items={itemsHorizontal} pasoActual={pasoActual} direction="horizontal" colorPrimario="#198754" />
 
-                            {/* OBSERVACIONES DE CONTROL / DESEMPAQUE */}
-                            {lote.observaciones && (
-                                <div className="mt-3 p-3 bg-light rounded border">
-                                    <strong className="text-secondary d-block mb-1">
-                                        <i className="bi bi-card-text me-1"></i>Observaciones registradas en el flujo:
-                                    </strong>
-                                    <p className="mb-0 text-dark">{lote.observaciones}</p>
-                                </div>
-                            )}
+                    <hr className="my-4" />
 
-                            {/* COMPROBANTE DE REMITO */}
-                            {lote.archivo_adjunto && (
-                                <div className="mt-3 pt-3 border-top">
-                                    <strong className="text-secondary d-block mb-2">Comprobante de Remito:</strong>
-                                    {esImagen ? (
-                                        <img
-                                            src={lote.archivo_adjunto}
-                                            alt="Remito"
-                                            style={{ maxHeight: 200, objectFit: 'contain' }}
-                                            className="border rounded p-1"
-                                        />
-                                    ) : (
-                                        <a
-                                            href={lote.archivo_adjunto}
-                                            download="Remito_Recepcion.pdf"
-                                            className="btn btn-outline-primary btn-sm"
-                                        >
-                                            <i className="bi bi-file-earmark-pdf-fill text-danger me-1"></i>Descargar Remito PDF
-                                        </a>
-                                    )}
-                                </div>
-                            )}
-                        </Card.Body>
+                    <h6 className="fw-bold mb-3">Historial de etapas y observaciones</h6>
+                    {cargandoHistorial ? (
+                        <div className="text-muted d-flex align-items-center gap-2">
+                            <Spinner animation="border" size="sm" /> Cargando historial...
+                        </div>
+                    ) : itemsVertical.length === 0 ? (
+                        <p className="text-muted small mb-0">No hay cambios de estado registrados aun.</p>
+                    ) : (
+                        <Stepper items={itemsVertical} direction="vertical" colorPrimario="#198754" />
+                    )}
+                </Card.Body>
+                <Card.Footer className="bg-light border-top p-3 d-flex justify-content-between align-items-center">
+                    <Button variant="outline-secondary" onClick={() => navigate('/recepciones')}>
+                        <i className="bi bi-arrow-left me-1"></i>Volver al Listado
+                    </Button>
 
-                        <Card.Footer className="bg-light border-top p-3 d-flex justify-content-between align-items-center">
-                            <Button variant="outline-secondary" onClick={() => navigate('/recepciones')}>
-                                <i className="bi bi-arrow-left me-1"></i>Volver al Listado
-                            </Button>
-
-                            {currentUser?.operar && lote.activo && lote.estado !== 'acomodado' && (
-                                <Button variant="success" onClick={() => setModalAvanzar(true)}>
-                                    <i className="bi bi-arrow-right-circle me-1"></i>
-                                    Avanzar a {lote.estado === 'llegada' ? 'Desempaque' : 'Acomodado'}
-                                </Button>
-                            )}
-                        </Card.Footer>
-                    </Card>
-                </Col>
-            </Row>
+                    {currentUser?.operar && lote.activo && lote.estado !== 'acomodado' && (
+                        <Button variant="success" onClick={() => setModalAvanzar(true)}>
+                            <i className="bi bi-arrow-right-circle me-1"></i>
+                            Avanzar a {lote.estado === 'llegada' ? 'Desempaque' : 'Acomodado'}
+                        </Button>
+                    )}
+                </Card.Footer>
+            </Card>
 
             <AvanzarEtapaLoteProveedorModal
                 lote={modalAvanzar ? lote : null}
                 onHide={() => setModalAvanzar(false)}
-                onAvanzado={() => mutate(`/recepciones/${lote.id}`)}
+                onAvanzado={refrescarDatos}
             />
         </Container>
     );

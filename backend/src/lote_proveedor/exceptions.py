@@ -20,3 +20,14 @@ class HabilitacionProveedorVencida(BadRequest):
 
 class TransicionEstadoInvalida(BadRequest):
     DETAIL = ErrorCode.TRANSICION_ESTADO_INVALIDA
+
+
+class NumeroLoteDuplicado(BadRequest):
+    DETAIL = ErrorCode.NUMERO_LOTE_DUPLICADO
+
+
+class NumeroRemitoDuplicado(BadRequest):
+    DETAIL = ErrorCode.NUMERO_REMITO_DUPLICADO
+
+class ProveedorSinHabilitacion(BadRequest):
+    DETAIL = ErrorCode.PROVEEDOR_SIN_HABILITACION

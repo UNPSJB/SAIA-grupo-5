@@ -5,32 +5,33 @@ import { api } from '../../../libs/axios';
 import { mostrarAlertaError, mostrarAlertaExito } from '../../../libs/alertas';
 import type { LoteProveedor } from '../types';
 
-interface AvanzarEtapaLoteModalProps {
+interface AvanzarEtapaModalProps {
     lote: LoteProveedor | null;
     onHide: () => void;
     onAvanzado: () => void;
 }
 
-interface AvanzarFormData {
-    observaciones: string;
+interface FormData {
+    observacion: string;
 }
 
-export function AvanzarEtapaLoteProveedorModal({ lote, onHide, onAvanzado }: AvanzarEtapaLoteModalProps) {
+export function AvanzarEtapaLoteProveedorModal({ lote, onHide, onAvanzado }: AvanzarEtapaModalProps) {
     const [cargando, setCargando] = useState(false);
-    const { register, handleSubmit, reset } = useForm<AvanzarFormData>();
+    const { register, handleSubmit, reset } = useForm<FormData>();
 
     if (!lote) return null;
 
-    const siguienteEtapa = lote.estado === 'llegada' ? 'Desempaque' : 'Acomodado';
+    const estaEnLlegada = lote.estado === 'llegada';
+    const siguienteEtapa = estaEnLlegada ? 'Desempaque' : 'Acomodado';
 
-    const onSubmit = async (data: AvanzarFormData) => {
+    const onSubmit = async (data: FormData) => {
         setCargando(true);
         try {
             await api.patch(`/lotes-proveedor/${lote.id}/avanzar-etapa`, {
-                observaciones: data.observaciones?.trim() ? data.observaciones.trim() : null,
+                observacion: data.observacion?.trim() ? data.observacion.trim() : null,
             });
-            mostrarAlertaExito(`El lote avanzó exitosamente a la etapa de ${siguienteEtapa}.`);
-            onAvanzado();
+            mostrarAlertaExito(`El lote avanzo a ${siguienteEtapa}.`);
+            onAvanzado(); 
             handleClose();
         } catch (error: any) {
             let mensaje = "No se pudo cambiar la etapa del lote.";
@@ -53,7 +54,7 @@ export function AvanzarEtapaLoteProveedorModal({ lote, onHide, onAvanzado }: Ava
         <Modal show={!!lote} onHide={handleClose}>
             <Form onSubmit={handleSubmit(onSubmit)}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Avanzar a {siguienteEtapa}</Modal.Title>
+                    <Modal.Title>{estaEnLlegada ? "Iniciar Desempaque" : "Acomodar en Deposito"}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <p className="mb-2">
@@ -61,17 +62,13 @@ export function AvanzarEtapaLoteProveedorModal({ lote, onHide, onAvanzado }: Ava
                     </p>
                     <Form.Group className="mt-3">
                         <Form.Label className="fw-semibold">
-                            {lote.estado === 'llegada' ? 'Observaciones de Control / Desempaque' : 'Ubicación / Notas de Acomodado'}
+                            {estaEnLlegada ? "Observaciones de Descarga (Opcional)" : "Observaciones de Control / Inspeccion"}
                         </Form.Label>
                         <Form.Control
                             as="textarea"
                             rows={3}
-                            placeholder={
-                                lote.estado === 'llegada'
-                                    ? 'Ej: Se recibieron los bultos en buen estado. Faltó 1 unidad...'
-                                    : 'Ej: Acomodado en estantería B4 depósito central.'
-                            }
-                            {...register("observaciones")}
+                            placeholder={estaEnLlegada ? "Notas sobre la descarga..." : "Detalle de control de insumos..."}
+                            {...register("observacion")}
                         />
                     </Form.Group>
                 </Modal.Body>
@@ -79,7 +76,7 @@ export function AvanzarEtapaLoteProveedorModal({ lote, onHide, onAvanzado }: Ava
                     <Button variant="secondary" onClick={handleClose} disabled={cargando}>
                         Cancelar
                     </Button>
-                    <Button variant="primary" type="submit" disabled={cargando}>
+                    <Button variant="success" type="submit" disabled={cargando}>
                         <i className="bi bi-arrow-right-circle me-1"></i>Confirmar Avance
                     </Button>
                 </Modal.Footer>

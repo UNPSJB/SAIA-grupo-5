@@ -74,6 +74,7 @@ export function LoteProveedorForm({ textoBoton, onSubmit, valoresIniciales, isEd
     };
 
     const proveedoresActivos = proveedores?.filter((p) => p.activo) || [];
+    const esImagen = archivoBase64?.startsWith("data:image/");
 
     return (
         <div className="col-md-8 mx-auto">
@@ -91,11 +92,20 @@ export function LoteProveedorForm({ textoBoton, onSubmit, valoresIniciales, isEd
                             isInvalid={!!errors.proveedor_id}
                         >
                             <option value="">Seleccione un proveedor...</option>
-                            {proveedoresActivos.map((prov) => (
-                                <option key={prov.id} value={prov.id}>
-                                    {prov.nombre} (CUIT: {prov.cuit})
-                                </option>
-                            ))}
+                            {proveedoresActivos.map((prov) => {
+                                const sinHabilitacion = !prov.numero_habilitacion || !prov.vencimiento_habilitacion;
+                                const vencida = Boolean(
+                                    prov.vencimiento_habilitacion && prov.vencimiento_habilitacion < hoy
+                                );
+                                const noApto = sinHabilitacion || vencida;
+
+                                return (
+                                    <option key={prov.id} value={prov.id} disabled={noApto}>
+                                        {prov.nombre} (CUIT: {prov.cuit})
+                                        {sinHabilitacion ? " - [Sin Habilitacion]" : vencida ? " - [Habilitacion Vencida]" : ""}
+                                    </option>
+                                );
+                            })}
                         </Form.Select>
                     )}
                     <Form.Control.Feedback type="invalid">{errors.proveedor_id?.message}</Form.Control.Feedback>
@@ -104,13 +114,13 @@ export function LoteProveedorForm({ textoBoton, onSubmit, valoresIniciales, isEd
                 <div className="row">
                     <div className="col-md-6">
                         <Form.Group className="mb-3 text-start" controlId="formNumeroLote">
-                            <Form.Label className="p-1 fw-bold">Número de Lote (Origen) *</Form.Label>
+                            <Form.Label className="p-1 fw-bold">Numero de Lote (Origen) *</Form.Label>
                             <Form.Control
                                 type="text"
                                 placeholder="Ej: LOT-FAB-2026-09"
                                 {...register("numero_lote", {
-                                    required: "El número de lote es obligatorio.",
-                                    maxLength: { value: 100, message: "Máximo 100 caracteres." },
+                                    required: "El numero de lote es obligatorio.",
+                                    maxLength: { value: 100, message: "Maximo 100 caracteres." },
                                     validate: (v) => v.trim() !== "" || "No puede ser solo espacios.",
                                 })}
                                 isInvalid={!!errors.numero_lote}
@@ -121,12 +131,14 @@ export function LoteProveedorForm({ textoBoton, onSubmit, valoresIniciales, isEd
 
                     <div className="col-md-6">
                         <Form.Group className="mb-3 text-start" controlId="formNumeroRemito">
-                            <Form.Label className="p-1 fw-bold">Número de Remito</Form.Label>
+                            <Form.Label className="p-1 fw-bold">Numero de Remito *</Form.Label>
                             <Form.Control
                                 type="text"
                                 placeholder="Ej: R-0001-00008899"
                                 {...register("numero_remito", {
-                                    maxLength: { value: 100, message: "Máximo 100 caracteres." },
+                                    required: "El numero de remito es obligatorio",
+                                    maxLength: { value: 100, message: "Maximo 100 caracteres." },
+                                    validate: (v) => v.trim() !== "" || "No puede ser solo espacios en blanco.",
                                 })}
                                 isInvalid={!!errors.numero_remito}
                             />
@@ -138,13 +150,13 @@ export function LoteProveedorForm({ textoBoton, onSubmit, valoresIniciales, isEd
                 <div className="row">
                     <div className="col-md-6">
                         <Form.Group className="mb-3 text-start" controlId="formFechaRecepcion">
-                            <Form.Label className="p-1 fw-bold">Fecha de Recepción *</Form.Label>
+                            <Form.Label className="p-1 fw-bold">Fecha de Recepcion *</Form.Label>
                             <Form.Control
                                 type="date"
                                 max={hoy}
                                 {...register("fecha_recepcion", {
-                                    required: "La fecha de recepción es obligatoria.",
-                                    validate: (v) => v <= hoy || "La fecha de recepción no puede ser futura.",
+                                    required: "La fecha de recepcion es obligatoria.",
+                                    validate: (v) => v <= hoy || "La fecha de recepcion no puede ser futura.",
                                 })}
                                 isInvalid={!!errors.fecha_recepcion}
                             />
@@ -167,18 +179,50 @@ export function LoteProveedorForm({ textoBoton, onSubmit, valoresIniciales, isEd
                 </div>
 
                 {archivoBase64 && (
-                    <div className="p-2 mb-3 border rounded bg-light d-flex align-items-center justify-content-between">
-                        <div className="d-flex align-items-center gap-2 text-truncate">
-                            <i className="bi bi-file-earmark-check text-success fs-5"></i>
-                            <span className="small fw-semibold text-truncate">{obtenerNombreArchivo(archivoBase64)}</span>
+                    <div className="mt-2 mb-3 p-3 border rounded bg-light text-center">
+                        <div className="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
+                            <span className="small text-muted fw-semibold">
+                                {valoresIniciales?.archivo_adjunto === archivoBase64 ? "Archivo actual cargado:" : "Archivo seleccionado:"}
+                            </span>
+                            <Button 
+                                variant="outline-danger" 
+                                size="sm" 
+                                onClick={() => setArchivoBase64(null)}
+                                title="Quitar archivo"
+                            >
+                                <i className="bi bi-trash me-1"></i>Quitar
+                            </Button>
                         </div>
-                        <Button variant="outline-danger" size="sm" onClick={() => setArchivoBase64(null)}>
-                            <i className="bi bi-trash"></i>
-                        </Button>
+
+                        {esImagen ? (
+                            <div>
+                                <img
+                                    src={archivoBase64}
+                                    alt="Comprobante Remito"
+                                    style={{ maxHeight: '180px', borderRadius: '8px', objectFit: 'contain' }}
+                                    className="border shadow-sm p-1 bg-white"
+                                />
+                                <div className="small text-muted mt-2 fw-semibold">
+                                    {obtenerNombreArchivo(archivoBase64)}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="p-2 px-3 border rounded bg-white d-inline-flex align-items-center gap-2 shadow-sm">
+                                <i className="bi bi-file-earmark-pdf-fill text-danger fs-3"></i>
+                                <span className="fw-semibold small">{obtenerNombreArchivo(archivoBase64)}</span>
+                                <a
+                                    href={archivoBase64}
+                                    download={obtenerNombreArchivo(archivoBase64)}
+                                    className="btn btn-outline-primary btn-sm ms-2"
+                                >
+                                    <i className="bi bi-download me-1"></i>Ver / Descargar
+                                </a>
+                            </div>
+                        )}
                     </div>
                 )}
 
-                <div className="d-flex justify-content-start gap-2 mt-3">
+                <div className="d-flex justify-content-start gap-2 mt-4">
                     <Button variant="secondary" type="button" onClick={() => navigate('/recepciones')}>
                         <i className="bi bi-x-circle me-1"></i>Cancelar
                     </Button>

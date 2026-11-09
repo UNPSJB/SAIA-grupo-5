@@ -8,6 +8,15 @@ export type PersonaSimple = {
     apellido: string;
 };
 
+export type HistorialEstadoLoteProveedor = {
+    id: number;
+    lote_id: number;
+    estado: string;
+    fecha_hora: string;
+    observacion: string | null;
+    usuario: PersonaSimple | null;
+};
+
 export type LoteProveedor = {
     id: number;
     proveedor_id: number;
@@ -15,7 +24,6 @@ export type LoteProveedor = {
     numero_remito: string | null;
     fecha_recepcion: string;
     archivo_adjunto: string | null;
-    observaciones: string | null;
     estado: EstadoLoteProveedor;
     registrado_por_id: number;
     fecha_registro: string;
@@ -37,9 +45,8 @@ export type UpdateLoteProveedor = {
     numero_remito: string | null;
     fecha_recepcion: string;
     archivo_adjunto: string | null;
-    observaciones: string | null;
 };
 
 export type AvanzarEtapaLote = {
-    observaciones?: string | null;
+    observacion?: string | null;
 };

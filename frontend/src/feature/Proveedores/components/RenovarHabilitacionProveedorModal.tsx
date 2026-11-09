@@ -28,7 +28,7 @@ const obtenerNombreArchivo = (base64: string | null | undefined): string => {
     return "Documento adjunto";
 };
 
-export function RenovarHabilitacionProveedorModal({proveedor, onHide, onRenovado,}: RenovarHabilitacionProveedorModalProps) {
+export function RenovarHabilitacionProveedorModal({ proveedor, onHide, onRenovado }: RenovarHabilitacionProveedorModalProps) {
     const [archivoBase64, setArchivoBase64] = useState<string | null>(null);
     const [archivoError, setArchivoError] = useState<string | null>(null);
     const [cargando, setCargando] = useState(false);
@@ -44,10 +44,7 @@ export function RenovarHabilitacionProveedorModal({proveedor, onHide, onRenovado
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setArchivoError(null);
         const file = e.target.files?.[0];
-        if (!file) {
-            setArchivoBase64(null);
-            return;
-        }
+        if (!file) return;
 
         const reader = new FileReader();
         reader.readAsDataURL(file);
@@ -70,13 +67,14 @@ export function RenovarHabilitacionProveedorModal({proveedor, onHide, onRenovado
                 numero_habilitacion: data.numero_habilitacion.trim(),
                 vencimiento_habilitacion: data.vencimiento_habilitacion,
                 observacion_habilitacion: data.observacion_habilitacion.trim() ? data.observacion_habilitacion.trim() : null,
-                archivo_adjunto: archivoBase64,
+                archivo_adjunto: archivoBase64 !== null ? archivoBase64 : proveedor.archivo_adjunto,
             };
 
             await api.patch(`/proveedores/${proveedor.id}/habilitacion`, payload);
 
             mostrarAlertaExito(`La habilitacion de '${proveedor.nombre}' fue actualizada correctamente.`);
             onRenovado();
+            handleClose();
         } catch (error: any) {
             let mensajeFinal = `No se pudo renovar la habilitacion del proveedor '${proveedor.nombre}'.`;
             if (error.response?.data?.detail) {
@@ -84,10 +82,9 @@ export function RenovarHabilitacionProveedorModal({proveedor, onHide, onRenovado
                 mensajeFinal = Array.isArray(detail) ? detail[0].msg : detail;
             }
             mostrarAlertaError(mensajeFinal);
-            console.log(error);
+            console.error(error);
         } finally {
             setCargando(false);
-            handleClose();
         }
     };
 
@@ -98,7 +95,7 @@ export function RenovarHabilitacionProveedorModal({proveedor, onHide, onRenovado
         onHide();
     };
 
-    const archivoAMostrar = archivoBase64 || proveedor?.archivo_adjunto;
+    const archivoAMostrar = archivoBase64 !== null ? archivoBase64 : proveedor?.archivo_adjunto;
     const esImagen = archivoAMostrar?.startsWith("data:image/");
     const vencimientoAnterior = proveedor?.vencimiento_habilitacion || null;
 
@@ -115,7 +112,7 @@ export function RenovarHabilitacionProveedorModal({proveedor, onHide, onRenovado
                     <p className="mb-1"><strong>CUIT:</strong> {proveedor?.cuit}</p>
                     {vencimientoAnterior ? (
                         <p className="text-muted small mb-0">
-                            <strong>Habilitacion previa:</strong> {proveedor?.numero_habilitacion} (Vencio/Vence: {vencimientoAnterior})
+                            <strong>Habilitacion previa:</strong> {proveedor?.numero_habilitacion} (Vencio/Vence: {vencimientoAnterior.split("-").reverse().join("/")})
                         </p>
                     ) : (
                         <p className="text-warning small mb-0 fst-italic">El proveedor no tiene habilitacion registrada previamente.</p>
@@ -125,7 +122,7 @@ export function RenovarHabilitacionProveedorModal({proveedor, onHide, onRenovado
                     <div className="row">
                         <div className="col-md-6">
                             <Form.Group className="mb-3 text-start" controlId="formNumeroHabilitacion">
-                                <Form.Label className="p-1 fw-bold">Numero de Habilitacion *</Form.Label>
+                                <Form.Label className="p-1 fw-bold">Número de Habilitacion *</Form.Label>
                                 <Form.Control
                                     type="text"
                                     placeholder="Ej: HAB-2026-9988"
@@ -150,7 +147,7 @@ export function RenovarHabilitacionProveedorModal({proveedor, onHide, onRenovado
                                         required: "La fecha de vencimiento es obligatoria.",
                                         validate: (fecha) => {
                                             if (vencimientoAnterior && fecha <= vencimientoAnterior) {
-                                                return `La nueva fecha debe ser posterior a la fecha anterior (${vencimientoAnterior}).`;
+                                                return `La nueva fecha debe ser posterior a la fecha anterior (${vencimientoAnterior.split("-").reverse().join("/")}).`;
                                             }
                                             return true;
                                         }
@@ -175,30 +172,43 @@ export function RenovarHabilitacionProveedorModal({proveedor, onHide, onRenovado
                         <Form.Control.Feedback type="invalid">{archivoError}</Form.Control.Feedback>
 
                         {archivoAMostrar && (
-                            <div className="mt-3 text-center">
-                                <p className="small text-muted mb-1">
-                                    {archivoBase64 ? "Archivo nuevo a subir:" : "Archivo actual guardado:"}
-                                </p>
+                            <div className="mt-3 p-3 border rounded bg-light text-center">
+                                <div className="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
+                                    <span className="small text-muted fw-semibold">
+                                        {archivoBase64 !== null ? "Archivo seleccionado:" : "Archivo actual guardado:"}
+                                    </span>
+                                    <Button 
+                                        variant="outline-danger" 
+                                        size="sm" 
+                                        onClick={() => setArchivoBase64("")}
+                                        className="d-flex align-items-center gap-1"
+                                    >
+                                        <i className="bi bi-trash"></i> Quitar
+                                    </Button>
+                                </div>
+
                                 {esImagen ? (
                                     <div>
                                         <img
                                             src={archivoAMostrar}
                                             alt="Comprobante"
-                                            style={{ maxHeight: '160px', borderRadius: '8px', objectFit: 'contain' }}
-                                            className="border shadow-sm p-1"
+                                            style={{ maxHeight: '180px', borderRadius: '8px', objectFit: 'contain' }}
+                                            className="border shadow-sm p-1 bg-white"
                                         />
-                                        <div className="small text-muted mt-1">{obtenerNombreArchivo(archivoAMostrar)}</div>
+                                        <div className="small text-muted mt-2 fw-semibold">
+                                            {obtenerNombreArchivo(archivoAMostrar)}
+                                        </div>
                                     </div>
                                 ) : (
-                                    <div className="p-2 px-3 border rounded bg-light d-inline-flex align-items-center gap-2">
-                                        <i className="bi bi-file-earmark-pdf-fill text-danger fs-4"></i>
-                                        <span className="fw-semibold">{obtenerNombreArchivo(archivoAMostrar)}</span>
+                                    <div className="p-2 px-3 border rounded bg-white d-inline-flex align-items-center gap-2 shadow-sm">
+                                        <i className="bi bi-file-earmark-pdf-fill text-danger fs-3"></i>
+                                        <span className="fw-semibold small">{obtenerNombreArchivo(archivoAMostrar)}</span>
                                         <a
                                             href={archivoAMostrar}
                                             download={obtenerNombreArchivo(archivoAMostrar)}
-                                            className="btn btn-outline-primary btn-sm ms-2"
+                                            className="btn btn-outline-success btn-sm ms-2 d-inline-flex align-items-center gap-1"
                                         >
-                                            <i className="bi bi-download me-1"></i>Ver / Descargar
+                                            <i className="bi bi-download"></i> Ver / Descargar
                                         </a>
                                     </div>
                                 )}
@@ -211,9 +221,9 @@ export function RenovarHabilitacionProveedorModal({proveedor, onHide, onRenovado
                         <Form.Control
                             as="textarea"
                             rows={2}
-                            placeholder="Notas sobre el certificado o la renovación..."
+                            placeholder="Notas sobre el certificado o la renovacion..."
                             {...register("observacion_habilitacion", {
-                                maxLength: { value: 500, message: "Máximo 500 caracteres." }
+                                maxLength: { value: 500, message: "Maximo 500 caracteres." }
                             })}
                             isInvalid={!!errors.observacion_habilitacion}
                         />
@@ -225,7 +235,7 @@ export function RenovarHabilitacionProveedorModal({proveedor, onHide, onRenovado
                         <i className="bi bi-x-circle me-1"></i>Cancelar
                     </Button>
                     <Button variant="primary" type="submit" disabled={cargando}>
-                        <i className="bi bi-floppy me-1"></i>Confirmar Habilitacion
+                        <i className="bi bi-floppy me-1"></i>Confirmar Habilitación
                     </Button>
                 </Modal.Footer>
             </Form>

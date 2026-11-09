@@ -12,7 +12,7 @@ export function NuevoLoteProveedorPage() {
     const crearLote = async (datos: NewLoteProveedor) => {
         try {
             await api.post('/lotes-proveedor/', datos);
-            mostrarAlertaExito('Recepción y lote registrados con éxito.');
+            mostrarAlertaExito('Recepcion y lote registrados con exito.');
             navigate('/recepciones');
         } catch (error: any) {
             let mensaje = 'No se pudo crear el lote de proveedor.';
@@ -26,7 +26,7 @@ export function NuevoLoteProveedorPage() {
 
     return (
         <Container>
-            <PageHeader title="Nueva Recepción de Lote" subtitle="Registrar ingreso de mercadería de proveedor" />
+            <PageHeader title="Nueva Recepcion de Lote" subtitle="Registrar ingreso de mercaderia de proveedor" />
             <LoteProveedorForm textoBoton="Registrar Recepción" onSubmit={crearLote} />
         </Container>
     );

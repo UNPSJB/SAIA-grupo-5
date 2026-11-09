@@ -42,7 +42,7 @@ export function DeleteLoteProveedorModal({ lote, onHide, onDeleted }: DeleteLote
                 <Modal.Title>{lote.activo ? 'Dar de baja Lote' : 'Dar de alta Lote'}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                ¿Estás seguro de que deseás {accion} el lote <strong>{lote.numero_lote}</strong> del proveedor{' '}
+                ¿Estas seguro de que queres {accion} el lote <strong>{lote.numero_lote}</strong> del proveedor{' '}
                 <strong>{lote.proveedor?.nombre}</strong>?
             </Modal.Body>
             <Modal.Footer>
