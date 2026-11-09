@@ -27,3 +27,6 @@ from src.historial_incidente.models import HistorialIncidente
 from src.unidad_medida.models import UnidadMedida
 from src.producto.models import Producto
 from src.lote_produccion.models import LoteProduccion, InsumoUtilizado
+from src.clientes.models import Cliente
+from src.direcciones_cliente.models import DireccionCliente
+from src.envios_lote.models import EnvioLote

@@ -42,12 +42,15 @@ def generar_lotes_produccion(db) -> list[LoteProduccion]:
                 continue
 
             for numero in range(fake.randint(1, 3)):
+                cantidad = fake.randint(20, 150)
+
                 lotes.append(
                     LoteProduccion(
                         producto_id=producto.id,
                         fecha_produccion=fecha,
                         fecha_vencimiento=fecha + timedelta(days=30),
-                        cantidad_producida=fake.randint(20, 150),
+                        cantidad_producida=cantidad,
+                        cantidad_disponible=cantidad,
                         activo=not (dias_atras % 11 == 0 and numero == 0)
                     )
                 )
