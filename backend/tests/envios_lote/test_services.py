@@ -10,8 +10,8 @@ from src.clientes import services as cliente_services
 
 
 def test_crear_envio_exitoso(db_session, unico_lote_produccion, unico_cliente, unica_direccion_cliente):
-    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id)
-    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id)
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id, usuario_id=1)
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id, usuario_id=1)
 
     datos = schemas.EnvioLoteCreate(
         lote_id=unico_lote_produccion.id,
@@ -36,8 +36,8 @@ def test_crear_envio_exitoso(db_session, unico_lote_produccion, unico_cliente, u
 
 
 def test_crear_envio_agota_lote(db_session, unico_lote_produccion, unico_cliente, unica_direccion_cliente):
-    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id)
-    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id)
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id, usuario_id=1)
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id, usuario_id=1)
 
     datos = schemas.EnvioLoteCreate(
         lote_id=unico_lote_produccion.id,
@@ -86,8 +86,8 @@ def test_crear_envio_lote_no_terminado_error(db_session, unico_lote_produccion, 
 
 
 def test_crear_envio_cantidad_invalida_cero(db_session, unico_lote_produccion, unico_cliente, unica_direccion_cliente):
-    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id)
-    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id)
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id, usuario_id=1)
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id, usuario_id=1)
 
     datos = schemas.EnvioLoteCreate(
         lote_id=unico_lote_produccion.id,
@@ -104,8 +104,8 @@ def test_crear_envio_cantidad_invalida_cero(db_session, unico_lote_produccion, u
 
 
 def test_crear_envio_stock_insuficiente_error(db_session, unico_lote_produccion, unico_cliente, unica_direccion_cliente):
-    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id)
-    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id)
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id, usuario_id=1)
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id, usuario_id=1)
 
     datos = schemas.EnvioLoteCreate(
         lote_id=unico_lote_produccion.id,
@@ -122,8 +122,8 @@ def test_crear_envio_stock_insuficiente_error(db_session, unico_lote_produccion,
 
 
 def test_crear_envio_fecha_anterior_a_produccion_error(db_session, unico_lote_produccion, unico_cliente, unica_direccion_cliente):
-    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id)
-    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id)
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id, usuario_id=1)
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id, usuario_id=1)
 
     datos = schemas.EnvioLoteCreate(
         lote_id=unico_lote_produccion.id,
@@ -140,8 +140,8 @@ def test_crear_envio_fecha_anterior_a_produccion_error(db_session, unico_lote_pr
 
 
 def test_crear_envio_cliente_inactivo_error(db_session, unico_lote_produccion, multiples_clientes, unica_direccion_cliente):
-    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id)
-    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id)
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id, usuario_id=1)
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id, usuario_id=1)
 
     cliente_inactivo = multiples_clientes[2] 
 
@@ -160,8 +160,8 @@ def test_crear_envio_cliente_inactivo_error(db_session, unico_lote_produccion, m
 
 
 def test_crear_envio_direccion_no_pertenece_a_cliente(db_session, unico_lote_produccion, multiples_clientes, unica_direccion_cliente):
-    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id)
-    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id)
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id, usuario_id=1)
+    lote_services.cambiar_estado_lote_produccion(db_session, unico_lote_produccion.id, usuario_id=1)
 
     otro_cliente = multiples_clientes[0]
 

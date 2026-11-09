@@ -1,4 +1,5 @@
 from datetime import date
+from src.lote_produccion import services as lote_services
 
 
 def test_endpoint_get_lote_produccion(client, auth_headers, unico_lote_produccion):
@@ -79,9 +80,9 @@ def test_endpoint_cambiar_estado_lote_produccion(client, auth_headers, unico_lot
 
 
 def test_endpoint_cambiar_estado_lote_ya_enviado_error_400(client, auth_headers, unico_lote_produccion):
-    client.patch(f"/lotes-produccion/{unico_lote_produccion.id}/estado", headers=auth_headers) # Empaquetando
-    client.patch(f"/lotes-produccion/{unico_lote_produccion.id}/estado", headers=auth_headers) # Terminado
-    client.patch(f"/lotes-produccion/{unico_lote_produccion.id}/estado", headers=auth_headers) # Enviado
+    client.patch(f"/lotes-produccion/{unico_lote_produccion.id}/estado", headers=auth_headers) 
+    client.patch(f"/lotes-produccion/{unico_lote_produccion.id}/estado", headers=auth_headers) 
+    client.patch(f"/lotes-produccion/{unico_lote_produccion.id}/estado", headers=auth_headers) 
 
     response = client.patch(
         f"/lotes-produccion/{unico_lote_produccion.id}/estado",
@@ -157,3 +158,20 @@ def test_endpoint_asociar_insumo_sin_permiso(client, auth_headers_sin_operar, un
     )
 
     assert response.status_code == 403
+
+
+def test_endpoint_listar_historial_estados_lote(client, auth_headers, db_session, unico_lote_produccion):
+    lote_services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id, observacion="Cambio registrado", usuario_id=1)
+
+    response = client.get(f"/lotes-produccion/{unico_lote_produccion.id}/historial-estados", headers=auth_headers)
+
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) >= 1
+    
+    ultimo_hito = data[-1]
+    assert "estado" in ultimo_hito
+    assert "fecha_hora" in ultimo_hito
+    assert ultimo_hito["observacion"] == "Cambio registrado"
+    assert "usuario" in ultimo_hito 
