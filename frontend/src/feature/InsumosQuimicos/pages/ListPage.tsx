@@ -203,7 +203,7 @@ export function ListPage() {
             <Row className="p-2 align-items-center" >
                 <Col>
                     <PageHeader
-                        eyebrow="GESTIÓN"
+                        eyebrow="LIMPIEZA"
                         title="Listado de Insumos Químicos"
                         subtitle="Revisá el Listado de Insumos Químicos creados hasta la fecha."
                     />

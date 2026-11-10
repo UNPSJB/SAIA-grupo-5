@@ -192,7 +192,7 @@ export function ListPage() {
     return (
         <div className="incident-page">
             <PageHeader
-                eyebrow="SEGUIMIENTO Y PREVENCIÓN"
+                eyebrow="OPERACIONES"
                 title={titulo}
                 subtitle="Revisá los incidentes reportados y consultá las acciones correctivas registradas."
                 actions={(

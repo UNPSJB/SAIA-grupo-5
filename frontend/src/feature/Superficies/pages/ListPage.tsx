@@ -188,7 +188,7 @@ export function SuperficiesPage() {
             <Row className="p-2 align-items-center">
                 <Col>
                     <PageHeader
-                        eyebrow="GESTIÓN"
+                        eyebrow="DATOS MAESTROS"
                         title="Listado de Superficies"
                         subtitle="Revisá el Listado de Superficies creados hasta la fecha."
                     />
