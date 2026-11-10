@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Alert, Button, Card, Container } from "react-bootstrap";
+import { Alert, Button, Card, Col, Container, Form, InputGroup, Row } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { PageHeader } from "../../../components/PageHeader";
 import { PageLoading } from "../../../components/PageLoading";
@@ -9,7 +9,7 @@ import { INSUMOS_RECETA_MOCK } from "../constants";
 import type { Receta } from "../types";
 import "./EscalarRecetaPage.css";
 
-// Muestra hasta 2 decimales sin ceros de más (83.333 -> 83.33, 2.00 -> 2)
+// Redondeo
 function formatearCantidad(valor: number): string {
     return String(Math.round(valor * 100) / 100);
 }
@@ -21,10 +21,8 @@ export function EscalarRecetaPage() {
     const { data: producto, isLoading: cargandoProducto } = useApi<Producto>(`/productos/${id}`);
     const { data: receta, isLoading: cargandoReceta, error } = useApi<Receta>(`/recetas/producto/${id}`);
 
-    // Factor por el que se multiplican todas las cantidades de la receta
     const [factor, setFactor] = useState(1);
-    // Texto que el usuario está escribiendo en un campo, para no reformatearlo mientras tipea
-    const [edicion, setEdicion] = useState<{ insumoId: number; texto: string } | null>(null);
+    const [textoFactor, setTextoFactor] = useState("1");
 
     const tituloPagina = "Escalar Receta";
 
@@ -40,14 +38,19 @@ export function EscalarRecetaPage() {
         </Container>
     );
 
-    // TODO: quitar el mock cuando el backend devuelva receta.insumos
+    // INSUMO RECETA MOCK
     const insumos = receta.insumos ?? INSUMOS_RECETA_MOCK;
 
-    const cambiarCantidad = (insumoId: number, cantidadOriginal: number, texto: string) => {
-        setEdicion({ insumoId, texto });
+    const aplicarFactor = (nuevoFactor: number) => {
+        setFactor(nuevoFactor);
+        setTextoFactor(formatearCantidad(nuevoFactor));
+    };
+
+    const cambiarTextoFactor = (texto: string) => {
+        setTextoFactor(texto);
         const valor = Number(texto.replace(",", "."));
         if (texto.trim() !== "" && Number.isFinite(valor) && valor > 0) {
-            setFactor(valor / cantidadOriginal);
+            setFactor(valor);
         }
     };
 
@@ -67,7 +70,6 @@ export function EscalarRecetaPage() {
                         <span>Insumo</span>
                         <span className="text-end">Original</span>
                         <span />
-                        <span className="escalar-columna text-center">Escalado</span>
                     </div>
 
                     {insumos.map((insumo, indice) => (
@@ -79,28 +81,28 @@ export function EscalarRecetaPage() {
                             </span>
                             <span className="text-end">{formatearCantidad(insumo.cantidad)}</span>
                             <span className="text-muted small">{insumo.unidad_medida.nombre}</span>
-                            <span className="escalar-columna">
-                                <input
-                                    type="text"
-                                    inputMode="decimal"
-                                    className="escalar-input"
-                                    aria-label={`Cantidad escalada de ${insumo.nombre}`}
-                                    value={
-                                        edicion?.insumoId === insumo.insumo_id
-                                            ? edicion.texto
-                                            : formatearCantidad(insumo.cantidad * factor)
-                                    }
-                                    onFocus={(e) => e.target.select()}
-                                    onChange={(e) => cambiarCantidad(insumo.insumo_id, insumo.cantidad, e.target.value)}
-                                    onBlur={() => setEdicion(null)}
-                                />
-                            </span>
                         </div>
                     ))}
 
-                    <p className="text-muted small mt-3 mb-0">
-                        Modificá cualquier cantidad de la columna "Escalado" y el resto se ajusta proporcionalmente.
-                    </p>
+                    <div className="escalar-controles mt-3 pt-3">
+                        <label htmlFor="escalar-factor" className="small text-muted mb-2 d-block">
+                            Multiplicar la receta por
+                        </label>
+                        <div>
+                            <InputGroup size="sm" className="escalar-factor-input">
+                                <InputGroup.Text>x</InputGroup.Text>
+                                <Form.Control
+                                    id="escalar-factor"
+                                    type="text"
+                                    inputMode="decimal"
+                                    value={textoFactor}
+                                    onFocus={(e) => e.target.select()}
+                                    onChange={(e) => cambiarTextoFactor(e.target.value)}
+                                    onBlur={() => setTextoFactor(formatearCantidad(factor))}
+                                />
+                            </InputGroup>
+                        </div>
+                    </div>
                 </Card.Body>
 
                 <Card.Footer className="bg-light d-flex justify-content-between gap-2">
@@ -110,12 +112,30 @@ export function EscalarRecetaPage() {
                     <Button
                         variant="outline-primary"
                         disabled={factor === 1}
-                        onClick={() => { setFactor(1); setEdicion(null); }}
+                        onClick={() => aplicarFactor(1)}
                     >
                         <i className="bi bi-arrow-counterclockwise me-1"></i>Restablecer
                     </Button>
                 </Card.Footer>
             </Card>
+
+            <h2 className="h6 text-muted mt-4 mb-3">Cantidades escaladas (x{formatearCantidad(factor)})</h2>
+            <Row xs={2} sm={3} className="escalar-cards g-2 g-sm-3 mb-4">
+                {insumos.map((insumo) => (
+                    <Col key={insumo.insumo_id}>
+                        <div className="escalar-card h-100">
+                            <div className="escalar-card-etiqueta text-truncate" title={insumo.nombre}>{insumo.nombre}</div>
+                            <div className="escalar-card-valor">
+                                {formatearCantidad(insumo.cantidad * factor)}
+                                <span className="escalar-card-unidad">{insumo.unidad_medida.nombre}</span>
+                            </div>
+                            <div className="escalar-card-detalle">
+                                original: {formatearCantidad(insumo.cantidad)} {insumo.unidad_medida.nombre}
+                            </div>
+                        </div>
+                    </Col>
+                ))}
+            </Row>
         </Container>
     );
 }
