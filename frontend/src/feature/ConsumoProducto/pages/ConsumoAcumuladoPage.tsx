@@ -87,9 +87,9 @@ export function ConsumoAcumuladoPage() {
             <Row className="p-2 align-items-center">
                 <Col>
                     <PageHeader
-                        eyebrow="GESTIÓN"
-                        title="Consumo Acumulado por Producto Quimico"
-                        subtitle="Revisá el Consumo Acumulado por Producto Quimico."
+                        eyebrow="LIMPIEZA"
+                        title="Consumo Acumulado por Insumo Quimico"
+                        subtitle="Revisá el Consumo Acumulado por Insumo Quimico."
                     />
                 </Col>
             </Row>

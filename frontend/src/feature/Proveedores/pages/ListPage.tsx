@@ -247,7 +247,7 @@ export function ListPage() {
             <Row className="p-2 align-items-center">
                 <Col>
                     <PageHeader
-                        eyebrow="DATOS MAESTROS"
+                        eyebrow="ABASTECIMIENTO"
                         title={titulo}
                         subtitle="Revisa el listado de proveedores y actualiza sus certificados de habilitacion."
                     />

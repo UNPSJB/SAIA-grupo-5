@@ -144,7 +144,7 @@ export function ListPage() {
             <Row className="p-2 align-items-center">
                 <Col>
                     <PageHeader
-                        eyebrow="GESTION"
+                        eyebrow="GESTIÓN"
                         title="Listado de Clientes"
                         subtitle="Revisa el listado de clientes creados hasta la fecha."
                     />
