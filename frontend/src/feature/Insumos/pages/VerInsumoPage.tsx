@@ -1,8 +1,9 @@
-import { Container, Alert, Row, Col, Card, Button } from "react-bootstrap";
+import { Container, Alert, Row, Col, Card, Button, Table } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 import type { Insumo } from "../types";
+import { CAMPOS_NUTRICIONALES } from "../constants";
 import { PageLoading } from "../../../components/PageLoading";
 import { useAuth } from "../../../hooks";
 
@@ -64,6 +65,29 @@ export function VerInsumoPage() {
                                         {insumo.unidad_medida.nombre}
                                     </div>
                                 </div>
+                                </Col>
+                            </Row>
+
+                            <Row className="mb-3 border-bottom pb-3">
+                                <Col sm={4} className="fw-bold text-secondary">Información nutricional<div className="small fw-normal">cada 100 g o ml</div></Col>
+                                <Col sm={8}>
+                                    {insumo.valor_energetico === null ? (
+                                        <span className="text-muted">Sin información nutricional cargada</span>
+                                    ) : (
+                                        <Table size="sm" className="mb-0">
+                                            <tbody>
+                                                {CAMPOS_NUTRICIONALES.map(({ campo, etiqueta, unidad }) => (
+                                                    <tr key={campo}>
+                                                        <td>{etiqueta}</td>
+                                                        <td className="text-end fw-semibold">{insumo[campo]} {unidad}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </Table>
+                                    )}
+                                    {insumo.peso_unidad !== null && (
+                                        <div className="small text-muted mt-2">1 {insumo.unidad_medida.nombre} equivale a {insumo.peso_unidad} g / ml</div>
+                                    )}
                                 </Col>
                             </Row>
 

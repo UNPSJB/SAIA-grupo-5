@@ -8,3 +8,11 @@ class RecetaNoEncontrada(NotFound):
 
 class RecetaDuplicada(BadRequest):
     DETAIL = ErrorCode.RECETA_DUPLICADA
+
+
+class InsumoRepetido(BadRequest):
+    DETAIL = ErrorCode.INSUMO_REPETIDO
+
+
+class InsumoNoAlimentario(BadRequest):
+    DETAIL = ErrorCode.INSUMO_NO_ALIMENTARIO

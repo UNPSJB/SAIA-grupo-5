@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react';
-import { Accordion, Badge, Button, Form, Modal } from 'react-bootstrap';
-import { useFieldArray, useForm, useWatch, type Control, type FieldErrors, type UseFormRegister } from 'react-hook-form';
+import { Accordion, Badge, Button, Form, InputGroup, Modal } from 'react-bootstrap';
+import { Controller, useFieldArray, useForm, useWatch, type Control, type FieldErrors, type UseFormRegister } from 'react-hook-form';
 import { isAxiosError } from 'axios';
 import { api } from '../../../libs/axios';
 import { mostrarAlertaError, mostrarAlertaExito } from '../../../libs/alertas';
 import type { Producto } from '../../Productos/types';
-import type { NewEtapaReceta, NewReceta, Receta } from '../types';
+import type { Insumo } from '../../Insumos/types';
+import type { EvaluacionSellos, NewEtapaReceta, NewInsumoReceta, NewReceta, Receta } from '../types';
 import { PLANTILLA_ETAPAS } from '../constants';
+import { useApi } from '../../../hooks/useApi';
+import { SelectorConBusqueda } from '../../../components/SelectorConBusqueda';
+import { SellosFrontales } from './SellosFrontales';
 
 interface RecetaFormModalProps {
     producto: Producto | null;
@@ -16,20 +20,35 @@ interface RecetaFormModalProps {
     onSaved: (receta: Receta) => void;
 }
 
+interface InsumoRecetaFormData {
+    insumo_id: string;
+    cantidad: string;
+}
+
 interface RecetaFormData {
+    insumos: InsumoRecetaFormData[];
     etapas: NewEtapaReceta[];
 }
 
 const plantillaInicial = (): RecetaFormData => ({
+    insumos: [],
     etapas: PLANTILLA_ETAPAS.map((etapa) => ({ ...etapa, pasos: etapa.pasos.map((paso) => ({ ...paso })) })),
 });
 
 const valoresDeReceta = (receta: Receta): RecetaFormData => ({
+    insumos: (receta.insumos ?? []).map((item) => ({ insumo_id: String(item.insumo_id), cantidad: String(item.cantidad) })),
     etapas: receta.etapas.map((etapa) => ({
         nombre: etapa.nombre,
         pasos: etapa.pasos.map((paso) => ({ descripcion: paso.descripcion })),
     })),
 });
+
+const insumosValidos = (insumos: InsumoRecetaFormData[] = []): NewInsumoReceta[] => {
+    const vistos = new Set<string>();
+    return insumos
+        .filter((item) => item?.insumo_id && Number(item.cantidad) > 0 && !vistos.has(item.insumo_id) && Boolean(vistos.add(item.insumo_id)))
+        .map((item) => ({ insumo_id: Number(item.insumo_id), cantidad: Number(item.cantidad) }));
+};
 
 export function RecetaFormModal({ producto, receta, onHide, onSaved }: RecetaFormModalProps) {
     const [cargando, setCargando] = useState(false);
@@ -55,9 +74,10 @@ export function RecetaFormModal({ producto, receta, onHide, onSaved }: RecetaFor
                 nombre: etapa.nombre.trim(),
                 pasos: etapa.pasos.map((paso) => ({ descripcion: paso.descripcion.trim() })),
             }));
+            const insumos = data.insumos.map((item) => ({ insumo_id: Number(item.insumo_id), cantidad: Number(item.cantidad) }));
             const { data: guardada } = receta
-                ? await api.put<Receta>(`/recetas/${receta.id}`, { etapas })
-                : await api.post<Receta>("/recetas/", { producto_id: producto.id, etapas } satisfies NewReceta);
+                ? await api.put<Receta>(`/recetas/${receta.id}`, { etapas, insumos })
+                : await api.post<Receta>("/recetas/", { producto_id: producto.id, etapas, insumos } satisfies NewReceta);
             mostrarAlertaExito(`La receta del producto '${producto.nombre}' se ${esEdicion ? 'actualizó' : 'creó'} correctamente.`);
             onSaved(guardada);
             onHide();
@@ -89,6 +109,15 @@ export function RecetaFormModal({ producto, receta, onHide, onSaved }: RecetaFor
                         {' '}El orden de etapas y pasos es el orden en que aparecen.
                     </p>
 
+                    <IngredientesReceta
+                        control={control}
+                        register={register}
+                        errors={errors}
+                        producto={producto}
+                        receta={receta}
+                    />
+
+                    <h6 className="fw-bold text-start mt-4 mb-2">Etapas y pasos</h6>
                     <Accordion alwaysOpen defaultActiveKey={["0"]}>
                         {etapas.map((etapa, index) => (
                             <Accordion.Item key={etapa.id} eventKey={String(index)}>
@@ -148,6 +177,134 @@ export function RecetaFormModal({ producto, receta, onHide, onSaved }: RecetaFor
                 </Modal.Footer>
             </Form>
         </Modal>
+    );
+}
+
+interface IngredientesRecetaProps {
+    control: Control<RecetaFormData>;
+    register: UseFormRegister<RecetaFormData>;
+    errors: FieldErrors<RecetaFormData>;
+    producto: Producto | null;
+    receta?: Receta | null;
+}
+
+function IngredientesReceta({ control, register, errors, producto, receta }: IngredientesRecetaProps) {
+    const { fields: insumos, append, remove } = useFieldArray({ control, name: "insumos" });
+    const insumosActuales = useWatch({ control, name: "insumos" });
+    const { data: insumosDisponibles } = useApi<Insumo[]>(producto ? "/insumos/" : null);
+    const [resultado, setResultado] = useState<{ consulta: string; evaluacion: EvaluacionSellos | null } | null>(null);
+
+    const idsDeReceta = new Set((receta?.insumos ?? []).map((item) => item.insumo_id));
+    const opciones = (insumosDisponibles ?? [])
+        .filter((insumo) => insumo.activo || idsDeReceta.has(insumo.id))
+        .map((insumo) => ({
+            value: String(insumo.id),
+            label: `${insumo.nombre} (${insumo.unidad_medida.nombre})${insumo.valor_energetico === null ? ' · sin información nutricional' : ''}`,
+        }));
+
+    const items = insumosValidos(insumosActuales);
+    const consulta = JSON.stringify(items);
+    const hayItems = items.length > 0;
+    const calculando = hayItems && resultado?.consulta !== consulta;
+    const evaluacion = hayItems && !calculando ? resultado?.evaluacion ?? null : null;
+
+    useEffect(() => {
+        const itemsConsulta: NewInsumoReceta[] = JSON.parse(consulta);
+        if (!producto || itemsConsulta.length === 0) return;
+
+        let vigente = true;
+        const temporizador = setTimeout(async () => {
+            try {
+                const { data } = await api.post<EvaluacionSellos>("/recetas/sellos", { producto_id: producto.id, insumos: itemsConsulta });
+                if (vigente) setResultado({ consulta, evaluacion: data });
+            } catch (error) {
+                if (vigente) setResultado({ consulta, evaluacion: null });
+                console.log(error);
+            }
+        }, 400);
+
+        return () => {
+            vigente = false;
+            clearTimeout(temporizador);
+        };
+    }, [consulta, producto]);
+
+    const unidadDeInsumo = (insumoId?: string) =>
+        insumosDisponibles?.find((insumo) => String(insumo.id) === insumoId)?.unidad_medida.nombre;
+
+    return (
+        <div className="text-start mb-2">
+            <h6 className="fw-bold mb-1">Ingredientes por unidad de producto</h6>
+            <p className="text-muted small mb-2">
+                Indicá la cantidad de cada insumo que se usa para elaborar una unidad de {producto?.nombre}
+                {producto && ` (${producto.cantidad_neta} ${producto.unidad_medida.nombre})`}.
+            </p>
+
+            {insumos.length === 0 && (
+                <p className="text-muted small fst-italic mb-2">Todavía no se agregaron ingredientes.</p>
+            )}
+
+            {insumos.map((item, index) => {
+                const errorInsumo = errors.insumos?.[index]?.insumo_id;
+                const errorCantidad = errors.insumos?.[index]?.cantidad;
+                return (
+                    <div key={item.id} className="d-flex align-items-start gap-2 mb-2">
+                        <div className="flex-grow-1">
+                            <Controller
+                                control={control}
+                                name={`insumos.${index}.insumo_id`}
+                                rules={{
+                                    required: "Seleccioná un insumo.",
+                                    validate: (valor, datos) =>
+                                        datos.insumos.filter((otro) => otro.insumo_id === valor).length === 1 || "El insumo ya fue agregado.",
+                                }}
+                                render={({ field }) => (
+                                    <SelectorConBusqueda
+                                        value={field.value}
+                                        options={opciones}
+                                        onChange={field.onChange}
+                                        placeholder="Seleccionar insumo..."
+                                    />
+                                )}
+                            />
+                            {errorInsumo && <div className="text-danger small mt-1">{errorInsumo.message}</div>}
+                        </div>
+                        <div style={{ width: '12rem' }}>
+                            <InputGroup hasValidation>
+                                <Form.Control
+                                    type="number"
+                                    min={0}
+                                    step="any"
+                                    placeholder="Cantidad"
+                                    {...register(`insumos.${index}.cantidad`, {
+                                        required: "La cantidad es obligatoria.",
+                                        validate: (valor) => Number(valor) > 0 || "La cantidad debe ser mayor a 0.",
+                                    })}
+                                    isInvalid={!!errorCantidad}
+                                />
+                                <InputGroup.Text>{unidadDeInsumo(insumosActuales?.[index]?.insumo_id) ?? '-'}</InputGroup.Text>
+                                <Form.Control.Feedback type="invalid">{errorCantidad?.message}</Form.Control.Feedback>
+                            </InputGroup>
+                        </div>
+                        <Button
+                            variant="outline-danger"
+                            size="sm"
+                            className="mt-1"
+                            onClick={() => remove(index)}
+                            title="Eliminar ingrediente"
+                        >
+                            <i className="bi bi-x-lg"></i>
+                        </Button>
+                    </div>
+                );
+            })}
+
+            <Button variant="link" size="sm" className="px-0 mb-2" onClick={() => append({ insumo_id: "", cantidad: "" })}>
+                <i className="bi bi-plus-lg me-1"></i>Agregar ingrediente
+            </Button>
+
+            <SellosFrontales evaluacion={evaluacion} cargando={calculando} />
+        </div>
     );
 }
 

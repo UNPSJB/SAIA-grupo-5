@@ -1,6 +1,6 @@
 from src.models import ModeloBase
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, Boolean, ForeignKey
+from sqlalchemy import String, Boolean, ForeignKey, Float
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -16,6 +16,13 @@ class Insumo(ModeloBase):
     unidad_medida: Mapped["UnidadMedida"] = relationship()
 
     activo: Mapped[bool] = mapped_column(Boolean, default=True)
+
+    valor_energetico: Mapped[float | None] = mapped_column(Float, nullable=True)
+    azucares_anadidos: Mapped[float | None] = mapped_column(Float, nullable=True)
+    grasas_totales: Mapped[float | None] = mapped_column(Float, nullable=True)
+    grasas_saturadas: Mapped[float | None] = mapped_column(Float, nullable=True)
+    sodio: Mapped[float | None] = mapped_column(Float, nullable=True)
+    peso_unidad: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     tipo_herencia: Mapped[str] = mapped_column(String(30))
 
