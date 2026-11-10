@@ -1,4 +1,5 @@
 import { Accordion, Button, ListGroup, Modal, Spinner } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import { useApi } from '../../../hooks/useApi';
 import type { Producto } from '../../Productos/types';
 import type { Receta } from '../types';
@@ -11,6 +12,7 @@ interface VerRecetaModalProps {
 }
 
 export function VerRecetaModal({ producto, onHide, onEditar }: VerRecetaModalProps) {
+    const navigate = useNavigate();
     const { data: receta, error, isLoading } = useApi<Receta>(
         producto ? `/recetas/producto/${producto.id}` : null,
     );
@@ -54,6 +56,14 @@ export function VerRecetaModal({ producto, onHide, onEditar }: VerRecetaModalPro
                 )}
             </Modal.Body>
             <Modal.Footer>
+                <Button
+                    className="me-auto"
+                    variant="primary"
+                    disabled={!receta}
+                    onClick={() => producto && navigate(`/productos/${producto.id}/receta/escalar`)}
+                >
+                    Escalar
+                </Button>
                 <Button variant="secondary" onClick={onHide}>Cerrar</Button>
                 {onEditar && receta && (
                     <Button className="ms-2" variant="primary" onClick={() => onEditar(receta)}>

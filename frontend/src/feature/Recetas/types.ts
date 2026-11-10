@@ -1,3 +1,5 @@
+import type { UnidadMedida } from "../UnidadMedida/types";
+
 export type PasoEtapa = {
     id: number;
     etapa_id: number;
@@ -13,11 +15,20 @@ export type EtapaReceta = {
     pasos: PasoEtapa[];
 }
 
+// INSUMO RECETA MOCK
+export type InsumoReceta = {
+    insumo_id: number;
+    nombre: string;
+    cantidad: number;
+    unidad_medida: UnidadMedida;
+}
+
 export type Receta = {
     id: number;
     producto_id: number;
     fecha_creacion: string;
     etapas: EtapaReceta[];
+    insumos?: InsumoReceta[]; // INSUMO RECETA MOCK
 }
 
 // Para el alta de la receta completa: el orden lo da la posición en las listas

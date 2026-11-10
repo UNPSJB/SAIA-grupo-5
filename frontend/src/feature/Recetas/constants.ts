@@ -1,4 +1,4 @@
-import type { NewEtapaReceta } from "./types";
+import type { InsumoReceta, NewEtapaReceta } from "./types";
 
 // Receta de ejemplo con la que arranca el alta
 export const PLANTILLA_ETAPAS: NewEtapaReceta[] = [
@@ -51,4 +51,17 @@ export const PLANTILLA_ETAPAS: NewEtapaReceta[] = [
             { descripcion: "Controlar la temperatura del producto hasta el expendio o servicio" },
         ],
     },
+];
+
+// INSUMOS RECETA MOCK
+const GRAMOS = { id: 1, nombre: "g", activo: true };
+const MILILITROS = { id: 2, nombre: "ml", activo: true };
+const UNIDADES = { id: 3, nombre: "unidad", activo: true };
+export const INSUMOS_RECETA_MOCK: InsumoReceta[] = [
+    { insumo_id: 1, nombre: "Harina 0000", cantidad: 250, unidad_medida: GRAMOS },
+    { insumo_id: 2, nombre: "Azúcar", cantidad: 100, unidad_medida: GRAMOS },
+    { insumo_id: 3, nombre: "Manteca", cantidad: 125, unidad_medida: GRAMOS },
+    { insumo_id: 4, nombre: "Leche", cantidad: 200, unidad_medida: MILILITROS },
+    { insumo_id: 5, nombre: "Huevo", cantidad: 2, unidad_medida: UNIDADES },
+    { insumo_id: 6, nombre: "Polvo de hornear", cantidad: 10, unidad_medida: GRAMOS },
 ];
