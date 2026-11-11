@@ -95,7 +95,7 @@ export function ListPage() {
         );
     }, []);
 
-    const tituloPagina = 'Stock de Insumos Alimenticios';
+    const tituloPagina = 'Insumos Alimenticios';
 
     if (isLoading) return <PageLoading title={tituloPagina} />;
 
