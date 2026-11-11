@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { mutate } from 'swr';
-import { Alert, Button, Col, Container, Form, Row, Spinner } from 'react-bootstrap';
+import { Alert, Button, Col, Container, Form, Row } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { type TableColumn } from 'react-data-table-component';
 import { ActionButton } from '../../../components/ActionButton';

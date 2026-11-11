@@ -8,6 +8,7 @@ from src.lote_proveedor.constants import EstadoLoteProveedor
 if TYPE_CHECKING:
     from src.personal.models import Persona
     from src.proveedor.models import Proveedor
+    from src.insumos_lote.models import InsumoLote
 
 
 class LoteProveedor(ModeloBase):
@@ -25,6 +26,11 @@ class LoteProveedor(ModeloBase):
         Enum(EstadoLoteProveedor),
         default=EstadoLoteProveedor.LLEGADA,
         nullable=False,
+    )
+
+    insumos: Mapped[list["InsumoLote"]] = relationship(
+        back_populates="lote_proveedor",
+        cascade="all, delete-orphan",
     )
 
     archivo_adjunto: Mapped[str | None] = mapped_column(Text, nullable=True)

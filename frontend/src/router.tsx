@@ -144,6 +144,9 @@ import { NuevoClientePage } from './feature/Clientes/pages/NuevoClientePage.tsx'
 import { EditarClientePage } from './feature/Clientes/pages/EditarClientePage.tsx'
 import { VerClientePage } from './feature/Clientes/pages/VerClientePage.tsx'
 
+import { ListPage as InsumoLoteListPage } from './feature/InsumosLote/pages/ListPage.tsx'
+import { VerInsumoLotePage } from './feature/InsumosLote/pages/VerInsumoLotePage.tsx'
+
 
 import { Login, NoAutorizado } from './feature/auth'
 import AuthLayout from './layouts/AuthLayout.tsx'
@@ -437,6 +440,13 @@ const router = createBrowserRouter([
               { path: ':id', element: <VerVencimientoPersonalPage /> },
               { path: ':id/edit', element: <EditarVencimientoPersonalPage /> },
             ],
+          },
+          {
+            path: 'insumos-lote',
+            children: [
+              { index: true, element: <InsumoLoteListPage />},
+              { path: ':id', element: <VerInsumoLotePage />}
+            ]
           },
           {
             path: 'clientes',

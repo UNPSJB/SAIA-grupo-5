@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Container, Row, Col, Card, Button, Alert, Spinner } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Alert, Spinner, Table, Badge } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
 import { mutate } from 'swr';
 import { useApi, useAuth } from '../../../hooks';
@@ -8,6 +8,10 @@ import { PageLoading } from '../../../components/PageLoading';
 import { Stepper, type ItemStepper } from '../../../components/Stepper';
 import { AvanzarEtapaLoteProveedorModal } from '../componets/AvanzarEtapaLoteProveedorModal';
 import type { LoteProveedor, EstadoLoteProveedor, HistorialEstadoLoteProveedor } from '../types';
+import type { InsumoLote } from '../../InsumosLote/types';
+import { AgregarInsumoLoteModal } from '../../InsumosLote/components/AgregarInsumoLoteModal';
+import { DeleteInsumoLoteModal } from '../../InsumosLote/components/DeleteInsumoLoteModal';
+import { ActionButton } from '../../../components/ActionButton';
 
 const PASOS_FIJOS = ["Llegada", "Desempaque", "Acomodado"];
 
@@ -30,8 +34,11 @@ export function VerLoteProveedorPage() {
     
     const { data: lote, isLoading, error } = useApi<LoteProveedor>(`/lotes-proveedor/${id}`);
     const { data: historial, isLoading: cargandoHistorial } = useApi<HistorialEstadoLoteProveedor[]>(id ? `/lotes-proveedor/${id}/historial-estados` : null);
+    const { data: insumosLote, isLoading: cargandoInsumos } = useApi<InsumoLote[]>(id ? `/insumos-lote/lote/${id}` : null);
 
     const [modalAvanzar, setModalAvanzar] = useState(false);
+    const [modalAgregarInsumo, setModalAgregarInsumo] = useState(false);
+    const [insumoAEliminar, setInsumoAEliminar] = useState<InsumoLote | null>(null);
 
     if (isLoading) return <PageLoading title="Detalle de Lote" />;
     if (!lote || error) return (
@@ -71,6 +78,8 @@ export function VerLoteProveedorPage() {
         mutate(`/lotes-proveedor/${lote.id}`);
         mutate(`/lotes-proveedor/${lote.id}/historial-estados`);
     };
+
+    const refrescarInsumos = () => {mutate(`/insumos-lote/por-lote-proveedor/${lote.id}`);};
 
     return (
         <Container>
@@ -162,6 +171,91 @@ export function VerLoteProveedorPage() {
                 </Card.Body>
             </Card>
 
+            <Card className="shadow-sm border-0 rounded-3 mb-4 text-start">
+                <Card.Header className="bg-white p-4 border-bottom d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 className="fw-bold mb-1">Insumos Recibidos en la Recepcion</h5>
+                        <p className="text-muted small mb-0">Detalle de mercaderia física ingresada con este remito</p>
+                    </div>
+
+                    {currentUser?.operar && lote.activo && lote.estado === 'desempaque' && (
+                        <Button 
+                            variant="primary" 
+                            size="sm"
+                            onClick={() => setModalAgregarInsumo(true)}
+                        >
+                            <i className="bi bi-plus-circle me-1"></i>Registrar Insumo
+                        </Button>
+                    )}
+                </Card.Header>
+                <Card.Body className="p-0">
+                    {cargandoInsumos ? (
+                        <div className="text-muted d-flex align-items-center gap-2 p-4">
+                            <Spinner animation="border" size="sm" /> Cargando insumos...
+                        </div>
+                    ) : !insumosLote || insumosLote.length === 0 ? (
+                        <p className="text-muted small p-4 mb-0">No hay insumos registrados en este lote todavia.</p>
+                    ) : (
+                        <Table responsive hover className="mb-0 align-middle">
+                            <thead className="table-light">
+                                <tr>
+                                    <th>Insumo</th>
+                                    <th>Marca</th>
+                                    <th>Recibido</th>
+                                    <th>Restante</th>
+                                    <th>Vencimiento</th>
+                                    <th>Mín. Alerta</th>
+                                    <th>Costo Unit.</th>
+                                    {currentUser?.operar && lote.activo && lote.estado === 'desempaque' && (
+                                        <th className="text-end pe-4">Acciones</th>
+                                    )}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {insumosLote.map((item) => (
+                                    <tr key={item.id}>
+                                        <td className="fw-semibold">
+                                            {item.insumo.nombre}{' '}
+                                            <span className="text-muted small">
+                                                ({item.insumo.unidad_medida?.nombre || 'U'})
+                                            </span>
+                                        </td>
+                                        <td>{item.marca}</td>
+                                        <td>
+                                            <Badge bg="secondary">{item.cantidad}</Badge>
+                                        </td>
+                                        <td>
+                                            <Badge bg={item.cantidad_restante <= item.minimo_alerta ? 'danger' : 'success'}>
+                                                {item.cantidad_restante}
+                                            </Badge>
+                                        </td>
+                                        <td>{item.fecha_vencimiento.split("-").reverse().join("/")}</td>
+                                        <td>{item.minimo_alerta}</td>
+                                        <td>
+                                            {item.costo_unitario != null
+                                                ? `$${Number(item.costo_unitario).toFixed(2)}`
+                                                : '-'}
+                                        </td>
+                                        {currentUser?.operar && lote.activo && lote.estado === 'desempaque' && (
+                                            <td className="text-end pe-4">
+                                                <ActionButton
+                                                    variant="outline-danger"
+                                                    size="sm"
+                                                    onClick={() => setInsumoAEliminar(item)}
+                                                    icon="bi bi-trash"
+                                                    tooltip="Eliminar insumo"
+                                                >
+                                                </ActionButton>
+                                            </td>
+                                        )}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </Table>
+                    )}
+                </Card.Body>
+            </Card>
+
             <Card className="shadow-sm border-0 mb-4 rounded-3 text-start">
                 <Card.Body className="p-4">
                     <h5 className="fw-bold mb-4">Linea de Tiempo del Lote</h5>
@@ -199,6 +293,18 @@ export function VerLoteProveedorPage() {
                 lote={modalAvanzar ? lote : null}
                 onHide={() => setModalAvanzar(false)}
                 onAvanzado={refrescarDatos}
+            />
+            <AgregarInsumoLoteModal
+                show={modalAgregarInsumo}
+                loteProveedorId={Number(lote.id)}
+                onHide={() => setModalAgregarInsumo(false)}
+                onGuardado={refrescarInsumos}
+            />
+
+            <DeleteInsumoLoteModal
+                insumoLote={insumoAEliminar}
+                onHide={() => setInsumoAEliminar(null)}
+                onDeleted={refrescarInsumos}
             />
         </Container>
     );
