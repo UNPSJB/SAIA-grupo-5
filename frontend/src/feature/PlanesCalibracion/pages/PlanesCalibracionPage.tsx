@@ -252,7 +252,7 @@ export function PlanesCalibracionPage() {
             <Row className="p-2 align-items-center">
                 <Col>
                     <PageHeader
-                        eyebrow="GESTIÓN"
+                        eyebrow="MANTENIMIENTO"
                         title="Planes de Calibración"
                         subtitle="Revisá los Planes de Calibración y crea nuevos."
                     />

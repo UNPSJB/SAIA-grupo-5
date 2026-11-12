@@ -247,7 +247,7 @@ const filteredElementos = useMemo(() => {
             <Row className="p-2 align-items-center">
                 <Col>
                     <PageHeader
-                        eyebrow="GESTIÓN"
+                        eyebrow="LIMPIEZA"
                         title="Elementos de Limpieza"
                         subtitle="Revisá el Elementos de Limpieza creados hasta la fecha."
                     />
