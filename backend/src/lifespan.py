@@ -8,6 +8,7 @@ from src.auth.utils import get_password_hash
 from src.scheduler.scheduler import scheduler, iniciar_scheduler
 from src.incidentes.migrations import migrar_esquema_incidentes
 from src.lote_produccion.migrations import migrar_esquema_lote_produccion
+from src.insumos.migrations import migrar_esquema_insumos
 
 
 @asynccontextmanager
@@ -15,6 +16,7 @@ async def db_creation_lifespan(app: FastAPI):
     ModeloBase.metadata.create_all(bind=engine)
     migrar_esquema_incidentes(engine)
     migrar_esquema_lote_produccion(engine)
+    migrar_esquema_insumos(engine)
     inspector = inspect(engine)
     tablas = inspector.get_table_names()
 

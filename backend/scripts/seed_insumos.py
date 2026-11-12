@@ -59,6 +59,49 @@ NOMBRES_INSUMOS = {
     "Bolsas de papel": "Docena",
 }
 
+CAMPOS_NUTRICIONALES = ("valor_energetico", "azucares_anadidos", "grasas_totales", "grasas_saturadas", "sodio", "peso_unidad")
+
+INFORMACION_NUTRICIONAL = {
+    "Harina 000": (364, 0, 1.0, 0.2, 2, None),
+    "Harina 0000": (364, 0, 1.0, 0.2, 2, None),
+    "Azúcar": (400, 100, 0, 0, 0, None),
+    "Sal fina": (0, 0, 0, 0, 38758, None),
+    "Levadura fresca": (105, 0, 1.9, 0.2, 30, None),
+    "Levadura seca": (325, 0, 7.6, 1.0, 51, None),
+    "Manteca": (717, 0, 81, 51, 11, None),
+    "Aceite de girasol": (884, 0, 100, 10, 0, None),
+    "Aceite de oliva": (884, 0, 100, 14, 2, None),
+    "Huevo": (143, 0, 9.5, 3.1, 142, 50),
+    "Leche entera": (61, 0, 3.3, 1.9, 43, None),
+    "Crema de leche": (340, 0, 36, 23, 27, None),
+    "Queso cremoso": (300, 0, 24, 15, 600, None),
+    "Pollo entero": (215, 0, 15, 4.3, 70, None),
+    "Carne picada": (254, 0, 20, 7.7, 66, None),
+    "Agua": (0, 0, 0, 0, 0, None),
+    "Bicarbonato de sodio": (0, 0, 0, 0, 27360, None),
+    "Esencia de vainilla": (288, 0, 0.1, 0, 9, None),
+    "Chocolate cobertura": (546, 48, 31, 19, 24, None),
+    "Miel": (304, 82, 0, 0, 4, None),
+    "Polvo de hornear": (53, 0, 0, 0, 10600, None),
+    "Almidón de maíz": (381, 0, 0.1, 0, 9, None),
+    "Avena": (389, 0, 6.9, 1.2, 2, None),
+    "Canela molida": (247, 0, 1.2, 0.3, 10, None),
+    "Almendras": (579, 0, 50, 3.8, 1, None),
+    "Nueces": (654, 0, 65, 6.1, 2, None),
+    "Pasas de uva": (299, 0, 0.5, 0.1, 11, None),
+    "Dulce de leche": (315, 40, 7.5, 4.6, 129, None),
+    "Mermelada de frutilla": (250, 48, 0.1, 0, 32, None),
+    "Vinagre de alcohol": (18, 0, 0, 0, 2, None),
+    "Jugo de limón": (22, 0, 0.2, 0, 1, None),
+}
+
+
+def informacion_nutricional(nombre: str) -> dict:
+    valores = INFORMACION_NUTRICIONAL.get(nombre)
+    if valores is None:
+        return {}
+    return dict(zip(CAMPOS_NUTRICIONALES, valores))
+
 
 def generar_insumos(cantidad: int, db) -> list[Insumo]:
     cantidad = min(cantidad, len(NOMBRES_INSUMOS))
@@ -89,6 +132,7 @@ def generar_insumos(cantidad: int, db) -> list[Insumo]:
             nombre=nombre,
             unidad_medida_id=unidades[NOMBRES_INSUMOS[nombre]],
             activo=nombre not in inactivos,
+            **informacion_nutricional(nombre),
         )
         for nombre in nombres
         if nombre not in existentes
