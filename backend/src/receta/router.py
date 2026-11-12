@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 from src.database import get_db
 from src.receta import schemas, services
 from src.auth.router_base import PermissionedRouter
+from src.rotulado import services as rotulado_services
+from src.rotulado.schemas import EvaluacionRotulado
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +21,10 @@ def create_receta(receta: schemas.RecetaCreate, db: Session = Depends(get_db)):
 @router.post("/sellos", response_model=schemas.EvaluacionSellos)
 def evaluar_sellos(datos: schemas.EvaluacionSellosCreate, db: Session = Depends(get_db)):
     return services.evaluar_sellos_receta(db, datos)
+
+@router.post("/rotulado", response_model=EvaluacionRotulado)
+def evaluar_rotulado(datos: schemas.EvaluacionSellosCreate, db: Session = Depends(get_db)):
+    return rotulado_services.evaluar_rotulado_receta(db, datos)
 
 @router.get("/producto/{producto_id}", response_model=schemas.Receta)
 def read_receta_de_producto(producto_id: int, db: Session = Depends(get_db)):

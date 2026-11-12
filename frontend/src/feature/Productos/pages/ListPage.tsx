@@ -15,6 +15,7 @@ import { useAuth } from '../../../hooks/useAuth';
 import { DeleteProductoModal } from '../components/DeleteProductoModal';
 import { RecetaFormModal } from '../../Recetas/components/RecetaFormModal';
 import { VerRecetaModal } from '../../Recetas/components/VerRecetaModal';
+import { RotuladoProductoModal } from '../../Rotulado/components/RotuladoProductoModal';
 import type { Producto } from '../types';
 import type { Receta } from '../../Recetas/types';
 import { ListFilter } from "../../../components/ListFilter";
@@ -36,6 +37,7 @@ export function ListPage() {
     const [productoReceta, setProductoReceta] = useState<Producto | null>(null);
     const [productoVerReceta, setProductoVerReceta] = useState<Producto | null>(null);
     const [recetaEditar, setRecetaEditar] = useState<Receta | null>(null);
+    const [productoRotulado, setProductoRotulado] = useState<Producto | null>(null);
     const [estadoFiltro, setEstadoFiltro] = useState<EstadoFiltro>("todos");
 
     const filteredProducto = useMemo(() => {
@@ -184,6 +186,13 @@ export function ListPage() {
                             onClick={() => setProductoVerReceta(row)}
                         />
                     )}
+                    <ActionButton
+                        variant="outline-secondary"
+                        size="sm"
+                        tooltip="Rotulado frontal"
+                        icon="bi bi-tags"
+                        onClick={() => setProductoRotulado(row)}
+                    />
 
                     {currentUser?.administrar && (
                         <>
@@ -273,6 +282,11 @@ export function ListPage() {
                     setProductoReceta(productoVerReceta);
                     setProductoVerReceta(null);
                 } : undefined}
+            />
+            <RotuladoProductoModal
+                producto={productoRotulado}
+                onHide={() => setProductoRotulado(null)}
+                puedeEditar={Boolean(currentUser?.administrar)}
             />
             <RecetaFormModal
                 producto={productoReceta}

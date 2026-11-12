@@ -9,15 +9,23 @@ export type InformacionNutricional = {
     peso_unidad: number | null;
 }
 
+export type MarcasAporte = {
+    aporta_azucares: boolean;
+    aporta_grasas: boolean;
+    aporta_sodio: boolean;
+    aporta_edulcorantes: boolean;
+    aporta_cafeina: boolean;
+}
+
 export type Insumo = {
     id: number;
     nombre: string;
     unidad_medida_id: number;
     unidad_medida: UnidadMedida;
     activo: boolean;
-} & InformacionNutricional
+} & InformacionNutricional & MarcasAporte
 
 export type NewInsumo = {
     nombre: string;
     unidad_medida_id: number;
-} & Partial<InformacionNutricional>
+} & Partial<InformacionNutricional> & Partial<MarcasAporte>

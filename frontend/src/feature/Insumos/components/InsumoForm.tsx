@@ -3,8 +3,8 @@ import { useState } from 'react';
 import  type { UnidadMedida } from '../../UnidadMedida/types'
 import { useNavigate } from 'react-router-dom';
 import { useApi } from '../../../hooks';
-import type { InformacionNutricional, NewInsumo } from '../types';
-import { CAMPOS_NUTRICIONALES, type CampoNutricional } from '../constants';
+import type { InformacionNutricional, MarcasAporte, NewInsumo } from '../types';
+import { CAMPOS_NUTRICIONALES, MARCAS_APORTE, type CampoNutricional } from '../constants';
 
 interface InsumoFormProps {
   textoBoton: string;
@@ -32,6 +32,14 @@ export function InsumoForm({ textoBoton, onSubmit, valoresIniciales }: InsumoFor
     grasas_saturadas: aTexto(valoresIniciales?.grasas_saturadas),
     sodio: aTexto(valoresIniciales?.sodio),
     peso_unidad: aTexto(valoresIniciales?.peso_unidad),
+  });
+
+  const [marcas, setMarcas] = useState<MarcasAporte>({
+    aporta_azucares: valoresIniciales?.aporta_azucares ?? false,
+    aporta_grasas: valoresIniciales?.aporta_grasas ?? false,
+    aporta_sodio: valoresIniciales?.aporta_sodio ?? false,
+    aporta_edulcorantes: valoresIniciales?.aporta_edulcorantes ?? false,
+    aporta_cafeina: valoresIniciales?.aporta_cafeina ?? false,
   });
 
   const unidadSeleccionada = unidadesMedida?.find((u) => u.id === unidadMedidaId);
@@ -68,6 +76,7 @@ export function InsumoForm({ textoBoton, onSubmit, valoresIniciales }: InsumoFor
       grasas_saturadas: aNumero(nutricion.grasas_saturadas),
       sodio: aNumero(nutricion.sodio),
       peso_unidad: aNumero(nutricion.peso_unidad),
+      ...marcas,
     });
   }
 
@@ -156,6 +165,27 @@ export function InsumoForm({ textoBoton, onSubmit, valoresIniciales }: InsumoFor
                 </Form.Text>
               </Form.Group>
             </Col>
+          </Row>
+        </fieldset>
+
+        <fieldset className="mb-3 text-start border-top pt-3">
+          <legend className="fs-6 fw-bold p-1 mb-1">Marcas para el rotulado frontal</legend>
+          <p className="text-muted small px-1">
+            Indicá si el insumo aporta azúcares, grasas o sodio agregados, o si es un aditivo edulcorante o con cafeína. Se usa para proponer las marcas del producto.
+          </p>
+          <Row>
+            {MARCAS_APORTE.map(({ campo, etiqueta }) => (
+              <Col sm={6} key={campo}>
+                <Form.Check
+                  type="checkbox"
+                  id={`form_${campo}`}
+                  className="mb-2"
+                  label={etiqueta}
+                  checked={marcas[campo]}
+                  onChange={(e) => setMarcas({ ...marcas, [campo]: e.target.checked })}
+                />
+              </Col>
+            ))}
           </Row>
         </fieldset>
 

@@ -123,6 +123,7 @@ import { NuevoProductoPage } from './feature/Productos/pages/NuevoProductoPage.t
 import { EditarProductoPage } from './feature/Productos/pages/EditarProductoPage.tsx'
 import { VerProductoPage } from './feature/Productos/pages/VerProductoPage.tsx'
 import { EscalarRecetaPage } from './feature/Recetas/pages/EscalarRecetaPage.tsx'
+import { ReglasRotuladoPage } from './feature/Rotulado/pages/ReglasRotuladoPage.tsx'
 
 import { LotesHistorialPage } from './feature/LoteProduccionHistorial/pages/ListPage.tsx'
 import { ListPage as LoteProduccionListPage } from './feature/LotesProduccion/pages/ListPage.tsx'
@@ -478,6 +479,13 @@ const router = createBrowserRouter([
               { path: ':id', element: <VerLoteProveedorPage />},
               { path: ':id/edit', element: <EditarLoteProveedorPage />}
             ]
+          },
+          {
+            path: 'reglas-rotulado',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <ReglasRotuladoPage /> },
+            ],
           },
           {
             path: 'configuracion-cuenta',

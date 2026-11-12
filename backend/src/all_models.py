@@ -42,3 +42,4 @@ from src.paso_etapa.models import PasoEtapa
 from src.clientes.models import Cliente
 from src.direcciones_cliente.models import DireccionCliente
 from src.envios_lote.models import EnvioLote
+from src.rotulado.models import ReglasRotulado

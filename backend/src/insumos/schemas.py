@@ -26,13 +26,20 @@ class InformacionNutricionalValidada(InformacionNutricional):
             raise ValueError(ErrorCode.GRASAS_SATURADAS_SUPERAN_TOTALES)
         return self
 
-class InsumoCreate(InsumoBase, InformacionNutricionalValidada):
+class MarcasAporte(BaseModel):
+    aporta_azucares: bool = False
+    aporta_grasas: bool = False
+    aporta_sodio: bool = False
+    aporta_edulcorantes: bool = False
+    aporta_cafeina: bool = False
+
+class InsumoCreate(InsumoBase, MarcasAporte, InformacionNutricionalValidada):
     pass
 
-class InsumoUpdate(InsumoBase, InformacionNutricionalValidada):
+class InsumoUpdate(InsumoBase, MarcasAporte, InformacionNutricionalValidada):
     pass
 
-class Insumo(InsumoBase, InformacionNutricional):
+class Insumo(InsumoBase, InformacionNutricional, MarcasAporte):
     id: int
     activo: bool
     unidad_medida: UnidadMedida
