@@ -72,7 +72,6 @@ export const navGroups: NavGroup[] = [
         items: [
             { label: 'Proveedores', to: '/proveedores', icon: 'bi bi-cart'},
             { label: 'Recepciones', to: '/recepciones', icon: 'bi bi-truck'},
-            { label: 'Clientes', to: '/clientes', icon: 'bi bi-shop'},
             { label: 'Insumos Alimenticios', to: '/insumos-lote', icon: 'bi bi-egg'},
         ],
     },
