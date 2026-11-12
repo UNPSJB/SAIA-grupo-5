@@ -5,7 +5,6 @@ import { PageHeader } from "../../../components/PageHeader";
 import { PageLoading } from "../../../components/PageLoading";
 import { useApi } from "../../../hooks/useApi";
 import type { Producto } from "../../Productos/types";
-import { INSUMOS_RECETA_MOCK } from "../constants";
 import type { Receta } from "../types";
 import "./EscalarRecetaPage.css";
 
@@ -38,7 +37,7 @@ export function EscalarRecetaPage() {
         </Container>
     );
 
-    const insumos = receta.insumos ?? INSUMOS_RECETA_MOCK;
+    const insumos = receta.insumos;
 
     const aplicarFactor = (nuevoFactor: number) => {
         setFactor(nuevoFactor);
@@ -100,6 +99,7 @@ export function EscalarRecetaPage() {
             </Card>
 
             <div className="escalar-controles mt-4 mb-3">
+
                 <label htmlFor="escalar-factor" className="escalar-factor">
                     <span className="escalar-factor-etiqueta">Multiplicar la receta por</span>
                     <span className="escalar-factor-campo">
