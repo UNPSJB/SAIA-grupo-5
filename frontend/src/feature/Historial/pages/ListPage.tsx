@@ -10,9 +10,10 @@ import { PRIORIDAD_LABELS, PRIORIDAD_VARIANTS, type Prioridad } from "../../Tare
 import { useNavigate } from "react-router-dom";
 
 import {
-    ESTADO_HISTORIAL_VARIANTS,
+    ESTADO_HISTORIAL_ESTILOS,
     getEstadoHistorial,
 } from "../types";
+import { EstadoBadge } from "../../../components/EstadoBadge";
 
 import { type TareaOcurrencia } from "../../TareasOcurrencias/types"; 
 
@@ -108,7 +109,7 @@ export function HistorialPage() {
             selector: row => getEstadoHistorial(row),
             cell: row => {
                 const estado = getEstadoHistorial(row);
-                return <Badge bg={ESTADO_HISTORIAL_VARIANTS[estado]}>{estado}</Badge>;
+                return <EstadoBadge tono={ESTADO_HISTORIAL_ESTILOS[estado].tono} icono={ESTADO_HISTORIAL_ESTILOS[estado].icono}>{estado}</EstadoBadge>;
             },
         },
         {

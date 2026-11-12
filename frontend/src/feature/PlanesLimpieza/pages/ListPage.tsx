@@ -202,7 +202,7 @@ export function PlanesLimpiezaPage() {
             <Row className="p-2 align-items-center">
                 <Col>
                     <PageHeader
-                        eyebrow="GESTIÓN"
+                        eyebrow="LIMPIEZA"
                         title="Listado de Planes de Limpieza"
                         subtitle="Revisá los Planes de Limpieza y crea nuevos."
                     />

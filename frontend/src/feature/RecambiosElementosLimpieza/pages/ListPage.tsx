@@ -107,7 +107,7 @@ export function RecambiosElementoLimpiezaPage() {
             <Row className="p-2 align-items-center">
                 <Col>
                     <PageHeader
-                        eyebrow="GESTIÓN"
+                        eyebrow="LIMPIEZA"
                         title="Recambios de Elementos de Limpieza"
                         subtitle="Revisá los Recambios de Elementos de Limpieza y crea nuevos."
                     />

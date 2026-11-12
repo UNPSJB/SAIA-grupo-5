@@ -15,12 +15,25 @@ export type EtapaReceta = {
     pasos: PasoEtapa[];
 }
 
-// INSUMO RECETA MOCK
 export type InsumoReceta = {
+    id: number;
     insumo_id: number;
     nombre: string;
     cantidad: number;
     unidad_medida: UnidadMedida;
+}
+
+export type EvaluacionSellos = {
+    evaluable: boolean;
+    es_liquido: boolean;
+    cantidad_base: number | null;
+    valor_energetico: number | null;
+    azucares_anadidos: number | null;
+    grasas_totales: number | null;
+    grasas_saturadas: number | null;
+    sodio: number | null;
+    sellos: string[];
+    insumos_sin_informacion: string[];
 }
 
 export type Receta = {
@@ -28,7 +41,8 @@ export type Receta = {
     producto_id: number;
     fecha_creacion: string;
     etapas: EtapaReceta[];
-    insumos?: InsumoReceta[]; // INSUMO RECETA MOCK
+    insumos: InsumoReceta[];
+    sellos: EvaluacionSellos;
 }
 
 // Para el alta de la receta completa: el orden lo da la posición en las listas
@@ -41,7 +55,13 @@ export type NewEtapaReceta = {
     pasos: NewPasoEtapa[];
 }
 
+export type NewInsumoReceta = {
+    insumo_id: number;
+    cantidad: number;
+}
+
 export type NewReceta = {
     producto_id: number;
     etapas: NewEtapaReceta[];
+    insumos: NewInsumoReceta[];
 }

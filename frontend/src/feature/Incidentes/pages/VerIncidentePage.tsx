@@ -2,7 +2,8 @@ import { Container, Alert, Row, Col, Card, Button } from "react-bootstrap";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
-import type { Incidente } from "../types";
+import { ACTIVO_ESTILOS, ESTADO_INCIDENTE_ESTILOS, type Incidente } from "../types";
+import { EstadoBadge } from "../../../components/EstadoBadge";
 import { useAuth } from '../../../hooks';
 import { PageLoading } from "../../../components/PageLoading";
 
@@ -114,42 +115,18 @@ export function VerIncidentePage() {
                                     Estado del incidente
                                 </Col>
                                 <Col sm={8}>
-                                    <div
-                                        style={{
-                                            padding: '6px 16px',
-                                            borderRadius: '20px',
-                                            background: incidente.estado === "Abierto" ? '#dce7fc' : '#fee2e2',
-                                            color: incidente.estado === "Abierto" ? '#163f65' : '#991b1b',
-                                            fontWeight: 700,
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                        }}
-                                    >
-                                        <i className={`bi ${incidente.estado === "Abierto" ? 'bi-check-circle-fill' : 'bi-x-circle-fill'} me-2`}></i>
+                                    <EstadoBadge grande tono={ESTADO_INCIDENTE_ESTILOS[incidente.estado].tono} icono={ESTADO_INCIDENTE_ESTILOS[incidente.estado].icono}>
                                         {incidente.estado}
-                                    </div>
+                                    </EstadoBadge>
                                 </Col>
                             </Row>
 
                             <Row className="mb-2 border-bottom pb-3 align-items-center">
                                 <Col sm={4} className="fw-bold text-secondary">Estado Actual</Col>
                                 <Col sm={8}>
-                                    <div
-                                        style={{
-                                            padding: '6px 16px',
-                                            borderRadius: '20px',
-                                            background: incidente.activo ? '#dcfce7' : '#fee2e2',
-                                            color: incidente.activo ? '#166534' : '#991b1b',
-                                            fontWeight: 700,
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                        }}
-                                    >
-                                        <i className={`bi ${incidente.activo ? 'bi-check-circle-fill' : 'bi-x-circle-fill'} me-2`}></i>
+                                    <EstadoBadge grande tono={ACTIVO_ESTILOS[incidente.activo ? 'Activo' : 'Inactivo'].tono} icono={ACTIVO_ESTILOS[incidente.activo ? 'Activo' : 'Inactivo'].icono}>
                                         {incidente.activo ? 'Activo' : 'Inactivo'}
-                                    </div>
+                                    </EstadoBadge>
                                 </Col>
                             </Row>
 
@@ -207,4 +184,4 @@ export function VerIncidentePage() {
             </Row>
         </Container>
     );
-}
+}

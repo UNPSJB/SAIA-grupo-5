@@ -15,6 +15,16 @@ export interface NavGroup {
 
 export const navGroups: NavGroup[] = [
     {
+        id: 'gestion',
+        label: 'Gestión',
+        icon: 'bi-grid',
+        items: [
+            { label: 'Personal', to: '/personal', icon: 'bi-people', adminOnly: true },
+            { label: 'Documentos', to: '/documentos', icon: 'bi-file-text' },
+            { label: 'Clientes', to: '/clientes', icon: 'bi bi-shop'}
+        ],
+    },
+    {
         id: 'operaciones',
         label: 'Operaciones',
         icon: 'bi-clipboard2-check',
@@ -25,26 +35,43 @@ export const navGroups: NavGroup[] = [
         ],
     },
     {
-        id: 'gestion',
-        label: 'Gestión',
-        icon: 'bi-grid',
+        id: 'limpieza',
+        label: 'Limpieza',
+        icon: 'bi-stars',
+        items: [
+            { label: 'Planes de Limpieza', to: '/planes-limpieza', icon: 'bi-clipboard-check' },
+            { label: 'Insumos Químicos', to: '/insumos-quimicos', icon: 'bi-droplet' },
+            { label: 'Consulta de Consumos', to: '/consumos-productos/consulta', icon: 'bi-droplet-half', adminOnly: true },
+            { label: 'Elementos de Limpieza', to: '/elementos-limpieza', icon: 'bi-bucket' },
+            { label: 'Recambios', to: '/recambios-elementos-limpieza', icon: 'bi-arrow-repeat' }
+        ],
+    },
+    {
+        id: 'mantenimiento',
+        label: 'Mantenimiento',
+        icon: 'bi-wrench',
+        items: [
+            { label: 'Equipos', to: '/equipos', icon: 'bi-tools' },
+            { label: 'Planes de Calibracion', to: '/planes-calibracion', icon: 'bi-gear' }
+        ],
+    },
+    {
+        id: 'produccion',
+        label: 'Producción',
+        icon: 'bi-boxes',
         items: [
             { label: 'Insumos', to: '/insumos', icon: 'bi-box-seam' },
-            { label: 'Insumos químicos', to: '/insumos-quimicos', icon: 'bi-droplet' },
             { label: 'Productos', to: '/productos', icon: 'bi bi-fork-knife'},
-            { label: 'Equipos', to: '/equipos', icon: 'bi-tools' },
-            { label: 'Elementos de limpieza', to: '/elementos-limpieza', icon: 'bi-bucket' },
-            { label: 'Documentos', to: '/documentos', icon: 'bi-file-text' },
-            { label: 'Recambios', to: '/recambios-elementos-limpieza', icon: 'bi-arrow-repeat' },
-            { label: 'Planes de calibracion', to: '/planes-calibracion', icon: 'bi-tools' },
-            { label: 'Planes de limpieza', to: '/planes-limpieza', icon: 'bi-clipboard-check' },
-            { label: 'Superficies', to: '/superficies', icon: 'bi-virus2' },
-            { label: 'Personal', to: '/personal', icon: 'bi-people', adminOnly: true },
-            { label: 'Consulta de consumo', to: '/consumos-productos/consulta', icon: 'bi-droplet-half', adminOnly: true },
-            { label: 'Lotes de Produccion', to: '/lotes-produccion', icon: 'bi bi-box2-fill'},
+            { label: 'Lotes de Produccion', to: '/lotes-produccion', icon: 'bi bi-box2-fill'}
+        ],
+    },
+    {
+        id: 'abastecimiento',
+        label: 'Abastecimiento',
+        icon: 'bi-box-arrow-in-down',
+        items: [
             { label: 'Proveedores', to: '/proveedores', icon: 'bi bi-cart'},
-            { label: 'Recepciones', to: '/recepciones', icon: 'bi bi-truck'},
-            { label: 'Clientes', to: '/clientes', icon: 'bi bi-shop'}
+            { label: 'Recepciones', to: '/recepciones', icon: 'bi bi-truck'}
         ],
     },
     {
@@ -55,7 +82,7 @@ export const navGroups: NavGroup[] = [
         items: [
             { label: 'Checklist', to: '/historial', icon: 'bi-check2-square', adminOnly: true },
             { label: 'Incidentes', to: '/incidentes-historial', icon: 'bi-exclamation-diamond', adminOnly: true },
-            { label: 'Lotes', to: '/lotes-historial', icon: 'bi-boxes', adminOnly: true },
+            { label: 'Lotes', to: '/lotes-historial', icon: 'bi-boxes', adminOnly: true }
         ],
     },
     {
@@ -64,12 +91,13 @@ export const navGroups: NavGroup[] = [
         icon: 'bi-database',
         adminOnly: true,
         items: [
-            { label: 'Sectores', to: '/sectores', icon: 'bi-geo-alt' },
-            { label: 'Tipos de elementos', to: '/tipos-elementos-limpieza', icon: 'bi-tags' },
-            { label: 'Tipos de químicos', to: '/tipos-quimicos', icon: 'bi-flask' },
             { label: 'Tipos de Vencimientos', to: '/tipos-vencimientos', icon: 'bi-calendar-plus'},
             { label: 'Tipos de Documentos', to: '/tipos-documentos', icon: 'bi bi-file-earmark-text'},
             { label: 'Tipos de Incidentes', to: '/tipos-incidentes', icon: 'bi-exclamation-triangle'},
+            { label: 'Sectores', to: '/sectores', icon: 'bi-geo-alt' },
+            { label: 'Superficies', to: '/superficies', icon: 'bi-virus2' },
+            { label: 'Tipos de Químicos', to: '/tipos-quimicos', icon: 'bi-flask' },
+            { label: 'Tipos de Elementos', to: '/tipos-elementos-limpieza', icon: 'bi-tags' },
             { label: 'Unidades de Medida', to: '/unidades-medida', icon: '<bi bi-rulers'}
         ],
     },
