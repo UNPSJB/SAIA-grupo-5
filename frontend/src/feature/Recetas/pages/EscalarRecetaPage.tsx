@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Alert, Button, Card, Col, Container, Form, InputGroup, Row } from "react-bootstrap";
+import { Alert, Button, Card, Col, Container, Row } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { PageHeader } from "../../../components/PageHeader";
 import { PageLoading } from "../../../components/PageLoading";
@@ -38,7 +38,6 @@ export function EscalarRecetaPage() {
         </Container>
     );
 
-    // INSUMO RECETA MOCK
     const insumos = receta.insumos ?? INSUMOS_RECETA_MOCK;
 
     const aplicarFactor = (nuevoFactor: number) => {
@@ -84,25 +83,6 @@ export function EscalarRecetaPage() {
                         </div>
                     ))}
 
-                    <div className="escalar-controles mt-3 pt-3">
-                        <label htmlFor="escalar-factor" className="small text-muted mb-2 d-block">
-                            Multiplicar la receta por
-                        </label>
-                        <div>
-                            <InputGroup size="sm" className="escalar-factor-input">
-                                <InputGroup.Text>x</InputGroup.Text>
-                                <Form.Control
-                                    id="escalar-factor"
-                                    type="text"
-                                    inputMode="decimal"
-                                    value={textoFactor}
-                                    onFocus={(e) => e.target.select()}
-                                    onChange={(e) => cambiarTextoFactor(e.target.value)}
-                                    onBlur={() => setTextoFactor(formatearCantidad(factor))}
-                                />
-                            </InputGroup>
-                        </div>
-                    </div>
                 </Card.Body>
 
                 <Card.Footer className="bg-light d-flex justify-content-between gap-2">
@@ -119,7 +99,25 @@ export function EscalarRecetaPage() {
                 </Card.Footer>
             </Card>
 
-            <h2 className="h6 text-muted mt-4 mb-3">Cantidades escaladas (x{formatearCantidad(factor)})</h2>
+            <div className="escalar-controles mt-4 mb-3">
+                <label htmlFor="escalar-factor" className="escalar-factor">
+                    <span className="escalar-factor-etiqueta">Multiplicar la receta por</span>
+                    <span className="escalar-factor-campo">
+                        <span className="escalar-factor-x" aria-hidden="true">x</span>
+                        <input
+                            id="escalar-factor"
+                            type="text"
+                            inputMode="decimal"
+                            autoComplete="off"
+                            className="escalar-factor-input"
+                            value={textoFactor}
+                            onFocus={(e) => e.target.select()}
+                            onChange={(e) => cambiarTextoFactor(e.target.value)}
+                            onBlur={() => setTextoFactor(formatearCantidad(factor))}
+                        />
+                    </span>
+                </label>
+            </div>
             <Row xs={2} sm={3} className="escalar-cards g-2 g-sm-3 mb-4">
                 {insumos.map((insumo) => (
                     <Col key={insumo.insumo_id}>
