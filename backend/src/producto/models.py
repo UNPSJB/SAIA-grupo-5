@@ -31,4 +31,8 @@ class Producto(ModeloBase):
 
     activo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
-    receta: Mapped["Receta | None"] = relationship(viewonly=True, uselist=False)
+    receta: Mapped["Receta | None"] = relationship(
+        viewonly=True,
+        uselist=False,
+        primaryjoin="and_(Producto.id == Receta.producto_id, Receta.vigente == True)",
+    )
