@@ -22,6 +22,8 @@ from src.clientes.models import Cliente
 from src.direcciones_cliente.models import DireccionCliente
 from src.envios_lote import services as envios_services
 from src.envios_lote import schemas as envios_schemas
+from src.insumos_lote.models import InsumoLote
+from src.insumos.models import Insumo
 
 
 from src.main import app
@@ -472,3 +474,75 @@ def auth_headers_sin_operar(client, db_session):
     token = response.json()["access_token"]
 
     return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture(scope="function")
+def unico_insumo_lote(db_session, unico_insumo, unico_lote_proveedor):
+    insumo_lote = InsumoLote(
+        lote_proveedor_id=unico_lote_proveedor.id,
+        insumo_id=unico_insumo.id,
+        marca="Molinos del Sur",
+        cantidad=50,
+        cantidad_restante=50,
+        fecha_vencimiento=date.today() + timedelta(days=90),
+        costo_unitario=1500.50,
+        minimo_alerta=10,
+        activo=True,
+    )
+    db_session.add(insumo_lote)
+    db_session.commit()
+    db_session.refresh(insumo_lote)
+    return insumo_lote
+
+
+@pytest.fixture(scope="function")
+def multiples_insumos_lote(db_session, unico_insumo, unico_lote_proveedor):
+    item1 = InsumoLote(
+        lote_proveedor_id=unico_lote_proveedor.id,
+        insumo_id=unico_insumo.id,
+        marca="Marca A",
+        cantidad=100,
+        cantidad_restante=100,
+        fecha_vencimiento=date.today() + timedelta(days=60),
+        costo_unitario=1200.0,
+        minimo_alerta=15,
+        activo=True,
+    )
+    item2 = InsumoLote(
+        lote_proveedor_id=unico_lote_proveedor.id,
+        insumo_id=unico_insumo.id,
+        marca="Marca B",
+        cantidad=20,
+        cantidad_restante=20,
+        fecha_vencimiento=date.today() + timedelta(days=120),
+        costo_unitario=2500.0,
+        minimo_alerta=5,
+        activo=True,
+    )
+    item3 = InsumoLote(
+        lote_proveedor_id=unico_lote_proveedor.id,
+        insumo_id=unico_insumo.id,
+        marca="Marca C Inactiva",
+        cantidad=10,
+        cantidad_restante=10,
+        fecha_vencimiento=date.today() + timedelta(days=30),
+        costo_unitario=900.0,
+        minimo_alerta=2,
+        activo=False,
+    )
+    db_session.add_all([item1, item2, item3])
+    db_session.commit()
+    return [item1, item2, item3]
+
+
+@pytest.fixture(scope="function")
+def unico_insumo(db_session, unica_unidad_medida):
+    insumo = Insumo(
+        nombre="Harina de Trigo 000",
+        unidad_medida_id=unica_unidad_medida.id,
+        activo=True,
+    )
+    db_session.add(insumo)
+    db_session.commit()
+    db_session.refresh(insumo)
+    return insumo

@@ -3,7 +3,7 @@ from typing import Optional, Annotated
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from src.lote_proveedor.constants import ErrorCode, EstadoLoteProveedor
 from src.proveedor.schemas import Proveedor
-
+from src.insumos_lote.schemas import InsumoLote
 
 class PersonaSimple(BaseModel):
     id: int
@@ -58,6 +58,7 @@ class LoteProveedor(LoteProveedorBase):
     activo: bool
     proveedor: Optional[Proveedor] = None
     registrado_por: Optional[PersonaSimple] = None
+    insumos: list[InsumoLote] = []
 
     model_config = ConfigDict(from_attributes=True)
 
