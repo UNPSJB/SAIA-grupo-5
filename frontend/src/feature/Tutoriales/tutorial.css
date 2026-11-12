@@ -1,0 +1,24 @@
+.mi-tour {
+  max-width: 380px;
+  border-radius: 12px;
+}
+
+.mi-tour .driver-popover-title {
+  font-size: calc(var(--tour-font-size, 16px) * 1.25);
+  font-weight: 700;
+}
+
+.mi-tour .driver-popover-description {
+  font-size: var(--tour-font-size, 16px);
+  line-height: 1.5;
+}
+
+.mi-tour .driver-popover-progress-text {
+  font-size: calc(var(--tour-font-size, 16px) * 0.75);
+}
+
+.mi-tour .driver-popover-footer button {
+  font-size: calc(var(--tour-font-size, 16px) * 0.875);
+  padding: 6px 14px;
+  border-radius: 8px;
+}
