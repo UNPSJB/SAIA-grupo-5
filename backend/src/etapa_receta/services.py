@@ -5,7 +5,7 @@ from src.etapa_receta import schemas, exceptions
 from src.paso_etapa.models import PasoEtapa
 from src.paso_etapa.schemas import PasoEtapaAnidadoCreate
 from src.receta.models import Receta
-from src.receta.exceptions import RecetaNoEncontrada
+from src.receta.exceptions import RecetaNoEncontrada, RecetaSoloLectura
 from src.receta import orden
 
 logger = logging.getLogger(__name__)
@@ -25,6 +25,7 @@ def crear_etapa(db: Session, etapa: schemas.EtapaRecetaCreate) -> schemas.EtapaR
     db_receta = db.get(Receta, etapa.receta_id)
     if db_receta is None:
         raise RecetaNoEncontrada()
+    validar_receta_editable(db_receta)
 
     db_etapa = construir_etapa(etapa.nombre, etapa.pasos)
     orden.insertar(db_receta.etapas, db_etapa, etapa.orden)
@@ -38,8 +39,17 @@ def leer_etapa(db: Session, etapa_id: int) -> schemas.EtapaReceta:
         raise exceptions.EtapaNoEncontrada()
     return db_etapa
 
-def actualizar_etapa(db: Session, etapa_id: int, etapa: schemas.EtapaRecetaUpdate) -> schemas.EtapaReceta:
+def validar_receta_editable(db_receta: Receta) -> None:
+    if not db_receta.vigente:
+        raise RecetaSoloLectura()
+
+def leer_etapa_editable(db: Session, etapa_id: int) -> EtapaReceta:
     db_etapa = leer_etapa(db, etapa_id)
+    validar_receta_editable(db_etapa.receta)
+    return db_etapa
+
+def actualizar_etapa(db: Session, etapa_id: int, etapa: schemas.EtapaRecetaUpdate) -> schemas.EtapaReceta:
+    db_etapa = leer_etapa_editable(db, etapa_id)
     db_etapa.nombre = etapa.nombre
     db.commit()
     db.refresh(db_etapa)
@@ -47,14 +57,14 @@ def actualizar_etapa(db: Session, etapa_id: int, etapa: schemas.EtapaRecetaUpdat
 
 # Mueve la etapa a la posición indicada y recalcula el orden del resto de la receta
 def reordenar_etapas(db: Session, etapa_id: int, nuevo_orden: int) -> list[schemas.EtapaReceta]:
-    db_etapa = leer_etapa(db, etapa_id)
+    db_etapa = leer_etapa_editable(db, etapa_id)
     db_receta = db_etapa.receta
     orden.mover(db_receta.etapas, db_etapa, nuevo_orden)
     db.commit()
     return db_receta.etapas
 
 def eliminar_etapa(db: Session, etapa_id: int) -> schemas.EtapaReceta:
-    db_etapa = leer_etapa(db, etapa_id)
+    db_etapa = leer_etapa_editable(db, etapa_id)
     db_receta = db_etapa.receta
     if len(db_receta.etapas) == 1:
         raise exceptions.EtapaUnica()

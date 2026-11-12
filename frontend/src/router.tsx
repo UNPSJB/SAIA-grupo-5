@@ -97,6 +97,9 @@ import { ListPage as TipoIncidenteListPage } from './feature/TiposIncidentes/pag
 import { EditarTipoIncidentePage } from './feature/TiposIncidentes/pages/EditarTipoIncidentePage.tsx'
 import { NuevoTipoIncidentePage } from './feature/TiposIncidentes/pages/NuevoTipoIncidentePage.tsx'
 import { VerTipoIncidentePage } from './feature/TiposIncidentes/pages/VerTipoIncidentePage.tsx'
+import { ListPage as AditivosListPage } from './feature/Aditivos/pages/ListPage.tsx'
+import { NuevoAditivoPage } from './feature/Aditivos/pages/NuevoAditivoPage.tsx'
+import { EditarAditivoPage } from './feature/Aditivos/pages/EditarAditivoPage.tsx'
 
 import { EditarIncidentePage } from './feature/Incidentes/pages/EditarIncidentePage.tsx'
 import { NuevoIncidentePage } from './feature/Incidentes/pages/NuevoIncidentePage.tsx'
@@ -449,6 +452,15 @@ const router = createBrowserRouter([
               { path: ':id', element: <VerClientePage />},
               { path: ':id/edit', element: <EditarClientePage />},
             ]
+          },
+          {
+            path: 'aditivos',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <AditivosListPage /> },
+              { path: 'new', element: <NuevoAditivoPage /> },
+              { path: ':id/edit', element: <EditarAditivoPage /> },
+            ],
           },
           {
             path: 'tipos-incidentes',
