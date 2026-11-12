@@ -1,18 +1,18 @@
 import type { Producto } from "../Productos/types";
-import type { Insumo } from "../Insumos/types";
+import type { InsumoLote } from "../InsumosLote/types";
 
 export type EstadoLote = "En produccion" | "Empaquetando" | "Terminado" | "Parcialmente despachado" | "Enviado";
 
 export type InsumoUtilizado = {
     id: number;
     lote_produccion_id: number;
-    insumo_id: number;
+    insumo_lote_id: number;
     cantidad_utilizada: string;
-    insumo: Insumo;
+    insumo_lote: InsumoLote;
 }
 
 export type NewInsumoUtilizado = {
-    insumo_id: number;
+    insumo_lote_id: number;
     cantidad_utilizada: string;
 }
 

@@ -8,7 +8,7 @@ import enum
 
 if TYPE_CHECKING:
     from src.producto.models import Producto
-    from src.insumos.models import Insumo
+    from src.insumos_lote.models import InsumoLote
     from src.envios_lote.models import EnvioLote
     from src.personal.models import Persona
 
@@ -50,11 +50,11 @@ class InsumoUtilizado(ModeloBase):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
 
     lote_produccion_id: Mapped[int] = mapped_column(ForeignKey("lotes_produccion.id"), nullable=False)
-    insumo_id: Mapped[int] = mapped_column(ForeignKey("insumos.id"), nullable=False)
+    insumo_lote_id: Mapped[int] = mapped_column(ForeignKey("insumos_lote.id"), nullable=False)
     cantidad_utilizada: Mapped[Decimal] = mapped_column(Numeric(12, 3), nullable=False)
 
     lote_produccion: Mapped["LoteProduccion"] = relationship(back_populates="insumos_utilizados")
-    insumo: Mapped["Insumo"] = relationship()
+    insumo_lote: Mapped["InsumoLote"] = relationship(back_populates="producciones_asociadas")
 
 
 class HistorialEstadoLote(ModeloBase):
