@@ -31,6 +31,9 @@ import { tutorialesProductos } from '../Productos/tutoriales';
 import { tutorialesClientes } from '../Clientes/tutoriales';
 import { tutorialesLotesHistorial } from '../LoteProduccionHistorial/tutoriales';
 import { tutorialesProveedores } from '../Proveedores/tutoriales';
+import { tutorialesLotesProduccion } from '../LotesProduccion/tutoriales';
+import { tutorialesRecepciones } from '../LotesProveedor/tutoriales';
+import { tutorialesInsumosLote } from '../InsumosLote/tutoriales';
 
 export const tutoriales: Tutorial[] = [
     ...tutorialesDocumentos,
@@ -66,5 +69,8 @@ export const tutoriales: Tutorial[] = [
     ...tutorialesConsumoAcumulado,
     ...tutorialesClientes,
     ...tutorialesLotesHistorial,
-    ...tutorialesProveedores
+    ...tutorialesProveedores,
+    ...tutorialesLotesProduccion,
+    ...tutorialesRecepciones,
+    ...tutorialesInsumosLote
 ];
