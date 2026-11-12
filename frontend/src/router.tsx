@@ -122,6 +122,7 @@ import { ListPage as ProductoListPage } from './feature/Productos/pages/ListPage
 import { NuevoProductoPage } from './feature/Productos/pages/NuevoProductoPage.tsx'
 import { EditarProductoPage } from './feature/Productos/pages/EditarProductoPage.tsx'
 import { VerProductoPage } from './feature/Productos/pages/VerProductoPage.tsx'
+import { EscalarRecetaPage } from './feature/Recetas/pages/EscalarRecetaPage.tsx'
 
 import { LotesHistorialPage } from './feature/LoteProduccionHistorial/pages/ListPage.tsx'
 import { ListPage as LoteProduccionListPage } from './feature/LotesProduccion/pages/ListPage.tsx'
@@ -420,6 +421,7 @@ const router = createBrowserRouter([
               { path: 'new', element: <NuevoProductoPage />},
               { path: ':id/edit', element: <EditarProductoPage />},
               { path: ':id', element: <VerProductoPage />},
+              { path: ':id/receta/escalar', element: <EscalarRecetaPage />},
             ],
           },
           {
