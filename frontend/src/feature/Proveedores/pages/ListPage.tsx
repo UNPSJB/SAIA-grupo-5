@@ -59,6 +59,7 @@ export function ListPage() {
     const subHeaderComponentMemo = useMemo(() => {
         return (
             <Form.Control
+                data-tour="buscador-proveedores"
                 type="text"
                 placeholder="Buscar por nombre o CUIT..."
                 className="mr-sm-2"
@@ -132,7 +133,7 @@ export function ListPage() {
             minWidth: '210px',
             cell: row => {
                 if (!row.vencimiento_habilitacion) {
-                    return <span className="text-muted fst-italic">Sin habilitacion</span>;
+                    return <span data-tour="estado-habilitacion-proveedor" className="text-muted fst-italic">Sin habilitacion</span>;
                 }
 
                 const hoy = new Date();
@@ -152,7 +153,7 @@ export function ListPage() {
                     : `Vigente (${diasRestantes} días)`;
 
                 return (
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }} data-tour="estado-habilitacion-proveedor">
                         <div
                             style={{
                                 padding: '4px 12px',
@@ -180,6 +181,7 @@ export function ListPage() {
             minWidth: '100px',
             cell: row => (
                 <div
+                    data-tour="estado-proveedor"
                     style={{
                         padding: '4px 12px',
                         borderRadius: '16px',
@@ -202,39 +204,47 @@ export function ListPage() {
             minWidth: '190px',
             cell: (row) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <ActionButton
-                        variant="outline-info"
-                        size="sm"
-                        tooltip="Ver Detalle"
-                        icon="bi bi-eye"
-                        onClick={() => navigate(`/proveedores/${row.id}`)}
-                    />
+                    <span data-tour="btn-ver-proveedor">
+                        <ActionButton
+                            variant="outline-info"
+                            size="sm"
+                            tooltip="Ver Detalle"
+                            icon="bi bi-eye"
+                            onClick={() => navigate(`/proveedores/${row.id}`)}
+                        />
+                    </span>
 
                     {currentUser?.administrar && (
                         <>
-                            <ActionButton
-                                variant="outline-primary"
-                                size="sm"
-                                tooltip="Editar Datos"
-                                icon="bi bi-pencil"
-                                disabled={!row.activo}
-                                onClick={() => navigate(`/proveedores/${row.id}/edit`)}
-                            />
-                            <ActionButton
-                                variant="outline-success"
-                                size="sm"
-                                tooltip="Cargar / Renovar Habilitación"
-                                icon="bi bi-arrow-repeat"
-                                disabled={!row.activo}
-                                onClick={() => setProveedorToRenovar(row)}
-                            />
-                            <ActionButton
-                                variant={row.activo ? 'outline-danger' : 'outline-success'}
-                                size="sm"
-                                tooltip={row.activo ? 'Dar de baja' : 'Dar de alta'}
-                                icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
-                                onClick={() => setProveedorToDelete(row)}
-                            />
+                            <span data-tour="btn-editar-proveedor">
+                                <ActionButton
+                                    variant="outline-primary"
+                                    size="sm"
+                                    tooltip="Editar Datos"
+                                    icon="bi bi-pencil"
+                                    disabled={!row.activo}
+                                    onClick={() => navigate(`/proveedores/${row.id}/edit`)}
+                                />
+                            </span>
+                            <span data-tour="btn-renovar-habilitacion">
+                                <ActionButton
+                                    variant="outline-success"
+                                    size="sm"
+                                    tooltip="Cargar / Renovar Habilitación"
+                                    icon="bi bi-arrow-repeat"
+                                    disabled={!row.activo}
+                                    onClick={() => setProveedorToRenovar(row)}
+                                />
+                            </span>
+                            <span data-tour="btn-baja-proveedor">
+                                <ActionButton
+                                    variant={row.activo ? 'outline-danger' : 'outline-success'}
+                                    size="sm"
+                                    tooltip={row.activo ? 'Dar de baja' : 'Dar de alta'}
+                                    icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
+                                    onClick={() => setProveedorToDelete(row)}
+                                />
+                            </span>
                         </>
                     )}
                 </div>
@@ -255,7 +265,7 @@ export function ListPage() {
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
                 </Col>
-                <Col xs="auto" className="align-self-center">
+                <Col xs="auto" className="align-self-center" data-tour="filtro-estado-proveedores">
                     <ListFilter
                         value={estadoFiltro}
                         options={ESTADO_FILTRO_LABELS}
@@ -265,6 +275,7 @@ export function ListPage() {
                 {currentUser?.administrar && (
                     <Col xs="auto" className="d-flex justify-content-end">
                         <Button
+                            data-tour="btn-nuevo-proveedor"
                             variant="primary"
                             size='sm'
                             onClick={() => navigate("/proveedores/new")}
@@ -276,7 +287,7 @@ export function ListPage() {
                 )}
             </Row>
 
-            <div>
+            <div data-tour="tabla-proveedores">
                 <AppTable columns={columns} data={filteredProveedores} />
             </div>
 
