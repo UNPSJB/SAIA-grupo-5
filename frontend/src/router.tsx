@@ -151,6 +151,11 @@ import { VerClientePage } from './feature/Clientes/pages/VerClientePage.tsx'
 import { ListPage as InsumoLoteListPage } from './feature/InsumosLote/pages/ListPage.tsx'
 import { VerInsumoLotePage } from './feature/InsumosLote/pages/VerInsumoLotePage.tsx'
 
+import { ListPage as PedidosProveedorListPage } from './feature/PedidosProveedor/pages/Listpage.tsx'
+import { NuevoPedidoProveedorPage } from './feature/PedidosProveedor/pages/NuevoPedidoProveedorPage.tsx'
+import { EditarPedidoProveedorPage } from './feature/PedidosProveedor/pages/EditarPedidoProveedorPage.tsx'
+import { VerPedidoProveedorPage } from './feature/PedidosProveedor/pages/VerPedidoProveedorPage.tsx'
+
 
 import { Login, NoAutorizado } from './feature/auth'
 import AuthLayout from './layouts/AuthLayout.tsx'
@@ -429,6 +434,16 @@ const router = createBrowserRouter([
               { path: ':id', element: <VerProductoPage />},
               { path: ':id/receta/escalar', element: <EscalarRecetaPage />},
             ],
+          },
+          {
+            path: 'pedidos-proveedor',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <PedidosProveedorListPage />},
+              { path: 'new', element: <NuevoPedidoProveedorPage />},
+              { path: ':id/edit', element: <EditarPedidoProveedorPage />},
+              { path: ':id', element: <VerPedidoProveedorPage />},
+            ]
           },
           {
             path: 'lotes-historial',

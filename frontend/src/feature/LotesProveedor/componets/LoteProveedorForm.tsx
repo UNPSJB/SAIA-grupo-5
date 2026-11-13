@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useApi } from '../../../hooks/useApi';
 import type { Proveedor } from '../../Proveedores/types';
 import type { NewLoteProveedor } from '../types';
+import type { PedidoProveedor } from '../../PedidosProveedor/types';
 
 interface LoteProveedorFormProps {
     textoBoton: string;
@@ -15,7 +16,6 @@ interface LoteProveedorFormProps {
 
 interface LoteProveedorFormData {
     proveedor_id: number;
-    numero_lote: string;
     numero_remito: string;
     fecha_recepcion: string;
 }
@@ -34,17 +34,28 @@ export function LoteProveedorForm({ textoBoton, onSubmit, valoresIniciales, isEd
     const { data: proveedores, isLoading: cargandoProveedores } = useApi<Proveedor[]>('/proveedores/');
     const [archivoBase64, setArchivoBase64] = useState<string | null>(valoresIniciales?.archivo_adjunto || null);
     const [archivoError, setArchivoError] = useState<string | null>(null);
+    const { data: pedidos } = useApi<PedidoProveedor[]>('/pedidos-proveedor/');
+    const [pedidoId, setPedidoId] = useState<string>('');
+    const [pedidoError, setPedidoError] = useState<string | null>(null);
 
     const hoy = new Date().toISOString().split('T')[0];
 
-    const { register, handleSubmit, formState: { errors } } = useForm<LoteProveedorFormData>({
+    const { register, handleSubmit, watch, formState: { errors } } = useForm<LoteProveedorFormData>({
         defaultValues: {
             proveedor_id: valoresIniciales?.proveedor_id || undefined,
-            numero_lote: valoresIniciales?.numero_lote || '',
             numero_remito: valoresIniciales?.numero_remito || '',
             fecha_recepcion: valoresIniciales?.fecha_recepcion || hoy,
         },
     });
+
+    const proveedorSeleccionadoId = watch('proveedor_id');
+
+    const pedidosPendientes = (pedidos ?? []).filter(
+        (p) =>
+            p.activo &&
+            p.estado === 'pendiente' &&
+            String(p.proveedor_id) === String(proveedorSeleccionadoId)
+    );
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setArchivoError(null);
@@ -64,9 +75,14 @@ export function LoteProveedorForm({ textoBoton, onSubmit, valoresIniciales, isEd
     };
 
     const onSubmitForm = (data: LoteProveedorFormData) => {
+        if (!isEdit && !pedidoId) {
+            setPedidoError("Debe seleccionar un pedido pendiente.");
+            return;
+        }
+
         onSubmit({
             proveedor_id: Number(data.proveedor_id),
-            numero_lote: data.numero_lote.trim(),
+            pedido_id: Number(pedidoId),
             numero_remito: data.numero_remito?.trim() ? data.numero_remito.trim() : null,
             fecha_recepcion: data.fecha_recepcion,
             archivo_adjunto: archivoBase64,
@@ -88,6 +104,10 @@ export function LoteProveedorForm({ textoBoton, onSubmit, valoresIniciales, isEd
                             disabled={isEdit}
                             {...register("proveedor_id", {
                                 required: "Debe seleccionar un proveedor.",
+                                onChange: () => {
+                                    setPedidoId("");
+                                    setPedidoError(null);
+                                },
                             })}
                             isInvalid={!!errors.proveedor_id}
                         >
@@ -111,24 +131,42 @@ export function LoteProveedorForm({ textoBoton, onSubmit, valoresIniciales, isEd
                     <Form.Control.Feedback type="invalid">{errors.proveedor_id?.message}</Form.Control.Feedback>
                 </Form.Group>
 
-                <div className="row">
-                    <div className="col-md-6">
-                        <Form.Group className="mb-3 text-start" controlId="formNumeroLote">
-                            <Form.Label className="p-1 fw-bold">Numero de Lote (Origen) *</Form.Label>
-                            <Form.Control
-                                type="text"
-                                placeholder="Ej: LOT-FAB-2026-09"
-                                {...register("numero_lote", {
-                                    required: "El numero de lote es obligatorio.",
-                                    maxLength: { value: 100, message: "Maximo 100 caracteres." },
-                                    validate: (v) => v.trim() !== "" || "No puede ser solo espacios.",
-                                })}
-                                isInvalid={!!errors.numero_lote}
-                            />
-                            <Form.Control.Feedback type="invalid">{errors.numero_lote?.message}</Form.Control.Feedback>
-                        </Form.Group>
-                    </div>
+                {!isEdit && (
+                    <Form.Group className="mb-3 text-start" controlId="formPedidoAsociado">
+                        <Form.Label className="p-1 fw-bold">Pedido Asociado *</Form.Label>
+                        <Form.Select
+                            value={pedidoId}
+                            onChange={(e) => {
+                                setPedidoId(e.target.value);
+                                setPedidoError(null);
+                            }}
+                            disabled={!proveedorSeleccionadoId || pedidosPendientes.length === 0}
+                            isInvalid={!!pedidoError}
+                        >
+                            <option value="">
+                                {!proveedorSeleccionadoId
+                                    ? "Seleccione primero un proveedor..."
+                                    : pedidosPendientes.length === 0
+                                    ? "Este proveedor no tiene pedidos pendientes"
+                                    : "Seleccione un pedido pendiente..."}
+                            </option>
+                            {pedidosPendientes.map((ped) => (
+                                <option key={ped.id} value={ped.id}>
+                                    Pedido #{ped.id} — {ped.fecha_pedido.split("-").reverse().join("/")} ({ped.items.length}{" "}
+                                    {ped.items.length === 1 ? "insumo" : "insumos"})
+                                </option>
+                            ))}
+                        </Form.Select>
+                        <Form.Control.Feedback type="invalid">{pedidoError}</Form.Control.Feedback>
+                        {pedidoId && (
+                            <Form.Text className="text-success fw-semibold">
+                                Al registrar esta recepcion, el Pedido #{pedidoId} pasara automaticamente a estado Recibido.
+                            </Form.Text>
+                        )}
+                    </Form.Group>
+                )}
 
+                <div className="row">
                     <div className="col-md-6">
                         <Form.Group className="mb-3 text-start" controlId="formNumeroRemito">
                             <Form.Label className="p-1 fw-bold">Numero de Remito *</Form.Label>
@@ -145,9 +183,7 @@ export function LoteProveedorForm({ textoBoton, onSubmit, valoresIniciales, isEd
                             <Form.Control.Feedback type="invalid">{errors.numero_remito?.message}</Form.Control.Feedback>
                         </Form.Group>
                     </div>
-                </div>
 
-                <div className="row">
                     <div className="col-md-6">
                         <Form.Group className="mb-3 text-start" controlId="formFechaRecepcion">
                             <Form.Label className="p-1 fw-bold">Fecha de Recepcion *</Form.Label>
@@ -163,20 +199,18 @@ export function LoteProveedorForm({ textoBoton, onSubmit, valoresIniciales, isEd
                             <Form.Control.Feedback type="invalid">{errors.fecha_recepcion?.message}</Form.Control.Feedback>
                         </Form.Group>
                     </div>
-
-                    <div className="col-md-6">
-                        <Form.Group className="mb-3 text-start">
-                            <Form.Label className="p-1 fw-bold">Comprobante de Remito (PDF o Foto)</Form.Label>
-                            <Form.Control
-                                type="file"
-                                accept="application/pdf,image/*"
-                                onChange={handleFileChange}
-                                isInvalid={!!archivoError}
-                            />
-                            <Form.Control.Feedback type="invalid">{archivoError}</Form.Control.Feedback>
-                        </Form.Group>
-                    </div>
                 </div>
+
+                <Form.Group className="mb-3 text-start">
+                    <Form.Label className="p-1 fw-bold">Comprobante de Remito (PDF o Foto)</Form.Label>
+                    <Form.Control
+                        type="file"
+                        accept="application/pdf,image/*"
+                        onChange={handleFileChange}
+                        isInvalid={!!archivoError}
+                    />
+                    <Form.Control.Feedback type="invalid">{archivoError}</Form.Control.Feedback>
+                </Form.Group>
 
                 {archivoBase64 && (
                     <div className="mt-2 mb-3 p-3 border rounded bg-light text-center">

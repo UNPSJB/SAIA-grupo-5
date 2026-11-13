@@ -26,9 +26,25 @@ def agregar_insumo_a_lote(db: Session, lote_proveedor_id: int, datos: schemas.In
     if not insumo_catalogo:
         raise exceptions.InsumoNoEncontradoOInactivo()
 
+    ya_registrado = db.scalar(
+        select(InsumoLote).where(
+            InsumoLote.lote_proveedor_id == lote_proveedor_id,
+            InsumoLote.insumo_id == datos.insumo_id,
+            InsumoLote.activo == True,
+        )
+    )
+    if ya_registrado:
+        raise exceptions.InsumoYaRegistradoEnLote()
+
+    if lote.pedido_id is not None and lote.pedido:
+        ids_pedido = {item.insumo_id for item in lote.pedido.items}
+        if datos.insumo_id not in ids_pedido:
+            raise exceptions.InsumoNoEnPedido()
+
     nuevo_insumo_lote = InsumoLote(
         lote_proveedor_id=lote_proveedor_id,
         insumo_id=datos.insumo_id,
+        numero_lote=datos.numero_lote.strip(),
         marca=datos.marca.strip(),
         cantidad=datos.cantidad,
         cantidad_restante=datos.cantidad,

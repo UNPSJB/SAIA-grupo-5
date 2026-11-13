@@ -40,7 +40,7 @@ export function DeleteProveedorModal({ proveedor, onHide, onDeleted }: DeletePro
                 <Modal.Title>{estaActivo ? 'Dar de baja' : 'Dar de alta'} proveedor</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                ¿Estás seguro que querés {estaActivo ? 'dar de baja' : 'dar de alta'} al proveedor <strong>{proveedor?.nombre}</strong>?
+                ¿Estas seguro que queres {estaActivo ? 'dar de baja' : 'dar de alta'} al proveedor <strong>{proveedor?.nombre}</strong>?
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="secondary" onClick={onHide}>Cancelar</Button>

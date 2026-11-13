@@ -5,6 +5,7 @@ import { LoteProveedorForm } from '../componets/LoteProveedorForm';
 import { api } from '../../../libs/axios';
 import { mostrarAlertaError, mostrarAlertaExito } from '../../../libs/alertas';
 import type { NewLoteProveedor } from '../types';
+import { mutate } from 'swr';
 
 export function NuevoLoteProveedorPage() {
     const navigate = useNavigate();
@@ -12,6 +13,8 @@ export function NuevoLoteProveedorPage() {
     const crearLote = async (datos: NewLoteProveedor) => {
         try {
             await api.post('/lotes-proveedor/', datos);
+            await mutate('/lotes-proveedor/');
+            await mutate('/pedidos-proveedor/');
             mostrarAlertaExito('Recepcion y lote registrados con exito.');
             navigate('/recepciones');
         } catch (error: any) {

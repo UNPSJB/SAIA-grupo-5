@@ -25,7 +25,7 @@ class InsumoLote(ModeloBase):
     fecha_vencimiento: Mapped[date] = mapped_column(Date, nullable=False, index=True)
     costo_unitario: Mapped[Decimal | None] = mapped_column(Numeric(12, 2), nullable=True)
     minimo_alerta: Mapped[int | None] = mapped_column(Integer, nullable=False)
-
+    numero_lote: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
 
     lote_proveedor: Mapped["LoteProveedor"] = relationship(back_populates="insumos")
     insumo: Mapped["Insumo"] = relationship()

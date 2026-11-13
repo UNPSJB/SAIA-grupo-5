@@ -1,18 +1,13 @@
-import { Container, Alert, Row, Col, Card, Button } from "react-bootstrap";
+import { Container, Alert, Row, Col, Card, Button, Table } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 import type { Proveedor } from "../types";
 import { PageLoading } from "../../../components/PageLoading";
-
-const formatearFechaAR = (fechaStr: string | null | undefined): string => {
-    if (!fechaStr) return "";
-    const partes = fechaStr.split("-"); 
-    if (partes.length === 3) {
-        return `${partes[2]}/${partes[1]}/${partes[0]}`; 
-    }
-    return fechaStr;
-};
+import { useState } from "react";
+import { mutate } from "swr";
+import { useAuth } from "../../../hooks/useAuth";
+import { AsociarInsumosProveedorModal } from "../components/AsociarInsumosProveedorModal";
 
 const obtenerNombreArchivo = (base64: string | null | undefined): string => {
     if (!base64) return "";
@@ -30,6 +25,8 @@ export function VerProveedorPage() {
     const { id } = useParams();
 
     const { data: proveedor, isLoading, error } = useApi<Proveedor>(`/proveedores/${id}`);
+    const { currentUser } = useAuth();
+    const [mostrarModalInsumos, setMostrarModalInsumos] = useState(false);
 
     const tituloPagina = "Detalle del Proveedor";
 
@@ -50,6 +47,9 @@ export function VerProveedorPage() {
     );
 
     const esImagen = proveedor.archivo_adjunto?.startsWith("data:image/");
+
+    const insumosSuministrados = proveedor.insumos_asociados ?? [];
+    const puedeAsociar = currentUser?.administrar && proveedor.activo;
 
     return (
         <Container>
@@ -214,6 +214,53 @@ export function VerProveedorPage() {
                                     </Row>
                                 )}
                             </div>
+
+                            <hr className="my-4" />
+
+                                <div className="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 className="mb-0">
+                                        <i className="bi bi-box-seam me-2"></i>Insumos que provee
+                                    </h5>
+                                    {puedeAsociar && (
+                                        <Button
+                                            variant="outline-primary"
+                                            size="sm"
+                                            onClick={() => setMostrarModalInsumos(true)}
+                                        >
+                                            <i className={`bi ${insumosSuministrados.length > 0 ? "bi-pencil" : "bi-plus-circle"} me-1`}></i>
+                                            {insumosSuministrados.length > 0 ? "Modificar insumos" : "Asociar insumos"}
+                                        </Button>
+                                    )}
+                                </div>
+
+                                {insumosSuministrados.length === 0 ? (
+                                    <p className="text-muted mb-0">
+                                        Este proveedor todavia no tiene insumos asociados del catalogo.
+                                    </p>
+                                ) : (
+                                    <Table responsive bordered hover size="sm" className="mb-0">
+                                        <thead className="table-light">
+                                            <tr>
+                                                <th>Insumo</th>
+                                                <th>Unidad de medida</th>
+                                                <th>Estado en catalogo</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {insumosSuministrados.map((registro) => (
+                                                <tr key={registro.id}>
+                                                    <td className="fw-semibold">{registro.insumo.nombre}</td>
+                                                    <td>{registro.insumo.unidad_medida?.nombre || "U"}</td>
+                                                    <td>
+                                                        <span className={`badge ${registro.insumo.activo ? "bg-success" : "bg-secondary"}`}>
+                                                            {registro.insumo.activo ? "Activo" : "Inactivo"}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </Table>
+                                )}
                         </Card.Body>
 
                         <Card.Footer className="bg-light border-top p-3 d-flex justify-content-start gap-2">
@@ -235,6 +282,16 @@ export function VerProveedorPage() {
                     </Card>
                 </Col>
             </Row>
+            {mostrarModalInsumos && (
+                <AsociarInsumosProveedorModal
+                    proveedor={proveedor}
+                    onHide={() => setMostrarModalInsumos(false)}
+                    onAsociado={() => {
+                        mutate(`/proveedores/${id}`);
+                        mutate("/proveedores/");
+                    }}
+                />
+            )}
         </Container>
     );
 }

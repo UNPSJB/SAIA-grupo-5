@@ -12,6 +12,7 @@ import { DeleteProveedorModal } from '../components/DeleteProveedorModel';
 import { RenovarHabilitacionProveedorModal } from '../components/RenovarHabilitacionProveedorModal';
 import type { Proveedor } from '../types';
 import { PageLoading } from '../../../components/PageLoading';
+import { AsociarInsumosProveedorModal } from "../components/AsociarInsumosProveedorModal";
 
 type EstadoFiltro = "todos" | "activo" | "inactivo";
 
@@ -19,15 +20,6 @@ const ESTADO_FILTRO_LABELS: Record<EstadoFiltro, string> = {
     todos: "Todos",
     activo: "Activos",
     inactivo: "Inactivos",
-};
-
-const formatearFechaAR = (fechaStr: string | null | undefined): string => {
-    if (!fechaStr) return "";
-    const partes = fechaStr.split("-"); 
-    if (partes.length === 3) {
-        return `${partes[2]}/${partes[1]}/${partes[0]}`; 
-    }
-    return fechaStr;
 };
 
 export function ListPage() {
@@ -38,6 +30,7 @@ export function ListPage() {
     const [proveedorToDelete, setProveedorToDelete] = useState<Proveedor | null>(null);
     const [proveedorToRenovar, setProveedorToRenovar] = useState<Proveedor | null>(null);
     const [estadoFiltro, setEstadoFiltro] = useState<EstadoFiltro>("todos");
+    const [proveedorInsumos, setProveedorInsumos] = useState<Proveedor | null>(null);
 
     const filteredProveedores = useMemo(() => {
         if (!Array.isArray(proveedores)) return [];
@@ -90,21 +83,21 @@ export function ListPage() {
             selector: row => row.nombre,
             sortable: true,
             center: true,
-            minWidth: '201px',
+            minWidth: '170px',
         },
         {
             name: 'CUIT',
             selector: row => row.cuit,
             sortable: true,
             center: true,
-            minWidth: '130px',
+            minWidth: '125px',
         },
         {
             name: 'N° Habilitacion',
             selector: row => row.numero_habilitacion || '',
             sortable: true,
             center: true,
-            minWidth: '150px',
+            minWidth: '135px',
             cell: row => (
                 <span className={row.numero_habilitacion ? "fw-semibold" : "text-muted fst-italic"}>
                     {row.numero_habilitacion || "Sin registrar"}
@@ -112,11 +105,11 @@ export function ListPage() {
             ),
         },
         {
-            name: 'Fecha Vencimiento',
+            name: 'F. Vencimiento',
             selector: row => row.vencimiento_habilitacion ? row.vencimiento_habilitacion.split("-").reverse().join("/") : '',
             sortable: true,
             center: true,
-            minWidth: '172px',
+            minWidth: '20px',
             cell: row => (
                 <span>
                     {row.vencimiento_habilitacion 
@@ -127,9 +120,9 @@ export function ListPage() {
             ),
         },
         {
-            name: 'Estado Habilitación',
+            name: 'Estado Habilitacion',
             center: true,
-            minWidth: '210px',
+            minWidth: '197px',
             cell: row => {
                 if (!row.vencimiento_habilitacion) {
                     return <span className="text-muted fst-italic">Sin habilitacion</span>;
@@ -177,7 +170,7 @@ export function ListPage() {
             selector: row => row.activo ? 'Activo' : 'Inactivo',
             sortable: true,
             center: true,
-            minWidth: '100px',
+            minWidth: '95px',
             cell: row => (
                 <div
                     style={{
@@ -199,7 +192,7 @@ export function ListPage() {
         {
             name: "Acciones",
             center: true,
-            minWidth: '190px',
+            minWidth: '215px',
             cell: (row) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <ActionButton
@@ -227,6 +220,14 @@ export function ListPage() {
                                 icon="bi bi-arrow-repeat"
                                 disabled={!row.activo}
                                 onClick={() => setProveedorToRenovar(row)}
+                            />
+                            <ActionButton
+                                variant="outline-success"
+                                size="sm"
+                                tooltip={(row.insumos_asociados?.length ?? 0) > 0 ? "Modificar insumos" : "Asociar insumos"}
+                                icon={(row.insumos_asociados?.length ?? 0) > 0 ? "bi bi-pencil-square" : "bi bi-plus-circle"}
+                                disabled={!row.activo}
+                                onClick={() => setProveedorInsumos(row)}
                             />
                             <ActionButton
                                 variant={row.activo ? 'outline-danger' : 'outline-success'}
@@ -291,6 +292,13 @@ export function ListPage() {
                 onHide={() => setProveedorToRenovar(null)}
                 onRenovado={() => mutate("/proveedores/")}
             />
+            {proveedorInsumos && (
+                <AsociarInsumosProveedorModal
+                    proveedor={proveedorInsumos}
+                    onHide={() => setProveedorInsumos(null)}
+                    onAsociado={() => mutate("/proveedores/")}
+                />
+            )}
         </Container>
     );
 }

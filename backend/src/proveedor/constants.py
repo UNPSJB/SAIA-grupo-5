@@ -14,6 +14,8 @@ class ErrorCode(str, Enum):
     HABILITACION_VENCIDA = "La habilitacion sanitaria del proveedor se encuentra vencida."
     HABILITACION_NUMERO_REQUERIDO = "Debe ingresar el numero de habilitacion si especifica una fecha de vencimiento."
     HABILITACION_FECHA_INVALIDA = "La nueva fecha de vencimiento debe ser posterior a la fecha de vencimiento anterior."
+    INSUMO_NO_ENCONTRADO_O_INACTIVO = "Uno o mas insumos seleccionados no existen, no son de tipo general o estan dados de baja."
+    INSUMOS_REPETIDOS = "No se puede asociar dos veces el mismo insumo al proveedor."
 
 
 DIAS_AVISO_VENCIMIENTO = 30

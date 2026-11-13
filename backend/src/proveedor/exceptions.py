@@ -20,3 +20,11 @@ class HabilitacionVencida(BadRequest):
 
 class HabilitacionFechaInvalida(BadRequest):
     DETAIL = ErrorCode.HABILITACION_FECHA_INVALIDA
+
+
+class InsumoNoEncontradoOInactivo(BadRequest):
+    DETAIL = ErrorCode.INSUMO_NO_ENCONTRADO_O_INACTIVO
+
+
+class InsumosRepetidos(BadRequest):
+    DETAIL = ErrorCode.INSUMOS_REPETIDOS
