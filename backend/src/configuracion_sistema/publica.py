@@ -236,7 +236,11 @@ def leer_vista_publica(db: Session, token: str) -> VistaPublica | None:
             ))
 
     return VistaPublica(
-        establecimiento=configuracion.vista_publica_nombre_establecimiento,
+        establecimiento=configuracion.nombre_pyme,
+        logo_pyme=configuracion.logo_pyme,
+        telefono_pyme=configuracion.telefono_pyme,
+        email_pyme=configuracion.email_pyme,
+        direccion_pyme=configuracion.direccion_pyme,
         actualizado=datetime.now().strftime("%d/%m/%Y"),
         indicadores=indicadores,
     )

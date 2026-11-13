@@ -20,7 +20,16 @@ import {
 import { API_BASE_URL } from "../../../constants/api";
 
 type IndicadorPublico = { clave: string; titulo: string; descripcion: string; valor: string; icono: string };
-type DatosPublicos = { establecimiento: string; actualizado: string; indicadores: IndicadorPublico[] };
+type DatosPublicos = {
+    establecimiento: string;
+    logo_pyme: string | null;
+    telefono_pyme: string | null;
+    email_pyme: string | null;
+    direccion_pyme: string | null;
+    actualizado: string;
+    indicadores: IndicadorPublico[];
+};
+
 
 interface ItemGrafico {
     clave: string;
@@ -184,7 +193,48 @@ export function VistaPublicaVisitantePage() {
                             <Card.Body className="p-4">
                                 <Row className="align-items-center g-3">
                                     <Col xs={12} md={7} lg={8}>
-                                        <h1 className="display-6 fw-bold mb-1" style={{ color: "#1e293b" }}>{data.establecimiento}</h1>
+                                        <div className="d-flex flex-wrap align-items-center gap-3 mb-3">
+                                            {data.logo_pyme && (
+                                                <img
+                                                    src={data.logo_pyme}
+                                                    alt={`Logo de ${data.establecimiento}`}
+                                                    style={{
+                                                        maxWidth: 160,
+                                                        maxHeight: 110,
+                                                        objectFit: "contain"
+                                                    }}
+                                                />
+                                            )}
+
+                                            <h1 className="display-6 fw-bold mb-0" style={{ color: "#1e293b" }}>
+                                                {data.establecimiento}
+                                            </h1>
+                                        </div>
+
+                                        {(data.telefono_pyme || data.email_pyme || data.direccion_pyme) && (
+                                            <div className="d-flex flex-column gap-1 mb-3 text-secondary small">
+                                                {data.telefono_pyme && (
+                                                    <div>
+                                                        <i className="bi bi-telephone me-2" />
+                                                        {data.telefono_pyme}
+                                                    </div>
+                                                )}
+
+                                                {data.email_pyme && (
+                                                    <div>
+                                                        <i className="bi bi-envelope me-2" />
+                                                        {data.email_pyme}
+                                                    </div>
+                                                )}
+
+                                                {data.direccion_pyme && (
+                                                    <div>
+                                                        <i className="bi bi-geo-alt me-2" />
+                                                        {data.direccion_pyme}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
                                         <p className="text-secondary mb-0">
                                             Indicadores de gestión de calidad , buenas prácticas e inocuidad alimentaria
                                         </p>
