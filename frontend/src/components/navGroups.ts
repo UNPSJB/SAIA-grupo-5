@@ -72,6 +72,7 @@ export const navGroups: NavGroup[] = [
         items: [
             { label: 'Proveedores', to: '/proveedores', icon: 'bi bi-cart', adminOnly: true },
             { label: 'Recepciones', to: '/recepciones', icon: 'bi bi-truck'}
+            { label: 'Insumos Alimenticios', to: '/insumos-lote', icon: 'bi bi-egg'},
         ],
     },
     {
@@ -99,6 +100,7 @@ export const navGroups: NavGroup[] = [
             { label: 'Tipos de Químicos', to: '/tipos-quimicos', icon: 'bi-flask' },
             { label: 'Tipos de Elementos', to: '/tipos-elementos-limpieza', icon: 'bi-tags' },
             { label: 'Unidades de Medida', to: '/unidades-medida', icon: 'bi bi-rulers'}
+            { label: 'Aditivos', to: '/aditivos', icon: 'bi-eyedropper' }
         ],
     },
 ];

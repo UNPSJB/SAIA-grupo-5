@@ -283,6 +283,7 @@ export function ListPage() {
                 }}
                 onSaved={(receta) => {
                     mutate(`/recetas/producto/${receta.producto_id}`, receta, false);
+                    mutate(`/recetas/producto/${receta.producto_id}/versiones`);
                     mutate("/productos/");
                 }}
             />

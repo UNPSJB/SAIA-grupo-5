@@ -1,0 +1,12 @@
+POST http://localhost:8000/insumos-lote/lote/1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ7XCJub21icmVcIjpcIkFkbWluXCIsXCJhcGVsbGlkb1wiOlwiQWRtaW5cIixcImRuaVwiOlwiMDAwMDAwMDBcIixcIm1haWxcIjpcImFkbWluQGFkbWluLmNvbVwiLFwidXNlcm5hbWVcIjpcImFkbWluMVwiLFwib3BlcmFyXCI6dHJ1ZSxcImFkbWluaXN0cmFyXCI6dHJ1ZSxcInN1cGVydmlzb3JcIjpmYWxzZSxcImlkXCI6MSxcImFjdGl2b1wiOnRydWUsXCJjYXBhY2lkYWRlc1wiOltcIm9wZXJhclwiLFwiYWRtaW5pc3RyYXJcIl0sXCJyb2xlX25hbWVcIjpcImFkbWluXCIsXCJyb2xlX2lkXCI6MSxcImVtYWlsXCI6XCJhZG1pbkBhZG1pbi5jb21cIn0iLCJleHAiOjE3OTQ0MjcxMDV9.sUk_c6XcHq8EYCDOrJNWoLfkXITIGam46jxT2Gi42Ac
+
+{
+  "insumo_id": 1,
+  "marca": "Pureza",
+  "cantidad": 50,
+  "fecha_vencimiento": "2027-04-15",
+  "costo_unitario": 1250.50,
+  "minimo_alerta": 10
+}

@@ -16,6 +16,14 @@ router = PermissionedRouter(prefix="/recetas", tags=["recetas"])
 def create_receta(receta: schemas.RecetaCreate, db: Session = Depends(get_db)):
     return services.crear_receta(db, receta)
 
+@router.post("/sellos", response_model=schemas.EvaluacionSellos)
+def evaluar_sellos(datos: schemas.EvaluacionSellosCreate, db: Session = Depends(get_db)):
+    return services.evaluar_sellos_receta(db, datos)
+
+@router.get("/producto/{producto_id}/versiones", response_model=list[schemas.RecetaVersion])
+def read_versiones_receta_de_producto(producto_id: int, db: Session = Depends(get_db)):
+    return services.listar_versiones_de_producto(db, producto_id)
+
 @router.get("/producto/{producto_id}", response_model=schemas.Receta)
 def read_receta_de_producto(producto_id: int, db: Session = Depends(get_db)):
     return services.obtener_receta_de_producto(db, producto_id)

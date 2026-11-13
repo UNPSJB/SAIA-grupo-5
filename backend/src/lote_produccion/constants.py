@@ -9,3 +9,9 @@ class ErrorCode:
     INSUMO_YA_ASOCIADO = "El insumo ya está asociado a este lote."
     INSUMO_REPETIDO = "No se puede seleccionar dos veces el mismo insumo."
     LOTE_NO_MODIFICABLE = "Solo se pueden modificar insumos de lotes activos en estado En produccion."
+
+    INSUMO_LOTE_NO_ENCONTRADO = "El insumo físico recibido no fue encontrado."
+    INSUMO_LOTE_INACTIVO = "No se puede asociar un insumo dado de baja o inactivo."
+    INSUMO_LOTE_VENCIDO = "No se puede asociar el insumo: su fecha de vencimiento ya expiró."
+    INSUMO_LOTE_PROXIMO_A_VENCER = "No se puede asociar el insumo: le quedan menos de 15 días de vida útil."
+    STOCK_INSUFICIENTE_INSUMO_LOTE = "Stock insuficiente en el lote de insumo seleccionado."

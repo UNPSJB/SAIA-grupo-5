@@ -1,8 +1,19 @@
 import type { Sector } from "../Sectores/types";
 import type { TipoIncidente } from "../TiposIncidentes/types";
+import type { TonoEstado } from "../../components/EstadoBadge";
 
 export type EstadoIncidente = 'Abierto' | 'Cerrado';
 export type EstadoSeguimientoIncidente = EstadoIncidente;
+
+export const ESTADO_INCIDENTE_ESTILOS: Record<EstadoIncidente, { tono: TonoEstado; icono: string }> = {
+    Abierto: { tono: 'warning', icono: 'bi-exclamation-circle-fill' },
+    Cerrado: { tono: 'success', icono: 'bi-check-circle-fill' },
+};
+
+export const ACTIVO_ESTILOS: Record<'Activo' | 'Inactivo', { tono: TonoEstado; icono: string }> = {
+    Activo: { tono: 'success', icono: 'bi-check-circle-fill' },
+    Inactivo: { tono: 'danger', icono: 'bi-x-circle-fill' },
+};
 export type NivelDemora = 'normal' | 'demorado';
 
 export type PersonaBasica = {

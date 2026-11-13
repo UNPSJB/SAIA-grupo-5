@@ -12,7 +12,8 @@ import { DeleteIncidenteModal } from '../components/DeleteIncidenteModal';
 import { AccionCorrectivaModal } from '../components/AccionCorrectivaModal';
 import { ReabrirIncidenteModal } from '../components/ReabrirIncidenteModal';
 import { HistorialIncidenteModal } from '../components/HistorialIncidenteModal';
-import type { IncidenteSeguimiento } from '../types';
+import { ESTADO_INCIDENTE_ESTILOS, type IncidenteSeguimiento } from '../types';
+import { EstadoBadge } from '../../../components/EstadoBadge';
 import './ListPage.css';
 
 type FiltroEstado = 'todos' | 'Abierto' | 'Cerrado';
@@ -107,7 +108,11 @@ export function ListPage() {
             selector: (incidente) => incidente.estado,
             sortable: true,
             minWidth: '110px',
-            cell: (incidente) => <Badge data-tour="estado-incidente" bg={incidente.estado === 'Abierto' ? 'warning' : 'success'} text={incidente.estado === 'Abierto' ? 'dark' : undefined}>{incidente.estado}</Badge>,
+            cell: (incidente) => (
+                <EstadoBadge data-tour="estado-incidente" tono={ESTADO_INCIDENTE_ESTILOS[incidente.estado].tono} icono={ESTADO_INCIDENTE_ESTILOS[incidente.estado].icono}>
+                    {incidente.estado}
+                </EstadoBadge>
+            ),
         },
         {
             name: 'Acciones',

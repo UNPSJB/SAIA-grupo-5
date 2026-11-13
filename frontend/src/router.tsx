@@ -97,6 +97,9 @@ import { ListPage as TipoIncidenteListPage } from './feature/TiposIncidentes/pag
 import { EditarTipoIncidentePage } from './feature/TiposIncidentes/pages/EditarTipoIncidentePage.tsx'
 import { NuevoTipoIncidentePage } from './feature/TiposIncidentes/pages/NuevoTipoIncidentePage.tsx'
 import { VerTipoIncidentePage } from './feature/TiposIncidentes/pages/VerTipoIncidentePage.tsx'
+import { ListPage as AditivosListPage } from './feature/Aditivos/pages/ListPage.tsx'
+import { NuevoAditivoPage } from './feature/Aditivos/pages/NuevoAditivoPage.tsx'
+import { EditarAditivoPage } from './feature/Aditivos/pages/EditarAditivoPage.tsx'
 
 import { EditarIncidentePage } from './feature/Incidentes/pages/EditarIncidentePage.tsx'
 import { NuevoIncidentePage } from './feature/Incidentes/pages/NuevoIncidentePage.tsx'
@@ -122,6 +125,7 @@ import { ListPage as ProductoListPage } from './feature/Productos/pages/ListPage
 import { NuevoProductoPage } from './feature/Productos/pages/NuevoProductoPage.tsx'
 import { EditarProductoPage } from './feature/Productos/pages/EditarProductoPage.tsx'
 import { VerProductoPage } from './feature/Productos/pages/VerProductoPage.tsx'
+import { EscalarRecetaPage } from './feature/Recetas/pages/EscalarRecetaPage.tsx'
 
 import { LotesHistorialPage } from './feature/LoteProduccionHistorial/pages/ListPage.tsx'
 import { ListPage as LoteProduccionListPage } from './feature/LotesProduccion/pages/ListPage.tsx'
@@ -143,6 +147,9 @@ import { ListPage as ClientesListPage } from './feature/Clientes/pages/ListPage.
 import { NuevoClientePage } from './feature/Clientes/pages/NuevoClientePage.tsx'
 import { EditarClientePage } from './feature/Clientes/pages/EditarClientePage.tsx'
 import { VerClientePage } from './feature/Clientes/pages/VerClientePage.tsx'
+
+import { ListPage as InsumoLoteListPage } from './feature/InsumosLote/pages/ListPage.tsx'
+import { VerInsumoLotePage } from './feature/InsumosLote/pages/VerInsumoLotePage.tsx'
 
 
 import { Login, NoAutorizado } from './feature/auth'
@@ -418,6 +425,13 @@ const router = createBrowserRouter([
             ]
           },
           {
+            path: 'insumos-lote',
+            children: [
+              { index: true, element: <InsumoLoteListPage />},
+              { path: ':id', element: <VerInsumoLotePage />}
+            ]
+          },
+          {
             path: 'historial',
             element: <ProtectedRoute requireAdmin />,
             children: [
@@ -528,6 +542,15 @@ const router = createBrowserRouter([
               { path: 'new', element: <NuevoTipoIncidentePage /> },
               { path: ':id', element: <VerTipoIncidentePage /> },
               { path: ':id/edit', element: <EditarTipoIncidentePage /> },
+            ],
+          },
+          {
+            path: 'aditivos',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <AditivosListPage /> },
+              { path: 'new', element: <NuevoAditivoPage /> },
+              { path: ':id/edit', element: <EditarAditivoPage /> },
             ],
           },
           { path: '*', element: <Page404 /> }

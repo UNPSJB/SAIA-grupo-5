@@ -109,6 +109,8 @@ def avanzar_etapa_lote_proveedor(
         db_lote.estado = EstadoLoteProveedor.DESEMPAQUE
         nuevo_estado_texto = "Desempaque"
     elif db_lote.estado == EstadoLoteProveedor.DESEMPAQUE:
+        if not db_lote.insumos or len(db_lote.insumos) == 0:
+            raise exceptions.LoteSinInsumosParaAcomodar()
         db_lote.estado = EstadoLoteProveedor.ACOMODADO
         nuevo_estado_texto = "Acomodado"
     else:
@@ -122,7 +124,6 @@ def avanzar_etapa_lote_proveedor(
         fecha_hora=datetime.now(),
     )
     db.add(nuevo_historial)
-
 
     db.commit()
     db.refresh(db_lote)
