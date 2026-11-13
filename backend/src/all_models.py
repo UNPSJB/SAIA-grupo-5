@@ -35,6 +35,7 @@ from src.historial_incidente.models import HistorialIncidente
 from src.unidad_medida.models import UnidadMedida
 from src.producto.models import Producto
 
+from src.aditivo.models import Aditivo
 from src.receta.models import Receta, InsumoReceta
 from src.etapa_receta.models import EtapaReceta
 from src.paso_etapa.models import PasoEtapa

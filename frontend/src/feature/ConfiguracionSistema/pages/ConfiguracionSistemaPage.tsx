@@ -9,7 +9,7 @@ import { useApi } from "../../../hooks/useApi";
 import { api } from "../../../libs/axios";
 import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
 import type { ConfiguracionSistema } from "../types";
-
+import { getTamanioLetra, setTamanioLetra } from "../../Tutoriales/engine";
 const CONFIGURACION_URL = "/configuracion-sistema/";
 
 function aHoraMinuto(hora: number, minuto: number): string {
@@ -24,6 +24,11 @@ export function ConfiguracionSistemaPage() {
     const [diasAntelacionElementos, setDiasAntelacionElementos] = useState(15);
     const [horaGeneracion, setHoraGeneracion] = useState("07:00");
     const [guardando, setGuardando] = useState(false);
+    const [tamanioTutorial, setTamanioTutorial] = useState(getTamanioLetra());
+    const cambiarTamanioTutorial = (px: number) => {
+        setTamanioTutorial(px);
+        setTamanioLetra(px);
+    };
 
     const [nombrePyme, setNombrePyme] = useState("");
     const [telefonoPyme, setTelefonoPyme] = useState("");
@@ -229,6 +234,30 @@ export function ConfiguracionSistemaPage() {
                                     <i className="bi bi-floppy me-1"></i> {guardando ? "Guardando..." : "Guardar cambios"}
                                 </Button>
                             </Form>
+                        </Card.Body>
+                    </Card>
+                    <Card className="shadow-sm mt-4" data-tour="tamanio-tutorial">
+                        <Card.Header className="fw-bold">
+                            <i className="bi bi-fonts me-2"></i>Preferencias del tutorial
+                        </Card.Header>
+                        <Card.Body>
+                            <Form.Group className="text-start" controlId="formTamanioTutorial">
+                                <Form.Label className="p-1 fw-bold">
+                                    Tamaño de letra del tutorial
+                                </Form.Label>
+                                <Form.Select
+                                    value={tamanioTutorial}
+                                    onChange={(e) => cambiarTamanioTutorial(Number(e.target.value))}
+                                >
+                                    <option value={14}>Chico</option>
+                                    <option value={16}>Normal</option>
+                                    <option value={18}>Grande</option>
+                                    <option value={22}>Muy grande</option>
+                                </Form.Select>
+                                <Form.Text className="text-muted">
+                                    Se aplica automaticamente y se guarda solo en este navegador.
+                                </Form.Text>
+                            </Form.Group>
                         </Card.Body>
                     </Card>
                 </Col>
