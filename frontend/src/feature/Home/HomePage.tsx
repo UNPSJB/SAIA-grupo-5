@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Alert, Card, Col, Container, Row, Spinner } from "react-bootstrap";
+import { Alert, Button, Card, Col, Container, Row, Spinner } from "react-bootstrap";
 import {
     Bar,
     BarChart,
@@ -29,8 +29,136 @@ import { CumplimientoChart } from "./components/CumplimientoChart";
 import { SEAFOAM } from "./constants";
 import "./HomePage.css";
 import { useAuth } from "../../hooks";
+import { useNavigate } from 'react-router-dom';
 
 export function HomePage() {
+    const { currentUser } = useAuth();
+    return currentUser?.administrar ? <VistaAdmin /> : <VistaOperador />;
+}
+
+function VistaOperador() {
+    const { currentUser } = useAuth();
+    const navigate = useNavigate();
+    const nombre = currentUser?.nombre || "Operador";
+
+    return (
+        <Container fluid className="dashboard-page">
+            <div className="dashboard-heading">
+                <div>
+                    <span className="dashboard-eyebrow">PANEL DE OPERACIONES</span>
+                    <h1>Bienvenido/a, {nombre}</h1>
+                    <p>Selecciona una actividad para comenzar tu turno de trabajo.</p>
+                </div>
+            </div>
+            <Row className="g-3">
+                <Col xs={12} md={6} xl={4}>
+                    <Card className="h-100 shadow-sm border-0">
+                        <Card.Body className="d-flex flex-column justify-content-between p-4">
+                            <div>
+                                <div className="d-flex align-items-center gap-2 mb-2">
+                                    <i className={`bi bi-check2-square fs-4 text-primary`} aria-hidden="true" />
+                                    <h2 className="h5 mb-0">Checklist del día</h2>
+                                </div>
+                                <p className="text-muted small mb-3">Revisá y completá las tareas de limpieza programadas.</p>
+                            </div>
+                            <div>
+                                <Button variant="outline-primary" size="sm"
+                                    onClick={() => navigate("/checklist")}
+                                >
+                                    Ingresar <i className="bi bi-arrow-right ms-1" />
+                                </Button>
+                            </div>
+                        </Card.Body>
+                    </Card>
+                </Col>
+
+
+                <Col xs={12} md={6} xl={4}>
+                    <Card className="h-100 shadow-sm border-0">
+                        <Card.Body className="d-flex flex-column justify-content-between p-4">
+                            <div>
+                                <div className="d-flex align-items-center gap-2 mb-2">
+                                    <i className={`bi bi-list-check fs-4 text-primary`} aria-hidden="true" />
+                                    <h2 className="h5 mb-0">Tareas</h2>
+                                </div>
+                                <p className="text-muted small mb-3">Consultá el listado general de tareas operativas.</p>
+                            </div>
+                            <div>
+                                <Button variant="outline-primary" size="sm"
+                                    onClick={() => navigate("/tareas")}
+                                >
+                                    Ingresar <i className="bi bi-arrow-right ms-1" />
+                                </Button>
+                            </div>
+                        </Card.Body>
+                    </Card>
+                </Col>
+                <Col xs={12} md={6} xl={4}>
+                    <Card className="h-100 shadow-sm border-0">
+                        <Card.Body className="d-flex flex-column justify-content-between p-4">
+                            <div>
+                                <div className="d-flex align-items-center gap-2 mb-2">
+                                    <i className={`bi bi-exclamation-diamond fs-4 text-primary`} aria-hidden="true" />
+                                    <h2 className="h5 mb-0">Reportar incidente</h2>
+                                </div>
+                                <p className="text-muted small mb-3">Registrá cualquier hallazgo, rotura o desvío.</p>
+                            </div>
+                            <div>
+                                <Button variant="outline-danger" size="sm"
+                                    onClick={() => navigate("/incidentes")}
+                                >
+                                    Ingresar <i className="bi bi-arrow-right ms-1" />
+                                </Button>
+                            </div>
+                        </Card.Body>
+                    </Card>
+                </Col>
+                <Col xs={12} md={6} xl={4}>
+                    <Card className="h-100 shadow-sm border-0">
+                        <Card.Body className="d-flex flex-column justify-content-between p-4">
+                            <div>
+                                <div className="d-flex align-items-center gap-2 mb-2">
+                                    <i className={`bi bi-box2-fill fs-4 text-primary`} aria-hidden="true" />
+                                    <h2 className="h5 mb-0">Lotes de producción</h2>
+                                </div>
+                                <p className="text-muted small mb-3">Crea un nuevo lote y asociá los insumos utilizados."</p>
+                            </div>
+                            <div>
+                                <Button variant="outline-secondary" size="sm"
+                                    onClick={() => navigate("/lotes-produccion")}
+                                >
+                                    Ingresar <i className="bi bi-arrow-right ms-1" />
+                                </Button>
+                            </div>
+                        </Card.Body>
+                    </Card>
+                </Col>
+                <Col xs={12} md={6} xl={4}>
+                    <Card className="h-100 shadow-sm border-0">
+                        <Card.Body className="d-flex flex-column justify-content-between p-4">
+                            <div>
+                                <div className="d-flex align-items-center gap-2 mb-2">
+                                    <i className={`bi bi-file-text fs-4 text-primary`} aria-hidden="true" />
+                                    <h2 className="h5 mb-0">Procedimientos y manuales</h2>
+                                </div>
+                                <p className="text-muted small mb-3">Consultá las versiones vigentes de instructivos antes de operar.</p>
+                            </div>
+                            <div>
+                                <Button variant="outline-secondary" size="sm"
+                                    onClick={() => navigate("/documentos")}
+                                >
+                                    Ingresar <i className="bi bi-arrow-right ms-1" />
+                                </Button>
+                            </div>
+                        </Card.Body>
+                    </Card>
+                </Col>        
+            </Row>
+        </Container>
+    );
+}
+
+function VistaAdmin() {
     const { currentUser } = useAuth();
     const esOperador = currentUser?.operar === true;
 
@@ -191,7 +319,7 @@ export function HomePage() {
                     {historyLoading && <Spinner animation="border" size="sm" variant="success" aria-label="Cargando historial" />}
                 </div>
                 <Row className="g-3">
-                    <Col xs={6} xl={3}><MetricCard label="Total de tareas" value={formatMetric(historyLoading, historyHasError, occurrences.length)} icon="bi-list-task" tone={SEAFOAM.primary} detail="En el período seleccionado" /></Col>
+                    <Col xs={6} xl={3}><MetricCard label="Total de tareas" value={formatMetric(historyLoading, historyHasError, occurrences.length)} icon="bi-list-task" tone={SEAFOAM.primary} detail="En el período seleccionado" to="/historial" /></Col>
                     <Col xs={6} xl={3}><MetricCard label="Completadas" value={formatMetric(historyLoading, historyHasError, completed)} icon="bi-check2-circle" tone={SEAFOAM.success} detail="Registradas correctamente" /></Col>
                     <Col xs={6} xl={3}><MetricCard label="Incumplidas" value={formatMetric(historyLoading, historyHasError, overdueTasks)} icon="bi-exclamation-circle" tone={SEAFOAM.danger} detail={`${pendingTasks} pendientes`} /></Col>
                     <Col xs={6} xl={3}><MetricCard label="Cumplimiento" value={historyLoading ? "…" : historyHasError || compliance === null ? "—" : `${compliance}%`} icon="bi-speedometer2" tone={SEAFOAM.secondary} detail="Sobre tareas resueltas" /></Col>
@@ -227,7 +355,7 @@ export function HomePage() {
                 </Row>
             </section>}
 
-            <section aria-label="Indicadores de inventario" className="mb-4" data-tour="seccion-inventario">
+            {!esOperador && <section aria-label="Indicadores de inventario" className="mb-4" data-tour="seccion-inventario">
                 <div className="dashboard-section-heading">
                     <div>
                         <h2>Inventario, recambios y vencimientos</h2>
@@ -287,7 +415,7 @@ export function HomePage() {
                         />
                     </Col>}
                 </Row>
-            </section>
+            </section>}
 
             <Row className="g-3 dashboard-charts">
                 {!esOperador && <Col xl={7}>
@@ -361,6 +489,7 @@ export function HomePage() {
                     </Card>
                 </Col>}
                 <Col xl={esOperador ? 12 : 5}>
+                    {!esOperador && 
                     <Card className="dashboard-chart-card h-100" data-tour="grafico-recambios">
                         <Card.Body>
                             <div className="dashboard-chart-heading">
@@ -430,7 +559,7 @@ export function HomePage() {
                                 ))}
                             </div>
                         </Card.Body>
-                    </Card>
+                    </Card>}
                 </Col>
             </Row>
             <Row className="g-3 mb-4 dashboard-charts">

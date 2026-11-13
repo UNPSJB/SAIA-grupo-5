@@ -10,6 +10,7 @@ import { PageLoading } from '../../../components/PageLoading';
 import { PageError } from '../../../components/PageError';
 import { ActionButton } from '../../../components/ActionButton';
 import { useApi } from '../../../hooks/useApi';
+import { useAuth } from '../../../hooks';
 
 import { DeleteConsumoProductoModal } from '../components/DeleteConsumoProductoModal'; 
 import type { ConsumoProducto } from "../types";
@@ -20,7 +21,8 @@ export function ListPage() {
     const [search, setSearch] = useState('');
     const { data: consumos, error, isLoading } = useApi<ConsumoProducto[]>(`/consumos-productos/tarea/${id}`)
     const [consumoProductoToDelete, setConsumoProductoToDelete] = useState<ConsumoProducto | null>(null);
-    
+    const { currentUser } = useAuth();
+
     const filteredConsumos = useMemo(() => {
         if (!Array.isArray(consumos)) return [];
         return (consumos ?? []).filter((consumo) => {
@@ -120,25 +122,30 @@ export function ListPage() {
             minWidth: "50px",
             cell: (row) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span className="d-inline-block" data-tour={row.estado ? 'btn-editar-consumo' : undefined}>
-                        <ActionButton
-                            variant="outline-primary"
-                            size="sm"
-                            tooltip="Editar"
-                            icon="bi-pencil"
-                            disabled={!row.estado}
-                            onClick={() => navigate(`/consumos-productos/${row.id}/edit`)}
-                        />
-                    </span>
-                    <span className="d-inline-block" data-tour="btn-baja-consumo">
-                        <ActionButton
-                            variant={row.estado ? 'outline-danger' : 'outline-success'}
-                            size="sm"
-                            tooltip={row.estado ? 'Dar de baja' : 'Dar de alta'}
-                            icon={row.estado ? 'bi-dash-circle' : 'bi-check-circle'}
-                            onClick={() => setConsumoProductoToDelete(row)}
-                        />
-                    </span>
+                    {currentUser?.administrar && (
+                    <div >
+                        <span className="d-inline-block" data-tour={row.estado ? 'btn-editar-consumo' : undefined}>
+                            <ActionButton
+                                variant="outline-primary"
+                                size="sm"
+                                tooltip="Editar"
+                                icon="bi-pencil"
+                                disabled={!row.estado}
+                                onClick={() => navigate(`/consumos-productos/${row.id}/edit`)}
+                            />
+                        </span>
+                        
+                        <span className="d-inline-block" data-tour="btn-baja-consumo">
+                            <ActionButton
+                                variant={row.estado ? 'outline-danger' : 'outline-success'}
+                                size="sm"
+                                tooltip={row.estado ? 'Dar de baja' : 'Dar de alta'}
+                                icon={row.estado ? 'bi-dash-circle' : 'bi-check-circle'}
+                                onClick={() => setConsumoProductoToDelete(row)}
+                            />
+                        </span>
+                    </div>
+                    )}
                 </div>
             )
         },
@@ -161,6 +168,7 @@ export function ListPage() {
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
                 </Col>
+                {currentUser?.administrar && (
                 <Col xs="auto" className="d-flex justify-content-end">
                     <Button
                         data-tour="btn-nuevo-consumo"
@@ -172,6 +180,7 @@ export function ListPage() {
                         + Nuevo Insumo
                     </Button>
                 </Col>
+                )}
             </Row>
             <div data-tour="tabla-consumos">
                 <AppTable columns={columns} data={filteredConsumos} />

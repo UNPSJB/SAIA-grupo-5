@@ -67,7 +67,7 @@ export function TareaDetalleModal({ tarea, onHide, onEditar, onEliminar, onCambi
                                 <Button variant="outline-primary" size="sm" disabled={!tarea.activo}
                                     onClick={() => navigate(`/consumos-productos/tarea/${tarea.id}`)}
                                 >
-                                    <i className="bi bi-box-arrow-up-right"></i> Ver y agregar insumos
+                                    <i className="bi bi-box-arrow-up-right"></i> {currentUser?.administrar ? 'Ver y agregar insumos' : 'Ver insumos'} 
                                 </Button>
                             </dd>
                         </dl>
