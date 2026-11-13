@@ -72,6 +72,7 @@ export function ListPage() {
     const subHeaderComponentMemo = useMemo(() => {
         return (
             <Form.Control
+                data-tour="buscador-lotes"
                 type="text"
                 placeholder="Buscar lote de produccion..."
                 className="mr-sm-2"
@@ -133,7 +134,7 @@ export function ListPage() {
             cell: row => {
                 const disponible = row.cantidad_disponible ?? row.cantidad_producida;
                 return (
-                    <span className={disponible === 0 ? "text-danger fw-bold" : "fw-bold text-success"}>
+                    <span data-tour="stock-lote" className={disponible === 0 ? "text-danger fw-bold" : "fw-bold text-success"}>
                         {disponible} <span className="text-muted fw-normal">/ {row.cantidad_producida}</span>
                     </span>
                 );
@@ -150,6 +151,7 @@ export function ListPage() {
                 const estilo = ESTILOS_ESTADO[row.estado] || ESTILOS_ESTADO["En produccion"];
                 return (
                     <div
+                        data-tour="estado-lote"
                         style={{
                             padding: '4px 12px',
                             borderRadius: '16px',
@@ -180,50 +182,60 @@ export function ListPage() {
                 
                 return (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
-                        <ActionButton
-                            variant="outline-info"
-                            size="sm"
-                            tooltip="Ver"
-                            icon="bi bi-eye"
-                            onClick={() => navigate(`/lotes-produccion/${row.id}`, { state: { origen: "lista" }})}
-                        />
+                        <span data-tour="btn-ver-lote">
+                            <ActionButton
+                                variant="outline-info"
+                                size="sm"
+                                tooltip="Ver"
+                                icon="bi bi-eye"
+                                onClick={() => navigate(`/lotes-produccion/${row.id}`, { state: { origen: "lista" }})}
+                            />
+                        </span>
                         {currentUser?.operar && (
                             <>
-                                <ActionButton
-                                    variant="outline-primary"
-                                    size="sm"
-                                    tooltip="Editar"
-                                    icon="bi bi-pencil"
-                                    disabled={row.estado === "Enviado" || row.estado === "Parcialmente despachado"}
-                                    onClick={() => navigate(`/lotes-produccion/${row.id}/edit`)}
-                                />
-                                <ActionButton
-                                    variant="outline-success"
-                                    size="sm"
-                                    tooltip={tieneInsumos ? "Modificar insumos" : "Asociar insumos"}
-                                    icon={tieneInsumos ? "bi bi-pencil-square" : "bi bi-plus-circle"}
-                                    disabled={!puedeModificarInsumos}
-                                    onClick={() => setLoteInsumos(row)}
-                                />
-                                {mostrarBotonAvanzar && (
+                                <span data-tour="btn-editar-lote">
                                     <ActionButton
-                                        variant={config.variant}
+                                        variant="outline-primary"
                                         size="sm"
-                                        tooltip={config.tooltip}
-                                        icon={config.icon}
-                                        disabled={!puedeAvanzar}
-                                        onClick={() => setLoteToChange(row)}
+                                        tooltip="Editar"
+                                        icon="bi bi-pencil"
+                                        disabled={row.estado === "Enviado" || row.estado === "Parcialmente despachado"}
+                                        onClick={() => navigate(`/lotes-produccion/${row.id}/edit`)}
                                     />
+                                </span>
+                                <span data-tour="btn-insumos-lote">
+                                    <ActionButton
+                                        variant="outline-success"
+                                        size="sm"
+                                        tooltip={tieneInsumos ? "Modificar insumos" : "Asociar insumos"}
+                                        icon={tieneInsumos ? "bi bi-pencil-square" : "bi bi-plus-circle"}
+                                        disabled={!puedeModificarInsumos}
+                                        onClick={() => setLoteInsumos(row)}
+                                    />
+                                </span>
+                                {mostrarBotonAvanzar && (
+                                    <span data-tour="btn-avanzar-lote">
+                                        <ActionButton
+                                            variant={config.variant}
+                                            size="sm"
+                                            tooltip={config.tooltip}
+                                            icon={config.icon}
+                                            disabled={!puedeAvanzar}
+                                            onClick={() => setLoteToChange(row)}
+                                        />
+                                    </span>
                                 )}
                                 {mostrarBotonDespacho && (
-                                    <ActionButton
-                                        variant="outline-secondary"
-                                        size="sm"
-                                        tooltip="Despachar Envío"
-                                        icon="bi bi-truck"
-                                        disabled={!puedeDespachar}
-                                        onClick={() => setLoteParaEnvio(row)}
-                                    />
+                                    <span data-tour="btn-despachar-lote">
+                                        <ActionButton
+                                            variant="outline-secondary"
+                                            size="sm"
+                                            tooltip="Despachar Envío"
+                                            icon="bi bi-truck"
+                                            disabled={!puedeDespachar}
+                                            onClick={() => setLoteParaEnvio(row)}
+                                        />
+                                    </span>
                                 )}
                             </>
                         )}
@@ -246,7 +258,7 @@ export function ListPage() {
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
                 </Col>
-                <Col xs="auto" className="align-self-center">
+                <Col xs="auto" className="align-self-center" data-tour="filtro-estado-lotes">
                     <ListFilter
                         value={filtroEstado}
                         onChange={setFiltroEstado}
@@ -263,6 +275,7 @@ export function ListPage() {
                 {currentUser?.operar && (
                     <Col xs="auto" className="d-flex justify-content-end">
                         <Button
+                            data-tour="btn-nuevo-lote"
                             variant="primary"
                             size='sm'
                             onClick={() => navigate("/lotes-produccion/new")}
@@ -273,7 +286,9 @@ export function ListPage() {
                     </Col>
                 )}
             </Row>
-            <AppTable columns={columns} data={filteredLoteProduccion} />
+            <div data-tour="tabla-lotes">
+                <AppTable columns={columns} data={filteredLoteProduccion} />
+            </div>
             <CambiarEstadoLoteModal
                 lote={loteToChange}
                 onHide={() => setLoteToChange(null)}

@@ -121,7 +121,7 @@ function VistaOperador() {
                                     <i className={`bi bi-box2-fill fs-4 text-primary`} aria-hidden="true" />
                                     <h2 className="h5 mb-0">Lotes de producción</h2>
                                 </div>
-                                <p className="text-muted small mb-3">Crea un nuevo lote y asociá los insumos utilizados."</p>
+                                <p className="text-muted small mb-3">Crea un nuevo lote y asociá los insumos utilizados.</p>
                             </div>
                             <div>
                                 <Button variant="outline-secondary" size="sm"
@@ -139,9 +139,9 @@ function VistaOperador() {
                             <div>
                                 <div className="d-flex align-items-center gap-2 mb-2">
                                     <i className={`bi bi-file-text fs-4 text-primary`} aria-hidden="true" />
-                                    <h2 className="h5 mb-0">Procedimientos y manuales</h2>
+                                    <h2 className="h5 mb-0">Documentos</h2>
                                 </div>
-                                <p className="text-muted small mb-3">Consultá las versiones vigentes de instructivos antes de operar.</p>
+                                <p className="text-muted small mb-3">Consultá las versiones vigentes antes de operar.</p>
                             </div>
                             <div>
                                 <Button variant="outline-secondary" size="sm"
