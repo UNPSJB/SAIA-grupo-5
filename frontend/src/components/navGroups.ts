@@ -21,7 +21,7 @@ export const navGroups: NavGroup[] = [
         items: [
             { label: 'Personal', to: '/personal', icon: 'bi-people', adminOnly: true },
             { label: 'Documentos', to: '/documentos', icon: 'bi-file-text' },
-            { label: 'Clientes', to: '/clientes', icon: 'bi bi-shop'}
+            { label: 'Clientes', to: '/clientes', icon: 'bi bi-shop', adminOnly: true }
         ],
     },
     {
@@ -31,7 +31,7 @@ export const navGroups: NavGroup[] = [
         items: [
             { label: 'Tareas', to: '/tareas', icon: 'bi-list-check' },
             { label: 'Checklist', to: '/checklist', icon: 'bi-check2-square' },
-            { label: 'Incidentes', to: '/incidentes', icon: 'bi-exclamation-diamond', adminOnly: true },
+            { label: 'Incidentes', to: '/incidentes', icon: 'bi-exclamation-diamond'},
         ],
     },
     {
@@ -70,9 +70,9 @@ export const navGroups: NavGroup[] = [
         label: 'Abastecimiento',
         icon: 'bi-box-arrow-in-down',
         items: [
-            { label: 'Proveedores', to: '/proveedores', icon: 'bi bi-cart'},
+            { label: 'Proveedores', to: '/proveedores', icon: 'bi bi-cart', adminOnly: true },
             { label: 'Recepciones', to: '/recepciones', icon: 'bi bi-truck'},
-            { label: 'Insumos Alimenticios', to: '/insumos-lote', icon: 'bi bi-egg'},
+            { label: 'Insumos Alimenticios', to: '/insumos-lote', icon: 'bi bi-egg'}
         ],
     },
     {
@@ -99,7 +99,7 @@ export const navGroups: NavGroup[] = [
             { label: 'Superficies', to: '/superficies', icon: 'bi-virus2' },
             { label: 'Tipos de Químicos', to: '/tipos-quimicos', icon: 'bi-flask' },
             { label: 'Tipos de Elementos', to: '/tipos-elementos-limpieza', icon: 'bi-tags' },
-            { label: 'Unidades de Medida', to: '/unidades-medida', icon: '<bi bi-rulers'},
+            { label: 'Unidades de Medida', to: '/unidades-medida', icon: 'bi bi-rulers'},
             { label: 'Aditivos', to: '/aditivos', icon: 'bi-eyedropper' }
         ],
     },
