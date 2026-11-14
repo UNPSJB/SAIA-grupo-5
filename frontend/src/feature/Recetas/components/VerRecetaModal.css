@@ -1,0 +1,13 @@
+.receta-tabs {
+    --bs-nav-link-color: var(--sb-seafoam-primary);
+    --bs-nav-link-hover-color: var(--sb-seafoam-secondary);
+    --bs-nav-tabs-link-active-color: var(--sb-seafoam-primary);
+}
+
+.receta-tabs .nav-link.active {
+    font-weight: 600;
+}
+
+.receta-tabs .nav-link:focus-visible {
+    box-shadow: 0 0 0 0.25rem rgba(6, 121, 79, 0.25);
+}

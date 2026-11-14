@@ -10,6 +10,7 @@ import type { Producto } from '../../Productos/types';
 import type { Receta, RecetaVersion } from '../types';
 import { SellosFrontales } from './SellosFrontales';
 import { ComposicionPorcentual } from './ComposicionPorcentual';
+import "./VerRecetaModal.css";
 
 interface VerRecetaModalProps {
     producto: Producto | null;
@@ -111,7 +112,7 @@ export function VerRecetaModal({ producto, onHide, onEditar }: VerRecetaModalPro
                             </ListGroup.Item>
                         </ListGroup>
 
-                        <Tabs defaultActiveKey="etapas" id="secciones-receta" className="mb-3" mountOnEnter>
+                        <Tabs defaultActiveKey="etapas" id="secciones-receta" className="mb-3 receta-tabs" mountOnEnter>
                             <Tab eventKey="etapas" title="Etapas y pasos">
                                 <Accordion alwaysOpen defaultActiveKey={receta.etapas.map((etapa) => String(etapa.id))}>
                                     {receta.etapas.map((etapa) => (
