@@ -62,7 +62,8 @@ export function ListPage() {
             const coincideBusqueda =
                 insumo.insumo.nombre.toLowerCase().includes(busqueda) ||
                 insumo.marca.toLowerCase().includes(busqueda) ||
-                (insumo.lote_proveedor?.numero_lote.toLowerCase().includes(busqueda) ?? false) ||
+                insumo.numero_lote.toLowerCase().includes(busqueda) ||
+                (insumo.lote_proveedor?.numero_remito?.toLowerCase().includes(busqueda) ?? false) ||
                 (insumo.lote_proveedor?.proveedor?.nombre.toLowerCase().includes(busqueda) ?? false);
 
             let coincideEstado = true;
@@ -139,29 +140,33 @@ export function ListPage() {
             grow: 0.8,
         },
         {
-            name: 'Origen / Lote',
+            name: 'N° Lote',
+            selector: row => row.numero_lote,
+            sortable: true,
             center: true,
-            minWidth: '220px',
-            grow: 1.1,
+            minWidth: '130px',
+            cell: row => <span className="fw-bold">{row.numero_lote}</span>,
+        },
+        {
+            name: 'N° Remito',
+            selector: row => row.lote_proveedor?.numero_remito || '',
+            sortable: true,
+            center: true,
+            minWidth: '170px',
             cell: row => {
                 const loteId = row.lote_proveedor?.id || row.lote_proveedor_id;
-                const textoLote = row.lote_proveedor?.numero_lote || `ID #${row.lote_proveedor_id}`;
-                const proveedorNombre = row.lote_proveedor?.proveedor?.nombre || 'N/A';
+                const textoRemito = row.lote_proveedor?.numero_remito || `#${row.lote_proveedor_id}`;
 
                 return (
-                    <div style={{ whiteSpace: 'nowrap', fontSize: '0.88rem' }}>
-                        <Button
-                            data-tour="btn-origen-lote"
-                            variant="link"
-                            className="p-0 fw-bold text-decoration-none me-2"
-                            onClick={() => navigate(`/recepciones/${loteId}`)}
-                            title="Ir a la recepción del lote"
-                        >
-                            <i className="bi bi-box-arrow-up-right me-1 small"></i>
-                            {textoLote}
-                        </Button>
-                        <span className="text-muted">({proveedorNombre})</span>
-                    </div>
+                    <Button
+                        variant="link"
+                        className="p-0 fw-bold text-decoration-none"
+                        onClick={() => navigate(`/recepciones/${loteId}`)}
+                        title="Ir a la recepción"
+                    >
+                        <i className="bi bi-box-arrow-up-right me-1 small"></i>
+                        {textoRemito}
+                    </Button>
                 );
             },
         },

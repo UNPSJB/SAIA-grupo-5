@@ -35,3 +35,7 @@ class ProveedorSinHabilitacion(BadRequest):
 
 class LoteSinInsumosParaAcomodar(BadRequest):
     DETAIL = ErrorCode.LOTE_SIN_INSUMOS_PARA_ACOMODAR
+
+
+class PedidoNoValido(BadRequest):
+    DETAIL = ErrorCode.PEDIDO_NO_VALIDO

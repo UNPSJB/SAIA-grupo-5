@@ -47,3 +47,8 @@ from src.lote_proveedor.models import LoteProveedor, HistorialEstadoLoteProveedo
 from src.insumos_lote.models import InsumoLote
 from src.lote_produccion.models import LoteProduccion, InsumoUtilizado, HistorialEstadoLote
 
+from src.pedidos_proveedor.models import PedidoProveedor, PedidoProveedorItem
+from src.proveedor.models import ProveedorInsumo
+from src.insumo_quimico.models import InsumoQuimico
+from src.historial_vigencia_documento.models import HistorialVigencia
+from src.auth.models import AuthPasswordRecoveryToken

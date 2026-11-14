@@ -14,7 +14,7 @@ def test_endpoint_leer_lote_proveedor(client, auth_headers, unico_lote_proveedor
     assert response.status_code == 200
     data = response.json()
     assert data["id"] == unico_lote_proveedor.id
-    assert data["numero_lote"] == unico_lote_proveedor.numero_lote
+    assert data["numero_remito"] == unico_lote_proveedor.numero_remito
 
 
 def test_endpoint_leer_lote_proveedor_no_encontrado(client, auth_headers):
@@ -22,10 +22,10 @@ def test_endpoint_leer_lote_proveedor_no_encontrado(client, auth_headers):
     assert response.status_code == 404
 
 
-def test_endpoint_crear_lote_proveedor_exitoso(client, auth_headers, unico_proveedor):
+def test_endpoint_crear_lote_proveedor_exitoso(client, auth_headers, unico_proveedor, unico_pedido_proveedor):
     payload = {
         "proveedor_id": unico_proveedor.id,
-        "numero_lote": "LOTE-ROUTER-01",
+        "pedido_id": unico_pedido_proveedor.id,
         "numero_remito": "REM-ROUTER-99",
         "fecha_recepcion": str(date.today()),
     }
@@ -34,39 +34,38 @@ def test_endpoint_crear_lote_proveedor_exitoso(client, auth_headers, unico_prove
 
     assert response.status_code == 200
     data = response.json()
-    assert data["numero_lote"] == "LOTE-ROUTER-01"
+    assert data["numero_remito"] == "REM-ROUTER-99"
+    assert data["pedido_id"] == unico_pedido_proveedor.id
     assert data["proveedor"]["id"] == unico_proveedor.id
 
 
-def test_endpoint_crear_lote_proveedor_sin_permiso_operar(client, auth_headers_sin_operar, unico_proveedor):
+def test_endpoint_crear_lote_proveedor_sin_permiso_operar(client, auth_headers_sin_operar, unico_proveedor, unico_pedido_proveedor):
     payload = {
         "proveedor_id": unico_proveedor.id,
-        "numero_lote": "LOTE-SIN-PERMISO",
+        "pedido_id": unico_pedido_proveedor.id,
+        "numero_remito": "REM-SIN-PERMISO",
         "fecha_recepcion": str(date.today()),
     }
 
     response = client.post("/lotes-proveedor/", json=payload, headers=auth_headers_sin_operar)
-
     assert response.status_code == 403
 
 
-def test_endpoint_crear_lote_proveedor_habilitacion_vencida_error_400(client, auth_headers, multiples_proveedores):
+def test_endpoint_crear_lote_proveedor_habilitacion_vencida_error_400(client, auth_headers, multiples_proveedores, unico_pedido_proveedor):
     proveedor_vencido = multiples_proveedores[1]
     payload = {
         "proveedor_id": proveedor_vencido.id,
-        "numero_lote": "LOTE-RECHAZADO",
+        "pedido_id": unico_pedido_proveedor.id,
         "numero_remito": "R-TEST-9999",
         "fecha_recepcion": str(date.today()),
     }
 
     response = client.post("/lotes-proveedor/", json=payload, headers=auth_headers)
-    
     assert response.status_code == 400
 
 
 def test_endpoint_modificar_lote_proveedor(client, auth_headers, unico_lote_proveedor):
     payload = {
-        "numero_lote": "LOTE-ACTUALIZADO",
         "numero_remito": "REM-ACTUALIZADO",
         "fecha_recepcion": str(date.today()),
     }
@@ -75,7 +74,7 @@ def test_endpoint_modificar_lote_proveedor(client, auth_headers, unico_lote_prov
 
     assert response.status_code == 200
     data = response.json()
-    assert data["numero_lote"] == "LOTE-ACTUALIZADO"
+    assert data["numero_remito"] == "REM-ACTUALIZADO"
 
 
 def test_endpoint_cambiar_estado_lote_proveedor(client, auth_headers, unico_lote_proveedor):

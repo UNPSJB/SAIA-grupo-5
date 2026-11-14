@@ -40,6 +40,8 @@ from src.clientes.models import Cliente
 from src.direcciones_cliente.models import DireccionCliente
 from src.envios_lote.models import EnvioLote
 from src.insumos_lote.models import InsumoLote
+from src.proveedor.models import ProveedorInsumo
+from src.pedidos_proveedor.models import PedidoProveedor
 
 from src.config import settings
 from src.settings import ROOT_PATH
@@ -88,6 +90,7 @@ from src.clientes.router import router as cliente_router
 from src.direcciones_cliente.router import router as direcciones_cliente_router
 from src.envios_lote.router import router as envios_lote_router
 from src.insumos_lote.router import router as insumo_lote_router
+from src.pedidos_proveedor.router import router as pedidos_proveedor_router
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -153,4 +156,5 @@ app.include_router(cliente_router)
 app.include_router(direcciones_cliente_router)
 app.include_router(envios_lote_router)
 app.include_router(insumo_lote_router)
+app.include_router(pedidos_proveedor_router)
 

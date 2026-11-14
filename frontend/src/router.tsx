@@ -151,6 +151,11 @@ import { VerClientePage } from './feature/Clientes/pages/VerClientePage.tsx'
 import { ListPage as InsumoLoteListPage } from './feature/InsumosLote/pages/ListPage.tsx'
 import { VerInsumoLotePage } from './feature/InsumosLote/pages/VerInsumoLotePage.tsx'
 
+import { ListPage as PedidosProveedorListPage } from './feature/PedidosProveedor/pages/Listpage.tsx'
+import { NuevoPedidoProveedorPage } from './feature/PedidosProveedor/pages/NuevoPedidoProveedorPage.tsx'
+import { EditarPedidoProveedorPage } from './feature/PedidosProveedor/pages/EditarPedidoProveedorPage.tsx'
+import { VerPedidoProveedorPage } from './feature/PedidosProveedor/pages/VerPedidoProveedorPage.tsx'
+
 
 import { Login, NoAutorizado } from './feature/auth'
 import AuthLayout from './layouts/AuthLayout.tsx'
@@ -207,15 +212,6 @@ const router = createBrowserRouter([
             ],
           },
           {
-            path: 'vencimiento-personal',
-            element: <ProtectedRoute requireAdmin />,
-            children: [
-              { index: true, element: <VencimientoConsolidadoPage /> },
-              { path: ':id', element: <VerVencimientoPersonalPage /> },
-              { path: ':id/edit', element: <EditarVencimientoPersonalPage /> },
-            ],
-          },
-          {
             path: 'personal',
             element: <ProtectedRoute requireAdmin />,
             children: [
@@ -254,6 +250,70 @@ const router = createBrowserRouter([
                 ],
               },
             ],
+          },
+          {
+            path: 'tipos-vencimientos',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <TipoVencimientoListPage /> },
+              { path: 'new', element: <NuevoTipoVencimientoPage /> },
+              { path: ':id', element: <VerTipoVencimientoPage /> },
+              { path: ':id/edit', element: <EditarTipoVencimientoPage /> },
+            ],
+          },
+          {
+            path: 'unidades-medida',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <UnidadMedidaListPage />},
+              { path: 'new', element: <NuevaUnidadMedidaPage />},
+              { path: ':id', element: <VerUnidadMedidaPage />},
+              { path: ':id/edit', element: <EditarUnidadMedidaPage />},
+            ],
+          },
+          {
+            path: 'productos',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <ProductoListPage />},
+              { path: 'new', element: <NuevoProductoPage />},
+              { path: ':id/edit', element: <EditarProductoPage />},
+              { path: ':id', element: <VerProductoPage />},
+              { path: ':id/receta/escalar', element: <EscalarRecetaPage />},
+            ],
+          },
+          {
+            path: 'pedidos-proveedor',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <PedidosProveedorListPage />},
+              { path: 'new', element: <NuevoPedidoProveedorPage />},
+              { path: ':id/edit', element: <EditarPedidoProveedorPage />},
+              { path: ':id', element: <VerPedidoProveedorPage />},
+            ]
+          },
+          {
+            path: 'lotes-historial',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <LotesHistorialPage /> },
+            ],
+          },
+          {
+            path: 'vencimiento-personal',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <VencimientoConsolidadoPage /> },
+              { path: ':id', element: <VerVencimientoPersonalPage /> },
+              { path: ':id/edit', element: <EditarVencimientoPersonalPage /> },
+            ],
+          },
+          {
+            path: 'insumos-lote',
+            children: [
+              { index: true, element: <InsumoLoteListPage />},
+              { path: ':id', element: <VerInsumoLotePage />}
+            ]
           },
           {
             path: 'clientes',
@@ -383,20 +443,6 @@ const router = createBrowserRouter([
             ],
           },
           {
-            path: 'productos',
-            children: [
-              { index: true, element: <ProductoListPage />},
-              { path: ':id', element: <VerProductoPage />},
-              {
-                element: <ProtectedRoute requireAdmin />,
-                children: [
-                  { path: 'new', element: <NuevoProductoPage />},
-                  { path: ':id/edit', element: <EditarProductoPage />},
-                ],
-              },
-            ],
-          },
-          {
             path: 'lotes-produccion',
             children: [
               { index: true, element: <LoteProduccionListPage />},
@@ -425,13 +471,6 @@ const router = createBrowserRouter([
             ]
           },
           {
-            path: 'insumos-lote',
-            children: [
-              { index: true, element: <InsumoLoteListPage />},
-              { path: ':id', element: <VerInsumoLotePage />}
-            ]
-          },
-          {
             path: 'historial',
             element: <ProtectedRoute requireAdmin />,
             children: [
@@ -450,13 +489,6 @@ const router = createBrowserRouter([
             element: <ProtectedRoute requireAdmin />,
             children: [
               { index: true, element: <IncidentesHistorialPage /> },
-            ],
-          },
-          {
-            path: 'lotes-historial',
-            element: <ProtectedRoute requireAdmin />,
-            children: [
-              { index: true, element: <LotesHistorialPage /> },
             ],
           },
           {
@@ -512,26 +544,6 @@ const router = createBrowserRouter([
                   { path: ':id/edit', element: <EditarTipoDocumentoPage /> },
                 ],
               },
-            ],
-          },
-          {
-            path: 'tipos-vencimientos',
-            element: <ProtectedRoute requireAdmin />,
-            children: [
-              { index: true, element: <TipoVencimientoListPage /> },
-              { path: 'new', element: <NuevoTipoVencimientoPage /> },
-              { path: ':id', element: <VerTipoVencimientoPage /> },
-              { path: ':id/edit', element: <EditarTipoVencimientoPage /> },
-            ],
-          },
-          {
-            path: 'unidades-medida',
-            element: <ProtectedRoute requireAdmin />,
-            children: [
-              { index: true, element: <UnidadMedidaListPage />},
-              { path: 'new', element: <NuevaUnidadMedidaPage />},
-              { path: ':id', element: <VerUnidadMedidaPage />},
-              { path: ':id/edit', element: <EditarUnidadMedidaPage />},
             ],
           },
           {

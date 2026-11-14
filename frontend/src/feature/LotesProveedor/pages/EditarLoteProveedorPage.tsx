@@ -16,15 +16,14 @@ export function EditarLoteProveedorPage() {
     const actualizarLote = async (datos: NewLoteProveedor) => {
         try {
             await api.put(`/lotes-proveedor/${id}`, {
-                numero_lote: datos.numero_lote,
                 numero_remito: datos.numero_remito,
                 fecha_recepcion: datos.fecha_recepcion,
                 archivo_adjunto: datos.archivo_adjunto,
             });
-            mostrarAlertaExito('Lote de proveedor editado correctamente.');
+            mostrarAlertaExito('Recepcion editada correctamente.');
             navigate('/recepciones');
         } catch (error: any) {
-            let mensaje = 'No se pudo actualizar el lote.';
+            let mensaje = 'No se pudo actualizar la recepcion.';
             if (error.response?.data?.detail) {
                 const detail = error.response.data.detail;
                 mensaje = Array.isArray(detail) ? detail[0].msg : detail;
@@ -33,24 +32,23 @@ export function EditarLoteProveedorPage() {
         }
     };
 
-    if (isLoading) return <PageLoading title="Editar Lote" />;
+    if (isLoading) return <PageLoading title="Editar Recepción" />;
     if (!lote || error) return (
         <Container>
-            <PageHeader title="Lote no encontrado" />
-            <Alert variant="danger">El lote a editar no existe.</Alert>
+            <PageHeader title="Recepción no encontrada" />
+            <Alert variant="danger">La recepción a editar no existe.</Alert>
         </Container>
     );
 
     return (
         <Container>
-            <PageHeader title={`Editar Lote ${lote.numero_lote}`} />
+            <PageHeader title={`Editar Recepción ${lote.numero_remito || `#${lote.id}`}`} />
             <LoteProveedorForm
                 isEdit
                 textoBoton="Guardar Cambios"
                 onSubmit={actualizarLote}
                 valoresIniciales={{
                     proveedor_id: lote.proveedor_id,
-                    numero_lote: lote.numero_lote,
                     numero_remito: lote.numero_remito,
                     fecha_recepcion: lote.fecha_recepcion,
                     archivo_adjunto: lote.archivo_adjunto,

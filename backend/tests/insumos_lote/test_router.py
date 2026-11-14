@@ -5,7 +5,7 @@ def test_endpoint_listar_todos_los_insumos_lote(client, auth_headers, multiples_
     response = client.get("/insumos-lote/", headers=auth_headers)
     assert response.status_code == 200
     data = response.json()
-    assert len(data) == 2
+    assert len(data) == 3
 
 
 def test_endpoint_leer_insumo_lote_exitoso(client, auth_headers, unico_insumo_lote):
@@ -13,6 +13,7 @@ def test_endpoint_leer_insumo_lote_exitoso(client, auth_headers, unico_insumo_lo
     assert response.status_code == 200
     data = response.json()
     assert data["id"] == unico_insumo_lote.id
+    assert data["numero_lote"] == "LOT-FAB-001"
     assert data["marca"] == "Molinos del Sur"
     assert data["cantidad"] == 50
 
@@ -23,7 +24,7 @@ def test_endpoint_leer_insumo_lote_inexistente(client, auth_headers):
 
 
 def test_endpoint_listar_insumos_por_lote_proveedor(client, auth_headers, unico_lote_proveedor, multiples_insumos_lote):
-    response = client.get(f"/insumos-lote/por-lote-proveedor/{unico_lote_proveedor.id}", headers=auth_headers)
+    response = client.get(f"/insumos-lote/lote/{unico_lote_proveedor.id}", headers=auth_headers)
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 2
@@ -32,6 +33,7 @@ def test_endpoint_listar_insumos_por_lote_proveedor(client, auth_headers, unico_
 def test_endpoint_crear_insumo_lote_exitoso(client, auth_headers, unico_lote_proveedor, unico_insumo):
     payload = {
         "insumo_id": unico_insumo.id,
+        "numero_lote": "LOT-LED-2026",
         "marca": "Ledesma",
         "cantidad": 30,
         "fecha_vencimiento": str(date.today() + timedelta(days=120)),
@@ -39,12 +41,13 @@ def test_endpoint_crear_insumo_lote_exitoso(client, auth_headers, unico_lote_pro
         "minimo_alerta": 5,
     }
     response = client.post(
-        f"/insumos-lote/por-lote-proveedor/{unico_lote_proveedor.id}",
+        f"/insumos-lote/lote/{unico_lote_proveedor.id}",
         json=payload,
         headers=auth_headers,
     )
     assert response.status_code == 200
     data = response.json()
+    assert data["numero_lote"] == "LOT-LED-2026"
     assert data["marca"] == "Ledesma"
     assert data["cantidad"] == 30
     assert data["cantidad_restante"] == 30
@@ -54,13 +57,14 @@ def test_endpoint_crear_insumo_lote_exitoso(client, auth_headers, unico_lote_pro
 def test_endpoint_crear_insumo_lote_sin_permiso_operar(client, auth_headers_sin_operar, unico_lote_proveedor, unico_insumo):
     payload = {
         "insumo_id": unico_insumo.id,
+        "numero_lote": "LOT-SIN-PERMISO",
         "marca": "Ledesma",
         "cantidad": 30,
         "fecha_vencimiento": str(date.today() + timedelta(days=120)),
-        "minimo_alerta": 5
+        "minimo_alerta": 5,
     }
     response = client.post(
-        f"/insumos-lote/por-lote-proveedor/{unico_lote_proveedor.id}",
+        f"/insumos-lote/lote/{unico_lote_proveedor.id}",
         json=payload,
         headers=auth_headers_sin_operar,
     )
@@ -70,13 +74,14 @@ def test_endpoint_crear_insumo_lote_sin_permiso_operar(client, auth_headers_sin_
 def test_endpoint_crear_insumo_lote_vencimiento_pasado_error(client, auth_headers, unico_lote_proveedor, unico_insumo):
     payload = {
         "insumo_id": unico_insumo.id,
+        "numero_lote": "LOT-VENC-01",
         "marca": "Ledesma",
         "cantidad": 10,
         "fecha_vencimiento": str(date.today() - timedelta(days=1)),
-        "minimo_alerta": 5
+        "minimo_alerta": 5,
     }
     response = client.post(
-        f"/insumos-lote/por-lote-proveedor/{unico_lote_proveedor.id}",
+        f"/insumos-lote/lote/{unico_lote_proveedor.id}",
         json=payload,
         headers=auth_headers,
     )

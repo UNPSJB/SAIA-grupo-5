@@ -68,6 +68,16 @@ export function VerInsumoLotePage() {
                             </Row>
 
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
+                                <Col sm={5} className="fw-bold text-secondary">Marca</Col>
+                                <Col sm={7} className="fs-6">{item.marca}</Col>
+                            </Row>
+
+                            <Row className="mb-3 border-bottom pb-3 align-items-center">
+                                <Col sm={5} className="fw-bold text-secondary">N° de Lote</Col>
+                                <Col sm={7} className="fs-6 fw-bold">{item.numero_lote}</Col>
+                            </Row>
+
+                            <Row className="mb-3 border-bottom pb-3 align-items-center">
                                 <Col sm={5} className="fw-bold text-secondary">Unidad de Medida</Col>
                                 <Col sm={7} className="fs-6">
                                     {item.insumo.unidad_medida?.nombre || 'Unidades'}
@@ -126,11 +136,11 @@ export function VerInsumoLotePage() {
                             <hr className="my-4" />
 
                             <h5 className="mb-3">
-                                <i className="bi bi-box-seam me-2"></i>Origen de Recepción y Proveedor
+                                <i className="bi bi-box-seam me-2"></i>Origen de Recepcion y Proveedor
                             </h5>
 
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={5} className="fw-bold text-secondary">Lote de Recepcion</Col>
+                                <Col sm={5} className="fw-bold text-secondary">Recepcion / Remito</Col>
                                 <Col sm={7} className="fs-6">
                                     {item.lote_proveedor ? (
                                         <Button
@@ -139,10 +149,12 @@ export function VerInsumoLotePage() {
                                             onClick={() => navigate(`/recepciones/${item.lote_proveedor?.id}`)}
                                         >
                                             <i className="bi bi-box-arrow-up-right small"></i>
-                                            {item.lote_proveedor.numero_lote}
+                                            {item.lote_proveedor.numero_remito
+                                                ? `Remito ${item.lote_proveedor.numero_remito}`
+                                                : `Recepción #${item.lote_proveedor.id}`}
                                         </Button>
                                     ) : (
-                                        <span className="text-muted">ID #{item.lote_proveedor_id}</span>
+                                        <span className="text-muted">Recepción #{item.lote_proveedor_id}</span>
                                     )}
                                 </Col>
                             </Row>
