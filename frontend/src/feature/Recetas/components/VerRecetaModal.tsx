@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { Accordion, Alert, Button, Form, ListGroup, Modal, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { useApi } from '../../../hooks/useApi';
+import { useAuth } from '../../../hooks/useAuth';
 import { EstadoBadge } from '../../../components/EstadoBadge';
 import type { Producto } from '../../Productos/types';
 import type { Receta, RecetaVersion } from '../types';
 import { SellosFrontales } from './SellosFrontales';
+import { ComposicionPorcentual } from './ComposicionPorcentual';
 
 interface VerRecetaModalProps {
     producto: Producto | null;
@@ -24,6 +26,7 @@ const etiquetaVersion = (version: RecetaVersion) =>
 
 export function VerRecetaModal({ producto, onHide, onEditar }: VerRecetaModalProps) {
     const navigate = useNavigate();
+    const { currentUser } = useAuth();
     const [seleccion, setSeleccion] = useState<{ productoId: number; recetaId: number } | null>(null);
     const recetaSeleccionadaId = seleccion && seleccion.productoId === producto?.id ? seleccion.recetaId : null;
 
@@ -140,6 +143,8 @@ export function VerRecetaModal({ producto, onHide, onEditar }: VerRecetaModalPro
                                 ))}
                             </ListGroup>
                         )}
+
+                        {currentUser?.administrar && <ComposicionPorcentual insumos={receta.insumos} />}
 
                         <SellosFrontales evaluacion={receta.sellos} />
 

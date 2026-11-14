@@ -22,7 +22,7 @@ from scripts.seed_aditivos import generar_aditivos
 
 INSUMOS_ADICIONALES = {
     "Fermento láctico": ("Gramo", (350, 0, 2, 1.2, 800, None)),
-    "Cuajo": ("Mililitro", (10, 0, 0, 0, 2000, None)),
+    "Cuajo": ("Gramo", (10, 0, 0, 0, 2000, None)),
     "Zanahoria": ("Kilogramo", (41, 0, 0.2, 0, 69, None)),
     "Cebolla": ("Kilogramo", (40, 0, 0.1, 0, 4, None)),
     "Ácido cítrico": ("Gramo", (None, None, None, None, None, None)),
@@ -111,7 +111,7 @@ RECETAS = {
             ("Harina 0000", 0.04),
             ("Azúcar", 0.04),
             ("Manteca", 0.035),
-            ("Huevo", 1),
+            ("Huevo", 50),  # 1 huevo ≈ 50 g
             ("Sal fina", 0.001),
             ("Nuez moscada", 1),
         ],
@@ -154,7 +154,7 @@ RECETAS = {
             ("Almidón de maíz", 0.025),
             ("Manteca", 0.01),
             ("Azúcar", 0.008),
-            ("Huevo", 0.2),
+            ("Huevo", 10),  # 0,2 huevo ≈ 10 g
             ("Dulce de leche", 0.02),
             ("Polvo de hornear", 1, "Pirofosfato ácido de sodio"),
         ],

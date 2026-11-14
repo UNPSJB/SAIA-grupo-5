@@ -7,6 +7,7 @@ from sqlalchemy import select
 import src.all_models  # noqa: F401
 from src.database import SessionLocal
 from src.unidad_medida.models import UnidadMedida
+from src.unidad_medida.services import cargar_unidades_estandar
 
 
 NOMBRES_UNIDADES = [
@@ -33,6 +34,8 @@ def main():
 
         db.add_all(unidades)
         db.commit()
+        # Completa codigo/masa_volumen/factor de mg, g, kg, ml y l (lo mismo que hace el arranque de la app)
+        cargar_unidades_estandar(db)
 
         print(f"Se insertaron {len(unidades)} unidades de medida.")
     finally:
