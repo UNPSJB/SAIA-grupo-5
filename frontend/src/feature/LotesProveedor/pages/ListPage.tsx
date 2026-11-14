@@ -105,7 +105,9 @@ export function ListPage() {
             cell: row => {
                 const conf = ESTILOS_ETAPA[row.estado] || { label: row.estado, bg: '#f1f5f9', color: '#475569' };
                 return (
-                    <div style={{
+                    <div
+                        data-tour="etapa-recepcion" 
+                        style={{
                         padding: '4px 12px',
                         borderRadius: '16px',
                         background: conf.bg,
@@ -125,7 +127,9 @@ export function ListPage() {
             center: true,
             minWidth: '110px',
             cell: row => (
-                <div style={{
+                <div
+                    data-tour="estado-recepcion" 
+                    style={{
                     padding: '4px 12px',
                     borderRadius: '16px',
                     background: row.activo ? '#dcfce7' : '#fee2e2',
@@ -142,39 +146,47 @@ export function ListPage() {
             minWidth: '220px',
             cell: row => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <ActionButton
-                        variant="outline-info"
-                        size="sm"
-                        tooltip="Ver detalle y trazabilidad"
-                        icon="bi bi-eye"
-                        onClick={() => navigate(`/recepciones/${row.id}`)}
-                    />
-                    {currentUser?.operar && row.activo && row.estado !== 'acomodado' && (
+                    <span data-tour="btn-ver-recepcion">
                         <ActionButton
-                            variant="outline-success"
+                            variant="outline-info"
                             size="sm"
-                            tooltip={`Avanzar a ${row.estado === 'llegada' ? 'Desempaque' : 'Acomodado'}`}
-                            icon="bi bi-arrow-right-circle"
-                            onClick={() => setLoteToAvanzar(row)}
+                            tooltip="Ver detalle y trazabilidad"
+                            icon="bi bi-eye"
+                            onClick={() => navigate(`/recepciones/${row.id}`)}
                         />
+                    </span>
+                    {currentUser?.operar && row.activo && row.estado !== 'acomodado' && (
+                        <span data-tour="btn-avanzar-recepcion">
+                            <ActionButton
+                                variant="outline-success"
+                                size="sm"
+                                tooltip={`Avanzar a ${row.estado === 'llegada' ? 'Desempaque' : 'Acomodado'}`}
+                                icon="bi bi-arrow-right-circle"
+                                onClick={() => setLoteToAvanzar(row)}
+                            />
+                        </span>
                     )}
                     {currentUser?.administrar && (
                         <>
-                            <ActionButton
-                                variant="outline-primary"
-                                size="sm"
-                                tooltip="Editar lote"
-                                icon="bi bi-pencil"
-                                disabled={!row.activo}
-                                onClick={() => navigate(`/recepciones/${row.id}/edit`)}
-                            />
-                            <ActionButton
-                                variant={row.activo ? 'outline-danger' : 'outline-success'}
-                                size="sm"
-                                tooltip={row.activo ? 'Dar de baja' : 'Dar de alta'}
-                                icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
-                                onClick={() => setLoteToDelete(row)}
-                            />
+                            <span data-tour="btn-editar-recepcion">
+                                <ActionButton
+                                    variant="outline-primary"
+                                    size="sm"
+                                    tooltip="Editar lote"
+                                    icon="bi bi-pencil"
+                                    disabled={!row.activo}
+                                    onClick={() => navigate(`/recepciones/${row.id}/edit`)}
+                                />
+                            </span>
+                            <span data-tour="btn-baja-recepcion">
+                                <ActionButton
+                                    variant={row.activo ? 'outline-danger' : 'outline-success'}
+                                    size="sm"
+                                    tooltip={row.activo ? 'Dar de baja' : 'Dar de alta'}
+                                    icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
+                                    onClick={() => setLoteToDelete(row)}
+                                />
+                            </span>
                         </>
                     )}
                 </div>
@@ -194,12 +206,13 @@ export function ListPage() {
                 </Col>
                 <Col xs="auto" className="align-self-center">
                     <Form.Control
+                        data-tour="buscador-recepciones"
                         type="text"
                         placeholder="Buscar por remito o proveedor..."
                         onChange={(e) => setSearch(e.target.value)}
                     />
                 </Col>
-                <Col xs="auto" className="align-self-center">
+                <Col xs="auto" className="align-self-center" data-tour="filtro-estado-recepciones">
                     <ListFilter
                         value={estadoFiltro}
                         options={ESTADO_FILTRO_LABELS}
@@ -208,15 +221,15 @@ export function ListPage() {
                 </Col>
                 {currentUser?.operar && (
                     <Col xs="auto" className="d-flex justify-content-end">
-                        <Button variant="primary" size="sm" onClick={() => navigate('/recepciones/new')}>
+                        <Button data-tour="btn-nueva-recepcion" variant="primary" size="sm" onClick={() => navigate('/recepciones/new')}>
                             + Nueva Recepcion
                         </Button>
                     </Col>
                 )}
             </Row>
-
-            <AppTable columns={columns} data={filteredLotes} />
-
+            <div data-tour="tabla-recepciones">
+                <AppTable columns={columns} data={filteredLotes} />
+            </div>
             <AvanzarEtapaLoteProveedorModal
                 lote={loteToAvanzar}
                 onHide={() => setLoteToAvanzar(null)}

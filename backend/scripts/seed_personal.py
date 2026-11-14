@@ -6,6 +6,7 @@ Uso: python -m scripts.seed_personal
 import re
 
 from faker import Faker
+from sqlalchemy import select
 
 import src.all_models  # noqa: F401
 from src.database import SessionLocal
@@ -60,7 +61,14 @@ def generar_personal(cantidad: int) -> list[Persona]:
 def main():
     db = SessionLocal()
     try:
-        personal = generar_personal(CANTIDAD_PERSONAL)
+        # Faker está sembrado, así que una segunda corrida genera las mismas
+        # personas: se omiten las que ya existen para no romper los UNIQUE.
+        existentes = db.execute(select(Persona.username, Persona.dni, Persona.mail)).all()
+        usados = {valor for fila in existentes for valor in fila}
+        personal = [
+            p for p in generar_personal(CANTIDAD_PERSONAL)
+            if not {p.username, p.dni, p.mail} & usados
+        ]
         db.add_all(personal)
         db.commit()
         print(f"Se insertaron {len(personal)} personas.")

@@ -88,6 +88,7 @@ export function ListPage() {
     const subHeaderComponentMemo = useMemo(() => {
         return (
             <Form.Control
+                data-tour="buscador-insumos-lote"
                 type="text"
                 placeholder="Buscar por insumo, marca, lote o proveedor..."
                 className="mr-sm-2"
@@ -179,7 +180,7 @@ export function ListPage() {
                 const esCero = row.cantidad_restante === 0;
                 const esBajoStock = row.cantidad_restante <= row.minimo_alerta;
                 return (
-                    <span className={esCero ? 'text-muted fw-bold' : esBajoStock ? 'text-danger fw-bold' : 'fw-bold text-success'}>
+                    <span data-tour="stock-insumo-lote" className={esCero ? 'text-muted fw-bold' : esBajoStock ? 'text-danger fw-bold' : 'fw-bold text-success'}>
                         {row.cantidad_restante} <span className="text-muted fw-normal">/ {row.cantidad}</span>
                     </span>
                 );
@@ -199,6 +200,7 @@ export function ListPage() {
 
                 return (
                     <div
+                        data-tour="estado-fisico-insumo-lote"
                         style={{
                             padding: '4px 10px',
                             borderRadius: '16px',
@@ -242,6 +244,7 @@ export function ListPage() {
 
                 return (
                     <div
+                        data-tour="estado-vencimiento-insumo-lote"
                         style={{
                             padding: '4px 12px',
                             borderRadius: '16px',
@@ -275,22 +278,26 @@ export function ListPage() {
 
                 return (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
-                        <ActionButton
-                            variant="outline-info"
-                            size="sm"
-                            tooltip="Ver detalle"
-                            icon="bi bi-eye"
-                            onClick={() => navigate(`/insumos-lote/${row.id}`)}
-                        />
-                        {currentUser?.operar && (
+                        <span data-tour="btn-ver-insumo-lote">
                             <ActionButton
-                                variant={row.activo ? 'outline-danger' : 'outline-success'}
+                                variant="outline-info"
                                 size="sm"
-                                tooltip={tooltipTexto}
-                                icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
-                                disabled={estaDeshabilitado}
-                                onClick={() => setInsumoParaCambiarEstado(row)}
+                                tooltip="Ver detalle"
+                                icon="bi bi-eye"
+                                onClick={() => navigate(`/insumos-lote/${row.id}`)}
                             />
+                        </span>
+                        {currentUser?.operar && (
+                            <span data-tour="btn-baja-insumo-lote">
+                                <ActionButton
+                                    variant={row.activo ? 'outline-danger' : 'outline-success'}
+                                    size="sm"
+                                    tooltip={tooltipTexto}
+                                    icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
+                                    disabled={estaDeshabilitado}
+                                    onClick={() => setInsumoParaCambiarEstado(row)}
+                                />
+                            </span>
                         )}
                     </div>
                 );
@@ -311,7 +318,7 @@ export function ListPage() {
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
                 </Col>
-                <Col xs="auto" className="align-self-center">
+                <Col xs="auto" className="align-self-center" data-tour="filtro-insumos-lote">
                     <ListFilter
                         value={estadoFiltro}
                         options={FILTRO_LABELS}
@@ -319,8 +326,9 @@ export function ListPage() {
                     />
                 </Col>
             </Row>
-
-            <AppTable columns={columns} data={filteredInsumos} />
+            <div data-tour="tabla-insumos-lote">
+                <AppTable columns={columns} data={filteredInsumos} />
+            </div>
 
             <CambiarEstadoInsumoLoteModal
                 insumoLote={insumoParaCambiarEstado}

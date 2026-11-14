@@ -164,7 +164,6 @@ import { NotificationHistoryRoute } from './components/NotificationHistoryRoute.
 
 import App from './App.tsx'
 
-
 const router = createBrowserRouter([
   {
     path: '/iniciar-sesion',
@@ -187,84 +186,29 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <HomePage /> },
           {
-            path: 'incidentes',
+            path: 'notificaciones',
             element: <ProtectedRoute requireAdmin />,
             children: [
-              { index: true, element: <IncidentesPage /> },
-              { path: 'abiertos', element: <IncidentesPage /> },
-              { path: 'new', element: <NuevoIncidentePage /> },
-              { path: ':id', element: <VerIncidentePage /> },
-              { path: ':id/edit', element: <EditarIncidentePage /> },
+              { index: true, element: <NotificationHistoryRoute><NotificacionesPage /></NotificationHistoryRoute> },
             ],
           },
           {
-            path: 'incidentes-historial',
+            path: 'configuracion-cuenta',
+            element: <ConfiguracionCuentaPage />,
+          },
+          {
+            path: 'configuracion-sistema',
             element: <ProtectedRoute requireAdmin />,
             children: [
-              { index: true, element: <IncidentesHistorialPage /> },
+              { index: true, element: <ConfiguracionSistemaPage /> },
+              { path: 'vista-publica', element: <VistaPublicaPage /> },
             ],
           },
           {
-            path: 'equipos',
+            path: 'vencimientos',
+            element: <ProtectedRoute requireAdmin />,
             children: [
-              { index: true, element: <EquiposPage /> },
-              {
-                element: <ProtectedRoute requireAdmin />,
-                children: [
-                  { path: 'new', element: <NuevoEquipoPage /> },
-                  { path: ':id/edit', element: <EditarEquipoPage /> },
-                ],
-              },
-            ],
-          },
-          {
-            path: 'sectores',
-            children: [
-              { index: true, element: <SectoresPage /> },
-              { path: 'new', element: <NuevoSectorPage /> },
-              { path: ':id/edit', element: <EditarSectorPage /> },
-            ],
-          },
-          {
-            path: 'insumos',
-            children: [
-              { index: true, element: <InsumosListPage /> },
-              {
-                element: <ProtectedRoute requireAdmin />,
-                children: [
-                  { path: 'new', element: <NuevoInsumoPage /> },
-                  { path: ':id/edit', element: <EditarInsumoPage /> },
-                  { path: ':id', element: <VerInsumoPage /> },
-                ],
-              },
-            ],
-          },
-          {
-            path: 'insumos-quimicos',
-            children: [
-              { index: true, element: <InsumoQuimicoListPage /> },
-              { path: ':id', element: <VerInsumoQuimicoPage /> },
-              {
-                element: <ProtectedRoute requireAdmin />,
-                children: [
-                  { path: 'new', element: <NuevoInsumoQuimicoPage /> },
-                  { path: ':id/edit', element: <EditarInsumoQuimicoPage /> },
-                ],
-              },
-            ],
-          },
-          {
-            path: 'tipos-quimicos',
-            children: [
-              { index: true, element: <TipoQuimicoListPage /> },
-              { path: ':id', element: <VerTipoQuimicoPage /> },
-              {
-                element: <ProtectedRoute requireAdmin />,
-                children: [
-                  { path: 'new', element: <NuevoTipoQuimicoPage /> },
-                  { path: ':id/edit', element: <EditarTipoQuimicoPage /> },
-                ],
-              },
+              { index: true, element: <VencimientosConsolidadosPage /> },
             ],
           },
           {
@@ -277,103 +221,6 @@ const router = createBrowserRouter([
               { path: ':personaId/vencimientos', element: <VencimientoPersonalListPage /> },
               { path: ':personaId/vencimientos/new', element: <NuevoVencimientoPersonalPage /> },
               { path: ':id', element: <VerPersonalPage /> },
-            ],
-          },
-          {
-            path: 'consumos-productos',
-            element: <ProtectedRoute requireAdmin />,
-            children: [
-              { index: true, element: <ConsumoProductoListPage /> },
-              { path: 'new', element: <NuevoConsumoProductoPage /> },
-              { path: ':id/edit', element: <EditarConsumoProductoPage /> },
-              { path: 'tarea/:id', element: <ConsumoProductoListPage /> },
-              { path: 'consulta', element: <ConsumoAcumuladoPage /> },
-            ],
-          },
-          {
-            path: 'superficies',
-            children: [
-              { index: true, element: <SuperficiesPage /> },
-              { path: 'new', element: <NuevaSuperficiePage /> },
-              { path: ':id/edit', element: <EditarSuperficiePage /> },
-            ],
-          },
-          {
-            path: 'planes-limpieza',
-            children: [
-              { index: true, element: <PlanesLimpiezaPage /> },
-              { path: 'new', element: <NuevoPlanLimpiezaPage /> },
-              { path: ':id/edit', element: <EditarPlanLimpiezaPage /> },
-            ],
-          },
-          {
-            path: 'elementos-limpieza',
-            children: [
-              { index: true, element: <ElementosLimpiezaPage /> },
-              { path: 'new', element: <NuevoElementoPage /> },
-              { path: ':id/edit', element: <EditarElementoPage /> },
-              { path: ':id', element: <VerElementoPage /> },
-            ],
-          },
-          {
-            path: "tipos-elementos-limpieza",
-            children: [
-              { index: true, element: <TiposElementoLimpiezaPage /> },
-              { path: "new", element: <NuevoTipoElementoPage /> },
-              { path: ":id/edit", element: <EditarTipoElementoPage /> },
-            ],
-          },
-          {
-            path: "recambios-elementos-limpieza",
-            children: [
-              { index: true, element: <RecambiosElementoLimpiezaPage /> },
-              { path: "new", element: <NuevoRecambioElementoLimpiezaPage /> },
-              { path: "new/:elementoId", element: <NuevoRecambioElementoLimpiezaPage /> },
-              { path: ":id", element: <VerRecambioElementoLimpiezaPage /> },
-            ],
-          },
-          {
-            path: 'planes-calibracion',
-            children: [
-              { index: true, element: <PlanesCalibracionPage /> },
-              { path: 'new', element: <NuevoPlanCalibracionPage /> },
-              { path: ':id/edit', element: <EditarPlanCalibracionPage /> },
-            ],
-          },
-          { path: 'tareas', element: <TareasPage /> },
-          {
-            path: 'notificaciones',
-            element: <ProtectedRoute requireAdmin />,
-            children: [
-              { index: true, element: <NotificationHistoryRoute><NotificacionesPage /></NotificationHistoryRoute> },
-            ],
-          },
-          {
-            path: 'historial',
-            element: <ProtectedRoute requireAdmin />,
-            children: [
-              { index: true, element: <HistorialPage /> },
-            ],
-          },
-          {
-            path: 'tareas-ocurrencia',
-            element: <ProtectedRoute requireAdmin />,
-            children: [
-              { path: ':id', element: <VerDetalleTareaOcurrenciaPage /> }
-            ]
-          },
-          {
-            path: 'tipos-documentos',
-            children: [
-              { index: true, element: <TipoDocumentoListPage /> },
-              { path: ':id', element: <VerTipoDocumentoPage /> },
-              {
-                element: <ProtectedRoute requireAdmin />,
-                children: [
-                  { path: 'new', element: <NuevoTipoDocumentoPage /> },
-                  { path: ':id/edit', element: <EditarTipoDocumentoPage /> },
-                ],
-              },
             ],
           },
           {
@@ -478,23 +325,130 @@ const router = createBrowserRouter([
               { path: ':id/edit', element: <EditarClientePage />},
             ]
           },
+          { path: 'tareas', element: <TareasPage /> },
+          { path: 'checklist', element: <ChecklistListPage /> },
           {
-            path: 'aditivos',
-            element: <ProtectedRoute requireAdmin />,
+            path: 'incidentes',
             children: [
-              { index: true, element: <AditivosListPage /> },
-              { path: 'new', element: <NuevoAditivoPage /> },
-              { path: ':id/edit', element: <EditarAditivoPage /> },
+              { index: true, element: <IncidentesPage /> },
+              { path: 'abiertos', element: <IncidentesPage /> },
+              { path: ':id', element: <VerIncidentePage /> },
+              { path: 'new', element: <NuevoIncidentePage /> },
+              { path: ':id/edit', element: <EditarIncidentePage /> },
             ],
           },
           {
-            path: 'tipos-incidentes',
-            element: <ProtectedRoute requireAdmin />,
+            path: 'planes-limpieza',
             children: [
-              { index: true, element: <TipoIncidenteListPage /> },
-              { path: 'new', element: <NuevoTipoIncidentePage /> },
-              { path: ':id', element: <VerTipoIncidentePage /> },
-              { path: ':id/edit', element: <EditarTipoIncidentePage /> },
+              { index: true, element: <PlanesLimpiezaPage /> },
+              {
+                element: <ProtectedRoute requireAdmin />,
+                children: [
+                  { path: 'new', element: <NuevoPlanLimpiezaPage /> },
+                  { path: ':id/edit', element: <EditarPlanLimpiezaPage /> },
+                ],
+              },
+            ],
+          },
+          {
+            path: 'insumos-quimicos',
+            children: [
+              { index: true, element: <InsumoQuimicoListPage /> },
+              { path: ':id', element: <VerInsumoQuimicoPage /> },
+              {
+                element: <ProtectedRoute requireAdmin />,
+                children: [
+                  { path: 'new', element: <NuevoInsumoQuimicoPage /> },
+                  { path: ':id/edit', element: <EditarInsumoQuimicoPage /> },
+                ],
+              },
+            ],
+          },
+          {
+            path: 'consumos-productos',
+            children: [
+              { index: true, element: <ConsumoProductoListPage /> },
+              { path: 'tarea/:id', element: <ConsumoProductoListPage /> },
+              {
+                element: <ProtectedRoute requireAdmin />,
+                children: [
+                  { path: 'new', element: <NuevoConsumoProductoPage /> },
+                  { path: ':id/edit', element: <EditarConsumoProductoPage /> },
+                  { path: 'consulta', element: <ConsumoAcumuladoPage /> },
+                ],
+              },
+            ],
+          },
+          {
+            path: 'elementos-limpieza',
+            children: [
+              { index: true, element: <ElementosLimpiezaPage /> },
+              { path: ':id', element: <VerElementoPage /> },
+              {
+                element: <ProtectedRoute requireAdmin />,
+                children: [
+                  { path: 'new', element: <NuevoElementoPage /> },
+                  { path: ':id/edit', element: <EditarElementoPage /> },
+                ],
+              },
+            ],
+          },
+          {
+            path: "recambios-elementos-limpieza",
+            children: [
+              { index: true, element: <RecambiosElementoLimpiezaPage /> },
+              { path: "new", element: <NuevoRecambioElementoLimpiezaPage /> },
+              { path: "new/:elementoId", element: <NuevoRecambioElementoLimpiezaPage /> },
+              { path: ":id", element: <VerRecambioElementoLimpiezaPage /> },
+            ],
+          },
+          {
+            path: 'equipos',
+            children: [
+              { index: true, element: <EquiposPage /> },
+              {
+                element: <ProtectedRoute requireAdmin />,
+                children: [
+                  { path: 'new', element: <NuevoEquipoPage /> },
+                  { path: ':id/edit', element: <EditarEquipoPage /> },
+                ],
+              },
+            ],
+          },
+          {
+            path: 'planes-calibracion',
+            children: [
+              { index: true, element: <PlanesCalibracionPage /> },
+              {
+                element: <ProtectedRoute requireAdmin />,
+                children: [
+                  { path: 'new', element: <NuevoPlanCalibracionPage /> },
+                  { path: ':id/edit', element: <EditarPlanCalibracionPage /> },
+                ],
+              },
+            ],
+          },
+          {
+            path: 'insumos',
+            children: [
+              { index: true, element: <InsumosListPage /> },
+              { path: ':id', element: <VerInsumoPage /> },
+              {
+                element: <ProtectedRoute requireAdmin />,
+                children: [
+                  { path: 'new', element: <NuevoInsumoPage /> },
+                  { path: ':id/edit', element: <EditarInsumoPage /> },
+                ],
+              },
+            ],
+          },
+          {
+            path: 'lotes-produccion',
+            children: [
+              { index: true, element: <LoteProduccionListPage />},
+              { path: 'new', element: <NuevoLoteProduccionPage />},
+              { path: ':id/edit', element: <EditarLoteProduccionPage />},
+              { path: ':id', element: <VerLoteProduccionPage />},
             ],
           },
           {
@@ -517,40 +471,103 @@ const router = createBrowserRouter([
             ]
           },
           {
-            path: 'configuracion-cuenta',
-            element: <ConfiguracionCuentaPage />,
-          },
-          {
-            path: 'configuracion-sistema',
+            path: 'historial',
             element: <ProtectedRoute requireAdmin />,
             children: [
-              { index: true, element: <ConfiguracionSistemaPage /> },
-              { path: 'vista-publica', element: <VistaPublicaPage /> },
+              { index: true, element: <HistorialPage /> },
             ],
           },
           {
-            path: 'vencimientos',
+            path: 'tareas-ocurrencia',
             element: <ProtectedRoute requireAdmin />,
             children: [
-              { index: true, element: <VencimientosConsolidadosPage /> },
-            ],
+              { path: ':id', element: <VerDetalleTareaOcurrenciaPage /> }
+            ]
           },
           {
-            path: 'lotes-produccion',
+            path: 'incidentes-historial',
+            element: <ProtectedRoute requireAdmin />,
             children: [
-              { index: true, element: <LoteProduccionListPage />},
-              { path: 'new', element: <NuevoLoteProduccionPage />},
-              { path: ':id/edit', element: <EditarLoteProduccionPage />},
-              { path: ':id', element: <VerLoteProduccionPage />},
+              { index: true, element: <IncidentesHistorialPage /> },
             ],
           },
-          { path: '*', element: <Page404 /> },
           {
-            path: 'checklist', element: <ChecklistListPage />
-          }
+            path: 'sectores',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <SectoresPage /> },
+              { path: 'new', element: <NuevoSectorPage /> },
+              { path: ':id/edit', element: <EditarSectorPage /> },
+            ],
+          },
+          {
+            path: 'superficies',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <SuperficiesPage /> },
+              { path: 'new', element: <NuevaSuperficiePage /> },
+              { path: ':id/edit', element: <EditarSuperficiePage /> },
+            ],
+          },
+          {
+            path: 'tipos-quimicos',
+            children: [
+              { index: true, element: <TipoQuimicoListPage /> },
+              { path: ':id', element: <VerTipoQuimicoPage /> },
+              {
+                element: <ProtectedRoute requireAdmin />,
+                children: [
+                  { path: 'new', element: <NuevoTipoQuimicoPage /> },
+                  { path: ':id/edit', element: <EditarTipoQuimicoPage /> },
+                ],
+              },
+            ],
+          },
+          {
+            path: "tipos-elementos-limpieza",
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <TiposElementoLimpiezaPage /> },
+              { path: "new", element: <NuevoTipoElementoPage /> },
+              { path: ":id/edit", element: <EditarTipoElementoPage /> },
+            ],
+          },
+          {
+            path: 'tipos-documentos',
+            children: [
+              { index: true, element: <TipoDocumentoListPage /> },
+              { path: ':id', element: <VerTipoDocumentoPage /> },
+              {
+                element: <ProtectedRoute requireAdmin />,
+                children: [
+                  { path: 'new', element: <NuevoTipoDocumentoPage /> },
+                  { path: ':id/edit', element: <EditarTipoDocumentoPage /> },
+                ],
+              },
+            ],
+          },
+          {
+            path: 'tipos-incidentes',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <TipoIncidenteListPage /> },
+              { path: 'new', element: <NuevoTipoIncidentePage /> },
+              { path: ':id', element: <VerTipoIncidentePage /> },
+              { path: ':id/edit', element: <EditarTipoIncidentePage /> },
+            ],
+          },
+          {
+            path: 'aditivos',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <AditivosListPage /> },
+              { path: 'new', element: <NuevoAditivoPage /> },
+              { path: ':id/edit', element: <EditarAditivoPage /> },
+            ],
+          },
+          { path: '*', element: <Page404 /> }
         ],
       },
-
     ],
   },
 ])
