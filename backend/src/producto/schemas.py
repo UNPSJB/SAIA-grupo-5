@@ -26,6 +26,7 @@ class ProductoUpdate(ProductoBase):
 class Producto(ProductoBase):
     id: int
     activo: bool
+    codigo_barras: str | None = None
     unidad_medida: UnidadMedida
     receta: Receta | None = None
 
