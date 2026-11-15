@@ -9,7 +9,7 @@ import { EstadoBadge } from '../../../components/EstadoBadge';
 import type { Producto } from '../../Productos/types';
 import type { Receta, RecetaVersion } from '../types';
 import { SellosFrontales } from './SellosFrontales';
-import { ComposicionPorcentual } from './ComposicionPorcentual';
+import { IngredientesComposicion } from './IngredientesComposicion';
 import "./VerRecetaModal.css";
 
 interface VerRecetaModalProps {
@@ -37,9 +37,6 @@ export function VerRecetaModal({ producto, onHide, onEditar }: VerRecetaModalPro
     const { data: receta, error, isLoading } = useApi<Receta>(
         !producto ? null : recetaSeleccionadaId ? `/recetas/${recetaSeleccionadaId}` : `/recetas/producto/${producto.id}`,
     );
-
-    const ingredientes = receta?.insumos.filter((item) => item.tipo === "Ingrediente") ?? [];
-    const aditivos = receta?.insumos.filter((item) => item.tipo === "Aditivo") ?? [];
 
     return (
         <Modal show={producto !== null} onHide={onHide} size="lg" scrollable>
@@ -140,42 +137,7 @@ export function VerRecetaModal({ producto, onHide, onEditar }: VerRecetaModalPro
                                 <SellosFrontales evaluacion={receta.sellos} />
                             </Tab>
                             <Tab eventKey="ingredientes" title="Ingredientes y composición">
-                                <h6 className="fw-bold text-start mb-2">Ingredientes</h6>
-                                {ingredientes.length === 0 ? (
-                                    <p className="text-muted small fst-italic text-start">La receta no tiene ingredientes cargados.</p>
-                                ) : (
-                                    <ListGroup className="mb-3">
-                                        {ingredientes.map((item) => (
-                                            <ListGroup.Item key={item.id} className="d-flex justify-content-between text-start">
-                                                <span>{item.nombre}</span>
-                                                <span className="fw-semibold">{item.cantidad} {item.unidad_medida.nombre}</span>
-                                            </ListGroup.Item>
-                                        ))}
-                                    </ListGroup>
-                                )}
-
-                                <h6 className="fw-bold text-start mb-2">Aditivos</h6>
-                                {aditivos.length === 0 ? (
-                                    <p className="text-muted small fst-italic text-start">La receta no tiene aditivos.</p>
-                                ) : (
-                                    <ListGroup className="mb-3">
-                                        {aditivos.map((item) => (
-                                            <ListGroup.Item key={item.id} className="d-flex justify-content-between gap-2 text-start">
-                                                <span>
-                                                    <span className="fw-semibold">{item.aditivo?.nombre}</span>
-                                                    <span className="text-muted small d-block">
-                                                        {item.aditivo?.clase_funcional}
-                                                        {item.aditivo?.numero_ins ? ` · INS ${item.aditivo.numero_ins}` : ''}
-                                                        {` · insumo: ${item.nombre}`}
-                                                    </span>
-                                                </span>
-                                                <span className="fw-semibold text-nowrap">{item.cantidad} {item.unidad_medida.nombre}</span>
-                                            </ListGroup.Item>
-                                        ))}
-                                    </ListGroup>
-                                )}
-
-                                {currentUser?.administrar && <ComposicionPorcentual insumos={receta.insumos} />}
+                                <IngredientesComposicion insumos={receta.insumos} mostrarComposicion={!!currentUser?.administrar} />
                             </Tab>
                         </Tabs>
                     </>
