@@ -218,8 +218,6 @@ def construir_receta(producto: Producto, datos: dict, renglones: list[tuple], in
     receta = Receta(
         producto=producto,
         version=version,
-        rendimiento=producto.cantidad_neta,
-        rendimiento_unidad_medida_id=producto.unidad_medida_id,
         porcion=porcion[0] if porcion else None,
         porcion_unidad_medida_id=unidades[porcion[1]] if porcion else None,
     )
@@ -243,8 +241,6 @@ def construir_receta(producto: Producto, datos: dict, renglones: list[tuple], in
 
 def completar_receta_existente(receta: Receta, datos: dict, aditivos: dict[str, Aditivo], unidades: dict[str, int]) -> None:
     porcion = datos.get("porcion")
-    receta.rendimiento = receta.producto.cantidad_neta
-    receta.rendimiento_unidad_medida_id = receta.producto.unidad_medida_id
     receta.porcion = porcion[0] if porcion else None
     receta.porcion_unidad_medida_id = unidades[porcion[1]] if porcion else None
     receta.fecha_desde_vigencia = receta.fecha_desde_vigencia or receta.fecha_creacion
@@ -284,7 +280,7 @@ def generar_recetas(db) -> list[Receta]:
             continue
         existente = vigentes.get(producto.id)
         if existente is not None:
-            if existente.rendimiento is None:
+            if existente.fecha_desde_vigencia is None:
                 completar_receta_existente(existente, datos, aditivos, unidades)
             continue
 

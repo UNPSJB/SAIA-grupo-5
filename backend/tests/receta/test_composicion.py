@@ -11,8 +11,6 @@ def test_receta_vigente_devuelve_unidad_medida_anidada(client, auth_headers, db_
 
     creada = client.post("/recetas/", json={
         "producto_id": producto_solido.id,
-        "rendimiento": 100,
-        "rendimiento_unidad_medida_id": unidades_sellos["Gramo"].id,
         "etapas": [{"nombre": "Elaboración", "pasos": [{"descripcion": "Mezclar"}]}],
         "insumos": [
             {"insumo_id": insumos_sellos["Harina"].id, "cantidad": 70},

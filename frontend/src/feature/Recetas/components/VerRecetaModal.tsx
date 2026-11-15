@@ -10,6 +10,7 @@ import type { Producto } from '../../Productos/types';
 import type { Receta, RecetaVersion } from '../types';
 import { SellosFrontales } from './SellosFrontales';
 import { IngredientesComposicion } from './IngredientesComposicion';
+import { formatearGramos } from '../lib/rendimiento';
 import "./VerRecetaModal.css";
 
 interface VerRecetaModalProps {
@@ -92,11 +93,13 @@ export function VerRecetaModal({ producto, onHide, onEditar }: VerRecetaModalPro
 
                         <ListGroup horizontal="sm" className="mb-3 text-start">
                             <ListGroup.Item className="flex-fill">
-                                <div className="text-muted small">Rendimiento final</div>
+                                <div className="text-muted small" title="Se calcula sumando todos los insumos de la receta en gramos">
+                                    Rendimiento final calculado
+                                </div>
                                 <div className="fw-semibold">
                                     {receta.rendimiento !== null
-                                        ? `${receta.rendimiento} ${receta.rendimiento_unidad_medida?.nombre ?? ''}`
-                                        : <span className="text-muted fst-italic">Sin cargar</span>}
+                                        ? formatearGramos(receta.rendimiento)
+                                        : <span className="text-muted fst-italic">No se pudo calcular</span>}
                                 </div>
                             </ListGroup.Item>
                             <ListGroup.Item className="flex-fill">

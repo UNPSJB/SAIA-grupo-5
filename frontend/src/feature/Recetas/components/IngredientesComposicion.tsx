@@ -150,8 +150,7 @@ export function IngredientesComposicion({ insumos, mostrarComposicion }: Ingredi
             {mostrarComposicion && (
                 <p className="text-muted small mb-2">
                     El porcentaje se calcula sobre la suma de las cantidades de los insumos
-                    {composicion?.unidadMedidaEstandarBase && ` (en ${NOMBRE_UNIDAD_MEDIDA_ESTANDAR[composicion.unidadMedidaEstandarBase]})`},
-                    no sobre el rendimiento final.
+                    {composicion?.unidadMedidaEstandarBase && ` (en ${NOMBRE_UNIDAD_MEDIDA_ESTANDAR[composicion.unidadMedidaEstandarBase]})`}.
                 </p>
             )}
             {mostrarComposicion && isLoading && (
