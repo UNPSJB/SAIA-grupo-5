@@ -5,7 +5,8 @@ from src.producto.exceptions import ProductoNoEncontrado
 
 
 def test_evaluar_sellos_con_todos_los_sellos(db_session, producto_solido, insumos_sellos):
-    datos = schemas.EvaluacionSellosCreate(producto_id=producto_solido.id, insumos=[
+    datos = schemas.EvaluacionSellosCreate(producto_id=producto_solido.id, rendimiento=100,
+                                           rendimiento_unidad_medida_id=producto_solido.unidad_medida_id, insumos=[
         schemas.InsumoRecetaCreate(insumo_id=insumos_sellos["Harina"].id, cantidad=60),
         schemas.InsumoRecetaCreate(insumo_id=insumos_sellos["Azúcar"].id, cantidad=20),
         schemas.InsumoRecetaCreate(insumo_id=insumos_sellos["Manteca"].id, cantidad=20),
@@ -27,7 +28,8 @@ def test_evaluar_sellos_con_todos_los_sellos(db_session, producto_solido, insumo
 
 
 def test_evaluar_sellos_sin_exceso(db_session, producto_solido, insumos_sellos):
-    datos = schemas.EvaluacionSellosCreate(producto_id=producto_solido.id, insumos=[
+    datos = schemas.EvaluacionSellosCreate(producto_id=producto_solido.id, rendimiento=100,
+                                           rendimiento_unidad_medida_id=producto_solido.unidad_medida_id, insumos=[
         schemas.InsumoRecetaCreate(insumo_id=insumos_sellos["Harina"].id, cantidad=50),
         schemas.InsumoRecetaCreate(insumo_id=insumos_sellos["Agua"].id, cantidad=50),
     ])
@@ -39,7 +41,8 @@ def test_evaluar_sellos_sin_exceso(db_session, producto_solido, insumos_sellos):
 
 
 def test_evaluar_sellos_calorias_sin_otro_sello(db_session, producto_solido, insumos_sellos):
-    datos = schemas.EvaluacionSellosCreate(producto_id=producto_solido.id, insumos=[
+    datos = schemas.EvaluacionSellosCreate(producto_id=producto_solido.id, rendimiento=100,
+                                           rendimiento_unidad_medida_id=producto_solido.unidad_medida_id, insumos=[
         schemas.InsumoRecetaCreate(insumo_id=insumos_sellos["Harina"].id, cantidad=100),
     ])
 
@@ -50,7 +53,8 @@ def test_evaluar_sellos_calorias_sin_otro_sello(db_session, producto_solido, ins
 
 
 def test_evaluar_sellos_liquido_azucarado(db_session, producto_liquido, insumos_sellos):
-    datos = schemas.EvaluacionSellosCreate(producto_id=producto_liquido.id, insumos=[
+    datos = schemas.EvaluacionSellosCreate(producto_id=producto_liquido.id, rendimiento=500,
+                                           rendimiento_unidad_medida_id=producto_liquido.unidad_medida_id, insumos=[
         schemas.InsumoRecetaCreate(insumo_id=insumos_sellos["Agua"].id, cantidad=450),
         schemas.InsumoRecetaCreate(insumo_id=insumos_sellos["Azúcar"].id, cantidad=50),
     ])
@@ -64,7 +68,8 @@ def test_evaluar_sellos_liquido_azucarado(db_session, producto_liquido, insumos_
 
 
 def test_evaluar_sellos_exceso_de_sodio(db_session, producto_liquido, insumos_sellos):
-    datos = schemas.EvaluacionSellosCreate(producto_id=producto_liquido.id, insumos=[
+    datos = schemas.EvaluacionSellosCreate(producto_id=producto_liquido.id, rendimiento=500,
+                                           rendimiento_unidad_medida_id=producto_liquido.unidad_medida_id, insumos=[
         schemas.InsumoRecetaCreate(insumo_id=insumos_sellos["Caldo"].id, cantidad=500),
     ])
 
@@ -74,7 +79,8 @@ def test_evaluar_sellos_exceso_de_sodio(db_session, producto_liquido, insumos_se
 
 
 def test_evaluar_sellos_producto_por_unidad(db_session, producto_por_unidad, insumos_sellos):
-    datos = schemas.EvaluacionSellosCreate(producto_id=producto_por_unidad.id, insumos=[
+    datos = schemas.EvaluacionSellosCreate(producto_id=producto_por_unidad.id, rendimiento=1,
+                                           rendimiento_unidad_medida_id=producto_por_unidad.unidad_medida_id, insumos=[
         schemas.InsumoRecetaCreate(insumo_id=insumos_sellos["Huevo"].id, cantidad=2),
         schemas.InsumoRecetaCreate(insumo_id=insumos_sellos["Esencia"].id, cantidad=5),
     ])
@@ -89,7 +95,8 @@ def test_evaluar_sellos_producto_por_unidad(db_session, producto_por_unidad, ins
 
 
 def test_evaluar_sellos_sin_insumos(db_session, producto_solido):
-    datos = schemas.EvaluacionSellosCreate(producto_id=producto_solido.id, insumos=[])
+    datos = schemas.EvaluacionSellosCreate(producto_id=producto_solido.id, rendimiento=100,
+                                           rendimiento_unidad_medida_id=producto_solido.unidad_medida_id, insumos=[])
 
     evaluacion = services.evaluar_sellos_receta(db=db_session, datos=datos)
 
@@ -98,7 +105,8 @@ def test_evaluar_sellos_sin_insumos(db_session, producto_solido):
 
 
 def test_evaluar_sellos_insumo_repetido(db_session, producto_solido, insumos_sellos):
-    datos = schemas.EvaluacionSellosCreate(producto_id=producto_solido.id, insumos=[
+    datos = schemas.EvaluacionSellosCreate(producto_id=producto_solido.id, rendimiento=100,
+                                           rendimiento_unidad_medida_id=producto_solido.unidad_medida_id, insumos=[
         schemas.InsumoRecetaCreate(insumo_id=insumos_sellos["Azúcar"].id, cantidad=10),
         schemas.InsumoRecetaCreate(insumo_id=insumos_sellos["Azúcar"].id, cantidad=20),
     ])
@@ -108,7 +116,8 @@ def test_evaluar_sellos_insumo_repetido(db_session, producto_solido, insumos_sel
 
 
 def test_evaluar_sellos_insumo_inactivo(db_session, producto_solido, insumos_sellos):
-    datos = schemas.EvaluacionSellosCreate(producto_id=producto_solido.id, insumos=[
+    datos = schemas.EvaluacionSellosCreate(producto_id=producto_solido.id, rendimiento=100,
+                                           rendimiento_unidad_medida_id=producto_solido.unidad_medida_id, insumos=[
         schemas.InsumoRecetaCreate(insumo_id=insumos_sellos["Colorante"].id, cantidad=1),
     ])
 
@@ -121,3 +130,40 @@ def test_evaluar_sellos_producto_no_encontrado(db_session):
 
     with pytest.raises(ProductoNoEncontrado):
         services.evaluar_sellos_receta(db=db_session, datos=datos)
+
+
+def test_actualizar_receta_crea_nueva_version(db_session, producto_solido, insumos_sellos, aditivos_receta):
+    datos = schemas.RecetaCreate(
+        producto_id=producto_solido.id, rendimiento=100, rendimiento_unidad_medida_id=producto_solido.unidad_medida_id,
+        etapas=[{"nombre": "Elaboración", "pasos": [{"descripcion": "Mezclar"}]}],
+        insumos=[
+            {"insumo_id": insumos_sellos["Harina"].id, "cantidad": 100},
+            {"insumo_id": insumos_sellos["Esencia"].id, "cantidad": 1, "tipo": "Aditivo",
+             "aditivo_id": aditivos_receta["Sorbato de potasio"].id},
+        ],
+    )
+    anterior = services.crear_receta(db=db_session, receta=datos)
+
+    nueva = services.actualizar_receta(db=db_session, receta_id=anterior.id,
+                                       receta=schemas.RecetaUpdate(**datos.model_dump(exclude={"producto_id"})))
+
+    assert nueva.version == 2
+    assert nueva.vigente is True
+    assert anterior.vigente is False
+    assert anterior.fecha_hasta_vigencia == nueva.fecha_desde_vigencia
+    assert nueva.insumos[1].aditivo.numero_ins == "202"
+    assert services.obtener_receta_de_producto(db=db_session, producto_id=producto_solido.id).id == nueva.id
+
+
+def test_actualizar_version_anterior_de_receta(db_session, producto_solido, insumos_sellos):
+    datos = schemas.RecetaCreate(
+        producto_id=producto_solido.id, rendimiento=100, rendimiento_unidad_medida_id=producto_solido.unidad_medida_id,
+        etapas=[{"nombre": "Elaboración", "pasos": [{"descripcion": "Mezclar"}]}],
+        insumos=[{"insumo_id": insumos_sellos["Harina"].id, "cantidad": 100}],
+    )
+    cambios = schemas.RecetaUpdate(**datos.model_dump(exclude={"producto_id"}))
+    anterior = services.crear_receta(db=db_session, receta=datos)
+    services.actualizar_receta(db=db_session, receta_id=anterior.id, receta=cambios)
+
+    with pytest.raises(exceptions.RecetaSoloLectura):
+        services.actualizar_receta(db=db_session, receta_id=anterior.id, receta=cambios)

@@ -9,6 +9,7 @@ Uso: python -m scripts.seed_insumos
 from faker import Faker
 from sqlalchemy import select
 
+import src.all_models  # noqa: F401
 from src.database import SessionLocal
 from src.insumos.models import Insumo
 from src.unidad_medida.models import UnidadMedida

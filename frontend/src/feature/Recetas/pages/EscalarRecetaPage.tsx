@@ -5,7 +5,7 @@ import { PageHeader } from "../../../components/PageHeader";
 import { PageLoading } from "../../../components/PageLoading";
 import { useApi } from "../../../hooks/useApi";
 import type { Producto } from "../../Productos/types";
-import type { Receta } from "../types";
+import type { InsumoReceta, Receta } from "../types";
 import "./EscalarRecetaPage.css";
 
 // Redondeo
@@ -37,7 +37,8 @@ export function EscalarRecetaPage() {
         </Container>
     );
 
-    const insumos = receta.insumos;
+    const ingredientes = receta.insumos.filter((item) => item.tipo === "Ingrediente");
+    const aditivos = receta.insumos.filter((item) => item.tipo === "Aditivo");
 
     const aplicarFactor = (nuevoFactor: number) => {
         setFactor(nuevoFactor);
@@ -65,13 +66,13 @@ export function EscalarRecetaPage() {
                 <Card.Body className="p-2 p-sm-3">
                     <div className="escalar-fila escalar-encabezado">
                         <span />
-                        <span>Insumo</span>
+                        <span>Ingrediente</span>
                         <span className="text-end">Original</span>
                         <span />
                     </div>
 
-                    {insumos.map((insumo, indice) => (
-                        <div key={insumo.insumo_id} className="escalar-fila">
+                    {ingredientes.map((insumo, indice) => (
+                        <div key={insumo.id} className="escalar-fila">
                             <span className="text-muted">{indice + 1}</span>
                             <span className="escalar-nombre">
                                 <span className="text-truncate">{insumo.nombre}</span>
@@ -81,6 +82,29 @@ export function EscalarRecetaPage() {
                             <span className="text-muted small">{insumo.unidad_medida.nombre}</span>
                         </div>
                     ))}
+
+                    {aditivos.length > 0 && (
+                        <>
+                            <div className="escalar-fila escalar-encabezado mt-2">
+                                <span />
+                                <span>Aditivo</span>
+                                <span className="text-end">Original</span>
+                                <span />
+                            </div>
+
+                            {aditivos.map((aditivo, indice) => (
+                                <div key={aditivo.id} className="escalar-fila">
+                                    <span className="text-muted">{indice + 1}</span>
+                                    <span className="escalar-nombre">
+                                        <span className="text-truncate">{nombreRenglon(aditivo)}</span>
+                                        <span className="escalar-puntos" aria-hidden="true" />
+                                    </span>
+                                    <span className="text-end">{formatearCantidad(aditivo.cantidad)}</span>
+                                    <span className="text-muted small">{aditivo.unidad_medida.nombre}</span>
+                                </div>
+                            ))}
+                        </>
+                    )}
 
                 </Card.Body>
 
@@ -118,22 +142,41 @@ export function EscalarRecetaPage() {
                     </span>
                 </label>
             </div>
-            <Row xs={2} sm={3} className="escalar-cards g-2 g-sm-3 mb-4">
-                {insumos.map((insumo) => (
-                    <Col key={insumo.insumo_id}>
-                        <div className="escalar-card h-100">
-                            <div className="escalar-card-etiqueta text-truncate" title={insumo.nombre}>{insumo.nombre}</div>
-                            <div className="escalar-card-valor">
-                                {formatearCantidad(insumo.cantidad * factor)}
-                                <span className="escalar-card-unidad">{insumo.unidad_medida.nombre}</span>
-                            </div>
-                            <div className="escalar-card-detalle">
-                                original: {formatearCantidad(insumo.cantidad)} {insumo.unidad_medida.nombre}
-                            </div>
-                        </div>
-                    </Col>
-                ))}
-            </Row>
+            <h2 className="h6 text-muted text-uppercase mb-3">Ingredientes</h2>
+            <TarjetasEscaladas renglones={ingredientes} factor={factor} />
+
+            {aditivos.length > 0 && (
+                <>
+                    <h2 className="h6 text-muted text-uppercase mb-3">Aditivos</h2>
+                    <TarjetasEscaladas renglones={aditivos} factor={factor} />
+                </>
+            )}
         </Container>
+    );
+}
+
+// Para los aditivos se muestra el nombre del aditivo (como en VerRecetaModal); para los ingredientes, el del insumo
+function nombreRenglon(renglon: InsumoReceta): string {
+    return renglon.aditivo?.nombre ?? renglon.nombre;
+}
+
+function TarjetasEscaladas({ renglones, factor }: { renglones: InsumoReceta[]; factor: number }) {
+    return (
+        <Row xs={2} sm={3} className="escalar-cards g-2 g-sm-3 mb-4">
+            {renglones.map((renglon) => (
+                <Col key={renglon.id}>
+                    <div className="escalar-card h-100">
+                        <div className="escalar-card-etiqueta text-truncate" title={nombreRenglon(renglon)}>{nombreRenglon(renglon)}</div>
+                        <div className="escalar-card-valor">
+                            {formatearCantidad(renglon.cantidad * factor)}
+                            <span className="escalar-card-unidad">{renglon.unidad_medida.nombre}</span>
+                        </div>
+                        <div className="escalar-card-detalle">
+                            original: {formatearCantidad(renglon.cantidad)} {renglon.unidad_medida.nombre}
+                        </div>
+                    </div>
+                </Col>
+            ))}
+        </Row>
     );
 }

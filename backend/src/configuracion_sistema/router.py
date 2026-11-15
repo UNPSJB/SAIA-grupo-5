@@ -17,25 +17,10 @@ def read_configuracion(db: Session = Depends(get_db)):
     return services.leer_configuracion(db)
 
 
+
 @router.put("/", response_model=schemas.ConfiguracionSistema)
 def update_configuracion(configuracion: schemas.ConfiguracionSistemaUpdate, db: Session = Depends(get_db)):
-    actual = services.obtener_o_crear_configuracion(db)
-    cambios = configuracion.model_dump(exclude_unset=True)
-    if any(clave.startswith("vista_publica_") for clave in cambios):
-        datos_vista = schemas.ConfiguracionSistemaUpdate.model_validate({
-            clave: valor for clave, valor in cambios.items() if clave.startswith("vista_publica_")
-        })
-        actual = publica.actualizar_vista_publica(db, datos_vista)
-    for clave, valor in cambios.items():
-        if not clave.startswith("vista_publica_") and valor is not None:
-            setattr(actual, clave, valor)
-    db.commit()
-    db.refresh(actual)
-    if any(clave in cambios for clave in ("hora_generacion_checklists", "minuto_generacion_checklists")):
-        from src.scheduler.scheduler import reprogramar_generacion_checklists
-        reprogramar_generacion_checklists(actual.hora_generacion_checklists, actual.minuto_generacion_checklists)
-    return actual
-
+    return services.modificar_configuracion(db, configuracion)
 
 public_router = PermissionedRouter(prefix="/vista-publica", tags=["vista-publica"])
 

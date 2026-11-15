@@ -21,7 +21,7 @@ export function DeleteLoteProveedorModal({ lote, onHide, onDeleted }: DeleteLote
         setCargando(true);
         try {
             await api.patch(`/lotes-proveedor/${lote.id}/estado`);
-            mostrarAlertaExito(`El lote '${lote.numero_lote}' fue actualizado correctamente.`);
+            mostrarAlertaExito(`El lote '${lote.numero_remito}' fue actualizado correctamente.`);
             onDeleted();
             onHide();
         } catch (error: any) {
@@ -42,7 +42,7 @@ export function DeleteLoteProveedorModal({ lote, onHide, onDeleted }: DeleteLote
                 <Modal.Title>{lote.activo ? 'Dar de baja Lote' : 'Dar de alta Lote'}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                ¿Estas seguro de que queres {accion} el lote <strong>{lote.numero_lote}</strong> del proveedor{' '}
+                ¿Estas seguro de que queres {accion} el lote <strong>{lote.numero_remito}</strong> del proveedor{' '}
                 <strong>{lote.proveedor?.nombre}</strong>?
             </Modal.Body>
             <Modal.Footer>

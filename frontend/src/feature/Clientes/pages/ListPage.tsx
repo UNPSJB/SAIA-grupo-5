@@ -33,6 +33,7 @@ export function ListPage() {
     const subHeaderComponentMemo = useMemo(() => {
         return (
             <Form.Control
+                data-tour="buscador-clientes"
                 type="text"
                 placeholder="Buscar cliente..."
                 className="mr-sm-2"
@@ -89,6 +90,7 @@ export function ListPage() {
             grow: 1,
             cell: row => (
                 <div
+                    data-tour="estado-cliente"
                     style={{
                         padding: '4px 12px',
                         borderRadius: '16px',
@@ -108,30 +110,36 @@ export function ListPage() {
             minWidth: '180px',
             cell: (row) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center' }}>
-                    <ActionButton
-                        variant="outline-info"
-                        size="sm"
-                        tooltip="Ver"
-                        icon="bi bi-eye"
-                        onClick={() => navigate(`/clientes/${row.id}`)}
-                    />
+                    <span data-tour="btn-ver-cliente">
+                        <ActionButton
+                            variant="outline-info"
+                            size="sm"
+                            tooltip="Ver"
+                            icon="bi bi-eye"
+                            onClick={() => navigate(`/clientes/${row.id}`)}
+                        />
+                    </span>
                     {currentUser?.administrar && (
                         <>
-                            <ActionButton
-                                variant="outline-primary"
-                                size="sm"
-                                tooltip="Editar"
-                                icon="bi bi-pencil"
-                                disabled={!row.activo}
-                                onClick={() => navigate(`/clientes/${row.id}/edit`)}
-                            />
-                            <ActionButton
-                                variant={row.activo ? 'outline-danger' : 'outline-success'}
-                                size="sm"
-                                tooltip={row.activo ? 'Dar de baja' : 'Reactivar'}
-                                icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
-                                onClick={() => setClienteToChange(row)}
-                            />
+                            <span data-tour="btn-editar-cliente">    
+                                <ActionButton
+                                    variant="outline-primary"
+                                    size="sm"
+                                    tooltip="Editar"
+                                    icon="bi bi-pencil"
+                                    disabled={!row.activo}
+                                    onClick={() => navigate(`/clientes/${row.id}/edit`)}
+                                />
+                            </span>
+                            <span data-tour="btn-baja-cliente">
+                                <ActionButton
+                                    variant={row.activo ? 'outline-danger' : 'outline-success'}
+                                    size="sm"
+                                    tooltip={row.activo ? 'Dar de baja' : 'Reactivar'}
+                                    icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
+                                    onClick={() => setClienteToChange(row)}
+                                />
+                            </span>
                         </>
                     )}
                 </div>
@@ -155,6 +163,7 @@ export function ListPage() {
                 {currentUser?.administrar && (
                     <Col xs="auto" className="d-flex justify-content-end">
                         <Button
+                            data-tour="btn-nuevo-cliente"
                             variant="primary"
                             size='sm'
                             onClick={() => navigate("/clientes/new")}
@@ -165,7 +174,9 @@ export function ListPage() {
                     </Col>
                 )}
             </Row>
-            <AppTable columns={columns} data={filteredClientes} />
+            <div data-tour="tabla-clientes">
+                <AppTable columns={columns} data={filteredClientes} />
+            </div>
             <CambiarEstadoClienteModal
                 cliente={clienteToChange}
                 onHide={() => setClienteToChange(null)}

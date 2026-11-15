@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
-import { Accordion, Badge, Button, Form, InputGroup, Modal } from 'react-bootstrap';
+import { Accordion, Badge, Button, Col, Form, InputGroup, Modal, Row, Spinner } from 'react-bootstrap';
 import { Controller, useFieldArray, useForm, useWatch, type Control, type FieldErrors, type UseFormRegister } from 'react-hook-form';
 import { isAxiosError } from 'axios';
 import { api } from '../../../libs/axios';
 import { mostrarAlertaError, mostrarAlertaExito } from '../../../libs/alertas';
 import type { Producto } from '../../Productos/types';
 import type { Insumo } from '../../Insumos/types';
-import type { EvaluacionSellos, NewEtapaReceta, NewInsumoReceta, NewReceta, Receta } from '../types';
+import type { UnidadMedida } from '../../UnidadMedida/types';
+import { etiquetaAditivo, type Aditivo } from '../../Aditivos/types';
+import type { EvaluacionSellos, NewEtapaReceta, NewInsumoReceta, NewReceta, NewRecetaVersion, Receta, TipoRenglon } from '../types';
 import { PLANTILLA_ETAPAS } from '../constants';
 import { useApi } from '../../../hooks/useApi';
 import { SelectorConBusqueda } from '../../../components/SelectorConBusqueda';
@@ -23,31 +25,63 @@ interface RecetaFormModalProps {
 interface InsumoRecetaFormData {
     insumo_id: string;
     cantidad: string;
+    tipo: TipoRenglon;
+    aditivo_id: string;
 }
 
 interface RecetaFormData {
+    rendimiento: string;
+    rendimiento_unidad_medida_id: string;
+    porcion: string;
+    porcion_unidad_medida_id: string;
     insumos: InsumoRecetaFormData[];
     etapas: NewEtapaReceta[];
 }
 
-const plantillaInicial = (): RecetaFormData => ({
-    insumos: [],
+const MENSAJE_SIN_INGREDIENTES = "La receta debe tener al menos un ingrediente.";
+
+const renglonVacio = (tipo: TipoRenglon): InsumoRecetaFormData => ({ insumo_id: "", cantidad: "", tipo, aditivo_id: "" });
+
+const plantillaInicial = (producto: Producto | null): RecetaFormData => ({
+    rendimiento: producto ? String(producto.cantidad_neta) : "",
+    rendimiento_unidad_medida_id: producto ? String(producto.unidad_medida_id) : "",
+    porcion: "",
+    porcion_unidad_medida_id: "",
+    insumos: [renglonVacio("Ingrediente")],
     etapas: PLANTILLA_ETAPAS.map((etapa) => ({ ...etapa, pasos: etapa.pasos.map((paso) => ({ ...paso })) })),
 });
 
+const aTexto = (valor: number | null) => (valor === null ? "" : String(valor));
+
 const valoresDeReceta = (receta: Receta): RecetaFormData => ({
-    insumos: (receta.insumos ?? []).map((item) => ({ insumo_id: String(item.insumo_id), cantidad: String(item.cantidad) })),
+    rendimiento: aTexto(receta.rendimiento),
+    rendimiento_unidad_medida_id: aTexto(receta.rendimiento_unidad_medida_id),
+    porcion: aTexto(receta.porcion),
+    porcion_unidad_medida_id: aTexto(receta.porcion_unidad_medida_id),
+    insumos: (receta.insumos ?? []).map((item) => ({
+        insumo_id: String(item.insumo_id),
+        cantidad: String(item.cantidad),
+        tipo: item.tipo,
+        aditivo_id: aTexto(item.aditivo_id),
+    })),
     etapas: receta.etapas.map((etapa) => ({
         nombre: etapa.nombre,
         pasos: etapa.pasos.map((paso) => ({ descripcion: paso.descripcion })),
     })),
 });
 
+const aRenglon = (item: InsumoRecetaFormData): NewInsumoReceta => ({
+    insumo_id: Number(item.insumo_id),
+    cantidad: Number(item.cantidad),
+    tipo: item.tipo,
+    aditivo_id: item.tipo === "Aditivo" && item.aditivo_id ? Number(item.aditivo_id) : null,
+});
+
 const insumosValidos = (insumos: InsumoRecetaFormData[] = []): NewInsumoReceta[] => {
     const vistos = new Set<string>();
     return insumos
         .filter((item) => item?.insumo_id && Number(item.cantidad) > 0 && !vistos.has(item.insumo_id) && Boolean(vistos.add(item.insumo_id)))
-        .map((item) => ({ insumo_id: Number(item.insumo_id), cantidad: Number(item.cantidad) }));
+        .map((item) => ({ ...aRenglon(item), tipo: "Ingrediente" as TipoRenglon, aditivo_id: null }));
 };
 
 export function RecetaFormModal({ producto, receta, onHide, onSaved }: RecetaFormModalProps) {
@@ -55,14 +89,14 @@ export function RecetaFormModal({ producto, receta, onHide, onSaved }: RecetaFor
     const esEdicion = Boolean(receta);
 
     const { register, control, handleSubmit, reset, formState: { errors } } = useForm<RecetaFormData>({
-        defaultValues: plantillaInicial(),
+        defaultValues: plantillaInicial(null),
     });
     const { fields: etapas, append, remove } = useFieldArray({ control, name: "etapas" });
     const etapasActuales = useWatch({ control, name: "etapas" });
 
     // Cada vez que se abre arranca con la receta a editar o, en el alta, con la plantilla
     useEffect(() => {
-        if (producto) reset(receta ? valoresDeReceta(receta) : plantillaInicial());
+        if (producto) reset(receta ? valoresDeReceta(receta) : plantillaInicial(producto));
     }, [producto, receta, reset]);
 
     const onSubmit = async (data: RecetaFormData) => {
@@ -70,15 +104,23 @@ export function RecetaFormModal({ producto, receta, onHide, onSaved }: RecetaFor
 
         setCargando(true);
         try {
-            const etapas = data.etapas.map((etapa) => ({
-                nombre: etapa.nombre.trim(),
-                pasos: etapa.pasos.map((paso) => ({ descripcion: paso.descripcion.trim() })),
-            }));
-            const insumos = data.insumos.map((item) => ({ insumo_id: Number(item.insumo_id), cantidad: Number(item.cantidad) }));
+            const datos: NewRecetaVersion = {
+                rendimiento: Number(data.rendimiento),
+                rendimiento_unidad_medida_id: Number(data.rendimiento_unidad_medida_id),
+                porcion: data.porcion.trim() ? Number(data.porcion) : null,
+                porcion_unidad_medida_id: data.porcion_unidad_medida_id ? Number(data.porcion_unidad_medida_id) : null,
+                etapas: data.etapas.map((etapa) => ({
+                    nombre: etapa.nombre.trim(),
+                    pasos: etapa.pasos.map((paso) => ({ descripcion: paso.descripcion.trim() })),
+                })),
+                insumos: data.insumos.map(aRenglon),
+            };
             const { data: guardada } = receta
-                ? await api.put<Receta>(`/recetas/${receta.id}`, { etapas, insumos })
-                : await api.post<Receta>("/recetas/", { producto_id: producto.id, etapas, insumos } satisfies NewReceta);
-            mostrarAlertaExito(`La receta del producto '${producto.nombre}' se ${esEdicion ? 'actualizó' : 'creó'} correctamente.`);
+                ? await api.put<Receta>(`/recetas/${receta.id}`, datos)
+                : await api.post<Receta>("/recetas/", { producto_id: producto.id, ...datos } satisfies NewReceta);
+            mostrarAlertaExito(esEdicion
+                ? `Se creó la versión ${guardada.version} de la receta del producto '${producto.nombre}'.`
+                : `La receta del producto '${producto.nombre}' se creó correctamente.`);
             onSaved(guardada);
             onHide();
         } catch (error) {
@@ -104,10 +146,12 @@ export function RecetaFormModal({ producto, receta, onHide, onSaved }: RecetaFor
                     <p className="mb-1"><strong>Producto:</strong> {producto?.nombre}</p>
                     <p className="text-muted small mb-3">
                         {esEdicion
-                            ? 'Modificá, eliminá o agregá las etapas y pasos que necesites.'
+                            ? `Al guardar se crea la versión ${(receta?.version ?? 0) + 1} de la receta. La versión ${receta?.version} queda en el historial como solo lectura.`
                             : 'La receta se carga con una plantilla de ejemplo. Eliminá las etapas y pasos que no correspondan y agregá los que necesites.'}
                         {' '}El orden de etapas y pasos es el orden en que aparecen.
                     </p>
+
+                    <RendimientoReceta register={register} errors={errors} receta={receta} />
 
                     <IngredientesReceta
                         control={control}
@@ -172,11 +216,98 @@ export function RecetaFormModal({ producto, receta, onHide, onSaved }: RecetaFor
                 <Modal.Footer className="justify-content-start">
                     <Button variant="secondary" onClick={onHide} disabled={cargando}>Cancelar</Button>
                     <Button variant="success" type="submit" disabled={cargando}>
-                        {cargando ? "Guardando..." : "Guardar receta"}
+                        {cargando ? "Guardando..." : esEdicion ? "Guardar nueva versión" : "Guardar receta"}
                     </Button>
                 </Modal.Footer>
             </Form>
         </Modal>
+    );
+}
+
+interface RendimientoRecetaProps {
+    register: UseFormRegister<RecetaFormData>;
+    errors: FieldErrors<RecetaFormData>;
+    receta?: Receta | null;
+}
+
+function RendimientoReceta({ register, errors, receta }: RendimientoRecetaProps) {
+    const { data: unidadesMedida } = useApi<UnidadMedida[]>("/unidades-medida/");
+    const idsDeReceta = new Set([receta?.rendimiento_unidad_medida_id, receta?.porcion_unidad_medida_id]);
+    const unidades = (unidadesMedida ?? []).filter((unidad) => unidad.activo || idsDeReceta.has(unidad.id));
+
+    return (
+        <div className="text-start mb-3">
+            <h6 className="fw-bold mb-1">Rendimiento y porción</h6>
+            <p className="text-muted small mb-2">
+                Indicá cuánto producto final se obtiene con las cantidades de la receta y, si corresponde, la porción o unidad de venta.
+            </p>
+            {!unidadesMedida ? (
+                <div className="d-flex align-items-center gap-2 text-muted small">
+                    <Spinner animation="border" size="sm" /> Cargando unidades de medida…
+                </div>
+            ) : (
+                <Row className="g-2">
+                    <Col sm={6}>
+                        <Form.Label className="p-1 fw-bold small mb-0">Rendimiento final *</Form.Label>
+                        <InputGroup hasValidation>
+                            <Form.Control
+                                type="number"
+                                min={0}
+                                step="any"
+                                placeholder="Cantidad"
+                                {...register("rendimiento", {
+                                    required: "El rendimiento final es obligatorio.",
+                                    validate: (valor) => Number(valor) > 0 || "El rendimiento debe ser mayor a 0.",
+                                })}
+                                isInvalid={!!errors.rendimiento}
+                            />
+                            <Form.Select
+                                {...register("rendimiento_unidad_medida_id", { required: "Seleccioná la unidad del rendimiento." })}
+                                isInvalid={!!errors.rendimiento_unidad_medida_id}
+                                style={{ maxWidth: '10rem' }}
+                            >
+                                <option value="">-</option>
+                                {unidades.map((unidad) => <option key={unidad.id} value={unidad.id}>{unidad.nombre}</option>)}
+                            </Form.Select>
+                            <Form.Control.Feedback type="invalid">
+                                {errors.rendimiento?.message ?? errors.rendimiento_unidad_medida_id?.message}
+                            </Form.Control.Feedback>
+                        </InputGroup>
+                    </Col>
+                    <Col sm={6}>
+                        <Form.Label className="p-1 fw-bold small mb-0">Porción o unidad de venta</Form.Label>
+                        <InputGroup hasValidation>
+                            <Form.Control
+                                type="number"
+                                min={0}
+                                step="any"
+                                placeholder="Opcional"
+                                {...register("porcion", {
+                                    validate: (valor, datos) => {
+                                        if (valor.trim() === "") return datos.porcion_unidad_medida_id === "" || "Indicá la cantidad de la porción.";
+                                        return Number(valor) > 0 || "La porción debe ser mayor a 0.";
+                                    },
+                                })}
+                                isInvalid={!!errors.porcion}
+                            />
+                            <Form.Select
+                                {...register("porcion_unidad_medida_id", {
+                                    validate: (valor, datos) => valor !== "" || datos.porcion.trim() === "" || "Seleccioná la unidad de la porción.",
+                                })}
+                                isInvalid={!!errors.porcion_unidad_medida_id}
+                                style={{ maxWidth: '10rem' }}
+                            >
+                                <option value="">-</option>
+                                {unidades.map((unidad) => <option key={unidad.id} value={unidad.id}>{unidad.nombre}</option>)}
+                            </Form.Select>
+                            <Form.Control.Feedback type="invalid">
+                                {errors.porcion?.message ?? errors.porcion_unidad_medida_id?.message}
+                            </Form.Control.Feedback>
+                        </InputGroup>
+                    </Col>
+                </Row>
+            )}
+        </div>
     );
 }
 
@@ -189,9 +320,16 @@ interface IngredientesRecetaProps {
 }
 
 function IngredientesReceta({ control, register, errors, producto, receta }: IngredientesRecetaProps) {
-    const { fields: insumos, append, remove } = useFieldArray({ control, name: "insumos" });
+    const { fields: insumos, append, remove } = useFieldArray({
+        control,
+        name: "insumos",
+        rules: { validate: (items) => items.some((item) => item.tipo === "Ingrediente") || MENSAJE_SIN_INGREDIENTES },
+    });
     const insumosActuales = useWatch({ control, name: "insumos" });
+    const rendimiento = useWatch({ control, name: "rendimiento" });
+    const rendimientoUnidadId = useWatch({ control, name: "rendimiento_unidad_medida_id" });
     const { data: insumosDisponibles } = useApi<Insumo[]>(producto ? "/insumos/" : null);
+    const { data: aditivosDisponibles } = useApi<Aditivo[]>(producto ? "/aditivos/" : null);
     const [resultado, setResultado] = useState<{ consulta: string; evaluacion: EvaluacionSellos | null } | null>(null);
 
     const idsDeReceta = new Set((receta?.insumos ?? []).map((item) => item.insumo_id));
@@ -202,20 +340,35 @@ function IngredientesReceta({ control, register, errors, producto, receta }: Ing
             label: `${insumo.nombre} (${insumo.unidad_medida.nombre})${insumo.valor_energetico === null ? ' · sin información nutricional' : ''}`,
         }));
 
+    const aditivosDeReceta = new Set((receta?.insumos ?? []).map((item) => item.aditivo_id));
+    const opcionesAditivos = (aditivosDisponibles ?? [])
+        .filter((aditivo) => aditivo.activo || aditivosDeReceta.has(aditivo.id))
+        .map((aditivo) => ({ value: String(aditivo.id), label: etiquetaAditivo(aditivo) }));
+
     const items = insumosValidos(insumosActuales);
-    const consulta = JSON.stringify(items);
+    const rendimientoValido = Number(rendimiento) > 0 && rendimientoUnidadId !== "";
+    const consulta = JSON.stringify({
+        items,
+        rendimiento: rendimientoValido ? Number(rendimiento) : null,
+        rendimiento_unidad_medida_id: rendimientoValido ? Number(rendimientoUnidadId) : null,
+    });
     const hayItems = items.length > 0;
     const calculando = hayItems && resultado?.consulta !== consulta;
     const evaluacion = hayItems && !calculando ? resultado?.evaluacion ?? null : null;
 
     useEffect(() => {
-        const itemsConsulta: NewInsumoReceta[] = JSON.parse(consulta);
-        if (!producto || itemsConsulta.length === 0) return;
+        const datosConsulta = JSON.parse(consulta);
+        if (!producto || datosConsulta.items.length === 0) return;
 
         let vigente = true;
         const temporizador = setTimeout(async () => {
             try {
-                const { data } = await api.post<EvaluacionSellos>("/recetas/sellos", { producto_id: producto.id, insumos: itemsConsulta });
+                const { data } = await api.post<EvaluacionSellos>("/recetas/sellos", {
+                    producto_id: producto.id,
+                    rendimiento: datosConsulta.rendimiento,
+                    rendimiento_unidad_medida_id: datosConsulta.rendimiento_unidad_medida_id,
+                    insumos: datosConsulta.items,
+                });
                 if (vigente) setResultado({ consulta, evaluacion: data });
             } catch (error) {
                 if (vigente) setResultado({ consulta, evaluacion: null });
@@ -234,74 +387,111 @@ function IngredientesReceta({ control, register, errors, producto, receta }: Ing
 
     return (
         <div className="text-start mb-2">
-            <h6 className="fw-bold mb-1">Ingredientes por unidad de producto</h6>
+            <h6 className="fw-bold mb-1">Ingredientes y aditivos</h6>
             <p className="text-muted small mb-2">
-                Indicá la cantidad de cada insumo que se usa para elaborar una unidad de {producto?.nombre}
-                {producto && ` (${producto.cantidad_neta} ${producto.unidad_medida.nombre})`}.
+                Indicá la cantidad de cada insumo que se usa para obtener el rendimiento final. Clasificá cada renglón como ingrediente o aditivo; los aditivos se eligen de la lista de referencia.
             </p>
-
-            {insumos.length === 0 && (
-                <p className="text-muted small fst-italic mb-2">Todavía no se agregaron ingredientes.</p>
-            )}
 
             {insumos.map((item, index) => {
                 const errorInsumo = errors.insumos?.[index]?.insumo_id;
                 const errorCantidad = errors.insumos?.[index]?.cantidad;
+                const errorAditivo = errors.insumos?.[index]?.aditivo_id;
+                const esAditivo = insumosActuales?.[index]?.tipo === "Aditivo";
                 return (
-                    <div key={item.id} className="d-flex align-items-start gap-2 mb-2">
-                        <div className="flex-grow-1">
-                            <Controller
-                                control={control}
-                                name={`insumos.${index}.insumo_id`}
-                                rules={{
-                                    required: "Seleccioná un insumo.",
-                                    validate: (valor, datos) =>
-                                        datos.insumos.filter((otro) => otro.insumo_id === valor).length === 1 || "El insumo ya fue agregado.",
-                                }}
-                                render={({ field }) => (
-                                    <SelectorConBusqueda
-                                        value={field.value}
-                                        options={opciones}
-                                        onChange={field.onChange}
-                                        placeholder="Seleccionar insumo..."
-                                    />
-                                )}
-                            />
-                            {errorInsumo && <div className="text-danger small mt-1">{errorInsumo.message}</div>}
-                        </div>
-                        <div style={{ width: '12rem' }}>
-                            <InputGroup hasValidation>
-                                <Form.Control
-                                    type="number"
-                                    min={0}
-                                    step="any"
-                                    placeholder="Cantidad"
-                                    {...register(`insumos.${index}.cantidad`, {
-                                        required: "La cantidad es obligatoria.",
-                                        validate: (valor) => Number(valor) > 0 || "La cantidad debe ser mayor a 0.",
-                                    })}
-                                    isInvalid={!!errorCantidad}
+                    <div key={item.id} className={`border rounded p-2 mb-2 ${esAditivo ? 'bg-light' : ''}`}>
+                        <div className="d-flex align-items-start gap-2 flex-wrap flex-sm-nowrap">
+                            <Form.Select
+                                size="sm"
+                                className="mt-1"
+                                style={{ width: '8.5rem' }}
+                                aria-label="Tipo de renglón"
+                                {...register(`insumos.${index}.tipo`)}
+                            >
+                                <option value="Ingrediente">Ingrediente</option>
+                                <option value="Aditivo">Aditivo</option>
+                            </Form.Select>
+                            <div className="flex-grow-1">
+                                <Controller
+                                    control={control}
+                                    name={`insumos.${index}.insumo_id`}
+                                    rules={{
+                                        required: "Seleccioná un insumo.",
+                                        validate: (valor, datos) =>
+                                            datos.insumos.filter((otro) => otro.insumo_id === valor).length === 1 || "El insumo ya fue agregado.",
+                                    }}
+                                    render={({ field }) => (
+                                        <SelectorConBusqueda
+                                            value={field.value}
+                                            options={opciones}
+                                            onChange={field.onChange}
+                                            placeholder="Seleccionar insumo..."
+                                        />
+                                    )}
                                 />
-                                <InputGroup.Text>{unidadDeInsumo(insumosActuales?.[index]?.insumo_id) ?? '-'}</InputGroup.Text>
-                                <Form.Control.Feedback type="invalid">{errorCantidad?.message}</Form.Control.Feedback>
-                            </InputGroup>
+                                {errorInsumo && <div className="text-danger small mt-1">{errorInsumo.message}</div>}
+                            </div>
+                            <div style={{ width: '12rem' }}>
+                                <InputGroup hasValidation>
+                                    <Form.Control
+                                        type="number"
+                                        min={0}
+                                        step="any"
+                                        placeholder="Cantidad"
+                                        {...register(`insumos.${index}.cantidad`, {
+                                            required: "La cantidad es obligatoria.",
+                                            validate: (valor) => Number(valor) > 0 || "La cantidad debe ser mayor a 0.",
+                                        })}
+                                        isInvalid={!!errorCantidad}
+                                    />
+                                    <InputGroup.Text>{unidadDeInsumo(insumosActuales?.[index]?.insumo_id) ?? '-'}</InputGroup.Text>
+                                    <Form.Control.Feedback type="invalid">{errorCantidad?.message}</Form.Control.Feedback>
+                                </InputGroup>
+                            </div>
+                            <Button
+                                variant="outline-danger"
+                                size="sm"
+                                className="mt-1"
+                                onClick={() => remove(index)}
+                                title="Eliminar renglón"
+                            >
+                                <i className="bi bi-x-lg"></i>
+                            </Button>
                         </div>
-                        <Button
-                            variant="outline-danger"
-                            size="sm"
-                            className="mt-1"
-                            onClick={() => remove(index)}
-                            title="Eliminar ingrediente"
-                        >
-                            <i className="bi bi-x-lg"></i>
-                        </Button>
+                        {esAditivo && (
+                            <div className="mt-2">
+                                <Controller
+                                    control={control}
+                                    name={`insumos.${index}.aditivo_id`}
+                                    rules={{
+                                        validate: (valor, datos) =>
+                                            datos.insumos[index]?.tipo !== "Aditivo" || valor !== "" || "Seleccioná la clase funcional, el nombre y el INS del aditivo.",
+                                    }}
+                                    render={({ field }) => (
+                                        <SelectorConBusqueda
+                                            value={field.value}
+                                            options={opcionesAditivos}
+                                            onChange={field.onChange}
+                                            placeholder="Clase funcional · nombre (INS)..."
+                                        />
+                                    )}
+                                />
+                                {errorAditivo && <div className="text-danger small mt-1">{errorAditivo.message}</div>}
+                            </div>
+                        )}
                     </div>
                 );
             })}
 
-            <Button variant="link" size="sm" className="px-0 mb-2" onClick={() => append({ insumo_id: "", cantidad: "" })}>
-                <i className="bi bi-plus-lg me-1"></i>Agregar ingrediente
-            </Button>
+            {errors.insumos?.root && <div className="text-danger small mb-2">{errors.insumos.root.message}</div>}
+
+            <div className="d-flex gap-3 mb-2">
+                <Button variant="link" size="sm" className="px-0" onClick={() => append(renglonVacio("Ingrediente"))}>
+                    <i className="bi bi-plus-lg me-1"></i>Agregar ingrediente
+                </Button>
+                <Button variant="link" size="sm" className="px-0" onClick={() => append(renglonVacio("Aditivo"))}>
+                    <i className="bi bi-plus-lg me-1"></i>Agregar aditivo
+                </Button>
+            </div>
 
             <SellosFrontales evaluacion={evaluacion} cargando={calculando} />
         </div>

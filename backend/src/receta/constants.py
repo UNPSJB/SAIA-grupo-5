@@ -1,8 +1,23 @@
+from enum import Enum
+
+
 class ErrorCode:
     RECETA_NO_ENCONTRADA = "La receta no fue encontrada."
     RECETA_DUPLICADA = "El producto ya tiene una receta vigente."
+    RECETA_SOLO_LECTURA = "La versión de la receta no está vigente y es de solo lectura."
+    RECETA_SIN_INGREDIENTES = "La receta debe tener al menos un ingrediente."
+    ADITIVO_SIN_CLASE_FUNCIONAL = "Cada aditivo de la receta debe indicar su clase funcional, nombre y número INS."
+    INGREDIENTE_CON_ADITIVO = "Un renglón clasificado como ingrediente no puede tener un aditivo asociado."
+    ADITIVO_NO_DISPONIBLE = "El aditivo seleccionado no existe o está dado de baja."
+    PORCION_INCOMPLETA = "Si se indica la porción o unidad de venta deben completarse la cantidad y la unidad de medida."
+    UNIDAD_MEDIDA_NO_DISPONIBLE = "La unidad de medida indicada no existe o está dada de baja."
     INSUMO_REPETIDO = "Un insumo no puede repetirse en el listado de ingredientes de la receta."
     INSUMO_NO_ALIMENTARIO = "Solo se pueden agregar a la receta insumos generales activos."
+
+
+class TipoRenglon(str, Enum):
+    INGREDIENTE = "Ingrediente"
+    ADITIVO = "Aditivo"
 
 
 class SelloFrontal:
@@ -49,3 +64,5 @@ FACTORES_UNIDAD_MEDIDA = {
 }
 
 UNIDADES_MEDIDA_LIQUIDAS = {"ml", "cc", "mililitro", "mililitros", "l", "lt", "litro", "litros"}
+
+UNIDADES_DE_PRODUCTO = {"unidad": 1, "unidades": 1, "docena": 12, "docenas": 12}

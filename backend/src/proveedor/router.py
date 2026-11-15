@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from src.database import get_db
 from src.auth.router_base import PermissionedRouter
 from src.proveedor import schemas, services
+from src.auth.dependencies import tiene_permiso_administrar
 
 logger = logging.getLogger(__name__)
 
@@ -38,3 +39,7 @@ def cambiar_estado_proveedor(proveedor_id: int, db: Session = Depends(get_db)):
 @router.patch("/{proveedor_id}/habilitacion", response_model=schemas.Proveedor)
 def renovar_habilitacion(proveedor_id: int, datos: schemas.ProveedorRenovarHabilitacion, db: Session = Depends(get_db),):
     return services.renovar_habilitacion_proveedor(db, proveedor_id, datos)
+
+@router.put("/{proveedor_id}/insumos", response_model=schemas.Proveedor, dependencies=[Depends(tiene_permiso_administrar)])
+def update_insumos_proveedor(proveedor_id: int, datos: schemas.ProveedorInsumosUpdate, db: Session = Depends(get_db)):
+    return services.asociar_insumos_proveedor(db, proveedor_id, datos)

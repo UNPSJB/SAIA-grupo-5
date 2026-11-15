@@ -7,6 +7,7 @@ export const tutorialesInicio: Tutorial[] = [
         id: 'que-puedo-hacer-inicio',
         titulo: '¿Qué puedo hacer en esta página?',
         ruta: '/',
+        permiso: 'administrar',
         pasos: [
             {
                 // sin "element": se muestra centrado, como introducción

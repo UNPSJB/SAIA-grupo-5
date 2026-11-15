@@ -175,22 +175,62 @@ export function VerLoteProduccionPage() {
                             {insumosUtilizados.length === 0 ? (
                                 <p className="text-muted mb-0">Este lote todavía no tiene insumos asociados.</p>
                             ) : (
-                                <Table responsive bordered hover size="sm" className="mb-0">
-                                    <thead>
+                                <Table responsive bordered hover size="sm" className="mb-0 align-middle">
+                                    <thead className="table-light">
                                         <tr>
                                             <th>Insumo</th>
+                                            <th>Lote de Origen</th>
+                                            <th>Proveedor</th>
                                             <th>Cantidad utilizada</th>
                                             <th>Unidad de medida</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {insumosUtilizados.map((registro) => (
-                                            <tr key={registro.id}>
-                                                <td>{registro.insumo.nombre}</td>
-                                                <td>{Number(registro.cantidad_utilizada).toLocaleString("es-AR", { maximumFractionDigits: 3 })}</td>
-                                                <td>{registro.insumo.unidad_medida.nombre}</td>
-                                            </tr>
-                                        ))}
+                                        {insumosUtilizados.map((registro) => {
+                                            const loteProv = registro.insumo_lote?.lote_proveedor;
+                                            const proveedor = loteProv?.proveedor;
+
+                                            return (
+                                                <tr key={registro.id}>
+                                                    <td>
+                                                        <strong>{registro.insumo_lote?.insumo?.nombre || 'Insumo'}</strong>{' '}
+                                                        <span className="text-muted small">({registro.insumo_lote?.marca})</span>
+                                                    </td>
+                                                    <td>
+                                                        {loteProv ? (
+                                                            <Button
+                                                                variant="link"
+                                                                className="p-0 fw-bold text-decoration-none d-inline-flex align-items-center gap-1"
+                                                                onClick={() => navigate(`/recepciones/${loteProv.id}`)}
+                                                                title="Ir a la recepción del lote"
+                                                            >
+                                                                <i className="bi bi-box-arrow-up-right small"></i>
+                                                                {loteProv.numero_lote}
+                                                            </Button>
+                                                        ) : (
+                                                            <span className="text-muted">-</span>
+                                                        )}
+                                                    </td>
+                                                    <td>
+                                                        {proveedor ? (
+                                                            <Button
+                                                                variant="link"
+                                                                className="p-0 text-decoration-none fw-semibold text-secondary d-inline-flex align-items-center gap-1"
+                                                                onClick={() => navigate(`/proveedores/${proveedor.id}`)}
+                                                                title="Ver detalle del proveedor"
+                                                            >
+                                                                <i className="bi bi-building small"></i>
+                                                                {proveedor.nombre}
+                                                            </Button>
+                                                        ) : (
+                                                            <span className="text-muted">-</span>
+                                                        )}
+                                                    </td>
+                                                    <td>{Number(registro.cantidad_utilizada).toLocaleString("es-AR", { maximumFractionDigits: 3 })}</td>
+                                                    <td>{registro.insumo_lote?.insumo?.unidad_medida?.nombre || 'U'}</td>
+                                                </tr>
+                                            );
+                                        })}
                                     </tbody>
                                 </Table>
                             )}

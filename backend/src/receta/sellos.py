@@ -7,6 +7,7 @@ from src.receta.schemas import EvaluacionSellos
 if TYPE_CHECKING:
     from src.insumos.models import Insumo
     from src.producto.models import Producto
+    from src.unidad_medida.models import UnidadMedida
 
 
 def _normalizar(nombre: str) -> str:
@@ -36,7 +37,24 @@ def _equivalencia_insumo(insumo: "Insumo") -> float | None:
     return factor_unidad_medida(insumo.unidad_medida.nombre) or insumo.peso_unidad
 
 
-def evaluar_sellos(producto: "Producto", insumos: list[tuple["Insumo", float]]) -> EvaluacionSellos:
+def _cantidad_base(producto: "Producto", masa_total: float, rendimiento: float | None, unidad_rendimiento: "UnidadMedida | None") -> float:
+    if rendimiento and unidad_rendimiento is not None:
+        factor_rendimiento = factor_unidad_medida(unidad_rendimiento.nombre)
+        if factor_rendimiento:
+            return rendimiento * factor_rendimiento
+        unidades = constants.UNIDADES_DE_PRODUCTO.get(_normalizar(unidad_rendimiento.nombre))
+        factor_producto = factor_unidad_medida(producto.unidad_medida.nombre)
+        if unidades and factor_producto:
+            return rendimiento * unidades * producto.cantidad_neta * factor_producto
+    return masa_total
+
+
+def evaluar_sellos(
+    producto: "Producto",
+    insumos: list[tuple["Insumo", float]],
+    rendimiento: float | None = None,
+    unidad_rendimiento: "UnidadMedida | None" = None,
+) -> EvaluacionSellos:
     es_liquido = es_unidad_liquida(producto.unidad_medida.nombre)
 
     masa_total = 0.0
@@ -57,8 +75,7 @@ def evaluar_sellos(producto: "Producto", insumos: list[tuple["Insumo", float]]) 
         saturadas += insumo.grasas_saturadas * proporcion
         sodio += insumo.sodio * proporcion
 
-    factor_producto = factor_unidad_medida(producto.unidad_medida.nombre)
-    cantidad_base = producto.cantidad_neta * factor_producto if factor_producto else masa_total
+    cantidad_base = _cantidad_base(producto, masa_total, rendimiento, unidad_rendimiento)
 
     if masa_total <= 0 or cantidad_base <= 0:
         return EvaluacionSellos(evaluable=False, es_liquido=es_liquido, insumos_sin_informacion=sin_informacion)

@@ -207,7 +207,7 @@ export function ListPage() {
                     <Button
                         variant="outline-secondary"
                         size="sm"
-                        onClick={() => navigate('/documentos')}
+                        onClick={() => navigate(`/documentos/${documentoId}`)}
                     >
                         <i className="bi bi-arrow-left me-1"></i> Volver
                     </Button>

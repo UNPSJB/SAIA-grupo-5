@@ -31,3 +31,11 @@ class NumeroRemitoDuplicado(BadRequest):
 
 class ProveedorSinHabilitacion(BadRequest):
     DETAIL = ErrorCode.PROVEEDOR_SIN_HABILITACION
+
+
+class LoteSinInsumosParaAcomodar(BadRequest):
+    DETAIL = ErrorCode.LOTE_SIN_INSUMOS_PARA_ACOMODAR
+
+
+class PedidoNoValido(BadRequest):
+    DETAIL = ErrorCode.PEDIDO_NO_VALIDO

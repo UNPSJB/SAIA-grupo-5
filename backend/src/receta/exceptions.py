@@ -1,5 +1,6 @@
 from src.receta.constants import ErrorCode
-from src.exceptions import NotFound, BadRequest
+from fastapi import status
+from src.exceptions import DetailedHTTPException, NotFound, BadRequest
 
 
 class RecetaNoEncontrada(NotFound):
@@ -16,3 +17,16 @@ class InsumoRepetido(BadRequest):
 
 class InsumoNoAlimentario(BadRequest):
     DETAIL = ErrorCode.INSUMO_NO_ALIMENTARIO
+
+
+class RecetaSoloLectura(DetailedHTTPException):
+    STATUS_CODE = status.HTTP_409_CONFLICT
+    DETAIL = ErrorCode.RECETA_SOLO_LECTURA
+
+
+class AditivoNoDisponible(BadRequest):
+    DETAIL = ErrorCode.ADITIVO_NO_DISPONIBLE
+
+
+class UnidadMedidaNoDisponible(BadRequest):
+    DETAIL = ErrorCode.UNIDAD_MEDIDA_NO_DISPONIBLE

@@ -7,8 +7,11 @@ from src.lote_produccion.models import LoteProduccion, EstadoLote, InsumoUtiliza
 from src.lote_produccion import schemas, exceptions
 from src.producto.models import Producto
 from src.producto import services as producto_services
-from src.insumos.models import Insumo
 from src.lote_produccion.models import HistorialEstadoLote
+from src.insumos_lote.models import InsumoLote
+from src.insumos_lote.services import descontar_stock_insumo_lote
+from src.insumos.models import Insumo
+from src.lote_proveedor.models import LoteProveedor
 
 logger = logging.getLogger(__name__)
 
@@ -47,15 +50,20 @@ def crear_lote_produccion(db: Session, lote: schemas.LoteProduccionCreate, usuar
 def listar_lotes_produccion(db: Session) -> List[schemas.LoteProduccionDetalle]:
     return db.scalars(select(LoteProduccion).options(joinedload(LoteProduccion.producto).
                                                 joinedload(Producto.unidad_medida),
-                                                selectinload(LoteProduccion.insumos_utilizados).joinedload(InsumoUtilizado.insumo).
+                                                selectinload(LoteProduccion.insumos_utilizados).joinedload(InsumoUtilizado.insumo_lote).
+                                                joinedload(InsumoLote.insumo).
                                                 joinedload(Insumo.unidad_medida))).all()
 
 
 def leer_lote_produccion(db: Session, lote_id: int) -> schemas.LoteProduccionDetalle:
-    db_lote = db.scalar(select(LoteProduccion).where(LoteProduccion.id == lote_id)
-                        .options(joinedload(LoteProduccion.producto).joinedload(Producto.unidad_medida),
-                                selectinload(LoteProduccion.insumos_utilizados).joinedload(InsumoUtilizado.insumo).
-                                joinedload(Insumo.unidad_medida)))
+    db_lote = db.scalar(
+        select(LoteProduccion).where(LoteProduccion.id == lote_id).options(
+            joinedload(LoteProduccion.producto).joinedload(Producto.unidad_medida),
+            selectinload(LoteProduccion.insumos_utilizados).joinedload(InsumoUtilizado.insumo_lote)
+            .joinedload(InsumoLote.insumo).joinedload(Insumo.unidad_medida),
+            selectinload(LoteProduccion.insumos_utilizados).joinedload(InsumoUtilizado.insumo_lote)
+            .joinedload(InsumoLote.lote_proveedor).joinedload(LoteProveedor.proveedor)))
+    
     if db_lote is None:
         raise exceptions.LoteProduccionNoEncontrado()
     return db_lote
@@ -198,20 +206,31 @@ def validar_lote_para_insumos(db: Session, lote_id: int) -> LoteProduccion:
     return db_lote
 
 
-def validar_insumos(db: Session, insumos: list[schemas.InsumoUtilizadoCreate]) -> None:
-    insumos_ids = [insumo.insumo_id for insumo in insumos]
+def validar_insumos_lote(db: Session, insumos: list[schemas.InsumoUtilizadoCreate]) -> None:
+    insumos_ids = [item.insumo_lote_id for item in insumos]
 
     if len(insumos_ids) != len(set(insumos_ids)):
         raise exceptions.InsumoRepetido()
 
-    for insumo_id in insumos_ids:
-        db_insumo = db.scalar(select(Insumo).where(Insumo.id == insumo_id, Insumo.tipo_herencia == "general"))
+    hoy = date.today()
 
-        if db_insumo is None:
-            raise exceptions.InsumoNoEncontrado()
+    for item in insumos:
+        insumo_lote = db.scalar(select(InsumoLote).where(InsumoLote.id == item.insumo_lote_id))
 
-        if not db_insumo.activo:
-            raise exceptions.InsumoDadoDeBaja()
+        if not insumo_lote:
+            raise exceptions.InsumoLoteNoEncontrado()
+
+        if not insumo_lote.activo:
+            raise exceptions.InsumoLoteInactivo()
+
+        if insumo_lote.fecha_vencimiento <= hoy:
+            raise exceptions.InsumoLoteVencido()
+
+        if (insumo_lote.fecha_vencimiento - hoy).days < 15:
+            raise exceptions.InsumoLoteProximoAVencer()
+
+        if insumo_lote.cantidad_restante < item.cantidad_utilizada:
+            raise exceptions.StockInsuficienteInsumoLote()
 
 
 def listar_insumos_lote(db: Session, lote_id: int) -> list[InsumoUtilizado]:
@@ -221,23 +240,24 @@ def listar_insumos_lote(db: Session, lote_id: int) -> list[InsumoUtilizado]:
 
 def asociar_insumos_lote(db: Session, lote_id: int, datos: schemas.InsumosUtilizadosCreate) -> list[InsumoUtilizado]:
     validar_lote_para_insumos(db, lote_id)
-    validar_insumos(db, datos.insumos)
+    validar_insumos_lote(db, datos.insumos)
 
-    insumos_ids = [insumo.insumo_id for insumo in datos.insumos]
+    insumos_ids = [insumo.insumo_lote_id for insumo in datos.insumos]
     existentes = db.scalars(select(InsumoUtilizado).where(
         InsumoUtilizado.lote_produccion_id == lote_id,
-        InsumoUtilizado.insumo_id.in_(insumos_ids)
-    )).all()
+        InsumoUtilizado.insumo_lote_id.in_(insumos_ids))).all()
 
     if existentes:
         raise exceptions.InsumoYaAsociado()
 
-    for insumo in datos.insumos:
+    for item in datos.insumos:
         db.add(InsumoUtilizado(
             lote_produccion_id=lote_id,
-            insumo_id=insumo.insumo_id,
-            cantidad_utilizada=insumo.cantidad_utilizada
+            insumo_lote_id=item.insumo_lote_id,
+            cantidad_utilizada=item.cantidad_utilizada
         ))
+        
+        descontar_stock_insumo_lote(db, item.insumo_lote_id, int(item.cantidad_utilizada))
 
     db.commit()
     return listar_insumos_lote(db, lote_id)
@@ -245,7 +265,7 @@ def asociar_insumos_lote(db: Session, lote_id: int, datos: schemas.InsumosUtiliz
 
 def actualizar_insumos_lote(db: Session, lote_id: int, datos: schemas.InsumosUtilizadosUpdate) -> list[InsumoUtilizado]:
     validar_lote_para_insumos(db, lote_id)
-    validar_insumos(db, datos.insumos)
+    validar_insumos_lote(db, datos.insumos)
 
     db.execute(delete(InsumoUtilizado).where(InsumoUtilizado.lote_produccion_id == lote_id))
 

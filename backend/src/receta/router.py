@@ -26,6 +26,10 @@ def evaluar_sellos(datos: schemas.EvaluacionSellosCreate, db: Session = Depends(
 def evaluar_rotulado(datos: schemas.EvaluacionSellosCreate, db: Session = Depends(get_db)):
     return rotulado_services.evaluar_rotulado_receta(db, datos)
 
+@router.get("/producto/{producto_id}/versiones", response_model=list[schemas.RecetaVersion])
+def read_versiones_receta_de_producto(producto_id: int, db: Session = Depends(get_db)):
+    return services.listar_versiones_de_producto(db, producto_id)
+
 @router.get("/producto/{producto_id}", response_model=schemas.Receta)
 def read_receta_de_producto(producto_id: int, db: Session = Depends(get_db)):
     return services.obtener_receta_de_producto(db, producto_id)

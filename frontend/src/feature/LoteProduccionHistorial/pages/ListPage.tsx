@@ -117,13 +117,15 @@ export function LotesHistorialPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, padding: '6px 0' }}>
                     {currentUser?.administrar && (
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                            <ActionButton
-                                variant="outline-info"
-                                size="sm"
-                                tooltip="Ver"
-                                icon="bi-eye"
-                                onClick={() => navigate(`/lotes-produccion/${lote.id}`, { state: { origen: "historial" }})}
-                            />
+                            <span data-tour="btn-ver-lote-hist">
+                                <ActionButton
+                                    variant="outline-info"
+                                    size="sm"
+                                    tooltip="Ver"
+                                    icon="bi-eye"
+                                    onClick={() => navigate(`/lotes-produccion/${lote.id}`, { state: { origen: "historial" }})}
+                                />
+                            </span>
                         </div>
                     )}
                 </div>
@@ -140,7 +142,7 @@ export function LotesHistorialPage() {
                 title="Historial de Lotes de Producción"
                 subtitle={`${fechaLarga} - Revisá el historial de lotes registrados`}                
             />
-            <Row className="p-2 align-items-end g-3">
+            <Row className="p-2 align-items-end g-3" data-tour="filtros-historial-lotes">
                 <Col xs="auto">
                     <Form.Label className="mb-1 small fw-semibold"> Desde </Form.Label>
                     <Form.Control
@@ -179,7 +181,7 @@ export function LotesHistorialPage() {
             </Row>
 
             {rangoValido && historialEstadisticas && !errorEstadisticas && !error && (
-                <Row className="p-2 g-3">
+                <Row className="p-2 g-3" data-tour="resumen-historial-lotes">
                     <Col xs={6} lg={3}>
                         <Card className="text-center h-100">
                             <Card.Body>
@@ -232,7 +234,7 @@ export function LotesHistorialPage() {
                     <Card.Body>
                         <div className="lote-toolbar">
                             <div className="d-flex justify-content-end flex-grow-1 mb-3">
-                                <InputGroup className="lote-search" style={{ maxWidth: '280px' }}>
+                                <InputGroup className="lote-search" style={{ maxWidth: '280px' }} data-tour="buscador-historial-lotes">
                                     <InputGroup.Text><i className="bi bi-search" aria-hidden="true" /></InputGroup.Text>
                                     <Form.Control
                                         type="search"
@@ -245,7 +247,7 @@ export function LotesHistorialPage() {
                             </div>
                         </div>
 
-                        <div className="lote-table">
+                        <div className="lote-table" data-tour="tabla-historial-lotes">
                             <AppTable
                                 columns={columnas}
                                 data={lotesFiltrados}

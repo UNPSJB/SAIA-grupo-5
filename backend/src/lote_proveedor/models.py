@@ -8,6 +8,8 @@ from src.lote_proveedor.constants import EstadoLoteProveedor
 if TYPE_CHECKING:
     from src.personal.models import Persona
     from src.proveedor.models import Proveedor
+    from src.insumos_lote.models import InsumoLote
+    from src.pedidos_proveedor.models import PedidoProveedor
 
 
 class LoteProveedor(ModeloBase):
@@ -17,15 +19,23 @@ class LoteProveedor(ModeloBase):
     proveedor_id: Mapped[int] = mapped_column(ForeignKey("proveedor.id"), nullable=False, index=True)
     registrado_por_id: Mapped[int] = mapped_column(ForeignKey("personal.id"), nullable=False, index=True)
 
-    numero_lote: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
     numero_remito: Mapped[str | None] = mapped_column(String(100), nullable=False, index=True)
     fecha_recepcion: Mapped[date] = mapped_column(Date, nullable=False, index=True)
+
+    pedido_id: Mapped[int | None] = mapped_column(ForeignKey("pedidos_proveedor.id"), nullable=True, index=True)
 
     estado: Mapped[EstadoLoteProveedor] = mapped_column(
         Enum(EstadoLoteProveedor),
         default=EstadoLoteProveedor.LLEGADA,
         nullable=False,
     )
+
+    insumos: Mapped[list["InsumoLote"]] = relationship(
+        back_populates="lote_proveedor",
+        cascade="all, delete-orphan",
+    )
+
+    pedido: Mapped["PedidoProveedor | None"] = relationship()
 
     archivo_adjunto: Mapped[str | None] = mapped_column(Text, nullable=True)
 

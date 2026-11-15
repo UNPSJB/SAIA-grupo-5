@@ -17,3 +17,5 @@ class ErrorCode(str, Enum):
     NUMERO_LOTE_DUPLICADO = "Ya existe un lote registrado con ese numero para este proveedor."
     NUMERO_REMITO_DUPLICADO = "Ya existe un remito registrado con ese numero para este proveedor."
     PROVEEDOR_SIN_HABILITACION = "No se puede recibir mercaderia: el proveedor no posee una habilitacion sanitaria registrada."
+    LOTE_SIN_INSUMOS_PARA_ACOMODAR = "No se puede acomodar el lote: debe registrar al menos un insumo recibido."
+    PEDIDO_NO_VALIDO = "El pedido seleccionado no existe, esta inactivo, ya fue recibido o no pertenece al proveedor."

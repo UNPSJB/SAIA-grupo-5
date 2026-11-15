@@ -36,3 +36,23 @@ class InsumoRepetido(BadRequest):
 
 class LoteNoModificable(BadRequest):
     DETAIL = ErrorCode.LOTE_NO_MODIFICABLE
+
+
+class InsumoLoteNoEncontrado(NotFound):
+    DETAIL = ErrorCode.INSUMO_LOTE_NO_ENCONTRADO
+
+
+class InsumoLoteInactivo(BadRequest):
+    DETAIL = ErrorCode.INSUMO_LOTE_INACTIVO
+
+
+class InsumoLoteVencido(BadRequest):
+    DETAIL = ErrorCode.INSUMO_LOTE_VENCIDO
+
+
+class InsumoLoteProximoAVencer(BadRequest):
+    DETAIL = ErrorCode.INSUMO_LOTE_PROXIMO_A_VENCER
+
+
+class StockInsuficienteInsumoLote(BadRequest):
+    DETAIL = ErrorCode.STOCK_INSUFICIENTE_INSUMO_LOTE

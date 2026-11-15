@@ -4,6 +4,7 @@ Uso: python -m scripts.seed_unidad_medida
 """
 from sqlalchemy import select
 
+import src.all_models  # noqa: F401
 from src.database import SessionLocal
 from src.unidad_medida.models import UnidadMedida
 

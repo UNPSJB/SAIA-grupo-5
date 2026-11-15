@@ -38,4 +38,15 @@ class Producto(ModeloBase):
     contiene_edulcorantes: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     contiene_cafeina: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
 
-    receta: Mapped["Receta | None"] = relationship(viewonly=True, uselist=False)
+    envasado_ausencia_cliente: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    azucares_agregados: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    grasas_agregadas: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    sodio_agregado: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    contiene_edulcorantes: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    contiene_cafeina: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+
+    receta: Mapped["Receta | None"] = relationship(
+        viewonly=True,
+        uselist=False,
+        primaryjoin="and_(Producto.id == Receta.producto_id, Receta.vigente == True)",
+    )

@@ -2,6 +2,7 @@ import pytest
 from datetime import date
 
 from src.insumos.models import Insumo
+from src.aditivo.models import Aditivo
 from src.producto.models import Producto
 from src.unidad_medida.models import UnidadMedida
 
@@ -81,3 +82,17 @@ def producto_por_unidad(db_session, unidades_sellos):
     db_session.commit()
     db_session.refresh(producto)
     return producto
+
+
+@pytest.fixture
+def aditivos_receta(db_session):
+    aditivos = {
+        "Sorbato de potasio": Aditivo(clase_funcional="Conservante", nombre="Sorbato de potasio", numero_ins="202", activo=True),
+        "Aroma de vainilla": Aditivo(clase_funcional="Aromatizante", nombre="Aroma de vainilla", numero_ins=None, activo=True),
+        "Tartrazina": Aditivo(clase_funcional="Colorante", nombre="Tartrazina", numero_ins="102", activo=False),
+    }
+    db_session.add_all(aditivos.values())
+    db_session.commit()
+    for aditivo in aditivos.values():
+        db_session.refresh(aditivo)
+    return aditivos

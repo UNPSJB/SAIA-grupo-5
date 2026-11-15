@@ -1,19 +1,23 @@
 import logging
 from typing import List
-from sqlalchemy import select
-from sqlalchemy.orm import Session
-from src.proveedor.models import Proveedor
+from sqlalchemy import select, delete
+from sqlalchemy.orm import Session, selectinload
+from src.proveedor.models import Proveedor, ProveedorInsumo
 from src.proveedor import exceptions, schemas
+from src.insumos.models import Insumo
 
 logger = logging.getLogger(__name__)
 
 
 def listar_proveedores(db: Session) -> List[schemas.Proveedor]:
-    return db.scalars(select(Proveedor)).all()
+    return db.scalars(select(Proveedor).options(selectinload(Proveedor.insumos_asociados)
+            .joinedload(ProveedorInsumo.insumo).joinedload(Insumo.unidad_medida))).all()
 
 
 def leer_proveedor(db: Session, proveedor_id: int) -> schemas.Proveedor:
-    db_proveedor = db.scalars(select(Proveedor).where(Proveedor.id == proveedor_id)).first()
+    db_proveedor = db.scalars(select(Proveedor).where(Proveedor.id == proveedor_id).options(
+            selectinload(Proveedor.insumos_asociados).joinedload(ProveedorInsumo.insumo)
+            .joinedload(Insumo.unidad_medida))).first()
 
     if db_proveedor is None:
         raise exceptions.ProveedorNoEncontrado()
@@ -73,3 +77,33 @@ def renovar_habilitacion_proveedor(db: Session, proveedor_id: int, datos: schema
     db.commit()
     db.refresh(db_proveedor)
     return db_proveedor
+
+
+def asociar_insumos_proveedor(db: Session, proveedor_id: int, datos: schemas.ProveedorInsumosUpdate) -> schemas.Proveedor:
+    db_proveedor = leer_proveedor(db, proveedor_id)
+
+    if not db_proveedor.activo:
+        raise exceptions.ProveedorDadoDeBaja()
+
+    if len(datos.insumos_ids) != len(set(datos.insumos_ids)):
+        raise exceptions.InsumosRepetidos()
+
+    if datos.insumos_ids:
+        insumos_db = db.scalars(
+            select(Insumo).where(
+                Insumo.id.in_(datos.insumos_ids),
+                Insumo.activo == True,
+                Insumo.tipo_herencia == "general",
+            )).all()
+
+        if len(insumos_db) != len(datos.insumos_ids):
+            raise exceptions.InsumoNoEncontradoOInactivo()
+
+    db.execute(delete(ProveedorInsumo).where(ProveedorInsumo.proveedor_id == proveedor_id))
+
+    for insumo_id in datos.insumos_ids:
+        db.add(ProveedorInsumo(proveedor_id=proveedor_id, insumo_id=insumo_id))
+
+    db.commit()
+    db.refresh(db_proveedor)
+    return leer_proveedor(db, proveedor_id)

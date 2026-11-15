@@ -5,6 +5,7 @@ Uso: python -m scripts.seed_productos
 from datetime import date
 from sqlalchemy import select
 
+import src.all_models  # noqa: F401
 from src.database import SessionLocal
 from src.producto.models import Producto
 from src.unidad_medida.models import UnidadMedida

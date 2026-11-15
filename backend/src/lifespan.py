@@ -10,6 +10,7 @@ from src.incidentes.migrations import migrar_esquema_incidentes
 from src.lote_produccion.migrations import migrar_esquema_lote_produccion
 from src.insumos.migrations import migrar_esquema_insumos
 from src.producto.migrations import migrar_esquema_productos
+from src.receta.migrations import migrar_esquema_recetas
 
 
 @asynccontextmanager
@@ -19,6 +20,7 @@ async def db_creation_lifespan(app: FastAPI):
     migrar_esquema_lote_produccion(engine)
     migrar_esquema_insumos(engine)
     migrar_esquema_productos(engine)
+    migrar_esquema_recetas(engine)
     inspector = inspect(engine)
     tablas = inspector.get_table_names()
 

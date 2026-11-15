@@ -3,7 +3,7 @@ from decimal import Decimal
 from typing import Annotated, Optional
 from pydantic import BaseModel, ConfigDict, Field
 from src.producto.schemas import Producto
-from src.insumos.schemas import Insumo
+from src.insumos_lote.schemas import InsumoLote
 from src.lote_produccion.models import EstadoLote
 from src.personal.schemas import Persona
 
@@ -46,7 +46,7 @@ class EstadisticaProduccion(BaseModel):
 
 
 class InsumoUtilizadoCreate(BaseModel):
-    insumo_id: int
+    insumo_lote_id: int
     cantidad_utilizada: Decimal = Field(gt=0, max_digits=12, decimal_places=3)
 
 
@@ -61,9 +61,9 @@ class InsumosUtilizadosUpdate(BaseModel):
 class InsumoUtilizado(BaseModel):
     id: int
     lote_produccion_id: int
-    insumo_id: int
+    insumo_lote_id: int
     cantidad_utilizada: Decimal
-    insumo: Insumo
+    insumo_lote: InsumoLote
 
     model_config = ConfigDict(from_attributes=True)
 

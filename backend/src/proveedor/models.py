@@ -1,11 +1,12 @@
 from datetime import date
 from typing import TYPE_CHECKING
-from sqlalchemy import Boolean, Date, String, Text
+from sqlalchemy import Boolean, Date, String, Text, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.models import ModeloBase
 
 if TYPE_CHECKING:
     from src.lote_proveedor.models import LoteProveedor
+    from src.insumos.models import Insumo
 
 
 class Proveedor(ModeloBase):
@@ -30,3 +31,18 @@ class Proveedor(ModeloBase):
         back_populates="proveedor",
         cascade="all, delete-orphan",
     )
+
+    insumos_asociados: Mapped[list["ProveedorInsumo"]] = relationship(
+        back_populates="proveedor",
+        cascade="all, delete-orphan",
+    )
+
+class ProveedorInsumo(ModeloBase):
+    __tablename__ = "proveedor_insumos"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    proveedor_id: Mapped[int] = mapped_column(ForeignKey("proveedor.id", ondelete="CASCADE"), nullable=False, index=True)
+    insumo_id: Mapped[int] = mapped_column(ForeignKey("insumos.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    proveedor: Mapped["Proveedor"] = relationship(back_populates="insumos_asociados")
+    insumo: Mapped["Insumo"] = relationship()

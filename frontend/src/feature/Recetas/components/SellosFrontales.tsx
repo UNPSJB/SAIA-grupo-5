@@ -31,13 +31,13 @@ export function SellosFrontales({ evaluacion, cargando = false }: SellosFrontale
             ) : evaluacion.sellos.length === 0 ? (
                 <p className="text-success small mb-0">
                     <i className="bi bi-check-circle-fill me-1"></i>
-                    Según la cantidad de insumos alimentarios usados por unidad, el producto <strong>no debería llevar</strong> sellos de advertencia.
+                    Según las cantidades de insumos alimentarios de la receta y su rendimiento, el producto <strong>no debería llevar</strong> sellos de advertencia.
                 </p>
             ) : (
                 <>
                     <p className="text-danger small mb-0">
                         <i className="bi bi-exclamation-triangle-fill me-1"></i>
-                        Según la cantidad de insumos alimentarios usados por unidad, el producto <strong>debería llevar {evaluacion.sellos.length === 1 ? 'el siguiente sello' : `los siguientes ${evaluacion.sellos.length} sellos`}</strong>:
+                        Según las cantidades de insumos alimentarios de la receta y su rendimiento, el producto <strong>debería llevar {evaluacion.sellos.length === 1 ? 'el siguiente sello' : `los siguientes ${evaluacion.sellos.length} sellos`}</strong>:
                     </p>
                     <div className="sellos-frontales-lista">
                         {evaluacion.sellos.map((sello) => (
