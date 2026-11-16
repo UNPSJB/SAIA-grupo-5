@@ -29,11 +29,7 @@ def generar_digito_control(codigo12: str) -> int:
     return digito_control
 
 
-def generar_codigo_barras(prefijo_gs1: str, prefijo_empresa: str, producto_id: int) -> str:
-    if producto_id < 1 or producto_id > 99999:
-        raise ValueError("El ID del producto debe estar entre 1 y 99999.")
-    
-    codigo_producto = str(producto_id).zfill(5)
+def generar_codigo_barras(prefijo_gs1: str, prefijo_empresa: str, codigo_producto: str) -> str:
     codigo12 = prefijo_gs1 + prefijo_empresa + codigo_producto
 
     if not re.fullmatch(r"[0-9]{12}", codigo12):
@@ -51,21 +47,30 @@ def crear_producto(db: Session, producto: schemas.ProductoCreate) -> schemas.Pro
     if producto_existente:
         raise exceptions.ProductoDuplicado()
 
-    _producto = Producto(**producto.model_dump())
-    db.add(_producto)
-    db.flush()
+    if producto.codigo_producto:
+        codigo_existente = db.scalar(select(Producto).where(Producto.codigo_producto == producto.codigo_producto))
+        if codigo_existente:
+            raise exceptions.CodigoProductoDuplicado()
 
+    _producto = Producto(**producto.model_dump())
     configuracion = db.get(ConfiguracionSistema, ID_CONFIGURACION_SISTEMA)
-    if configuracion and configuracion.prefijo_empresa:
+
+    if configuracion and configuracion.prefijo_empresa and producto.codigo_producto:
         _producto.codigo_barras = generar_codigo_barras(
             configuracion.prefijo_gs1,
             configuracion.prefijo_empresa,
-            _producto.id
+            producto.codigo_producto
         )
 
-    db.commit()
-    db.refresh(_producto)
-    return _producto
+    try:
+        db.add(_producto)
+        db.commit()
+        db.refresh(_producto)
+        return _producto
+    except Exception:
+        db.rollback()
+        raise
+
 
 
 def listar_productos(db: Session) -> List[schemas.Producto]:
@@ -88,7 +93,7 @@ def cambiar_estado_producto(db: Session, producto_id: int) -> schemas.Producto:
     db.refresh(db_producto)
     return db_producto
 
-def modificar_producto(db: Session, producto_id: int, producto: schemas.ProductoUpdate) -> schemas.Producto:  # Permite modificar el insumo pero si o si se tienen que enviar todos los campos
+def modificar_producto(db: Session, producto_id: int, producto: schemas.ProductoUpdate) -> schemas.Producto:
     db_producto = leer_producto(db, producto_id)
     if not db_producto.activo:
         raise exceptions.ProductoDadoDeBaja()
@@ -97,7 +102,27 @@ def modificar_producto(db: Session, producto_id: int, producto: schemas.Producto
                                     Producto.id != producto_id)).first()
     if producto_existente:
         raise exceptions.ProductoDuplicado()
-    
+
+    if producto.codigo_producto:
+        codigo_existente = db.scalar(select(Producto).where(
+            Producto.codigo_producto == producto.codigo_producto,
+            Producto.id != producto_id
+        ))
+        if codigo_existente:
+            raise exceptions.CodigoProductoDuplicado()
+
+    if db_producto.codigo_producto != producto.codigo_producto or not db_producto.codigo_barras:
+        configuracion = db.get(ConfiguracionSistema, ID_CONFIGURACION_SISTEMA)
+
+        if configuracion and configuracion.prefijo_empresa and producto.codigo_producto:
+            db_producto.codigo_barras = generar_codigo_barras(
+                configuracion.prefijo_gs1,
+                configuracion.prefijo_empresa,
+                producto.codigo_producto
+            )
+        else:
+            db_producto.codigo_barras = None
+
     producto_actualizado = producto.model_dump()
     for key, value in producto_actualizado.items():
         setattr(db_producto, key, value)

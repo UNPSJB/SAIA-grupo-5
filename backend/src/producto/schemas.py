@@ -15,7 +15,9 @@ class ProductoBase(BaseModel):
     cantidad_neta: Annotated[int, Field(gt=0)]
     unidad_medida_id: int
     fecha_lanzamiento: date
+    codigo_producto: Annotated[str | None, Field(pattern=r"^[0-9]{5}$")] = None
     foto_producto: str | None = None
+    
 
 class ProductoCreate(ProductoBase):
     pass

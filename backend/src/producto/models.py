@@ -28,7 +28,11 @@ class Producto(ModeloBase):
     #lotes_produccion_id: Mapped[list[int]]
     #lotes_produccion: Mapped[list["LotesProduccion"]] = mappedColumn
     lotes_produccion: Mapped[list["LoteProduccion"]] = relationship(back_populates="producto")
-
+    
+    #PARA CODIGO DE BARRAS
+    codigo_producto: Mapped[str | None] = mapped_column(String(5), unique=True, nullable=True)
+    codigo_barras: Mapped[str | None] = mapped_column(String(13), unique=True, nullable=True)
+    
     activo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
     receta: Mapped["Receta | None"] = relationship(
