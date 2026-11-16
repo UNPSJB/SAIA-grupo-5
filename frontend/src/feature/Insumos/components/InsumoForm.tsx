@@ -49,7 +49,8 @@ export function InsumoForm({ textoBoton, onSubmit, valoresIniciales }: InsumoFor
     const valor = nutricion[campo].trim();
     if (valor === "") return algunNutrienteCargado ? "Completá este valor o dejá vacía toda la información nutricional." : null;
     if (Number(valor) < 0) return "El valor no puede ser negativo.";
-    if (campo !== "valor_energetico" && campo !== "sodio" && Number(valor) > 100) return "No puede superar los 100 g.";
+    const { maximo, unidad } = CAMPOS_NUTRICIONALES.find((c) => c.campo === campo)!;
+    if (Number(valor) > maximo) return `No puede superar ${maximo.toLocaleString("es-AR")} ${unidad}.`;
     if (campo === "grasas_saturadas" && nutricion.grasas_totales.trim() !== "" && Number(valor) > Number(nutricion.grasas_totales)) {
       return "No puede superar a las grasas totales.";
     }
