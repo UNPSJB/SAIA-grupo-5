@@ -8,6 +8,11 @@ from src.auth.utils import get_password_hash
 from src.scheduler.scheduler import scheduler, iniciar_scheduler
 from src.incidentes.migrations import migrar_esquema_incidentes
 from src.lote_produccion.migrations import migrar_esquema_lote_produccion
+from src.insumos.migrations import migrar_esquema_insumos
+from src.producto.migrations import migrar_esquema_productos
+from src.receta.migrations import migrar_esquema_recetas
+from src.unidad_medida.migrations import migrar_esquema_unidades_medida
+from src.unidad_medida.services import cargar_unidades_estandar
 
 
 @asynccontextmanager
@@ -15,6 +20,10 @@ async def db_creation_lifespan(app: FastAPI):
     ModeloBase.metadata.create_all(bind=engine)
     migrar_esquema_incidentes(engine)
     migrar_esquema_lote_produccion(engine)
+    migrar_esquema_insumos(engine)
+    migrar_esquema_productos(engine)
+    migrar_esquema_recetas(engine)
+    migrar_esquema_unidades_medida(engine)
     inspector = inspect(engine)
     tablas = inspector.get_table_names()
 
@@ -88,6 +97,9 @@ async def db_creation_lifespan(app: FastAPI):
                 connection.execute(text("ALTER TABLE versiones_documentos ADD COLUMN aprobador_id INTEGER"))
             if "fecha_aprobacion" not in columnas_versiones:
                 connection.execute(text("ALTER TABLE versiones_documentos ADD COLUMN fecha_aprobacion DATETIME"))
+
+    with SessionLocal() as db:
+        cargar_unidades_estandar(db)
 
     # Crear administrador por defecto si no existe
     with SessionLocal() as db:

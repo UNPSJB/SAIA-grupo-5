@@ -28,7 +28,22 @@ class Producto(ModeloBase):
     #lotes_produccion_id: Mapped[list[int]]
     #lotes_produccion: Mapped[list["LotesProduccion"]] = mappedColumn
     lotes_produccion: Mapped[list["LoteProduccion"]] = relationship(back_populates="producto")
-
+    
+    #PARA CODIGO DE BARRAS
+    codigo_producto: Mapped[str | None] = mapped_column(String(5), unique=True, nullable=True)
+    codigo_barras: Mapped[str | None] = mapped_column(String(13), unique=True, nullable=True)
+    
     activo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
-    receta: Mapped["Receta | None"] = relationship(viewonly=True, uselist=False)
+    envasado_ausencia_cliente: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    azucares_agregados: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    grasas_agregadas: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    sodio_agregado: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    contiene_edulcorantes: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    contiene_cafeina: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+
+    receta: Mapped["Receta | None"] = relationship(
+        viewonly=True,
+        uselist=False,
+        primaryjoin="and_(Producto.id == Receta.producto_id, Receta.vigente == True)",
+    )

@@ -5,7 +5,8 @@ import { ModalLoading } from '../../../components/ModalLoading';
 import { ModalError } from '../../../components/ModalError';
 import { useApi } from '../../../hooks/useApi';
 import type { Persona } from '../../Personal/types';
-import type { HistorialIncidente, Incidente, TipoEventoHistorial } from '../types';
+import { ESTADO_INCIDENTE_ESTILOS, type HistorialIncidente, type Incidente, type TipoEventoHistorial } from '../types';
+import { EstadoBadge, type TonoEstado } from '../../../components/EstadoBadge';
 
 interface HistorialIncidenteModalProps {
     incidente: Pick<Incidente, "id" | "nombre"> | null;
@@ -18,10 +19,10 @@ const TIPO_EVENTO_LABELS: Record<TipoEventoHistorial, string> = {
     REABIERTO: "Reabierto",
 };
 
-const TIPO_EVENTO_ESTILOS: Record<TipoEventoHistorial, { background: string; color: string }> = {
-    CREADO: { background: "#dbeafe", color: "#1d4ed8" },
-    CERRADO: { background: "#dcfce7", color: "#166534" },
-    REABIERTO: { background: "#fef3c7", color: "#92400e" },
+const TIPO_EVENTO_ESTILOS: Record<TipoEventoHistorial, { tono: TonoEstado; icono: string }> = {
+    CREADO: { tono: "info", icono: "bi-plus-circle-fill" },
+    CERRADO: ESTADO_INCIDENTE_ESTILOS.Cerrado,
+    REABIERTO: ESTADO_INCIDENTE_ESTILOS.Abierto,
 };
 
 function DescripcionExpandida({ data: row }: ExpanderComponentProps<HistorialIncidente>) {
@@ -56,18 +57,9 @@ export function HistorialIncidenteModal({ incidente, onHide }: HistorialIncident
             name: 'Evento',
             center: true,
             cell: (row) => (
-                <div
-                    style={{
-                        padding: '4px 12px',
-                        borderRadius: '16px',
-                        background: TIPO_EVENTO_ESTILOS[row.tipo_evento].background,
-                        color: TIPO_EVENTO_ESTILOS[row.tipo_evento].color,
-                        fontWeight: 700,
-                        whiteSpace: 'nowrap',
-                    }}
-                >
+                <EstadoBadge tono={TIPO_EVENTO_ESTILOS[row.tipo_evento].tono} icono={TIPO_EVENTO_ESTILOS[row.tipo_evento].icono}>
                     {TIPO_EVENTO_LABELS[row.tipo_evento]}
-                </div>
+                </EstadoBadge>
             ),
         },
         {

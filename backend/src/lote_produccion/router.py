@@ -3,10 +3,11 @@ from fastapi import Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from typing import Literal
 from datetime import date
-from src.auth.dependencies import requiere_permiso_administrar, tiene_permiso_administrar, tiene_permiso_operar
+from src.auth.dependencies import requiere_permiso_administrar, tiene_permiso_administrar, tiene_permiso_operar, get_current_persona
 from src.database import get_db
 from src.lote_produccion import schemas, services
 from src.auth.router_base import PermissionedRouter
+from src.personal import models as personal_models
 
 logger = logging.getLogger(__name__)
 
@@ -14,8 +15,8 @@ router = PermissionedRouter(prefix="/lotes-produccion", tags=["lotes_produccion"
 
 
 @router.post("/", response_model=schemas.LoteProduccion, dependencies=[Depends(tiene_permiso_operar)])
-def create_lote_produccion(lote: schemas.LoteProduccionCreate, db: Session = Depends(get_db)):
-    return services.crear_lote_produccion(db, lote)
+def create_lote_produccion(lote: schemas.LoteProduccionCreate, db: Session = Depends(get_db), persona_actual: personal_models.Persona = Depends(get_current_persona)):
+    return services.crear_lote_produccion(db, lote, usuario_id=persona_actual.id)
 
 
 @router.get("/", response_model=list[schemas.LoteProduccionDetalle])
@@ -54,8 +55,12 @@ def read_lote_produccion(lote_id: int, db: Session = Depends(get_db)):
     return services.leer_lote_produccion(db, lote_id)
 
 @router.patch("/{lote_id}/estado", response_model=schemas.LoteProduccion, dependencies=[Depends(tiene_permiso_operar)])
-def cambiar_estado_lote_produccion(lote_id: int, db: Session = Depends(get_db)):
-    return services.cambiar_estado_lote_produccion(db, lote_id)
+def cambiar_estado_lote_produccion(lote_id: int, datos: schemas.AvanzarEstadoLote = schemas.AvanzarEstadoLote(), db: Session = Depends(get_db), persona_actual: personal_models.Persona = Depends(get_current_persona)):
+    return services.cambiar_estado_lote_produccion(db, lote_id, usuario_id=persona_actual.id, observacion=datos.observacion)
+
+@router.get("/{lote_id}/historial-estados", response_model=list[schemas.HistorialEstadoLoteResponse])
+def read_historial_estados_lote(lote_id: int, db: Session = Depends(get_db)):
+    return services.listar_historial_lote(db, lote_id)
 
 @router.put("/{lote_id}", response_model=schemas.LoteProduccion, dependencies=[Depends(tiene_permiso_operar)])
 def update_lote_produccion(lote_id: int, lote: schemas.LoteProduccionUpdate, db: Session = Depends(get_db)):

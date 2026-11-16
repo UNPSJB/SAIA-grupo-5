@@ -1,10 +1,8 @@
 
 import { useMemo, useState } from "react";
 import { Alert, Card, Col, Form, Row, Spinner } from "react-bootstrap";
-import {
-    Bar, BarChart, CartesianGrid, Legend,
-    ResponsiveContainer, Tooltip, XAxis, YAxis
-} from "recharts";
+import {Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
+import { SelectorConBusqueda} from "../../../components/SelectorConBusqueda";
 
 import { useApi } from "../../../hooks/useApi";
 import { toDateKey } from "../../../libs/date";
@@ -121,18 +119,19 @@ export function EstadisticasLotes() {
                         <Col xs={12} md={4}>
                             <Form.Group>
                                 <Form.Label>Producto</Form.Label>
-                                <Form.Select
+                                <SelectorConBusqueda
                                     value={productoId}
-                                    onChange={(e) => setProductoId(e.target.value)}
+                                    onChange={setProductoId}
                                     disabled={Boolean(productosError)}
-                                >
-                                    <option value="">Todos los productos</option>
-                                    {(productos ?? []).map((producto) => (
-                                        <option key={producto.id} value={producto.id}>
-                                            {producto.nombre}
-                                        </option>
-                                    ))}
-                                </Form.Select>
+                                    placeholder="Todos los productos"
+                                    options={[
+                                        { value: "", label: "Todos los productos" },
+                                        ...(productos ?? []).map((producto) => ({
+                                            value: String(producto.id),
+                                            label: producto.nombre
+                                        }))
+                                    ]}
+                                />
                             </Form.Group>
                         </Col>
 

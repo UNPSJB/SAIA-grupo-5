@@ -12,7 +12,8 @@ import { DeleteIncidenteModal } from '../components/DeleteIncidenteModal';
 import { AccionCorrectivaModal } from '../components/AccionCorrectivaModal';
 import { ReabrirIncidenteModal } from '../components/ReabrirIncidenteModal';
 import { HistorialIncidenteModal } from '../components/HistorialIncidenteModal';
-import type { IncidenteSeguimiento } from '../types';
+import { ESTADO_INCIDENTE_ESTILOS, type IncidenteSeguimiento } from '../types';
+import { EstadoBadge } from '../../../components/EstadoBadge';
 import './ListPage.css';
 
 type FiltroEstado = 'todos' | 'Abierto' | 'Cerrado';
@@ -107,7 +108,11 @@ export function ListPage() {
             selector: (incidente) => incidente.estado,
             sortable: true,
             minWidth: '110px',
-            cell: (incidente) => <Badge data-tour="estado-incidente" bg={incidente.estado === 'Abierto' ? 'warning' : 'success'} text={incidente.estado === 'Abierto' ? 'dark' : undefined}>{incidente.estado}</Badge>,
+            cell: (incidente) => (
+                <EstadoBadge data-tour="estado-incidente" tono={ESTADO_INCIDENTE_ESTILOS[incidente.estado].tono} icono={ESTADO_INCIDENTE_ESTILOS[incidente.estado].icono}>
+                    {incidente.estado}
+                </EstadoBadge>
+            ),
         },
         {
             name: 'Acciones',
@@ -115,6 +120,7 @@ export function ListPage() {
             minWidth: '160px',
             cell: (incidente) => (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, padding: '6px 0' }}>
+                    
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                         <span data-tour="btn-historial-incidente">
                             <ActionButton
@@ -125,7 +131,30 @@ export function ListPage() {
                                 onClick={() => setIncidenteParaHistorial(incidente)}
                             />
                         </span>
-                        {currentUser?.administrar && (
+                        <span data-tour="btn-ver-incidente">
+                            <ActionButton
+                                variant="outline-info"
+                                size="sm"
+                                tooltip="Ver"
+                                icon="bi-eye"
+                                onClick={() => navigate(`/incidentes/${incidente.id}`, { state: { origen: "lista" }})}
+                            />
+                        </span>
+                        {currentUser?.operar && (
+                        <span data-tour="btn-editar-incidente">
+                            <ActionButton
+                                variant="outline-primary"
+                                size="sm"
+                                tooltip="Editar"
+                                icon="bi-pencil"
+                                disabled={!incidente.activo}
+                                onClick={() => navigate(`/incidentes/${incidente.id}/edit`)}
+                            />
+                        </span>
+                        )}
+                    </div>
+                    {currentUser?.administrar && (
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                             <span data-tour="btn-accion-correctiva">
                                 <ActionButton
                                     variant="outline-success"
@@ -136,37 +165,14 @@ export function ListPage() {
                                     onClick={() => setIncidenteParaAccionCorrectiva(incidente)}
                                 />
                             </span>
-                        )}
-                        <span data-tour="btn-reabrir-incidente">
-                            <ActionButton
-                                variant="outline-warning"
-                                size="sm"
-                                tooltip="Reabrir incidente"
-                                icon="bi-arrow-counterclockwise"
-                                disabled={!incidente.activo || incidente.estado === 'Abierto'}
-                                onClick={() => setIncidenteParaReabrir(incidente)}
-                            />
-                        </span>
-                    </div>
-                    {currentUser?.administrar && (
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                            <span data-tour="btn-ver-incidente">
+                            <span data-tour="btn-reabrir-incidente">
                                 <ActionButton
-                                    variant="outline-info"
+                                    variant="outline-warning"
                                     size="sm"
-                                    tooltip="Ver"
-                                    icon="bi-eye"
-                                    onClick={() => navigate(`/incidentes/${incidente.id}`, { state: { origen: "lista" }})}
-                                />
-                            </span>
-                            <span data-tour="btn-editar-incidente">
-                                <ActionButton
-                                    variant="outline-primary"
-                                    size="sm"
-                                    tooltip="Editar"
-                                    icon="bi-pencil"
-                                    disabled={!incidente.activo}
-                                    onClick={() => navigate(`/incidentes/${incidente.id}/edit`)}
+                                    tooltip="Reabrir incidente"
+                                    icon="bi-arrow-counterclockwise"
+                                    disabled={!incidente.activo || incidente.estado === 'Abierto'}
+                                    onClick={() => setIncidenteParaReabrir(incidente)}
                                 />
                             </span>
                             <span data-tour="btn-baja-incidente">
@@ -192,7 +198,7 @@ export function ListPage() {
     return (
         <div className="incident-page">
             <PageHeader
-                eyebrow="SEGUIMIENTO Y PREVENCIÓN"
+                eyebrow="OPERACIONES"
                 title={titulo}
                 subtitle="Revisá los incidentes reportados y consultá las acciones correctivas registradas."
                 actions={(
@@ -202,7 +208,7 @@ export function ListPage() {
                                 <i className="bi bi-exclamation-triangle me-1" />{demorados} demorados
                             </Badge>
                         )}
-                        {currentUser?.administrar && (
+                        {currentUser?.operar && (
                             <Button
                                 data-tour="btn-nuevo-incidente"
                                 variant="primary"

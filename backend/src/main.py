@@ -30,9 +30,19 @@ from src.historial_incidente.models import HistorialIncidente
 from src.unidad_medida.models import UnidadMedida
 from src.producto.models import Producto
 from src.lote_produccion.models import LoteProduccion, InsumoUtilizado
+from src.aditivo.models import Aditivo
 from src.receta.models import Receta
 from src.etapa_receta.models import EtapaReceta
 from src.paso_etapa.models import PasoEtapa
+from src.proveedor.models import Proveedor
+from src.lote_proveedor.models import LoteProveedor
+from src.clientes.models import Cliente
+from src.direcciones_cliente.models import DireccionCliente
+from src.envios_lote.models import EnvioLote
+from src.rotulado.models import ReglasRotulado
+from src.insumos_lote.models import InsumoLote
+from src.proveedor.models import ProveedorInsumo
+from src.pedidos_proveedor.models import PedidoProveedor
 
 from src.config import settings
 from src.settings import ROOT_PATH
@@ -70,10 +80,19 @@ from src.accion_correctiva.router import router as accion_correctiva_router
 from src.historial_incidente.router import router as historial_incidente_router
 from src.unidad_medida.router import router as unidad_medida_router
 from src.producto.router import router as producto_router
+from src.aditivo.router import router as aditivo_router
 from src.receta.router import router as receta_router
 from src.etapa_receta.router import router as etapa_receta_router
 from src.paso_etapa.router import router as paso_etapa_router
 from src.lote_produccion.router import router as lote_produccion_router
+from src.proveedor.router import router as proveedor_router
+from src.lote_proveedor.router import router as lote_proveedor_router
+from src.clientes.router import router as cliente_router
+from src.direcciones_cliente.router import router as direcciones_cliente_router
+from src.envios_lote.router import router as envios_lote_router
+from src.rotulado.router import router as rotulado_router
+from src.insumos_lote.router import router as insumo_lote_router
+from src.pedidos_proveedor.router import router as pedidos_proveedor_router
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -129,6 +148,16 @@ app.include_router(historial_incidente_router)
 app.include_router(unidad_medida_router)
 app.include_router(producto_router)
 app.include_router(lote_produccion_router)
+app.include_router(aditivo_router)
 app.include_router(receta_router)
 app.include_router(etapa_receta_router)
 app.include_router(paso_etapa_router)
+app.include_router(proveedor_router)
+app.include_router(lote_proveedor_router)
+app.include_router(cliente_router)
+app.include_router(direcciones_cliente_router)
+app.include_router(envios_lote_router)
+app.include_router(rotulado_router)
+app.include_router(insumo_lote_router)
+app.include_router(pedidos_proveedor_router)
+

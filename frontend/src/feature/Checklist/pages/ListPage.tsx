@@ -9,6 +9,8 @@ import { PageHeader } from '../../../components/PageHeader';
 import { PageLoading } from '../../../components/PageLoading';
 import { PageError } from '../../../components/PageError';
 import { ActionButton } from '../../../components/ActionButton';
+import { EstadoBadge } from '../../../components/EstadoBadge';
+import { ESTADO_HISTORIAL_ESTILOS } from '../../Historial/types';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks';
 import { api } from '../../../libs/axios';
@@ -204,23 +206,12 @@ export function ListPage() {
             sortable: true,
             center: true,
             cell: row => (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div
-                        style={{
-                            padding: '4px 12px',
-                            borderRadius: '16px',
-                            background: row.estado === 'Completada' ? '#dcfce7' : '#fef9c3',
-                            color: row.estado === 'Completada' ? '#166534' : '#854d0e',
-                            fontWeight: 700,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            whiteSpace: 'nowrap',
-                        }}
-                    >
-                        {row.estado === 'Completada' ? 'Realizada' : 'Pendiente'}
-                    </div>
-                </div>
+                <EstadoBadge
+                    tono={ESTADO_HISTORIAL_ESTILOS[row.estado === 'Completada' ? 'Completada' : 'Pendiente'].tono}
+                    icono={ESTADO_HISTORIAL_ESTILOS[row.estado === 'Completada' ? 'Completada' : 'Pendiente'].icono}
+                >
+                    {row.estado === 'Completada' ? 'Realizada' : 'Pendiente'}
+                </EstadoBadge>
             )
         },
 

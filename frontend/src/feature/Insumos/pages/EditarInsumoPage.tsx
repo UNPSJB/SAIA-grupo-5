@@ -78,7 +78,21 @@ export function EditarInsumoPage(){
             <Container>
                 <InsumoForm textoBoton="Editar Insumo"
                     onSubmit={actualizarInsumo}
-                    valoresIniciales={{ nombre: insumo.nombre, unidad_medida_id: insumo.unidad_medida_id}}/>
+                    valoresIniciales={{
+                        nombre: insumo.nombre,
+                        unidad_medida_id: insumo.unidad_medida_id,
+                        valor_energetico: insumo.valor_energetico,
+                        azucares_anadidos: insumo.azucares_anadidos,
+                        grasas_totales: insumo.grasas_totales,
+                        grasas_saturadas: insumo.grasas_saturadas,
+                        sodio: insumo.sodio,
+                        peso_unidad: insumo.peso_unidad,
+                        aporta_azucares: insumo.aporta_azucares,
+                        aporta_grasas: insumo.aporta_grasas,
+                        aporta_sodio: insumo.aporta_sodio,
+                        aporta_edulcorantes: insumo.aporta_edulcorantes,
+                        aporta_cafeina: insumo.aporta_cafeina,
+                    }}/>
             </Container>
         </>
     )

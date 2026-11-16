@@ -9,7 +9,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
 import { HistorialIncidenteModal } from '../../Incidentes/components/HistorialIncidenteModal';
-import type { IncidenteSeguimiento } from '../types';
+import type { IncidenteSeguimiento } from '../../Incidentes/types';
+import { ESTADO_INCIDENTE_ESTILOS } from '../../Incidentes/types';
+import { EstadoBadge } from '../../../components/EstadoBadge';
 import '../../Incidentes/pages/ListPage.css';
 
 
@@ -133,7 +135,11 @@ export function IncidentesHistorialPage() {
             selector: (incidente) => incidente.estado,
             sortable: true,
             minWidth: '110px',
-            cell: (incidente) => <Badge data-tour="estado-historial-incidente" bg={incidente.estado === 'Abierto' ? 'warning' : 'success'} text={incidente.estado === 'Abierto' ? 'dark' : undefined}>{incidente.estado}</Badge>,
+            cell: (incidente) => (
+                <EstadoBadge data-tour="estado-historial-incidente" tono={ESTADO_INCIDENTE_ESTILOS[incidente.estado].tono} icono={ESTADO_INCIDENTE_ESTILOS[incidente.estado].icono}>
+                    {incidente.estado}
+                </EstadoBadge>
+            ),
         },
         {
             name: 'Acciones',

@@ -10,7 +10,15 @@ export type Producto = {
     foto_producto?: string | null;
     fecha_lanzamiento: string;
     activo: boolean;
+    envasado_ausencia_cliente?: boolean | null;
+    azucares_agregados?: boolean | null;
+    grasas_agregadas?: boolean | null;
+    sodio_agregado?: boolean | null;
+    contiene_edulcorantes?: boolean | null;
+    contiene_cafeina?: boolean | null;
     receta?: { id: number } | null;
+    codigo_producto?: string | null;
+    codigo_barras: string | null;
 }
 
 export type NewProducto = {
@@ -18,6 +26,7 @@ export type NewProducto = {
     descripcion?: string | null;
     cantidad_neta: number;
     unidad_medida_id: number;
+    codigo_producto?: string | null;
     foto_producto?: string | null;
     fecha_lanzamiento: string;
 }

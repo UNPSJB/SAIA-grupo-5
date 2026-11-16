@@ -175,7 +175,7 @@ export function EquiposPage() {
             <Row className="p-2 align-items-center">
                 <Col>
                     <PageHeader
-                        eyebrow="GESTIÓN"
+                        eyebrow="MANTENIMIENTO"
                         title="Listado de Equipos"
                         subtitle="Revisá el Listado de Equipos creados hasta la fecha."
                     />

@@ -1,5 +1,6 @@
 import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
+import './tutorial.css';
 import type { Tutorial } from './types';
 
 export const t = (nombre: string) => `[data-tour="${nombre}"]`;
@@ -33,6 +34,19 @@ export const fueVisto = (userKey: string, id: string) =>
 let activo: ReturnType<typeof driver> | null = null;
 let cierreForzado = false;
 
+const FONT_KEY = 'tutorial:fontSize';
+
+export const getTamanioLetra = () => Number(localStorage.getItem(FONT_KEY)) || 16;
+
+export function aplicarTamanioLetra(px: number) {
+  document.documentElement.style.setProperty('--tour-font-size', `${px}px`);
+}
+
+export function setTamanioLetra(px: number) {
+  localStorage.setItem(FONT_KEY, String(px));
+  aplicarTamanioLetra(px);
+}
+
 /** Cierra el tour activo sin marcarlo como "visto" (se usa al cambiar de ruta). */
 export function cerrarTutorial() {
     if (!activo) return;
@@ -55,6 +69,7 @@ export async function iniciarTutorial(tutorial: Tutorial, userKey: string, onDon
     const d = driver({
         showProgress: true,
         allowClose: true,
+        popoverClass: 'mi-tour',
         nextBtnText: 'Siguiente',
         prevBtnText: 'Anterior',
         doneBtnText: 'Listo',
@@ -67,7 +82,7 @@ export async function iniciarTutorial(tutorial: Tutorial, userKey: string, onDon
             onDone?.();
         },
     });
-
+    aplicarTamanioLetra(getTamanioLetra());
     activo = d;
     d.drive();
 }

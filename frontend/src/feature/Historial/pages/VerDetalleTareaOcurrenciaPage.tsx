@@ -4,7 +4,8 @@ import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 
 import { PRIORIDAD_LABELS, PRIORIDAD_VARIANTS, type Prioridad } from "../../Tareas/types";
-import { getEstadoHistorial, ESTADO_HISTORIAL_VARIANTS } from "../types";
+import { getEstadoHistorial, ESTADO_HISTORIAL_ESTILOS } from "../types";
+import { EstadoBadge } from "../../../components/EstadoBadge";
 import type { TareaOcurrencia } from "../../TareasOcurrencias/types"; 
 
 export function VerDetalleTareaOcurrenciaPage() {
@@ -91,9 +92,9 @@ export function VerDetalleTareaOcurrenciaPage() {
                             <Row className="mb-4 border-bottom pb-3 align-items-center">
                                 <Col sm={4} className="fw-bold text-secondary">Estado</Col>
                                 <Col sm={8}>
-                                    <Badge bg={ESTADO_HISTORIAL_VARIANTS[estado]} className="fs-6 px-3 py-2 rounded-pill">
+                                    <EstadoBadge grande tono={ESTADO_HISTORIAL_ESTILOS[estado].tono} icono={ESTADO_HISTORIAL_ESTILOS[estado].icono}>
                                         {estado}
-                                    </Badge>
+                                    </EstadoBadge>
                                 </Col>
                             </Row>
 

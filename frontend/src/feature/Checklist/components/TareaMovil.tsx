@@ -1,6 +1,8 @@
 import { Button } from 'react-bootstrap';
 
 import type { TareaOcurrencia } from '../../TareasOcurrencias/types';
+import { ESTADO_HISTORIAL_ESTILOS } from '../../Historial/types';
+import { EstadoBadge } from '../../../components/EstadoBadge';
 import { useAuth } from '../../../hooks';
 
 interface TareaMovilProps {
@@ -43,18 +45,12 @@ export function TareaMovil({ tarea, onCompletar }: TareaMovilProps) {
                 >
                     {tarea.plan_nombre_snap}
                 </div>
-                <div
-                    style={{
-                        padding: '4px 12px',
-                        borderRadius: '16px',
-                        background: completada ? '#dcfce7' : '#fef9c3',
-                        color: completada ? '#166534' : '#854d0e',
-                        fontWeight: 700,
-                        whiteSpace: 'nowrap',
-                    }}
+                <EstadoBadge
+                    tono={ESTADO_HISTORIAL_ESTILOS[completada ? 'Completada' : 'Pendiente'].tono}
+                    icono={ESTADO_HISTORIAL_ESTILOS[completada ? 'Completada' : 'Pendiente'].icono}
                 >
                     {completada ? 'Realizada' : 'Pendiente'}
-                </div>
+                </EstadoBadge>
             </div>
 
             {/* Boton con tamaño comodo para el dedo y que no se achique mas */}

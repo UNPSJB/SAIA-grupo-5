@@ -17,6 +17,7 @@ interface ProductoFormData {
     descripcion: string;
     cantidad_neta: number | "";
     unidad_medida_id: number | "";
+    codigo_producto: string;
     fecha_lanzamiento: string;
 }
 
@@ -33,6 +34,7 @@ export function ProductoForm({ textoBoton, onSubmit, valoresIniciales }: Product
             descripcion: valoresIniciales?.descripcion || "",
             cantidad_neta: valoresIniciales?.cantidad_neta || "",
             unidad_medida_id: valoresIniciales?.unidad_medida_id || "",
+            codigo_producto: valoresIniciales?.codigo_producto || "",
             fecha_lanzamiento: valoresIniciales?.fecha_lanzamiento || "",
         },
     });
@@ -58,6 +60,7 @@ export function ProductoForm({ textoBoton, onSubmit, valoresIniciales }: Product
     const onSubmitHookForm = (data: ProductoFormData) => {
         onSubmit({
             nombre: data.nombre.trim(),
+            codigo_producto: data.codigo_producto || null,
             descripcion: data.descripcion.trim() ? data.descripcion.trim() : null,
             cantidad_neta: Number(data.cantidad_neta),
             unidad_medida_id: Number(data.unidad_medida_id),
@@ -92,6 +95,24 @@ export function ProductoForm({ textoBoton, onSubmit, valoresIniciales }: Product
                     <Form.Control.Feedback type="invalid">
                         {errors.nombre?.message}
                     </Form.Control.Feedback>
+                </Form.Group>
+
+                <Form.Group className="mb-3 text-start" controlId="formCodigoProducto">
+                    <Form.Label className="p-1 fw-bold">Código del producto</Form.Label>
+                    <Form.Control
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={5}
+                        placeholder="Ej: 12345"
+                        {...register("codigo_producto", {
+                            validate: (value) => !value || /^[0-9]{5}$/.test(value) || "El código debe contener exactamente 5 dígitos."
+                        })}
+                        isInvalid={!!errors.codigo_producto}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                        {errors.codigo_producto?.message}
+                    </Form.Control.Feedback>
+                    <Form.Text className="text-muted">Código único de 5 dígitos utilizado para generar el EAN-13.</Form.Text>
                 </Form.Group>
 
                 <Form.Group className="mb-3 text-start" controlId="formDescripcion">

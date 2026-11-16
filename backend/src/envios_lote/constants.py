@@ -1,0 +1,13 @@
+class ErrorCode:
+    LOTE_NO_ENCONTRADO = "El lote de producción no fue encontrado."
+    ESTADO_LOTE_INVALIDO = "Solo se pueden despachar lotes en estado Terminado o Parcialmente despachado."
+    CANTIDAD_INVALIDA = "La cantidad a enviar debe ser mayor a 0."
+    STOCK_INSUFICIENTE = "Stock insuficiente en el lote para realizar el envío."
+    FECHA_ENVIO_ANTERIOR_A_PRODUCCION = "La fecha de envío no puede ser anterior a la fecha de producción del lote."
+    FECHA_ENTREGA_ANTERIOR_A_ENVIO = "La fecha de entrega no puede ser anterior a la fecha de envío del lote."
+    CLIENTE_NO_ENCONTRADO = "El cliente seleccionado no existe."
+    CLIENTE_DADO_DE_BAJA = "No se pueden realizar envíos a un cliente inactivo."
+    DIRECCION_NO_ENCONTRADA = "La dirección seleccionada no existe."
+    DIRECCION_NO_PERTENECE_AL_CLIENTE = "La dirección seleccionada no pertenece al cliente."
+    ENVIO_NO_ENCONTRADO = "El envío no fue encontrado."
+    ENVIO_YA_PROCESADO = "El envío ya fue procesado y no puede cambiar su estado de recepción."

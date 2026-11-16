@@ -31,6 +31,8 @@ export function LoteProduccionForm({ textoBoton, onSubmit, valoresIniciales }: L
         },
     });
 
+    const hoy = new Date().toISOString().split("T")[0];
+
     const fechaProduccion = watch("fecha_produccion");
 
     const onSubmitHookForm = (data: LoteProduccionFormData) => {
@@ -73,8 +75,15 @@ export function LoteProduccionForm({ textoBoton, onSubmit, valoresIniciales }: L
                             <Form.Label className="p-1 fw-bold">Fecha de Produccion *</Form.Label>
                             <Form.Control
                                 type="date"
+                                max={(hoy) || undefined}
                                 {...register("fecha_produccion", {
-                                    required: "La fecha de produccion es obligatoria."
+                                    required: "La fecha de produccion es obligatoria.",
+                                    validate: (f) => {
+                                        if (f > hoy) {
+                                            return "La fecha de produccion no puede ser posterior a hoy."
+                                        }
+                                        return true;
+                                    }
                                 })}
                                 isInvalid={!!errors.fecha_produccion}
                             />

@@ -10,9 +10,10 @@ def test_crear_lote_produccion(db_session, unico_producto):
         fecha_produccion=date(2027, 10, 1),
         fecha_vencimiento=date(2028, 10, 1),
         cantidad_producida=100,
+        cantidad_disponible=100
     )
     
-    nuevo = services.crear_lote_produccion(db=db_session, lote=datos)
+    nuevo = services.crear_lote_produccion(db=db_session, lote=datos, usuario_id=1)
 
     assert nuevo.id is not None
     assert nuevo.producto_id == unico_producto.id
@@ -29,10 +30,11 @@ def test_crear_lote_con_producto_inactivo(db_session, unico_producto):
         fecha_produccion=date(2027, 10, 1),
         fecha_vencimiento=date(2028, 10, 1),
         cantidad_producida=50,
+        cantidad_disponible=50
     )
 
     with pytest.raises(exceptions.ProductoDadoDeBaja):
-        services.crear_lote_produccion(db=db_session, lote=datos)
+        services.crear_lote_produccion(db=db_session, lote=datos, usuario_id=1)
 
 
 def test_listar_lotes_produccion(db_session, multiples_lotes_produccion, unico_producto):
@@ -84,6 +86,7 @@ def test_modificar_lote_produccion(db_session, unico_lote_produccion, unico_prod
         fecha_produccion=date(2027, 11, 1),
         fecha_vencimiento=date(2028, 11, 1),
         cantidad_producida=250,
+        cantidad_disponible=250
     )
     actualizado = services.modificar_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id, lote=datos)
 
@@ -91,23 +94,22 @@ def test_modificar_lote_produccion(db_session, unico_lote_produccion, unico_prod
 
 
 def test_cambiar_estado_secuencial_lote_produccion(db_session, unico_lote_produccion):
-    lote = services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id)
+    lote = services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id, usuario_id=1)
     assert lote.estado == "Empaquetando"
 
-    lote = services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id)
+    lote = services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id, usuario_id=1)
     assert lote.estado == "Terminado"
 
-    lote = services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id)
-    assert lote.estado == "Enviado"
-
     with pytest.raises(exceptions.LoteYaEnviado):
-        services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id)
+        services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id, usuario_id=1)
 
 
 def test_modificar_lote_produccion_enviado(db_session, unico_lote_produccion, unico_producto):
-    services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id)
-    services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id)
-    services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id)
+    services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id, usuario_id=1)
+    services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id, usuario_id=1)
+    
+    unico_lote_produccion.estado = "Enviado"
+    db_session.commit()
 
     datos = schemas.LoteProduccionUpdate(
         producto_id=unico_producto.id,
@@ -121,12 +123,12 @@ def test_modificar_lote_produccion_enviado(db_session, unico_lote_produccion, un
 
 
 def test_reactivar_lote_con_producto_inactivo(db_session, unico_lote_produccion, unico_producto):
-    services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id)
+    services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id, usuario_id=1)
 
     producto_services.cambiar_estado_producto(db=db_session, producto_id=unico_producto.id)
 
     with pytest.raises(exceptions.ProductoDadoDeBaja):
-        services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id)
+        services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id, usuario_id=1)
 
 
 def test_estadistica_produccion(db_session, lotes_estadistica):
@@ -173,31 +175,35 @@ def test_estadistica_filtrar_fechas(db_session, lotes_estadistica):
 
 
 def test_asociar_insumos_correctamente(db_session, unico_lote_produccion, insumos_para_lote):
-    insumo1, insumo2 = insumos_para_lote
+    insumo_lote1, insumo_lote2 = insumos_para_lote
 
     datos = schemas.InsumosUtilizadosCreate(insumos=[
-        schemas.InsumoUtilizadoCreate(insumo_id=insumo1.id, cantidad_utilizada=100),
-        schemas.InsumoUtilizadoCreate(insumo_id=insumo2.id, cantidad_utilizada=2.5)
+        schemas.InsumoUtilizadoCreate(insumo_lote_id=insumo_lote1.id, cantidad_utilizada=100),
+        schemas.InsumoUtilizadoCreate(insumo_lote_id=insumo_lote2.id, cantidad_utilizada=2.5)
     ])
 
     resultado = services.asociar_insumos_lote(db=db_session, lote_id=unico_lote_produccion.id, datos=datos)
 
     assert len(resultado) == 2
-    assert resultado[0].insumo_id == insumo1.id
+    assert resultado[0].insumo_lote_id == insumo_lote1.id
     assert resultado[0].cantidad_utilizada == 100
-    assert resultado[1].insumo_id == insumo2.id
+    assert resultado[1].insumo_lote_id == insumo_lote2.id
     assert resultado[1].cantidad_utilizada == 2.5
 
     asociados = services.listar_insumos_lote(db=db_session, lote_id=unico_lote_produccion.id)
     assert len(asociados) == 2
 
+    # Al asociar se descuenta el stock del lote de insumo
+    db_session.refresh(insumo_lote1)
+    assert insumo_lote1.cantidad_restante == 400
+
 
 def test_asociar_insumo_duplicado(db_session, unico_lote_produccion, insumos_para_lote):
-    insumo = insumos_para_lote[0]
+    insumo_lote = insumos_para_lote[0]
 
     datos = schemas.InsumosUtilizadosCreate(insumos=[
-        schemas.InsumoUtilizadoCreate(insumo_id=insumo.id, cantidad_utilizada=100),
-        schemas.InsumoUtilizadoCreate(insumo_id=insumo.id, cantidad_utilizada=50)
+        schemas.InsumoUtilizadoCreate(insumo_lote_id=insumo_lote.id, cantidad_utilizada=100),
+        schemas.InsumoUtilizadoCreate(insumo_lote_id=insumo_lote.id, cantidad_utilizada=50)
     ])
 
     with pytest.raises(exceptions.InsumoRepetido):
@@ -208,24 +214,38 @@ def test_asociar_insumo_duplicado(db_session, unico_lote_produccion, insumos_par
 
 
 def test_modificar_insumos_asociados(db_session, unico_lote_produccion, insumos_para_lote):
-    insumo1, insumo2 = insumos_para_lote
+    insumo_lote1, insumo_lote2 = insumos_para_lote
 
     datos = schemas.InsumosUtilizadosCreate(insumos=[
-        schemas.InsumoUtilizadoCreate(insumo_id=insumo1.id, cantidad_utilizada=100),
-        schemas.InsumoUtilizadoCreate(insumo_id=insumo2.id, cantidad_utilizada=20)
+        schemas.InsumoUtilizadoCreate(insumo_lote_id=insumo_lote1.id, cantidad_utilizada=100),
+        schemas.InsumoUtilizadoCreate(insumo_lote_id=insumo_lote2.id, cantidad_utilizada=20)
     ])
 
     services.asociar_insumos_lote(db=db_session, lote_id=unico_lote_produccion.id, datos=datos)
 
     datos_actualizados = schemas.InsumosUtilizadosUpdate(insumos=[
-        schemas.InsumoUtilizadoCreate(insumo_id=insumo1.id, cantidad_utilizada=150)
+        schemas.InsumoUtilizadoCreate(insumo_lote_id=insumo_lote1.id, cantidad_utilizada=150)
     ])
 
     resultado = services.actualizar_insumos_lote(db=db_session, lote_id=unico_lote_produccion.id, datos=datos_actualizados)
 
     assert len(resultado) == 1
-    assert resultado[0].insumo_id == insumo1.id
+    assert resultado[0].insumo_lote_id == insumo_lote1.id
     assert resultado[0].cantidad_utilizada == 150
 
     asociados = services.listar_insumos_lote(db=db_session, lote_id=unico_lote_produccion.id)
     assert len(asociados) == 1
+
+
+def test_historial_estados_lote_service(db_session, unico_lote_produccion):
+
+    lote = services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id, observacion="Paso a empaquetado sin errores.", usuario_id=1)
+
+    historial = services.listar_historial_lote(db=db_session, lote_id=lote.id)
+
+    assert len(historial) >= 1
+    ultimo = historial[-1]
+    assert ultimo.estado == lote.estado
+    assert ultimo.observacion == "Paso a empaquetado sin errores."
+    assert ultimo.usuario_id == 1
+    assert ultimo.fecha_hora is not None

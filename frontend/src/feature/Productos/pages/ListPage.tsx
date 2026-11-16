@@ -15,6 +15,7 @@ import { useAuth } from '../../../hooks/useAuth';
 import { DeleteProductoModal } from '../components/DeleteProductoModal';
 import { RecetaFormModal } from '../../Recetas/components/RecetaFormModal';
 import { VerRecetaModal } from '../../Recetas/components/VerRecetaModal';
+import { RotuladoProductoModal } from '../../Rotulado/components/RotuladoProductoModal';
 import type { Producto } from '../types';
 import type { Receta } from '../../Recetas/types';
 import { ListFilter } from "../../../components/ListFilter";
@@ -36,8 +37,9 @@ export function ListPage() {
     const [productoReceta, setProductoReceta] = useState<Producto | null>(null);
     const [productoVerReceta, setProductoVerReceta] = useState<Producto | null>(null);
     const [recetaEditar, setRecetaEditar] = useState<Receta | null>(null);
+    const [productoRotulado, setProductoRotulado] = useState<Producto | null>(null);
     const [estadoFiltro, setEstadoFiltro] = useState<EstadoFiltro>("todos");
-    
+
     const filteredProducto = useMemo(() => {
         if (!Array.isArray(productos)) return [];
 
@@ -139,7 +141,7 @@ export function ListPage() {
             sortable: true,
             center: true,
             cell: row => (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10}}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div
                         data-tour="estado-producto"
                         style={{
@@ -184,19 +186,16 @@ export function ListPage() {
                             onClick={() => setProductoVerReceta(row)}
                         />
                     )}
+                    <ActionButton
+                        variant="outline-secondary"
+                        size="sm"
+                        tooltip="Rotulado frontal"
+                        icon="bi bi-tags"
+                        onClick={() => setProductoRotulado(row)}
+                    />
 
                     {currentUser?.administrar && (
                         <>
-                            <span data-tour="btn-editar-producto">
-                                <ActionButton
-                                    variant="outline-primary"
-                                    size="sm"
-                                    tooltip="Editar"
-                                    icon="bi bi-pencil"
-                                    disabled={!row.activo}
-                                    onClick={() => navigate(`/productos/${row.id}/edit`)}
-                                />
-                            </span>
                             {row.receta == null && (
                                 <ActionButton
                                     variant="outline-secondary"
@@ -207,6 +206,16 @@ export function ListPage() {
                                     onClick={() => setProductoReceta(row)}
                                 />
                             )}
+                            <span data-tour="btn-editar-producto">
+                                <ActionButton
+                                    variant="outline-primary"
+                                    size="sm"
+                                    tooltip="Editar"
+                                    icon="bi bi-pencil"
+                                    disabled={!row.activo}
+                                    onClick={() => navigate(`/productos/${row.id}/edit`)}
+                                />
+                            </span>
                             <span data-tour="btn-baja-producto">
                                 <ActionButton
                                     variant={row.activo ? 'outline-danger' : 'outline-success'}
@@ -228,7 +237,7 @@ export function ListPage() {
             <Row className="p-2 align-items-center">
                 <Col>
                     <PageHeader
-                        eyebrow="GESTIÓN"
+                        eyebrow="PRODUCCIÓN"
                         title="Listado de Productos"
                         subtitle="Revisá el listado de productos creados hasta la fecha."
                     />
@@ -265,6 +274,20 @@ export function ListPage() {
                 onHide={() => setProductoToDelete(null)}
                 onDeleted={() => mutate("/productos/")}
             />
+            <VerRecetaModal
+                producto={productoVerReceta}
+                onHide={() => setProductoVerReceta(null)}
+                onEditar={currentUser?.administrar ? (receta) => {
+                    setRecetaEditar(receta);
+                    setProductoReceta(productoVerReceta);
+                    setProductoVerReceta(null);
+                } : undefined}
+            />
+            <RotuladoProductoModal
+                producto={productoRotulado}
+                onHide={() => setProductoRotulado(null)}
+                puedeEditar={Boolean(currentUser?.administrar)}
+            />
             <RecetaFormModal
                 producto={productoReceta}
                 receta={recetaEditar}
@@ -274,17 +297,9 @@ export function ListPage() {
                 }}
                 onSaved={(receta) => {
                     mutate(`/recetas/producto/${receta.producto_id}`, receta, false);
+                    mutate(`/recetas/producto/${receta.producto_id}/versiones`);
                     mutate("/productos/");
                 }}
-            />
-            <VerRecetaModal
-                producto={productoVerReceta}
-                onHide={() => setProductoVerReceta(null)}
-                onEditar={currentUser?.administrar ? (receta) => {
-                    setRecetaEditar(receta);
-                    setProductoReceta(productoVerReceta);
-                    setProductoVerReceta(null);
-                } : undefined}
             />
         </Container>
     );
