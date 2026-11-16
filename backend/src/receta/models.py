@@ -4,7 +4,7 @@ from src.models import ModeloBase
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Index, Integer, String, UniqueConstraint, text
 from src.receta.constants import TipoRenglon
-from src.receta.sellos import evaluar_sellos
+from src.receta.sellos import calcular_rendimiento, evaluar_sellos
 
 if TYPE_CHECKING:
     from src.producto.models import Producto
@@ -35,10 +35,6 @@ class Receta(ModeloBase):
     fecha_desde_vigencia: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     fecha_hasta_vigencia: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
-    rendimiento: Mapped[float | None] = mapped_column(Float, nullable=True)
-    rendimiento_unidad_medida_id: Mapped[int | None] = mapped_column(ForeignKey("unidades_medida.id"), nullable=True)
-    rendimiento_unidad_medida: Mapped["UnidadMedida | None"] = relationship(foreign_keys=[rendimiento_unidad_medida_id])
-
     porcion: Mapped[float | None] = mapped_column(Float, nullable=True)
     porcion_unidad_medida_id: Mapped[int | None] = mapped_column(ForeignKey("unidades_medida.id"), nullable=True)
     porcion_unidad_medida: Mapped["UnidadMedida | None"] = relationship(foreign_keys=[porcion_unidad_medida_id])
@@ -55,14 +51,16 @@ class Receta(ModeloBase):
         order_by="InsumoReceta.id",
     )
 
+    def _insumos_con_cantidad(self):
+        return [(item.insumo, item.cantidad) for item in self.insumos]
+
+    @property
+    def rendimiento(self) -> float | None:
+        return calcular_rendimiento(self._insumos_con_cantidad())
+
     @property
     def sellos(self):
-        return evaluar_sellos(
-            self.producto,
-            [(item.insumo, item.cantidad) for item in self.insumos],
-            self.rendimiento,
-            self.rendimiento_unidad_medida,
-        )
+        return evaluar_sellos(self.producto, self._insumos_con_cantidad())
 
 
 class InsumoReceta(ModeloBase):

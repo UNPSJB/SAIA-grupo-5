@@ -1,9 +1,10 @@
 import logging
 from typing import List
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from src.unidad_medida.models import UnidadMedida
 from src.unidad_medida import schemas, exceptions
+from src.unidad_medida.constants import UNIDADES_ESTANDAR
 from src.insumos.models import Insumo
 from src.consumo_producto.models import ConsumoProducto
 from src.producto.models import Producto
@@ -68,3 +69,16 @@ def cambiar_estado_unidad_medida(db: Session, unidad_medida_id: int) -> schemas.
     db.commit()
     db.refresh(db_unidad_medida)
     return db_unidad_medida
+
+def cargar_unidades_estandar(db: Session) -> None:
+    for codigo, nombre, masa_volumen, factor in UNIDADES_ESTANDAR:
+        unidad = db.scalar(select(UnidadMedida).where(UnidadMedida.codigo == codigo))
+        if unidad is None:
+            unidad = db.scalar(select(UnidadMedida).where(func.lower(UnidadMedida.nombre) == nombre.lower()))
+        if unidad is None:
+            unidad = UnidadMedida(nombre=nombre, activo=True)
+            db.add(unidad)
+        unidad.codigo = codigo
+        unidad.masa_volumen = masa_volumen.value
+        unidad.factor_a_base = factor
+    db.commit()
