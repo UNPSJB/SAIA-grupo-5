@@ -1,7 +1,8 @@
 import pytest
-from datetime import date
+from datetime import date, timedelta
 from src.lote_produccion.models import LoteProduccion
 from src.insumos.models import Insumo
+from src.insumos_lote.models import InsumoLote
 from src.personal.models import Persona
 from src.auth.utils import get_password_hash
 
@@ -37,16 +38,35 @@ def lotes_estadistica(db_session, multiples_productos):
 
 
 @pytest.fixture
-def insumos_para_lote(db_session, unica_unidad_medida):
+def insumos_para_lote(db_session, unica_unidad_medida, unico_lote_proveedor):
+    # Un lote de producción ya no consume "insumos" sino lotes de insumo (InsumoLote)
+    # recibidos de un proveedor: así se traza qué lote de materia prima se usó.
     insumos = [
         Insumo(nombre="Harina", unidad_medida_id=unica_unidad_medida.id, activo=True),
-        Insumo(nombre="Sal", unidad_medida_id=unica_unidad_medida.id, activo=True)
+        Insumo(nombre="Sal", unidad_medida_id=unica_unidad_medida.id, activo=True),
     ]
-
     db_session.add_all(insumos)
+    db_session.flush()
+
+    insumos_lote = [
+        InsumoLote(
+            lote_proveedor_id=unico_lote_proveedor.id,
+            insumo_id=insumo.id,
+            numero_lote=f"LOT-TEST-{indice}",
+            marca="Marca de prueba",
+            cantidad=500,
+            cantidad_restante=500,
+            # Más de 15 días de vida útil: si no, el service lo rechaza por próximo a vencer.
+            fecha_vencimiento=date.today() + timedelta(days=90),
+            minimo_alerta=10,
+            activo=True,
+        )
+        for indice, insumo in enumerate(insumos, start=1)
+    ]
+    db_session.add_all(insumos_lote)
     db_session.commit()
 
-    return insumos
+    return insumos_lote
 
 
 @pytest.fixture

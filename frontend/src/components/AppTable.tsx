@@ -18,6 +18,8 @@ interface AppTableProps<T> {
     conditionalRowStyles?: ConditionalStyles<T>[];
     expandableRows?: boolean;
     expandableRowsComponent?: ComponentType<ExpanderComponentProps<T>>;
+    // Filas expansibles
+    expandableRowDisabled?: (row: T) => boolean;
     pagination?: boolean;
     noDataComponent?: ReactNode;
 }
@@ -30,6 +32,7 @@ export function AppTable<T>({
     conditionalRowStyles,
     expandableRows,
     expandableRowsComponent,
+    expandableRowDisabled,
     pagination = true,
     noDataComponent
 }: AppTableProps<T>) {
@@ -42,6 +45,7 @@ export function AppTable<T>({
             conditionalRowStyles={conditionalRowStyles}
             expandableRows={expandableRows}
             expandableRowsComponent={expandableRowsComponent}
+            expandableRowDisabled={expandableRowDisabled}
             pagination={pagination}
             noDataComponent={noDataComponent ?? <div className="p-4 text-muted">No se encontraron resultados.</div>}
             paginationComponentOptions={{

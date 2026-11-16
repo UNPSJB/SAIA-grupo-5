@@ -1,11 +1,17 @@
 import { useState } from 'react';
 import { Accordion, Alert, Button, Form, ListGroup, Modal, Spinner } from 'react-bootstrap';
+import Tab from 'react-bootstrap/Tab';
+import Tabs from 'react-bootstrap/Tabs';
 import { useNavigate } from 'react-router-dom';
 import { useApi } from '../../../hooks/useApi';
+import { useAuth } from '../../../hooks/useAuth';
 import { EstadoBadge } from '../../../components/EstadoBadge';
 import type { Producto } from '../../Productos/types';
 import type { Receta, RecetaVersion } from '../types';
 import { SellosFrontales } from './SellosFrontales';
+import { IngredientesComposicion } from './IngredientesComposicion';
+import { formatearGramos } from '../lib/rendimiento';
+import "./VerRecetaModal.css";
 
 interface VerRecetaModalProps {
     producto: Producto | null;
@@ -24,6 +30,7 @@ const etiquetaVersion = (version: RecetaVersion) =>
 
 export function VerRecetaModal({ producto, onHide, onEditar }: VerRecetaModalProps) {
     const navigate = useNavigate();
+    const { currentUser } = useAuth();
     const [seleccion, setSeleccion] = useState<{ productoId: number; recetaId: number } | null>(null);
     const recetaSeleccionadaId = seleccion && seleccion.productoId === producto?.id ? seleccion.recetaId : null;
 
@@ -31,9 +38,6 @@ export function VerRecetaModal({ producto, onHide, onEditar }: VerRecetaModalPro
     const { data: receta, error, isLoading } = useApi<Receta>(
         !producto ? null : recetaSeleccionadaId ? `/recetas/${recetaSeleccionadaId}` : `/recetas/producto/${producto.id}`,
     );
-
-    const ingredientes = receta?.insumos.filter((item) => item.tipo === "Ingrediente") ?? [];
-    const aditivos = receta?.insumos.filter((item) => item.tipo === "Aditivo") ?? [];
 
     return (
         <Modal show={producto !== null} onHide={onHide} size="lg" scrollable>
@@ -89,11 +93,13 @@ export function VerRecetaModal({ producto, onHide, onEditar }: VerRecetaModalPro
 
                         <ListGroup horizontal="sm" className="mb-3 text-start">
                             <ListGroup.Item className="flex-fill">
-                                <div className="text-muted small">Rendimiento final</div>
+                                <div className="text-muted small" title="Se calcula sumando todos los insumos de la receta en gramos">
+                                    Rendimiento final calculado
+                                </div>
                                 <div className="fw-semibold">
                                     {receta.rendimiento !== null
-                                        ? `${receta.rendimiento} ${receta.rendimiento_unidad_medida?.nombre ?? ''}`
-                                        : <span className="text-muted fst-italic">Sin cargar</span>}
+                                        ? formatearGramos(receta.rendimiento)
+                                        : <span className="text-muted fst-italic">No se pudo calcular</span>}
                                 </div>
                             </ListGroup.Item>
                             <ListGroup.Item className="flex-fill">
@@ -106,65 +112,37 @@ export function VerRecetaModal({ producto, onHide, onEditar }: VerRecetaModalPro
                             </ListGroup.Item>
                         </ListGroup>
 
-                        <h6 className="fw-bold text-start mb-2">Ingredientes</h6>
-                        {ingredientes.length === 0 ? (
-                            <p className="text-muted small fst-italic text-start">La receta no tiene ingredientes cargados.</p>
-                        ) : (
-                            <ListGroup className="mb-3">
-                                {ingredientes.map((item) => (
-                                    <ListGroup.Item key={item.id} className="d-flex justify-content-between text-start">
-                                        <span>{item.nombre}</span>
-                                        <span className="fw-semibold">{item.cantidad} {item.unidad_medida.nombre}</span>
-                                    </ListGroup.Item>
-                                ))}
-                            </ListGroup>
-                        )}
-
-                        <h6 className="fw-bold text-start mb-2">Aditivos</h6>
-                        {aditivos.length === 0 ? (
-                            <p className="text-muted small fst-italic text-start">La receta no tiene aditivos.</p>
-                        ) : (
-                            <ListGroup className="mb-3">
-                                {aditivos.map((item) => (
-                                    <ListGroup.Item key={item.id} className="d-flex justify-content-between gap-2 text-start">
-                                        <span>
-                                            <span className="fw-semibold">{item.aditivo?.nombre}</span>
-                                            <span className="text-muted small d-block">
-                                                {item.aditivo?.clase_funcional}
-                                                {item.aditivo?.numero_ins ? ` · INS ${item.aditivo.numero_ins}` : ''}
-                                                {` · insumo: ${item.nombre}`}
-                                            </span>
-                                        </span>
-                                        <span className="fw-semibold text-nowrap">{item.cantidad} {item.unidad_medida.nombre}</span>
-                                    </ListGroup.Item>
-                                ))}
-                            </ListGroup>
-                        )}
-
-                        <SellosFrontales evaluacion={receta.sellos} />
-
-                        <h6 className="fw-bold text-start mt-4 mb-2">Etapas y pasos</h6>
-                        <Accordion alwaysOpen defaultActiveKey={receta.etapas.map((etapa) => String(etapa.id))}>
-                            {receta.etapas.map((etapa) => (
-                                <Accordion.Item key={etapa.id} eventKey={String(etapa.id)}>
-                                    <Accordion.Header>
-                                        <span className="fw-semibold me-2">{etapa.orden}.</span>
-                                        {etapa.nombre}
-                                        <span className="text-muted small ms-2">({etapa.pasos.length} {etapa.pasos.length === 1 ? 'paso' : 'pasos'})</span>
-                                    </Accordion.Header>
-                                    <Accordion.Body className="p-0">
-                                        <ListGroup variant="flush">
-                                            {etapa.pasos.map((paso) => (
-                                                <ListGroup.Item key={paso.id} className="d-flex gap-2 text-start">
-                                                    <span className="text-muted" style={{ minWidth: '1.5rem' }}>{paso.orden}.</span>
-                                                    {paso.descripcion}
-                                                </ListGroup.Item>
-                                            ))}
-                                        </ListGroup>
-                                    </Accordion.Body>
-                                </Accordion.Item>
-                            ))}
-                        </Accordion>
+                        <Tabs defaultActiveKey="etapas" id="secciones-receta" className="mb-3 receta-tabs" mountOnEnter>
+                            <Tab eventKey="etapas" title="Etapas y pasos">
+                                <Accordion alwaysOpen defaultActiveKey={receta.etapas.map((etapa) => String(etapa.id))}>
+                                    {receta.etapas.map((etapa) => (
+                                        <Accordion.Item key={etapa.id} eventKey={String(etapa.id)}>
+                                            <Accordion.Header>
+                                                <span className="fw-semibold me-2">{etapa.orden}.</span>
+                                                {etapa.nombre}
+                                                <span className="text-muted small ms-2">({etapa.pasos.length} {etapa.pasos.length === 1 ? 'paso' : 'pasos'})</span>
+                                            </Accordion.Header>
+                                            <Accordion.Body className="p-0">
+                                                <ListGroup variant="flush">
+                                                    {etapa.pasos.map((paso) => (
+                                                        <ListGroup.Item key={paso.id} className="d-flex gap-2 text-start">
+                                                            <span className="text-muted" style={{ minWidth: '1.5rem' }}>{paso.orden}.</span>
+                                                            {paso.descripcion}
+                                                        </ListGroup.Item>
+                                                    ))}
+                                                </ListGroup>
+                                            </Accordion.Body>
+                                        </Accordion.Item>
+                                    ))}
+                                </Accordion>
+                            </Tab>
+                            <Tab eventKey="sellos" title="Sellos de advertencia">
+                                <SellosFrontales evaluacion={receta.sellos} />
+                            </Tab>
+                            <Tab eventKey="ingredientes" title="Ingredientes y composición">
+                                <IngredientesComposicion insumos={receta.insumos} mostrarComposicion={!!currentUser?.administrar} />
+                            </Tab>
+                        </Tabs>
                     </>
                 )}
             </Modal.Body>

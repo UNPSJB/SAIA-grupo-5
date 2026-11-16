@@ -8,6 +8,8 @@ from src.configuracion_sistema.services import obtener_o_crear_configuracion
 from src.elementosLimpieza.models import ElementoLimpieza
 from src.elementosLimpieza.services import calcular_dias_restantes
 from src.equipos.models import Equipo
+from src.insumos_lote.models import InsumoLote
+from src.insumos_lote.services import listar_todos_los_insumos_lote
 from src.notificaciones.constants import TipoNotificacion
 from src.notificaciones.models import Notificacion
 from src.personal.models import Persona
@@ -52,6 +54,8 @@ def _listar_administradores(db: Session) -> list[Persona]:
         select(Persona).where(Persona.administrar.is_(True), Persona.activo.is_(True))
     ).all()
 
+
+#################### Recambio de elementos de limpieza ####################
 
 def _notificacion_recambio_elemento_si_corresponde(
     db: Session, elemento: ElementoLimpieza, hoy: date, administradores: list[Persona]
@@ -164,6 +168,10 @@ def resolver_notificaciones_recambio_elemento(db: Session, elemento_id: int) -> 
         db.commit()
 
     return len(pendientes)
+
+
+
+#################### Vencimiento de personal ##############################
 
 
 def _notificacion_vencimiento_personal_si_corresponde(
@@ -293,6 +301,9 @@ def resolver_notificaciones_vencimiento_personal(db: Session, vencimiento_id: in
     return len(pendientes)
 
 
+#################### Calibración de equipos ###############################
+
+
 def _notificacion_calibracion_equipo_si_corresponde(
     db: Session, plan: PlanCalibracion, hoy: date, administradores: list[Persona]
 ) -> list[Notificacion]:
@@ -409,6 +420,101 @@ def resolver_notificaciones_calibracion_equipo(db: Session, plan_id: int) -> int
         db.commit()
 
     return len(pendientes)
+
+
+#################### Alerta mínima de stock ###############################
+
+
+def notificacion_alerta_stock_si_corresponde(
+    db: Session, insumo_lote: InsumoLote, hoy: date, administradores: list[Persona]
+) -> list[Notificacion]:
+
+    if insumo_lote.minimo_alerta is None or insumo_lote.cantidad_restante >= insumo_lote.minimo_alerta:
+        return []
+
+    insumo_nombre = insumo_lote.insumo.nombre
+    unidad = insumo_lote.insumo.unidad_medida.nombre if insumo_lote.insumo.unidad_medida else ""
+    restante = f"{insumo_lote.cantidad_restante} {unidad}".strip()
+    minimo = f"{insumo_lote.minimo_alerta} {unidad}".strip()
+
+    titulo = f"Stock bajo: {insumo_nombre} (lote {insumo_lote.numero_lote})"
+    descripcion = (
+        f"Al insumo {insumo_nombre} del lote {insumo_lote.numero_lote} le quedan {restante}, "
+        f"por debajo del mínimo de alerta de {minimo}."
+    )
+
+    clave_origen = f"alerta_stock:{insumo_lote.id}:{hoy.isoformat()}"
+
+    creadas: list[Notificacion] = []
+    for administrador in administradores:
+        ya_existe = db.scalar(
+            select(Notificacion).where(
+                Notificacion.administrador_id == administrador.id,
+                Notificacion.clave_origen == clave_origen,
+            )
+        )
+        if ya_existe:
+            continue
+
+        creadas.append(
+            Notificacion(
+                administrador_id=administrador.id,
+                clave_origen=clave_origen,
+                tipo=TipoNotificacion.ALERTA_STOCK.value,
+                entidad_id=insumo_lote.id,
+                entidad="InsumoLote",
+                titulo=titulo,
+                descripcion=descripcion,
+                url=f"/insumos-lote/{insumo_lote.id}",
+                leida=False,
+                resuelta=False,
+            )
+        )
+
+    return creadas
+
+
+def generar_notificaciones_alerta_stock(db: Session) -> list[Notificacion]:
+
+    hoy = date.today()
+    insumos_lote = [
+        insumo_lote for insumo_lote in listar_todos_los_insumos_lote(db) if insumo_lote.activo
+    ]
+    administradores = _listar_administradores(db)
+
+    creadas: list[Notificacion] = []
+    for insumo_lote in insumos_lote:
+        creadas.extend(notificacion_alerta_stock_si_corresponde(db, insumo_lote, hoy, administradores))
+
+    if creadas:
+        db.add_all(creadas)
+        db.commit()
+        for notificacion in creadas:
+            db.refresh(notificacion)
+
+    return creadas
+
+
+def generar_notificacion_alerta_stock_individual(db: Session, insumo_lote_id: int) -> list[Notificacion]:
+
+    insumo_lote = db.get(InsumoLote, insumo_lote_id)
+    if insumo_lote is None or not insumo_lote.activo:
+        return []
+
+    hoy = date.today()
+    administradores = _listar_administradores(db)
+    creadas = notificacion_alerta_stock_si_corresponde(db, insumo_lote, hoy, administradores)
+
+    if creadas:
+        db.add_all(creadas)
+        db.commit()
+        for notificacion in creadas:
+            db.refresh(notificacion)
+
+    return creadas
+
+
+#################### utiles ###############################################
 
 
 def listar_notificaciones(db: Session, administrador_id: int) -> list[Notificacion]:

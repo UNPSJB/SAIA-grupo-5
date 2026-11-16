@@ -175,31 +175,35 @@ def test_estadistica_filtrar_fechas(db_session, lotes_estadistica):
 
 
 def test_asociar_insumos_correctamente(db_session, unico_lote_produccion, insumos_para_lote):
-    insumo1, insumo2 = insumos_para_lote
+    insumo_lote1, insumo_lote2 = insumos_para_lote
 
     datos = schemas.InsumosUtilizadosCreate(insumos=[
-        schemas.InsumoUtilizadoCreate(insumo_id=insumo1.id, cantidad_utilizada=100),
-        schemas.InsumoUtilizadoCreate(insumo_id=insumo2.id, cantidad_utilizada=2.5)
+        schemas.InsumoUtilizadoCreate(insumo_lote_id=insumo_lote1.id, cantidad_utilizada=100),
+        schemas.InsumoUtilizadoCreate(insumo_lote_id=insumo_lote2.id, cantidad_utilizada=2.5)
     ])
 
     resultado = services.asociar_insumos_lote(db=db_session, lote_id=unico_lote_produccion.id, datos=datos)
 
     assert len(resultado) == 2
-    assert resultado[0].insumo_id == insumo1.id
+    assert resultado[0].insumo_lote_id == insumo_lote1.id
     assert resultado[0].cantidad_utilizada == 100
-    assert resultado[1].insumo_id == insumo2.id
+    assert resultado[1].insumo_lote_id == insumo_lote2.id
     assert resultado[1].cantidad_utilizada == 2.5
 
     asociados = services.listar_insumos_lote(db=db_session, lote_id=unico_lote_produccion.id)
     assert len(asociados) == 2
 
+    # Al asociar se descuenta el stock del lote de insumo
+    db_session.refresh(insumo_lote1)
+    assert insumo_lote1.cantidad_restante == 400
+
 
 def test_asociar_insumo_duplicado(db_session, unico_lote_produccion, insumos_para_lote):
-    insumo = insumos_para_lote[0]
+    insumo_lote = insumos_para_lote[0]
 
     datos = schemas.InsumosUtilizadosCreate(insumos=[
-        schemas.InsumoUtilizadoCreate(insumo_id=insumo.id, cantidad_utilizada=100),
-        schemas.InsumoUtilizadoCreate(insumo_id=insumo.id, cantidad_utilizada=50)
+        schemas.InsumoUtilizadoCreate(insumo_lote_id=insumo_lote.id, cantidad_utilizada=100),
+        schemas.InsumoUtilizadoCreate(insumo_lote_id=insumo_lote.id, cantidad_utilizada=50)
     ])
 
     with pytest.raises(exceptions.InsumoRepetido):
@@ -210,23 +214,23 @@ def test_asociar_insumo_duplicado(db_session, unico_lote_produccion, insumos_par
 
 
 def test_modificar_insumos_asociados(db_session, unico_lote_produccion, insumos_para_lote):
-    insumo1, insumo2 = insumos_para_lote
+    insumo_lote1, insumo_lote2 = insumos_para_lote
 
     datos = schemas.InsumosUtilizadosCreate(insumos=[
-        schemas.InsumoUtilizadoCreate(insumo_id=insumo1.id, cantidad_utilizada=100),
-        schemas.InsumoUtilizadoCreate(insumo_id=insumo2.id, cantidad_utilizada=20)
+        schemas.InsumoUtilizadoCreate(insumo_lote_id=insumo_lote1.id, cantidad_utilizada=100),
+        schemas.InsumoUtilizadoCreate(insumo_lote_id=insumo_lote2.id, cantidad_utilizada=20)
     ])
 
     services.asociar_insumos_lote(db=db_session, lote_id=unico_lote_produccion.id, datos=datos)
 
     datos_actualizados = schemas.InsumosUtilizadosUpdate(insumos=[
-        schemas.InsumoUtilizadoCreate(insumo_id=insumo1.id, cantidad_utilizada=150)
+        schemas.InsumoUtilizadoCreate(insumo_lote_id=insumo_lote1.id, cantidad_utilizada=150)
     ])
 
     resultado = services.actualizar_insumos_lote(db=db_session, lote_id=unico_lote_produccion.id, datos=datos_actualizados)
 
     assert len(resultado) == 1
-    assert resultado[0].insumo_id == insumo1.id
+    assert resultado[0].insumo_lote_id == insumo_lote1.id
     assert resultado[0].cantidad_utilizada == 150
 
     asociados = services.listar_insumos_lote(db=db_session, lote_id=unico_lote_produccion.id)

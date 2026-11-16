@@ -135,7 +135,7 @@ def test_endpoint_asociar_insumo_cantidad_invalida(client, auth_headers, unico_l
         f"/lotes-produccion/{unico_lote_produccion.id}/insumos",
         json={
             "insumos": [
-                {"insumo_id": insumo.id, "cantidad_utilizada": 0}
+                {"insumo_lote_id": insumo.id, "cantidad_utilizada": 0}
             ]
         },
         headers=auth_headers
@@ -151,7 +151,7 @@ def test_endpoint_asociar_insumo_sin_permiso(client, auth_headers_sin_operar, un
         f"/lotes-produccion/{unico_lote_produccion.id}/insumos",
         json={
             "insumos": [
-                {"insumo_id": insumo.id, "cantidad_utilizada": 100}
+                {"insumo_lote_id": insumo.id, "cantidad_utilizada": 100}
             ]
         },
         headers=auth_headers_sin_operar

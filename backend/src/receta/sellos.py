@@ -7,7 +7,6 @@ from src.receta.schemas import EvaluacionSellos
 if TYPE_CHECKING:
     from src.insumos.models import Insumo
     from src.producto.models import Producto
-    from src.unidad_medida.models import UnidadMedida
 
 
 def _normalizar(nombre: str) -> str:
@@ -37,23 +36,19 @@ def _equivalencia_insumo(insumo: "Insumo") -> float | None:
     return factor_unidad_medida(insumo.unidad_medida.nombre) or insumo.peso_unidad
 
 
-def _cantidad_base(producto: "Producto", masa_total: float, rendimiento: float | None, unidad_rendimiento: "UnidadMedida | None") -> float:
-    if rendimiento and unidad_rendimiento is not None:
-        factor_rendimiento = factor_unidad_medida(unidad_rendimiento.nombre)
-        if factor_rendimiento:
-            return rendimiento * factor_rendimiento
-        unidades = constants.UNIDADES_DE_PRODUCTO.get(_normalizar(unidad_rendimiento.nombre))
-        factor_producto = factor_unidad_medida(producto.unidad_medida.nombre)
-        if unidades and factor_producto:
-            return rendimiento * unidades * producto.cantidad_neta * factor_producto
-    return masa_total
+def gramos_de_insumo(insumo: "Insumo", cantidad: float) -> float | None:
+    equivalencia = _equivalencia_insumo(insumo)
+    return cantidad * equivalencia if equivalencia is not None else None
+
+
+def calcular_rendimiento(insumos: list[tuple["Insumo", float]]) -> float | None:
+    gramos = [g for g in (gramos_de_insumo(insumo, cantidad) for insumo, cantidad in insumos) if g is not None]
+    return round(sum(gramos), 2) if gramos else None
 
 
 def evaluar_sellos(
     producto: "Producto",
     insumos: list[tuple["Insumo", float]],
-    rendimiento: float | None = None,
-    unidad_rendimiento: "UnidadMedida | None" = None,
 ) -> EvaluacionSellos:
     es_liquido = es_unidad_liquida(producto.unidad_medida.nombre)
 
@@ -75,10 +70,11 @@ def evaluar_sellos(
         saturadas += insumo.grasas_saturadas * proporcion
         sodio += insumo.sodio * proporcion
 
-    cantidad_base = _cantidad_base(producto, masa_total, rendimiento, unidad_rendimiento)
+    rendimiento = calcular_rendimiento(insumos)
+    cantidad_base = rendimiento or 0.0
 
     if masa_total <= 0 or cantidad_base <= 0:
-        return EvaluacionSellos(evaluable=False, es_liquido=es_liquido, insumos_sin_informacion=sin_informacion)
+        return EvaluacionSellos(evaluable=False, es_liquido=es_liquido, rendimiento=rendimiento, insumos_sin_informacion=sin_informacion)
 
     escala = 100 / cantidad_base
     kcal_100 = kcal * escala
@@ -106,6 +102,7 @@ def evaluar_sellos(
         evaluable=True,
         es_liquido=es_liquido,
         cantidad_base=round(cantidad_base, 2),
+        rendimiento=rendimiento,
         valor_energetico=round(kcal_100, 2),
         azucares_anadidos=round(azucares_100, 2),
         grasas_totales=round(grasas * escala, 2),
