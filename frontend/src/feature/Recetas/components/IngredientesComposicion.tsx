@@ -5,7 +5,7 @@ import { EstadoBadge, type TonoEstado } from '../../../components/EstadoBadge';
 import { useApi } from '../../../hooks/useApi';
 import type { UnidadMedida } from '../../UnidadMedida/types';
 import type { InsumoReceta, TipoRenglon } from '../types';
-import { calcularComposicionPorcentual, DECIMALES_COMPOSICION } from '../lib/composicionPorcentual';
+import { calcularComposicionPorcentual, DECIMALES_COMPOSICION } from '../composicion/composicionPorcentual';
 
 interface IngredientesComposicionProps {
     insumos: InsumoReceta[];

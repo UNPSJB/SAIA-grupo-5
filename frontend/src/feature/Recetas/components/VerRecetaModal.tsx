@@ -10,7 +10,7 @@ import type { Producto } from '../../Productos/types';
 import type { Receta, RecetaVersion } from '../types';
 import { SellosFrontales } from './SellosFrontales';
 import { IngredientesComposicion } from './IngredientesComposicion';
-import { formatearGramos } from '../lib/rendimiento';
+import { formatearGramos } from '../composicion/rendimiento';
 import "./VerRecetaModal.css";
 
 interface VerRecetaModalProps {
