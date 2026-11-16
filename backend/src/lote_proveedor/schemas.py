@@ -4,6 +4,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from src.lote_proveedor.constants import ErrorCode, EstadoLoteProveedor
 from src.proveedor.schemas import Proveedor
 from src.insumos_lote.schemas import InsumoLote
+from src.pedidos_proveedor.schemas import PedidoProveedor
 
 class PersonaSimple(BaseModel):
     id: int
@@ -15,10 +16,10 @@ class PersonaSimple(BaseModel):
 
 class LoteProveedorBase(BaseModel):
     proveedor_id: int 
-    numero_lote: Annotated[str, Field(min_length=1, max_length=100)]
     numero_remito: Annotated[str, Field(max_length=100)]
     fecha_recepcion: date
     archivo_adjunto: Optional[str] = None
+    pedido_id: int
 
     @model_validator(mode="after")
     def validar_fecha_recepcion(self):
@@ -32,7 +33,6 @@ class LoteProveedorCreate(LoteProveedorBase):
 
 
 class LoteProveedorUpdate(BaseModel):
-    numero_lote: Annotated[str, Field(min_length=1, max_length=100)]
     numero_remito: Annotated[str, Field(max_length=100)]
     fecha_recepcion: date
     archivo_adjunto: Optional[str] = None
@@ -57,6 +57,7 @@ class LoteProveedor(LoteProveedorBase):
     fecha_registro: datetime
     activo: bool
     proveedor: Optional[Proveedor] = None
+    pedido: Optional[PedidoProveedor] = None
     registrado_por: Optional[PersonaSimple] = None
     insumos: list[InsumoLote] = []
 

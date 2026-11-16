@@ -58,7 +58,7 @@ def actualizar_receta(db: Session, receta_id: int, receta: schemas.RecetaUpdate)
     )
     admitidos_inactivos = {item.insumo_id for item in db_anterior.insumos}
     aditivos_admitidos_inactivos = {item.aditivo_id for item in db_anterior.insumos if item.aditivo_id is not None}
-    unidades_admitidas_inactivas = {db_anterior.rendimiento_unidad_medida_id, db_anterior.porcion_unidad_medida_id}
+    unidades_admitidas_inactivas = {db_anterior.porcion_unidad_medida_id}
     db_nueva = _construir_version(
         db, receta, db_anterior.producto_id, ultima_version + 1,
         admitidos_inactivos, aditivos_admitidos_inactivos, unidades_admitidas_inactivas,
@@ -76,13 +76,7 @@ def actualizar_receta(db: Session, receta_id: int, receta: schemas.RecetaUpdate)
 def evaluar_sellos_receta(db: Session, datos: schemas.EvaluacionSellosCreate) -> schemas.EvaluacionSellos:
     db_producto = leer_producto(db, datos.producto_id)
     insumos = _validar_insumos(db, datos.insumos, set(_insumos_ids_de_receta(db, datos.producto_id)))
-    unidad_rendimiento = db.get(UnidadMedida, datos.rendimiento_unidad_medida_id) if datos.rendimiento_unidad_medida_id else None
-    return evaluar_sellos(
-        db_producto,
-        [(insumos[item.insumo_id], item.cantidad) for item in datos.insumos],
-        datos.rendimiento,
-        unidad_rendimiento,
-    )
+    return evaluar_sellos(db_producto, [(insumos[item.insumo_id], item.cantidad) for item in datos.insumos])
 
 def _insumos_ids_de_receta(db: Session, producto_id: int) -> list[int]:
     db_receta = _buscar_receta_de_producto(db, producto_id)
@@ -102,7 +96,6 @@ def _construir_version(
 ) -> Receta:
     insumos = _validar_insumos(db, receta.insumos, insumos_admitidos_inactivos)
     aditivos = _validar_aditivos(db, receta.insumos, aditivos_admitidos_inactivos)
-    _validar_unidad_medida(db, receta.rendimiento_unidad_medida_id, unidades_admitidas_inactivas)
     if receta.porcion_unidad_medida_id is not None:
         _validar_unidad_medida(db, receta.porcion_unidad_medida_id, unidades_admitidas_inactivas)
 
@@ -111,8 +104,6 @@ def _construir_version(
         version=version,
         vigente=True,
         fecha_desde_vigencia=datetime.now(),
-        rendimiento=receta.rendimiento,
-        rendimiento_unidad_medida_id=receta.rendimiento_unidad_medida_id,
         porcion=receta.porcion,
         porcion_unidad_medida_id=receta.porcion_unidad_medida_id,
     )

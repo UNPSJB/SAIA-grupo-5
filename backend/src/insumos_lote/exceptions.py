@@ -21,3 +21,11 @@ class FechaVencimientoInvalida(BadRequest):
 
 class InsumoSinStockNoReactivable(BadRequest):
     DETAIL = ErrorCode.INSUMO_SIN_STOCK_NO_REACTIVABLE
+
+
+class InsumoYaRegistradoEnLote(BadRequest):
+    DETAIL = ErrorCode.INSUMO_YA_REGISTRADO_EN_LOTE
+
+
+class InsumoNoEnPedido(BadRequest):
+    DETAIL = ErrorCode.INSUMO_NO_EN_PEDIDO

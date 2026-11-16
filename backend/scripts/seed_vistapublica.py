@@ -40,7 +40,7 @@ def seed_configuracion(db: SessionLocal) -> ConfiguracionSistema:
         cfg = ConfiguracionSistema(
             vista_publica_activa=True,
             vista_publica_token=secrets.token_urlsafe(32),
-            vista_publica_nombre_establecimiento="Establecimiento Modelo",
+            nombre_pyme="Establecimiento Modelo",
         )
         db.add(cfg)
         db.flush()

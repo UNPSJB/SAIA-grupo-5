@@ -4,6 +4,7 @@ from apscheduler.triggers.cron import CronTrigger
 from src.database import SessionLocal
 from src.tareas_ocurrencia.services import generar_ocurrencias_pendientes
 from src.notificaciones.services import (
+    generar_notificaciones_alerta_stock,
     generar_notificaciones_calibracion_equipos,
     generar_notificaciones_recambio_elementos,
     generar_notificaciones_vencimiento_personal,
@@ -17,6 +18,7 @@ JOB_ID_GENERAR_OCURRENCIAS = "generar_ocurrencias"
 JOB_ID_NOTIFICACIONES_RECAMBIO_ELEMENTOS = "generar_notificaciones_recambio_elementos"
 JOB_ID_NOTIFICACIONES_VENCIMIENTO_PERSONAL = "generar_notificaciones_vencimiento_personal"
 JOB_ID_NOTIFICACIONES_CALIBRACION_EQUIPOS = "generar_notificaciones_calibracion_equipos"
+JOB_ID_NOTIFICACIONES_ALERTA_STOCK = "generar_notificaciones_alerta_stock"
 
 
 def job_generar_ocurrencias():
@@ -52,6 +54,15 @@ def job_generar_notificaciones_calibracion_equipos():
     try:
         creadas = generar_notificaciones_calibracion_equipos(db)
         logger.info(f"Se generaron {len(creadas)} notificaciones de calibración de equipos.")
+    finally:
+        db.close()
+
+
+def job_generar_notificaciones_alerta_stock():
+    db = SessionLocal()
+    try:
+        creadas = generar_notificaciones_alerta_stock(db)
+        logger.info(f"Se generaron {len(creadas)} notificaciones de alerta de stock.")
     finally:
         db.close()
 
@@ -96,6 +107,13 @@ def iniciar_scheduler():
         replace_existing=True,
         misfire_grace_time=3600,
     )
+    scheduler.add_job(
+        job_generar_notificaciones_alerta_stock,
+        trigger=CronTrigger(hour=hour, minute=minute), # mismo horario que la generación de checklists
+        id=JOB_ID_NOTIFICACIONES_ALERTA_STOCK,
+        replace_existing=True,
+        misfire_grace_time=3600,
+    )
     scheduler.start()
 
 
@@ -107,6 +125,7 @@ def reprogramar_generacion_checklists(hour: int, minute: int):
         JOB_ID_NOTIFICACIONES_RECAMBIO_ELEMENTOS,
         JOB_ID_NOTIFICACIONES_VENCIMIENTO_PERSONAL,
         JOB_ID_NOTIFICACIONES_CALIBRACION_EQUIPOS,
+        JOB_ID_NOTIFICACIONES_ALERTA_STOCK,
     ):
         scheduler.reschedule_job(job_id, trigger=CronTrigger(hour=hour, minute=minute))
     logger.info(f"Se reprogramó la generación de ocurrencias para las {hour:02d}:{minute:02d}.")

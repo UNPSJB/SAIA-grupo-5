@@ -87,6 +87,11 @@ export function EditarInsumoPage(){
                         grasas_saturadas: insumo.grasas_saturadas,
                         sodio: insumo.sodio,
                         peso_unidad: insumo.peso_unidad,
+                        aporta_azucares: insumo.aporta_azucares,
+                        aporta_grasas: insumo.aporta_grasas,
+                        aporta_sodio: insumo.aporta_sodio,
+                        aporta_edulcorantes: insumo.aporta_edulcorantes,
+                        aporta_cafeina: insumo.aporta_cafeina,
                     }}/>
             </Container>
         </>

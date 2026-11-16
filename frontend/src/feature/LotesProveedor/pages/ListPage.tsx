@@ -41,7 +41,6 @@ export function ListPage() {
         return lotes.filter((l) => {
             const busqueda = search.toLowerCase();
             const coincide =
-                l.numero_lote.toLowerCase().includes(busqueda) ||
                 (l.numero_remito && l.numero_remito.toLowerCase().includes(busqueda)) ||
                 (l.proveedor && l.proveedor.nombre.toLowerCase().includes(busqueda));
 
@@ -69,12 +68,12 @@ export function ListPage() {
 
     const columns: TableColumn<LoteProveedor>[] = [
         {
-            name: 'N° Lote',
-            selector: row => row.numero_lote,
+            name: 'N° Remito',
+            selector: row => row.numero_remito || '',
             sortable: true,
             center: true,
-            minWidth: '150px',
-            cell: row => <span className="fw-bold">{row.numero_lote}</span>,
+            minWidth: '160px',
+            cell: row => <span className="fw-bold">{row.numero_remito || '-'}</span>,
         },
         {
             name: 'Proveedor',
@@ -209,7 +208,7 @@ export function ListPage() {
                     <Form.Control
                         data-tour="buscador-recepciones"
                         type="text"
-                        placeholder="Buscar por lote, remito o proveedor..."
+                        placeholder="Buscar por remito o proveedor..."
                         onChange={(e) => setSearch(e.target.value)}
                     />
                 </Col>

@@ -1,4 +1,5 @@
 import type { Proveedor } from "../Proveedores/types";
+import type { PedidoProveedor } from "../PedidosProveedor/types";
 
 export type EstadoLoteProveedor = 'llegada' | 'desempaque' | 'acomodado';
 
@@ -20,7 +21,7 @@ export type HistorialEstadoLoteProveedor = {
 export type LoteProveedor = {
     id: number;
     proveedor_id: number;
-    numero_lote: string;
+    pedido_id: number;
     numero_remito: string | null;
     fecha_recepcion: string;
     archivo_adjunto: string | null;
@@ -29,19 +30,19 @@ export type LoteProveedor = {
     fecha_registro: string;
     activo: boolean;
     proveedor?: Proveedor;
+    pedido?: PedidoProveedor | null;
     registrado_por?: PersonaSimple;
 };
 
 export type NewLoteProveedor = {
     proveedor_id: number;
-    numero_lote: string;
+    pedido_id: number;
     numero_remito: string | null;
     fecha_recepcion: string;
     archivo_adjunto: string | null;
 };
 
 export type UpdateLoteProveedor = {
-    numero_lote: string;
     numero_remito: string | null;
     fecha_recepcion: string;
     archivo_adjunto: string | null;

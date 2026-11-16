@@ -42,7 +42,14 @@ from src.paso_etapa.models import PasoEtapa
 from src.clientes.models import Cliente
 from src.direcciones_cliente.models import DireccionCliente
 from src.envios_lote.models import EnvioLote
+from src.rotulado.models import ReglasRotulado
 from src.proveedor.models import Proveedor
 from src.lote_proveedor.models import LoteProveedor, HistorialEstadoLoteProveedor
 from src.insumos_lote.models import InsumoLote
 from src.lote_produccion.models import LoteProduccion, InsumoUtilizado, HistorialEstadoLote
+
+from src.pedidos_proveedor.models import PedidoProveedor, PedidoProveedorItem
+from src.proveedor.models import ProveedorInsumo
+from src.insumo_quimico.models import InsumoQuimico
+from src.historial_vigencia_documento.models import HistorialVigencia
+from src.auth.models import AuthPasswordRecoveryToken

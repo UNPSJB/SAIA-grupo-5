@@ -2,7 +2,7 @@ import type { Insumo } from "../Insumos/types";
 
 export interface LoteProveedorResumen {
     id: number;
-    numero_lote: string;
+    numero_remito?: string | null;
     proveedor?: {
         id: number;
         nombre: string;
@@ -25,6 +25,7 @@ export interface InsumoLote {
     id: number;
     lote_proveedor_id: number;
     insumo_id: number;
+    numero_lote: string;
     marca: string;
     cantidad: number;
     cantidad_restante: number;
@@ -39,6 +40,7 @@ export interface InsumoLote {
 
 export interface InsumoLoteCreate {
     insumo_id: number;
+    numero_lote: string;
     marca: string;
     cantidad: number;
     fecha_vencimiento: string;

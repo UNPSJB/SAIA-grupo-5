@@ -16,7 +16,7 @@ from src.auth.utils import get_password_hash
 from src.unidad_medida.models import UnidadMedida
 from src.producto.models import Producto
 from src.lote_produccion.models import LoteProduccion
-from src.proveedor.models import Proveedor
+from src.proveedor.models import Proveedor, ProveedorInsumo
 from src.lote_proveedor.models import LoteProveedor
 from src.clientes.models import Cliente
 from src.direcciones_cliente.models import DireccionCliente
@@ -24,7 +24,8 @@ from src.envios_lote import services as envios_services
 from src.envios_lote import schemas as envios_schemas
 from src.insumos_lote.models import InsumoLote
 from src.insumos.models import Insumo
-
+from src.pedidos_proveedor.models import PedidoProveedor, PedidoProveedorItem
+from src.pedidos_proveedor.constants import EstadoPedidoProveedor
 
 from src.main import app
 engine = create_engine(
@@ -275,10 +276,10 @@ def multiples_proveedores(db_session):
 
 
 @pytest.fixture(scope="function")
-def unico_lote_proveedor(db_session, unico_proveedor):
+def unico_lote_proveedor(db_session, unico_proveedor, unico_pedido_proveedor):
     lote = LoteProveedor(
         proveedor_id=unico_proveedor.id,
-        numero_lote="LP-2026-001",
+        pedido_id=unico_pedido_proveedor.id,
         numero_remito="R-0001-00004567",
         fecha_recepcion=date.today(),
         registrado_por_id=1,
@@ -291,10 +292,10 @@ def unico_lote_proveedor(db_session, unico_proveedor):
 
 
 @pytest.fixture(scope="function")
-def multiples_lotes_proveedor(db_session, unico_proveedor):
+def multiples_lotes_proveedor(db_session, unico_proveedor, multiples_pedidos_proveedor):
     lote1 = LoteProveedor(
         proveedor_id=unico_proveedor.id,
-        numero_lote="LP-2026-101",
+        pedido_id=multiples_pedidos_proveedor[0].id,
         numero_remito="R-0001-00010001",
         fecha_recepcion=date.today() - timedelta(days=5),
         registrado_por_id=1,
@@ -302,7 +303,7 @@ def multiples_lotes_proveedor(db_session, unico_proveedor):
     )
     lote2 = LoteProveedor(
         proveedor_id=unico_proveedor.id,
-        numero_lote="LP-2026-102",
+        pedido_id=multiples_pedidos_proveedor[1].id,
         numero_remito="R-0001-00010002",
         fecha_recepcion=date.today() - timedelta(days=2),
         registrado_por_id=1,
@@ -310,7 +311,7 @@ def multiples_lotes_proveedor(db_session, unico_proveedor):
     )
     lote3 = LoteProveedor(
         proveedor_id=unico_proveedor.id,
-        numero_lote="LP-2026-103",
+        pedido_id=multiples_pedidos_proveedor[2].id,
         numero_remito="R-0001-00010003",
         fecha_recepcion=date.today(),
         registrado_por_id=1,
@@ -481,6 +482,7 @@ def unico_insumo_lote(db_session, unico_insumo, unico_lote_proveedor):
     insumo_lote = InsumoLote(
         lote_proveedor_id=unico_lote_proveedor.id,
         insumo_id=unico_insumo.id,
+        numero_lote="LOT-FAB-001",
         marca="Molinos del Sur",
         cantidad=50,
         cantidad_restante=50,
@@ -496,10 +498,16 @@ def unico_insumo_lote(db_session, unico_insumo, unico_lote_proveedor):
 
 
 @pytest.fixture(scope="function")
-def multiples_insumos_lote(db_session, unico_insumo, unico_lote_proveedor):
+def multiples_insumos_lote(db_session, unica_unidad_medida, unico_insumo, unico_lote_proveedor):
+    insumo2 = Insumo(nombre="Sal Fina", unidad_medida_id=unica_unidad_medida.id, activo=True)
+    insumo3 = Insumo(nombre="Levadura Seca", unidad_medida_id=unica_unidad_medida.id, activo=True)
+    db_session.add_all([insumo2, insumo3])
+    db_session.commit()
+
     item1 = InsumoLote(
         lote_proveedor_id=unico_lote_proveedor.id,
         insumo_id=unico_insumo.id,
+        numero_lote="LOT-FAB-101",
         marca="Marca A",
         cantidad=100,
         cantidad_restante=100,
@@ -510,7 +518,8 @@ def multiples_insumos_lote(db_session, unico_insumo, unico_lote_proveedor):
     )
     item2 = InsumoLote(
         lote_proveedor_id=unico_lote_proveedor.id,
-        insumo_id=unico_insumo.id,
+        insumo_id=insumo2.id,
+        numero_lote="LOT-FAB-102",
         marca="Marca B",
         cantidad=20,
         cantidad_restante=20,
@@ -521,7 +530,8 @@ def multiples_insumos_lote(db_session, unico_insumo, unico_lote_proveedor):
     )
     item3 = InsumoLote(
         lote_proveedor_id=unico_lote_proveedor.id,
-        insumo_id=unico_insumo.id,
+        insumo_id=insumo3.id,
+        numero_lote="LOT-FAB-103",
         marca="Marca C Inactiva",
         cantidad=10,
         cantidad_restante=10,
@@ -546,3 +556,74 @@ def unico_insumo(db_session, unica_unidad_medida):
     db_session.commit()
     db_session.refresh(insumo)
     return insumo
+
+
+@pytest.fixture(scope="function")
+def unico_pedido_proveedor(db_session, unico_proveedor, unico_insumo):
+    asociacion = ProveedorInsumo(proveedor_id=unico_proveedor.id, insumo_id=unico_insumo.id)
+    db_session.add(asociacion)
+    db_session.commit()
+
+    pedido = PedidoProveedor(
+        proveedor_id=unico_proveedor.id,
+        fecha_pedido=date.today(),
+        fecha_entrega_estimada=date.today() + timedelta(days=7),
+        observacion="Pedido de prueba",
+        estado=EstadoPedidoProveedor.PENDIENTE,
+        activo=True,
+        registrado_por_id=1,
+    )
+    db_session.add(pedido)
+    db_session.commit()
+    db_session.refresh(pedido)
+
+    item = PedidoProveedorItem(
+        pedido_id=pedido.id,
+        insumo_id=unico_insumo.id,
+        cantidad_pedida=100,
+    )
+    db_session.add(item)
+    db_session.commit()
+    db_session.refresh(pedido)
+    return pedido
+
+
+@pytest.fixture(scope="function")
+def multiples_pedidos_proveedor(db_session, unico_proveedor, unico_insumo):
+    asociacion = ProveedorInsumo(proveedor_id=unico_proveedor.id, insumo_id=unico_insumo.id)
+    db_session.add(asociacion)
+    db_session.commit()
+
+    ped1 = PedidoProveedor(
+        proveedor_id=unico_proveedor.id,
+        fecha_pedido=date.today() - timedelta(days=3),
+        fecha_entrega_estimada=date.today() + timedelta(days=4),
+        estado=EstadoPedidoProveedor.PENDIENTE,
+        activo=True,
+        registrado_por_id=1,
+    )
+    ped2 = PedidoProveedor(
+        proveedor_id=unico_proveedor.id,
+        fecha_pedido=date.today() - timedelta(days=1),
+        fecha_entrega_estimada=date.today() + timedelta(days=6),
+        estado=EstadoPedidoProveedor.RECIBIDO,
+        activo=True,
+        registrado_por_id=1,
+    )
+    ped3 = PedidoProveedor(
+        proveedor_id=unico_proveedor.id,
+        fecha_pedido=date.today(),
+        estado=EstadoPedidoProveedor.PENDIENTE,
+        activo=False,
+        registrado_por_id=1,
+    )
+    db_session.add_all([ped1, ped2, ped3])
+    db_session.commit()
+
+    for p in [ped1, ped2, ped3]:
+        db_session.add(PedidoProveedorItem(pedido_id=p.id, insumo_id=unico_insumo.id, cantidad_pedida=50))
+    db_session.commit()
+
+    for p in [ped1, ped2, ped3]:
+        db_session.refresh(p)
+    return [ped1, ped2, ped3]

@@ -7,9 +7,11 @@ import {
     Bar,
     BarChart,
     CartesianGrid,
-    Cell,
-    Pie,
-    PieChart,
+    PolarAngleAxis,
+    PolarGrid,
+    PolarRadiusAxis,
+    Radar,
+    RadarChart,
     ResponsiveContainer,
     Tooltip,
     XAxis,
@@ -37,8 +39,19 @@ interface ItemGrafico {
     descripcion: string;
 }
 
-const COLORES = ["#06794f", "#0fa28b", "#3ac97c", "#2f80ed", "#ebb20c", "#9d46cd"];
+const UMBRAL_RADAR = 3;
 
+function TooltipIndicador({ active, payload }: { active?: boolean; payload?: any[] }) {
+    if (!active || !payload || !payload.length) return null;
+    const item = payload[0].payload as ItemGrafico;
+    return (
+        <div className="bg-white px-3 py-2 rounded-3 shadow-sm border" style={{ fontSize: 12, maxWidth: 220 }}>
+            <div className="fw-semibold text-dark">{item.nombre}</div>
+            <div className="fw-bold" style={{ color: "#06794f" }}>{item.valor}%</div>
+            <div className="text-secondary small">{item.descripcion}</div>
+        </div>
+    );
+}
 function parsearPorcentaje(valor: string): number | null {
     if (valor.endsWith("%")) {
         const num = parseInt(valor.slice(0, -1).trim(), 10);
@@ -100,6 +113,7 @@ export function VistaPublicaVisitantePage() {
             : null;
         return { datosPorcentajes: items, promedio: prom };
     }, [data?.indicadores]);
+    const usarRadar = datosPorcentajes.length >= UMBRAL_RADAR;  
 
     return (
         <main className="min-vh-100" style={{ background: "#f4f8f6" }}>
@@ -247,150 +261,112 @@ export function VistaPublicaVisitantePage() {
 
                         {datosPorcentajes.length > 0 && (
                             <section className="mb-4">
-                                <Row className="g-3">
-                                    <Col xs={12} lg={7} xl={8}>
-                                        <Card className="border-0 shadow-sm h-100" style={{ borderRadius: 14 }}>
-                                            <Card.Body className="p-4">
-                                                <div className="d-flex align-items-center justify-content-between mb-3">
-                                                    <div>
-                                                        <h2 className="h6 fw-bold mb-1" style={{ color: "#1e293b" }}>Índices de cumplimiento y vigencia</h2>
-                                                        <p className="text-secondary small mb-0">Nivel porcentual alcanzado en cada eje de control</p>
-                                                    </div>
-                                                    <span
-                                                        className="rounded-2 flex-shrink-0"
-                                                        style={{
-                                                            width: 34,
-                                                            height: 34,
-                                                            minWidth: 34,
-                                                            minHeight: 34,
-                                                            background: "#e8f6f0",
-                                                            color: "#06794f",
-                                                            display: "flex",
-                                                            alignItems: "center",
-                                                            justifyContent: "center",
-                                                        }}
+                                <Card className="border-0 shadow-sm" style={{ borderRadius: 14 }}>
+                                    <Card.Body className="p-4">
+                                        <div className="d-flex align-items-center justify-content-between mb-3">
+                                            <div>
+                                                <h2 className="h6 fw-bold mb-1" style={{ color: "#1e293b" }}>
+                                                    Perfil de cumplimiento
+                                                </h2>
+                                                <p className="text-secondary small mb-0">
+                                                    Nivel porcentual alcanzado en cada eje de control
+                                                </p>
+                                            </div>
+                                            <span
+                                                className="rounded-2 flex-shrink-0"
+                                                style={{
+                                                    width: 34,
+                                                    height: 34,
+                                                    minWidth: 34,
+                                                    minHeight: 34,
+                                                    background: "#e8f6f0",
+                                                    color: "#06794f",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                }}
+                                            >
+                                                <i
+                                                    className="bi bi-bullseye fs-5"
+                                                    aria-hidden="true"
+                                                    style={{ display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }}
+                                                />
+                                            </span>
+                                        </div>
+
+                                        <div style={{ width: "100%", height: usarRadar ? 340 : 160 }}>
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                {usarRadar ? (
+                                                    <RadarChart
+                                                        data={datosPorcentajes}
+                                                        outerRadius="70%"
+                                                        margin={{ top: 30, right: 40, bottom: 20, left: 40 }}
                                                     >
-                                                        <i className="bi bi-bar-chart-line fs-5" style={{ display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }} />
-                                                    </span>
-                                                </div>
-                                                <div style={{ width: "100%", height: 260 }}>
-                                                    <ResponsiveContainer width="100%" height="100%">
-                                                        <BarChart
-                                                            layout="vertical"
-                                                            data={datosPorcentajes}
-                                                            margin={{ top: 10, right: 30, left: 10, bottom: 0 }}
-                                                            barCategoryGap="20%"
-                                                        >
-                                                            <CartesianGrid stroke="#f1f5f9" horizontal={false} />
-                                                            <XAxis
-                                                                type="number"
-                                                                domain={[0, 100]}
-                                                                ticks={[0, 25, 50, 75, 100]}
-                                                                tickFormatter={(v) => `${v}%`}
-                                                                tick={{ fill: "#64748b", fontSize: 12 }}
-                                                                axisLine={false}
-                                                                tickLine={false}
-                                                            />
-                                                            <YAxis
-                                                                type="category"
-                                                                dataKey="nombreCorto"
-                                                                tick={{ fill: "#334155", fontSize: 12, fontWeight: 500 }}
-                                                                width={120}
-                                                                axisLine={false}
-                                                                tickLine={false}
-                                                            />
-                                                            <Tooltip
-                                                                contentStyle={{
-                                                                    borderRadius: 8,
-                                                                    border: "1px solid #e2e8f0",
-                                                                    boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
-                                                                    fontSize: 13,
-                                                                }}
-                                                                formatter={(val: any) => [`${val}%`, "Cumplimiento"]}
-                                                                labelFormatter={(_label, items) => items[0]?.payload?.nombre || _label}
-                                                            />
-                                                            <Bar dataKey="valor" radius={[0, 6, 6, 0]} maxBarSize={28}>
-                                                                {datosPorcentajes.map((_, index) => (
-                                                                    <Cell key={`cell-${index}`} fill={COLORES[index % COLORES.length]} />
-                                                                ))}
-                                                            </Bar>
-                                                        </BarChart>
-                                                    </ResponsiveContainer>
-                                                </div>
-                                            </Card.Body>
-                                        </Card>
-                                    </Col>
-                                    <Col xs={12} lg={5} xl={4}>
-                                        <Card className="border-0 shadow-sm h-100" style={{ borderRadius: 14 }}>
-                                            <Card.Body className="p-4 d-flex flex-column">
-                                                <div className="d-flex align-items-center justify-content-between mb-2">
-                                                    <div>
-                                                        <h2 className="h6 fw-bold mb-1" style={{ color: "#1e293b" }}>Balance de indicadores</h2>
-                                                        <p className="text-secondary small mb-0">Distribución de metas cumplidas</p>
-                                                    </div>
-                                                    <span
-                                                        className="rounded-2 flex-shrink-0"
-                                                        style={{
-                                                            width: 34,
-                                                            height: 34,
-                                                            minWidth: 34,
-                                                            minHeight: 34,
-                                                            background: "#e8f6f0",
-                                                            color: "#06794f",
-                                                            display: "flex",
-                                                            alignItems: "center",
-                                                            justifyContent: "center",
-                                                        }}
+                                                        <PolarGrid stroke="#e2e8f0" />
+                                                        <PolarAngleAxis
+                                                            dataKey="nombreCorto"
+                                                            tick={{ fill: "#334155", fontSize: 12, fontWeight: 500 }}
+                                                        />
+                                                        <PolarRadiusAxis
+                                                            angle={90}
+                                                            domain={[0, 100]}
+                                                            tickCount={3}
+                                                            tickFormatter={(v) => `${v}%`}
+                                                            tick={{ fill: "#64748b", fontSize: 11 }}
+                                                            axisLine={false}
+                                                        />
+                                                        <Radar
+                                                            name="Cumplimiento"
+                                                            dataKey="valor"
+                                                            stroke="#06794f"
+                                                            strokeWidth={2}
+                                                            fill="#06794f"
+                                                            fillOpacity={0.3}
+                                                            dot={{ r: 4, fill: "#06794f", strokeWidth: 0 }}
+                                                        />
+                                                        <Tooltip content={<TooltipIndicador />} />
+                                                    </RadarChart>
+                                                ) : (
+                                                    <BarChart
+                                                        layout="vertical"
+                                                        data={datosPorcentajes}
+                                                        margin={{ top: 10, right: 30, left: 10, bottom: 0 }}
+                                                        barCategoryGap="30%"
                                                     >
-                                                        <i className="bi bi-pie-chart fs-5" style={{ display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }} />
-                                                    </span>
-                                                </div>
-                                                <div className="position-relative flex-fill d-flex align-items-center justify-content-center" style={{ minHeight: 200 }}>
-                                                    <ResponsiveContainer width="100%" height={200}>
-                                                        <PieChart>
-                                                            <Pie
-                                                                data={datosPorcentajes}
-                                                                dataKey="valor"
-                                                                nameKey="nombreCorto"
-                                                                innerRadius={55}
-                                                                outerRadius={78}
-                                                                paddingAngle={3}
-                                                            >
-                                                                {datosPorcentajes.map((_, index) => (
-                                                                    <Cell key={`donut-${index}`} fill={COLORES[index % COLORES.length]} />
-                                                                ))}
-                                                            </Pie>
-                                                            <Tooltip
-                                                                content={({ active, payload }) => {
-                                                                    if (!active || !payload || !payload.length) return null;
-                                                                    const item = payload[0].payload;
-                                                                    return (
-                                                                        <div className="bg-white px-3 py-2 rounded-3 shadow-sm border" style={{ fontSize: 12, maxWidth: 220 }}>
-                                                                            <div className="fw-semibold text-dark">{item.nombre}</div>
-                                                                            <div className="text-secondary small">{item.descripcion}</div>
-                                                                        </div>
-                                                                    );
-                                                                }}
-                                                            />
-                                                        </PieChart>
-                                                    </ResponsiveContainer>
-                                                    <div className="position-absolute text-center" style={{ pointerEvents: "none" }}>
-                                                        <div className="fs-3 fw-bold" style={{ color: "#06794f", lineHeight: 1.1 }}>{promedio}%</div>
-                                                        <span className="text-secondary" style={{ fontSize: "0.72rem" }}>Promedio</span>
-                                                    </div>
-                                                </div>
-                                                <div className="d-flex flex-wrap justify-content-center gap-2 pt-2 border-top">
-                                                    {datosPorcentajes.map((item, idx) => (
-                                                        <span key={item.clave} className="small d-flex align-items-center gap-1 text-secondary" style={{ fontSize: "0.75rem" }}>
-                                                            <span style={{ width: 8, height: 8, borderRadius: "50%", background: COLORES[idx % COLORES.length], display: "inline-block" }} />
-                                                            {item.nombreCorto}: <strong className="text-dark">{item.valor}%</strong>
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            </Card.Body>
-                                        </Card>
-                                    </Col>
-                                </Row>
+                                                        <CartesianGrid stroke="#f1f5f9" horizontal={false} />
+                                                        <XAxis
+                                                            type="number"
+                                                            domain={[0, 100]}
+                                                            ticks={[0, 25, 50, 75, 100]}
+                                                            tickFormatter={(v) => `${v}%`}
+                                                            tick={{ fill: "#64748b", fontSize: 12 }}
+                                                            axisLine={false}
+                                                            tickLine={false}
+                                                        />
+                                                        <YAxis
+                                                            type="category"
+                                                            dataKey="nombreCorto"
+                                                            width={120}
+                                                            tick={{ fill: "#334155", fontSize: 12, fontWeight: 500 }}
+                                                            axisLine={false}
+                                                            tickLine={false}
+                                                        />
+                                                        <Tooltip content={<TooltipIndicador />} />
+                                                        <Bar dataKey="valor" fill="#06794f" radius={[0, 6, 6, 0]} maxBarSize={28} />
+                                                    </BarChart>
+                                                )}
+                                            </ResponsiveContainer>
+                                        </div>
+
+                                        <div className="d-flex flex-wrap justify-content-center gap-3 pt-2 border-top">
+                                            {datosPorcentajes.map((item) => (
+                                                <span key={item.clave} className="small text-secondary" style={{ fontSize: "0.75rem" }}>
+                                                    {item.nombreCorto}: <strong className="text-dark">{item.valor}%</strong>
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </Card.Body>
+                                </Card>
                             </section>
                         )}
 
@@ -407,7 +383,6 @@ export function VistaPublicaVisitantePage() {
                                         const pct = parsearPorcentaje(indicador.valor);
                                         const fraccion = parsearFraccion(indicador.valor);
                                         const barraProgreso = pct !== null ? pct : fraccion !== null ? fraccion.porcentaje : null;
-
                                         return (
                                             <Col xs={12} sm={6} lg={4} key={indicador.clave}>
                                                 <Card className="h-100 border-0 shadow-sm" style={{ borderRadius: 12 }}>

@@ -9,6 +9,7 @@ Uso: python -m scripts.seed_insumos
 from faker import Faker
 from sqlalchemy import select
 
+import src.all_models  # noqa: F401
 from src.database import SessionLocal
 from src.insumos.models import Insumo
 from src.unidad_medida.models import UnidadMedida
@@ -19,6 +20,10 @@ Faker.seed(42)
 CANTIDAD_INSUMOS = 30
 CANTIDAD_INSUMOS_INACTIVOS = 6
 
+# Los insumos alimentarios se expresan solo en unidades de masa estándar (mg, g, kg),
+# incluidos los líquidos (se asume densidad ≈ 1: 1 l ≈ 1 kg), para que la composición
+# porcentual de la receta pueda sumar todos sus renglones. Solo los insumos no
+# alimentarios (papel, bolsas) quedan en unidades de conteo.
 NOMBRES_INSUMOS = {
     "Harina 000": "Kilogramo",
     "Harina 0000": "Kilogramo",
@@ -27,19 +32,19 @@ NOMBRES_INSUMOS = {
     "Levadura fresca": "Gramo",
     "Levadura seca": "Gramo",
     "Manteca": "Kilogramo",
-    "Aceite de girasol": "Litro",
-    "Aceite de oliva": "Litro",
-    "Huevo": "Unidad",
-    "Leche entera": "Litro",
-    "Crema de leche": "Litro",
+    "Aceite de girasol": "Kilogramo",
+    "Aceite de oliva": "Kilogramo",
+    "Huevo": "Gramo",
+    "Leche entera": "Kilogramo",
+    "Crema de leche": "Kilogramo",
     "Queso cremoso": "Kilogramo",
     "Pollo entero": "Kilogramo",
     "Carne picada": "Kilogramo",
     "Malta pilsen": "Kilogramo",
     "Lúpulo cascade": "Gramo",
-    "Agua": "Litro",
+    "Agua": "Kilogramo",
     "Bicarbonato de sodio": "Gramo",
-    "Esencia de vainilla": "Mililitro",
+    "Esencia de vainilla": "Gramo",
     "Chocolate cobertura": "Kilogramo",
     "Miel": "Kilogramo",
     "Polvo de hornear": "Gramo",
@@ -52,9 +57,9 @@ NOMBRES_INSUMOS = {
     "Pasas de uva": "Kilogramo",
     "Dulce de leche": "Kilogramo",
     "Mermelada de frutilla": "Kilogramo",
-    "Vinagre de alcohol": "Litro",
-    "Jugo de limón": "Litro",
-    "Colorante vegetal": "Mililitro",
+    "Vinagre de alcohol": "Kilogramo",
+    "Jugo de limón": "Kilogramo",
+    "Colorante vegetal": "Gramo",
     "Papel manteca": "Unidad",
     "Bolsas de papel": "Docena",
 }
@@ -71,7 +76,7 @@ INFORMACION_NUTRICIONAL = {
     "Manteca": (717, 0, 81, 51, 11, None),
     "Aceite de girasol": (884, 0, 100, 10, 0, None),
     "Aceite de oliva": (884, 0, 100, 14, 2, None),
-    "Huevo": (143, 0, 9.5, 3.1, 142, 50),
+    "Huevo": (143, 0, 9.5, 3.1, 142, None),
     "Leche entera": (61, 0, 3.3, 1.9, 43, None),
     "Crema de leche": (340, 0, 36, 23, 27, None),
     "Queso cremoso": (300, 0, 24, 15, 600, None),

@@ -7,22 +7,17 @@ from src.lote_proveedor.models import LoteProveedor, HistorialEstadoLoteProveedo
 from src.lote_proveedor import exceptions, schemas
 from src.proveedor.models import Proveedor
 from src.lote_proveedor.constants import EstadoLoteProveedor
+from src.pedidos_proveedor.models import PedidoProveedor
+from src.pedidos_proveedor.constants import EstadoPedidoProveedor
 
 logger = logging.getLogger(__name__)
 
 
-def validar_unico(db: Session, proveedor_id: int, numero_lote: str, numero_remito: str, lote_id: int | None = None):
-    lote = select(LoteProveedor).where(LoteProveedor.proveedor_id == proveedor_id,
-                                        LoteProveedor.numero_lote == numero_lote)
-
-    if lote_id:
-        lote = lote.where(LoteProveedor.id != lote_id)
-    if db.scalars(lote).first():
-        raise exceptions.NumeroLoteDuplicado()
-
-    remito = select(LoteProveedor).where(LoteProveedor.proveedor_id == proveedor_id,
-                                        LoteProveedor.numero_remito == numero_remito)
-
+def validar_unico(db: Session, proveedor_id: int, numero_remito: str, lote_id: int | None = None):
+    remito = select(LoteProveedor).where(
+        LoteProveedor.proveedor_id == proveedor_id,
+        LoteProveedor.numero_remito == numero_remito,
+    )
     if lote_id:
         remito = remito.where(LoteProveedor.id != lote_id)
     if db.scalars(remito).first():
@@ -53,11 +48,22 @@ def crear_lote_proveedor(db: Session, lote: schemas.LoteProveedorCreate, usuario
     if proveedor.vencimiento_habilitacion and proveedor.vencimiento_habilitacion < date.today():
         raise exceptions.HabilitacionProveedorVencida()
 
-    validar_unico(db, lote.proveedor_id, lote.numero_lote, lote.numero_remito)
+    validar_unico(db, lote.proveedor_id, lote.numero_remito)
+
+    pedido_asociado = db.scalars(
+        select(PedidoProveedor).where(
+            PedidoProveedor.id == lote.pedido_id,
+            PedidoProveedor.proveedor_id == lote.proveedor_id,
+            PedidoProveedor.activo == True,
+            PedidoProveedor.estado == EstadoPedidoProveedor.PENDIENTE,
+        )
+    ).first()
+    if not pedido_asociado:
+        raise exceptions.PedidoNoValido()
 
     _lote_proveedor = LoteProveedor(
         proveedor_id=lote.proveedor_id,
-        numero_lote=lote.numero_lote,
+        pedido_id=lote.pedido_id,
         numero_remito=lote.numero_remito,
         fecha_recepcion=lote.fecha_recepcion,
         archivo_adjunto=lote.archivo_adjunto,
@@ -65,7 +71,10 @@ def crear_lote_proveedor(db: Session, lote: schemas.LoteProveedorCreate, usuario
         estado=EstadoLoteProveedor.LLEGADA,
     )
     db.add(_lote_proveedor)
-    db.commit()            
+
+    pedido_asociado.estado = EstadoPedidoProveedor.RECIBIDO
+
+    db.commit()
     db.refresh(_lote_proveedor)
 
     primer_historial = HistorialEstadoLoteProveedor(
@@ -102,7 +111,8 @@ def cambiar_estado_lote_proveedor(db: Session, lote_proveedor_id: int) -> schema
 
 
 def avanzar_etapa_lote_proveedor(
-    db: Session, lote_proveedor_id: int, datos: schemas.AvanzarEtapaLote, usuario_id: int) -> schemas.LoteProveedor:
+    db: Session, lote_proveedor_id: int, datos: schemas.AvanzarEtapaLote, usuario_id: int
+) -> schemas.LoteProveedor:
     db_lote = leer_lote_proveedor(db, lote_proveedor_id)
 
     if db_lote.estado == EstadoLoteProveedor.LLEGADA:
@@ -131,5 +141,8 @@ def avanzar_etapa_lote_proveedor(
 
 
 def listar_historial_lote(db: Session, lote_id: int) -> list[HistorialEstadoLoteProveedor]:
-    return db.scalars(select(HistorialEstadoLoteProveedor).where(HistorialEstadoLoteProveedor.lote_id == lote_id)
-                    .order_by(HistorialEstadoLoteProveedor.fecha_hora.asc())).all()
+    return db.scalars(
+        select(HistorialEstadoLoteProveedor)
+        .where(HistorialEstadoLoteProveedor.lote_id == lote_id)
+        .order_by(HistorialEstadoLoteProveedor.fecha_hora.asc())
+    ).all()

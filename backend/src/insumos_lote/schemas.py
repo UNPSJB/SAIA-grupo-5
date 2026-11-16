@@ -13,6 +13,7 @@ class InsumoLoteBase(BaseModel):
     fecha_vencimiento: date
     costo_unitario: Annotated[Optional[Decimal], Field(ge=0)]= None
     minimo_alerta: Annotated[int, Field(ge=0)]
+    numero_lote: Annotated[str, Field(min_length=1, max_length=100)]
 
     @model_validator(mode="after")
     def validar_vencimiento_no_pasado(self):
@@ -33,7 +34,7 @@ class ProveedorResumen(BaseModel):
 
 class LoteProveedorResumen(BaseModel):
     id: int
-    numero_lote: str
+    numero_remito: Optional[str] = None
     proveedor: Optional[ProveedorResumen] = None
 
     model_config = ConfigDict(from_attributes=True)

@@ -5,3 +5,5 @@ class ErrorCode:
     CANTIDAD_INVALIDA = "La cantidad debe ser mayor a cero."
     FECHA_VENCIMIENTO_INVALIDA = "La fecha de vencimiento debe ser posterior al dia de hoy."
     INSUMO_SIN_STOCK_NO_REACTIVABLE = "No se puede reactivar un insumo sin stock disponible."
+    INSUMO_YA_REGISTRADO_EN_LOTE = "Este insumo ya fue registrado en esta recepcion."
+    INSUMO_NO_EN_PEDIDO = "El insumo seleccionado no forma parte del pedido asociado a esta recepcion."

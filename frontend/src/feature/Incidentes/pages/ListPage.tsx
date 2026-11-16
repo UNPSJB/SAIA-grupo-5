@@ -120,6 +120,7 @@ export function ListPage() {
             minWidth: '160px',
             cell: (incidente) => (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, padding: '6px 0' }}>
+                    
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                         <span data-tour="btn-historial-incidente">
                             <ActionButton
@@ -130,7 +131,30 @@ export function ListPage() {
                                 onClick={() => setIncidenteParaHistorial(incidente)}
                             />
                         </span>
-                        {currentUser?.administrar && (
+                        <span data-tour="btn-ver-incidente">
+                            <ActionButton
+                                variant="outline-info"
+                                size="sm"
+                                tooltip="Ver"
+                                icon="bi-eye"
+                                onClick={() => navigate(`/incidentes/${incidente.id}`, { state: { origen: "lista" }})}
+                            />
+                        </span>
+                        {currentUser?.operar && (
+                        <span data-tour="btn-editar-incidente">
+                            <ActionButton
+                                variant="outline-primary"
+                                size="sm"
+                                tooltip="Editar"
+                                icon="bi-pencil"
+                                disabled={!incidente.activo}
+                                onClick={() => navigate(`/incidentes/${incidente.id}/edit`)}
+                            />
+                        </span>
+                        )}
+                    </div>
+                    {currentUser?.administrar && (
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                             <span data-tour="btn-accion-correctiva">
                                 <ActionButton
                                     variant="outline-success"
@@ -141,37 +165,14 @@ export function ListPage() {
                                     onClick={() => setIncidenteParaAccionCorrectiva(incidente)}
                                 />
                             </span>
-                        )}
-                        <span data-tour="btn-reabrir-incidente">
-                            <ActionButton
-                                variant="outline-warning"
-                                size="sm"
-                                tooltip="Reabrir incidente"
-                                icon="bi-arrow-counterclockwise"
-                                disabled={!incidente.activo || incidente.estado === 'Abierto'}
-                                onClick={() => setIncidenteParaReabrir(incidente)}
-                            />
-                        </span>
-                    </div>
-                    {currentUser?.administrar && (
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                            <span data-tour="btn-ver-incidente">
+                            <span data-tour="btn-reabrir-incidente">
                                 <ActionButton
-                                    variant="outline-info"
+                                    variant="outline-warning"
                                     size="sm"
-                                    tooltip="Ver"
-                                    icon="bi-eye"
-                                    onClick={() => navigate(`/incidentes/${incidente.id}`, { state: { origen: "lista" }})}
-                                />
-                            </span>
-                            <span data-tour="btn-editar-incidente">
-                                <ActionButton
-                                    variant="outline-primary"
-                                    size="sm"
-                                    tooltip="Editar"
-                                    icon="bi-pencil"
-                                    disabled={!incidente.activo}
-                                    onClick={() => navigate(`/incidentes/${incidente.id}/edit`)}
+                                    tooltip="Reabrir incidente"
+                                    icon="bi-arrow-counterclockwise"
+                                    disabled={!incidente.activo || incidente.estado === 'Abierto'}
+                                    onClick={() => setIncidenteParaReabrir(incidente)}
                                 />
                             </span>
                             <span data-tour="btn-baja-incidente">
@@ -207,7 +208,7 @@ export function ListPage() {
                                 <i className="bi bi-exclamation-triangle me-1" />{demorados} demorados
                             </Badge>
                         )}
-                        {currentUser?.administrar && (
+                        {currentUser?.operar && (
                             <Button
                                 data-tour="btn-nuevo-incidente"
                                 variant="primary"

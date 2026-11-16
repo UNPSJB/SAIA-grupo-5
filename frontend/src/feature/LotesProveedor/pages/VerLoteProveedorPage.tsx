@@ -35,22 +35,29 @@ export function VerLoteProveedorPage() {
     const { data: lote, isLoading, error } = useApi<LoteProveedor>(`/lotes-proveedor/${id}`);
     const { data: historial, isLoading: cargandoHistorial } = useApi<HistorialEstadoLoteProveedor[]>(id ? `/lotes-proveedor/${id}/historial-estados` : null);
     const { data: insumosLote, isLoading: cargandoInsumos } = useApi<InsumoLote[]>(id ? `/insumos-lote/lote/${id}` : null);
+    const { data: insumosCatalogo } = useApi<any[]>('/insumos/');
 
     const [modalAvanzar, setModalAvanzar] = useState(false);
     const [modalAgregarInsumo, setModalAgregarInsumo] = useState(false);
     const [insumoAEliminar, setInsumoAEliminar] = useState<InsumoLote | null>(null);
 
-    if (isLoading) return <PageLoading title="Detalle de Lote" />;
+    if (isLoading) return <PageLoading title="Detalle de Recepción" />;
     if (!lote || error) return (
         <Container>
-            <PageHeader title="Lote no encontrado" />
-            <Alert variant="danger">El lote solicitado no existe o hubo un error al cargar.</Alert>
+            <PageHeader title="Recepción no encontrada" />
+            <Alert variant="danger">La recepción solicitada no existe o hubo un error al cargar.</Alert>
         </Container>
     );
 
     const pasoActual = INDICE_ESTADO[lote.estado] ?? 0;
     const esImagen = lote.archivo_adjunto?.startsWith('data:image/');
     const confEtapa = ESTILOS_ETAPA[lote.estado] || { label: lote.estado, bg: '#f1f5f9', color: '#475569' };
+
+    const totalInsumosDisponibles = lote.pedido?.items
+        ? lote.pedido.items.length
+        : (insumosCatalogo ?? []).filter((i) => i.activo).length;
+    const todosInsumosRegistrados =
+        totalInsumosDisponibles > 0 && (insumosLote?.length ?? 0) >= totalInsumosDisponibles;
 
     const itemsHorizontal: ItemStepper[] = PASOS_FIJOS.map((paso) => {
         const hito = historial?.find((h) => h.estado.toLowerCase() === paso.toLowerCase());
@@ -79,22 +86,19 @@ export function VerLoteProveedorPage() {
         mutate(`/lotes-proveedor/${lote.id}/historial-estados`);
     };
 
-    const refrescarInsumos = () => {mutate(`/insumos-lote/por-lote-proveedor/${lote.id}`);};
+    const refrescarInsumos = () => {
+        mutate(`/insumos-lote/lote/${lote.id}`);
+    };
 
     return (
         <Container>
             <PageHeader 
-                title={`Recepción de Lote: ${lote.numero_lote}`} 
+                title={`Recepción ${lote.numero_remito ? `Remito ${lote.numero_remito}` : `#${lote.id}`}`} 
                 subtitle={`Proveedor: ${lote.proveedor?.nombre || 'N/A'}`} 
             />
 
             <Card className="shadow-sm border-0 rounded-3 mb-4 text-start">
                 <Card.Body className="p-4">
-                    <Row className="mb-3 border-bottom pb-3 align-items-center">
-                        <Col sm={4} className="fw-bold text-secondary">N° de Lote</Col>
-                        <Col sm={8} className="fs-6 fw-bold">{lote.numero_lote}</Col>
-                    </Row>
-
                     <Row className="mb-3 border-bottom pb-3 align-items-center">
                         <Col sm={4} className="fw-bold text-secondary">Proveedor</Col>
                         <Col sm={8}>{lote.proveedor?.nombre} (CUIT: {lote.proveedor?.cuit})</Col>
@@ -102,7 +106,25 @@ export function VerLoteProveedorPage() {
 
                     <Row className="mb-3 border-bottom pb-3 align-items-center">
                         <Col sm={4} className="fw-bold text-secondary">N° de Remito</Col>
-                        <Col sm={8}>{lote.numero_remito || <span className="text-muted fst-italic">Sin remito</span>}</Col>
+                        <Col sm={8} className="fw-bold">{lote.numero_remito || <span className="text-muted fst-italic">Sin remito</span>}</Col>
+                    </Row>
+
+                    <Row className="mb-3 border-bottom pb-3 align-items-center">
+                        <Col sm={4} className="fw-bold text-secondary">Pedido Asociado</Col>
+                        <Col sm={8}>
+                            {lote.pedido ? (
+                                <Button
+                                    variant="link"
+                                    className="p-0 fw-bold text-decoration-none"
+                                    onClick={() => navigate(`/pedidos-proveedor/${lote.pedido?.id}`)}
+                                >
+                                    <i className="bi bi-clipboard-check me-1"></i>
+                                    Pedido #{lote.pedido.id} ({lote.pedido.fecha_pedido.split("-").reverse().join("/")})
+                                </Button>
+                            ) : (
+                                <span className="text-muted fst-italic">Recepción directa (sin pedido asociado)</span>
+                            )}
+                        </Col>
                     </Row>
 
                     <Row className="mb-3 border-bottom pb-3 align-items-center">
@@ -158,7 +180,7 @@ export function VerLoteProveedorPage() {
                                         <span className="fw-semibold small">Remito_Recepcion.pdf</span>
                                         <a
                                             href={lote.archivo_adjunto}
-                                            download={`Remito_${lote.numero_lote}.pdf`}
+                                            download={`Remito_${lote.numero_remito || lote.id}.pdf`}
                                             className="btn btn-outline-success btn-sm ms-2 d-inline-flex align-items-center gap-1"
                                         >
                                             <i className="bi bi-download"></i> Ver / Descargar
@@ -182,9 +204,11 @@ export function VerLoteProveedorPage() {
                         <Button 
                             variant="primary" 
                             size="sm"
+                            disabled={todosInsumosRegistrados}
                             onClick={() => setModalAgregarInsumo(true)}
                         >
-                            <i className="bi bi-plus-circle me-1"></i>Registrar Insumo
+                            <i className="bi bi-plus-circle me-1"></i>
+                            {todosInsumosRegistrados ? 'Todos los insumos registrados' : 'Registrar Insumo'}
                         </Button>
                     )}
                 </Card.Header>
@@ -194,12 +218,13 @@ export function VerLoteProveedorPage() {
                             <Spinner animation="border" size="sm" /> Cargando insumos...
                         </div>
                     ) : !insumosLote || insumosLote.length === 0 ? (
-                        <p className="text-muted small p-4 mb-0">No hay insumos registrados en este lote todavia.</p>
+                        <p className="text-muted small p-4 mb-0">No hay insumos registrados en esta recepcion todavia.</p>
                     ) : (
                         <Table responsive hover className="mb-0 align-middle">
                             <thead className="table-light">
                                 <tr>
                                     <th>Insumo</th>
+                                    <th>N° Lote</th>
                                     <th>Marca</th>
                                     <th>Recibido</th>
                                     <th>Restante</th>
@@ -219,6 +244,11 @@ export function VerLoteProveedorPage() {
                                             <span className="text-muted small">
                                                 ({item.insumo.unidad_medida?.nombre || 'U'})
                                             </span>
+                                        </td>
+                                        <td>
+                                            <Badge bg="light" text="dark" className="border">
+                                                {item.numero_lote}
+                                            </Badge>
                                         </td>
                                         <td>{item.marca}</td>
                                         <td>
@@ -258,7 +288,7 @@ export function VerLoteProveedorPage() {
 
             <Card className="shadow-sm border-0 mb-4 rounded-3 text-start">
                 <Card.Body className="p-4">
-                    <h5 className="fw-bold mb-4">Linea de Tiempo del Lote</h5>
+                    <h5 className="fw-bold mb-4">Linea de Tiempo de la Recepcion</h5>
 
                     <Stepper items={itemsHorizontal} pasoActual={pasoActual} direction="horizontal" colorPrimario="#198754" />
 
@@ -297,6 +327,8 @@ export function VerLoteProveedorPage() {
             <AgregarInsumoLoteModal
                 show={modalAgregarInsumo}
                 loteProveedorId={Number(lote.id)}
+                insumosYaRegistrados={insumosLote ?? []}
+                itemsPedido={lote.pedido?.items}
                 onHide={() => setModalAgregarInsumo(false)}
                 onGuardado={refrescarInsumos}
             />

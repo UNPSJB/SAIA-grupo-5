@@ -22,7 +22,7 @@ from scripts.seed_aditivos import generar_aditivos
 
 INSUMOS_ADICIONALES = {
     "Fermento láctico": ("Gramo", (350, 0, 2, 1.2, 800, None)),
-    "Cuajo": ("Mililitro", (10, 0, 0, 0, 2000, None)),
+    "Cuajo": ("Gramo", (10, 0, 0, 0, 2000, None)),
     "Zanahoria": ("Kilogramo", (41, 0, 0.2, 0, 69, None)),
     "Cebolla": ("Kilogramo", (40, 0, 0.1, 0, 4, None)),
     "Ácido cítrico": ("Gramo", (None, None, None, None, None, None)),
@@ -111,7 +111,7 @@ RECETAS = {
             ("Harina 0000", 0.04),
             ("Azúcar", 0.04),
             ("Manteca", 0.035),
-            ("Huevo", 1),
+            ("Huevo", 50),  # 1 huevo ≈ 50 g
             ("Sal fina", 0.001),
             ("Nuez moscada", 1),
         ],
@@ -154,7 +154,7 @@ RECETAS = {
             ("Almidón de maíz", 0.025),
             ("Manteca", 0.01),
             ("Azúcar", 0.008),
-            ("Huevo", 0.2),
+            ("Huevo", 10),  # 0,2 huevo ≈ 10 g
             ("Dulce de leche", 0.02),
             ("Polvo de hornear", 1, "Pirofosfato ácido de sodio"),
         ],
@@ -218,8 +218,6 @@ def construir_receta(producto: Producto, datos: dict, renglones: list[tuple], in
     receta = Receta(
         producto=producto,
         version=version,
-        rendimiento=producto.cantidad_neta,
-        rendimiento_unidad_medida_id=producto.unidad_medida_id,
         porcion=porcion[0] if porcion else None,
         porcion_unidad_medida_id=unidades[porcion[1]] if porcion else None,
     )
@@ -243,8 +241,6 @@ def construir_receta(producto: Producto, datos: dict, renglones: list[tuple], in
 
 def completar_receta_existente(receta: Receta, datos: dict, aditivos: dict[str, Aditivo], unidades: dict[str, int]) -> None:
     porcion = datos.get("porcion")
-    receta.rendimiento = receta.producto.cantidad_neta
-    receta.rendimiento_unidad_medida_id = receta.producto.unidad_medida_id
     receta.porcion = porcion[0] if porcion else None
     receta.porcion_unidad_medida_id = unidades[porcion[1]] if porcion else None
     receta.fecha_desde_vigencia = receta.fecha_desde_vigencia or receta.fecha_creacion
@@ -284,7 +280,7 @@ def generar_recetas(db) -> list[Receta]:
             continue
         existente = vigentes.get(producto.id)
         if existente is not None:
-            if existente.rendimiento is None:
+            if existente.fecha_desde_vigencia is None:
                 completar_receta_existente(existente, datos, aditivos, unidades)
             continue
 

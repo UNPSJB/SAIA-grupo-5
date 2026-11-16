@@ -1,3 +1,5 @@
+import type { Insumo } from "../Insumos/types";
+
 export type Proveedor = {
     id: number;
     nombre: string;
@@ -8,6 +10,7 @@ export type Proveedor = {
     vencimiento_habilitacion: string | null;
     observacion_habilitacion: string | null;
     archivo_adjunto: string | null;
+    insumos_asociados?: ProveedorInsumo[];
     activo: boolean;
 };
 
@@ -23,4 +26,11 @@ export type RenovarHabilitacionProveedor = {
     vencimiento_habilitacion: string;
     observacion_habilitacion: string | null;
     archivo_adjunto: string | null;
+};
+
+export type ProveedorInsumo = {
+    id: number;
+    proveedor_id: number;
+    insumo_id: number;
+    insumo: Insumo;
 };
