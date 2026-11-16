@@ -13,7 +13,7 @@ import { PLANTILLA_ETAPAS } from '../constants';
 import { useApi } from '../../../hooks/useApi';
 import { SelectorConBusqueda } from '../../../components/SelectorConBusqueda';
 import { SellosFrontales } from './SellosFrontales';
-import { formatearGramos } from '../lib/rendimiento';
+import { formatearGramos } from '../composicion/rendimiento';
 
 interface RecetaFormModalProps {
     producto: Producto | null;
