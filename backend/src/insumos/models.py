@@ -24,6 +24,12 @@ class Insumo(ModeloBase):
     sodio: Mapped[float | None] = mapped_column(Float, nullable=True)
     peso_unidad: Mapped[float | None] = mapped_column(Float, nullable=True)
 
+    aporta_azucares: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    aporta_grasas: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    aporta_sodio: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    aporta_edulcorantes: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    aporta_cafeina: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+
     tipo_herencia: Mapped[str] = mapped_column(String(30))
 
     __mapper_args__ = {
