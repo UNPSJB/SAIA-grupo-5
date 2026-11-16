@@ -13,6 +13,7 @@ from src.incidentes.migrations import migrar_esquema_incidentes
 from src.lote_produccion.migrations import migrar_esquema_lote_produccion
 from src.insumos.migrations import migrar_esquema_insumos
 from src.receta.migrations import migrar_esquema_recetas
+from src.unidad_medida.migrations import migrar_esquema_unidades_medida
 
 from scripts import (
     # Catálogos base
@@ -76,6 +77,7 @@ def preparar_esquema():
     migrar_esquema_lote_produccion(engine)
     migrar_esquema_insumos(engine)
     migrar_esquema_recetas(engine)
+    migrar_esquema_unidades_medida(engine)
 
 
 def main():

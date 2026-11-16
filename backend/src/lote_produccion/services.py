@@ -272,7 +272,7 @@ def actualizar_insumos_lote(db: Session, lote_id: int, datos: schemas.InsumosUti
     for insumo in datos.insumos:
         db.add(InsumoUtilizado(
             lote_produccion_id=lote_id,
-            insumo_id=insumo.insumo_id,
+            insumo_lote_id=insumo.insumo_lote_id,
             cantidad_utilizada=insumo.cantidad_utilizada
         ))
 

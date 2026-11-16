@@ -64,5 +64,3 @@ FACTORES_UNIDAD_MEDIDA = {
 }
 
 UNIDADES_MEDIDA_LIQUIDAS = {"ml", "cc", "mililitro", "mililitros", "l", "lt", "litro", "litros"}
-
-UNIDADES_DE_PRODUCTO = {"unidad": 1, "unidades": 1, "docena": 12, "docenas": 12}

@@ -6,8 +6,6 @@ ETAPAS = [{"nombre": "Elaboración", "pasos": [{"descripcion": "Mezclar los ingr
 
 def _receta(unidades_sellos, insumos, **extra):
     return {
-        "rendimiento": 100,
-        "rendimiento_unidad_medida_id": unidades_sellos["Gramo"].id,
         "etapas": ETAPAS,
         "insumos": insumos,
         **extra,
@@ -29,8 +27,7 @@ def test_crear_receta_con_ingredientes_y_aditivos(client, auth_headers, producto
     assert response.status_code == 200
     assert data["version"] == 1
     assert data["vigente"] is True
-    assert data["rendimiento"] == 100
-    assert data["rendimiento_unidad_medida"]["nombre"] == "Gramo"
+    assert data["rendimiento"] == 101  # 70 g + 30 g + 1 ml de esencia (≈ 1 g)
     assert data["porcion"] == 25
     assert [(item["nombre"], item["tipo"]) for item in data["insumos"]] == [
         ("Harina", "Ingrediente"), ("Azúcar", "Ingrediente"), ("Esencia", "Aditivo"),
@@ -64,14 +61,36 @@ def test_crear_receta_solo_con_aditivos(client, auth_headers, producto_solido, u
     assert ErrorCode.RECETA_SIN_INGREDIENTES in response.json()["detail"][0]["msg"]
 
 
-def test_crear_receta_sin_rendimiento(client, auth_headers, producto_solido, insumos_sellos):
+def test_rendimiento_se_calcula_como_suma_de_insumos_en_gramos(client, auth_headers, producto_solido, insumos_sellos):
+    # El rendimiento no se ingresa. Unidades de prueba: Gramo, Mililitro (≈ 1 g) y Unidad (peso_unidad):
+    # 70 g de harina + 30 g de azúcar + 10 ml de agua (≈ 10 g) + 2 huevos de 50 g = 210 g
     response = client.post("/recetas/", json={
         "producto_id": producto_solido.id,
+        "etapas": ETAPAS,
+        "insumos": [
+            {"insumo_id": insumos_sellos["Harina"].id, "cantidad": 70},
+            {"insumo_id": insumos_sellos["Azúcar"].id, "cantidad": 30},
+            {"insumo_id": insumos_sellos["Agua"].id, "cantidad": 10},
+            {"insumo_id": insumos_sellos["Huevo"].id, "cantidad": 2},
+        ],
+    }, headers=auth_headers)
+    data = response.json()
+
+    assert response.status_code == 200
+    assert data["rendimiento"] == 210
+    assert "rendimiento_unidad_medida" not in data
+
+
+def test_rendimiento_ingresado_por_el_usuario_se_ignora(client, auth_headers, producto_solido, insumos_sellos):
+    response = client.post("/recetas/", json={
+        "producto_id": producto_solido.id,
+        "rendimiento": 9999,
         "etapas": ETAPAS,
         "insumos": [{"insumo_id": insumos_sellos["Harina"].id, "cantidad": 100}],
     }, headers=auth_headers)
 
-    assert response.status_code == 422
+    assert response.status_code == 200
+    assert response.json()["rendimiento"] == 100
 
 
 def test_crear_receta_con_aditivo_sin_clase_funcional(client, auth_headers, producto_solido, unidades_sellos, insumos_sellos):
@@ -208,8 +227,6 @@ def test_actualizar_version_anterior_es_solo_lectura(client, auth_headers, produ
 def test_evaluar_sellos(client, auth_headers, producto_solido, unidades_sellos, insumos_sellos):
     response = client.post("/recetas/sellos", json={
         "producto_id": producto_solido.id,
-        "rendimiento": 1000,
-        "rendimiento_unidad_medida_id": unidades_sellos["Gramo"].id,
         "insumos": [{"insumo_id": insumos_sellos["Harina"].id, "cantidad": 1000}],
     }, headers=auth_headers)
     data = response.json()
@@ -217,6 +234,7 @@ def test_evaluar_sellos(client, auth_headers, producto_solido, unidades_sellos, 
     assert response.status_code == 200
     assert data["evaluable"] is True
     assert data["cantidad_base"] == 1000
+    assert data["rendimiento"] == 1000
     assert data["valor_energetico"] == 364
     assert data["sellos"] == []
 
