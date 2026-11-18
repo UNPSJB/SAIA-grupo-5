@@ -15,7 +15,9 @@ from src.aditivo.models import Aditivo
 from src.receta import orden
 from src.etapa_receta.services import construir_etapa
 from src.paso_etapa.schemas import PasoEtapaAnidadoCreate
-from scripts.seed_insumos import NOMBRES_INSUMOS, CAMPOS_NUTRICIONALES, informacion_nutricional
+from scripts.seed_insumos import (
+    NOMBRES_INSUMOS, CAMPOS_NUTRICIONALES, asegurar_columna_marca, informacion_nutricional, marca_de,
+)
 from scripts.seed_productos import generar_productos
 from scripts.seed_aditivos import generar_aditivos
 
@@ -203,7 +205,7 @@ def obtener_insumos(db, unidades: dict[str, int]) -> dict[str, Insumo]:
 
         insumo = existentes.get(nombre)
         if insumo is None:
-            insumo = Insumo(nombre=nombre, unidad_medida_id=unidades[unidad], activo=True, **nutricion)
+            insumo = Insumo(nombre=nombre, marca=marca_de(nombre), unidad_medida_id=unidades[unidad], activo=True, **nutricion)
             db.add(insumo)
         elif insumo.valor_energetico is None:
             for campo, valor in nutricion.items():
@@ -305,6 +307,7 @@ def main():
     ModeloBase.metadata.create_all(bind=engine)
     migrar_esquema_insumos(engine)
     migrar_esquema_recetas(engine)
+    asegurar_columna_marca(engine)
     db = SessionLocal()
     try:
         recetas = generar_recetas(db)
