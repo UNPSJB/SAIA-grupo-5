@@ -26,6 +26,12 @@ class ProductoUpdate(ProductoBase):
 class Producto(ProductoBase):
     id: int
     activo: bool
+    envasado_ausencia_cliente: bool | None = None
+    azucares_agregados: bool | None = None
+    grasas_agregadas: bool | None = None
+    sodio_agregado: bool | None = None
+    contiene_edulcorantes: bool | None = None
+    contiene_cafeina: bool | None = None
     unidad_medida: UnidadMedida
     receta: Receta | None = None
 

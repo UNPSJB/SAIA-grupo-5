@@ -112,4 +112,10 @@ def descontar_stock_insumo_lote(db: Session, insumo_lote_id: int, cantidad_a_des
 
     db.commit()
     db.refresh(insumo_lote)
+
+    # Alerta stock
+    # para evitar import circular ya que notificaciones importa insumos_lote.services
+    from src.notificaciones.services import generar_notificacion_alerta_stock_individual
+    generar_notificacion_alerta_stock_individual(db, insumo_lote.id)
+
     return insumo_lote

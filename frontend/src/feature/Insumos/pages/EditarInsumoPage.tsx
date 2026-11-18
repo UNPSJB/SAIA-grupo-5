@@ -93,6 +93,11 @@ export function EditarInsumoPage(){
                         marca: insumo.marca,
                         unidad_medida_id: insumo.unidad_medida_id,
                         peso_unidad: insumo.peso_unidad,
+                        aporta_azucares: insumo.aporta_azucares,
+                        aporta_grasas: insumo.aporta_grasas,
+                        aporta_sodio: insumo.aporta_sodio,
+                        aporta_edulcorantes: insumo.aporta_edulcorantes,
+                        aporta_cafeina: insumo.aporta_cafeina,
                     }}
                     nutricionInicial={
                         infoNutricional

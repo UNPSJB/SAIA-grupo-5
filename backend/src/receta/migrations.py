@@ -5,8 +5,6 @@ COLUMNAS_RECETAS = (
     ("vigente", "BOOLEAN NOT NULL DEFAULT 1"),
     ("fecha_desde_vigencia", "DATETIME NULL"),
     ("fecha_hasta_vigencia", "DATETIME NULL"),
-    ("rendimiento", "FLOAT NULL"),
-    ("rendimiento_unidad_medida_id", "INTEGER NULL REFERENCES unidades_medida(id)"),
     ("porcion", "FLOAT NULL"),
     ("porcion_unidad_medida_id", "INTEGER NULL REFERENCES unidades_medida(id)"),
 )

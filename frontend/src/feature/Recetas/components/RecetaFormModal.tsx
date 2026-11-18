@@ -13,6 +13,7 @@ import { PLANTILLA_ETAPAS } from '../constants';
 import { useApi } from '../../../hooks/useApi';
 import { SelectorConBusqueda } from '../../../components/SelectorConBusqueda';
 import { SellosFrontales } from './SellosFrontales';
+import { formatearGramos } from '../composicion/rendimiento';
 
 interface RecetaFormModalProps {
     producto: Producto | null;
@@ -30,8 +31,6 @@ interface InsumoRecetaFormData {
 }
 
 interface RecetaFormData {
-    rendimiento: string;
-    rendimiento_unidad_medida_id: string;
     porcion: string;
     porcion_unidad_medida_id: string;
     insumos: InsumoRecetaFormData[];
@@ -42,9 +41,7 @@ const MENSAJE_SIN_INGREDIENTES = "La receta debe tener al menos un ingrediente."
 
 const renglonVacio = (tipo: TipoRenglon): InsumoRecetaFormData => ({ insumo_id: "", cantidad: "", tipo, aditivo_id: "" });
 
-const plantillaInicial = (producto: Producto | null): RecetaFormData => ({
-    rendimiento: producto ? String(producto.cantidad_neta) : "",
-    rendimiento_unidad_medida_id: producto ? String(producto.unidad_medida_id) : "",
+const plantillaInicial = (): RecetaFormData => ({
     porcion: "",
     porcion_unidad_medida_id: "",
     insumos: [renglonVacio("Ingrediente")],
@@ -54,8 +51,6 @@ const plantillaInicial = (producto: Producto | null): RecetaFormData => ({
 const aTexto = (valor: number | null) => (valor === null ? "" : String(valor));
 
 const valoresDeReceta = (receta: Receta): RecetaFormData => ({
-    rendimiento: aTexto(receta.rendimiento),
-    rendimiento_unidad_medida_id: aTexto(receta.rendimiento_unidad_medida_id),
     porcion: aTexto(receta.porcion),
     porcion_unidad_medida_id: aTexto(receta.porcion_unidad_medida_id),
     insumos: (receta.insumos ?? []).map((item) => ({
@@ -89,14 +84,14 @@ export function RecetaFormModal({ producto, receta, onHide, onSaved }: RecetaFor
     const esEdicion = Boolean(receta);
 
     const { register, control, handleSubmit, reset, formState: { errors } } = useForm<RecetaFormData>({
-        defaultValues: plantillaInicial(null),
+        defaultValues: plantillaInicial(),
     });
     const { fields: etapas, append, remove } = useFieldArray({ control, name: "etapas" });
     const etapasActuales = useWatch({ control, name: "etapas" });
 
     // Cada vez que se abre arranca con la receta a editar o, en el alta, con la plantilla
     useEffect(() => {
-        if (producto) reset(receta ? valoresDeReceta(receta) : plantillaInicial(producto));
+        if (producto) reset(receta ? valoresDeReceta(receta) : plantillaInicial());
     }, [producto, receta, reset]);
 
     const onSubmit = async (data: RecetaFormData) => {
@@ -105,8 +100,6 @@ export function RecetaFormModal({ producto, receta, onHide, onSaved }: RecetaFor
         setCargando(true);
         try {
             const datos: NewRecetaVersion = {
-                rendimiento: Number(data.rendimiento),
-                rendimiento_unidad_medida_id: Number(data.rendimiento_unidad_medida_id),
                 porcion: data.porcion.trim() ? Number(data.porcion) : null,
                 porcion_unidad_medida_id: data.porcion_unidad_medida_id ? Number(data.porcion_unidad_medida_id) : null,
                 etapas: data.etapas.map((etapa) => ({
@@ -232,14 +225,14 @@ interface RendimientoRecetaProps {
 
 function RendimientoReceta({ register, errors, receta }: RendimientoRecetaProps) {
     const { data: unidadesMedida } = useApi<UnidadMedida[]>("/unidades-medida/");
-    const idsDeReceta = new Set([receta?.rendimiento_unidad_medida_id, receta?.porcion_unidad_medida_id]);
+    const idsDeReceta = new Set([receta?.porcion_unidad_medida_id]);
     const unidades = (unidadesMedida ?? []).filter((unidad) => unidad.activo || idsDeReceta.has(unidad.id));
 
     return (
         <div className="text-start mb-3">
-            <h6 className="fw-bold mb-1">Rendimiento y porción</h6>
+            <h6 className="fw-bold mb-1">Porción</h6>
             <p className="text-muted small mb-2">
-                Indicá cuánto producto final se obtiene con las cantidades de la receta y, si corresponde, la porción o unidad de venta.
+                Si corresponde, indicá la porción o unidad de venta. El rendimiento final no se ingresa: se calcula sumando los insumos de la receta en gramos.
             </p>
             {!unidadesMedida ? (
                 <div className="d-flex align-items-center gap-2 text-muted small">
@@ -247,33 +240,6 @@ function RendimientoReceta({ register, errors, receta }: RendimientoRecetaProps)
                 </div>
             ) : (
                 <Row className="g-2">
-                    <Col sm={6}>
-                        <Form.Label className="p-1 fw-bold small mb-0">Rendimiento final *</Form.Label>
-                        <InputGroup hasValidation>
-                            <Form.Control
-                                type="number"
-                                min={0}
-                                step="any"
-                                placeholder="Cantidad"
-                                {...register("rendimiento", {
-                                    required: "El rendimiento final es obligatorio.",
-                                    validate: (valor) => Number(valor) > 0 || "El rendimiento debe ser mayor a 0.",
-                                })}
-                                isInvalid={!!errors.rendimiento}
-                            />
-                            <Form.Select
-                                {...register("rendimiento_unidad_medida_id", { required: "Seleccioná la unidad del rendimiento." })}
-                                isInvalid={!!errors.rendimiento_unidad_medida_id}
-                                style={{ maxWidth: '10rem' }}
-                            >
-                                <option value="">-</option>
-                                {unidades.map((unidad) => <option key={unidad.id} value={unidad.id}>{unidad.nombre}</option>)}
-                            </Form.Select>
-                            <Form.Control.Feedback type="invalid">
-                                {errors.rendimiento?.message ?? errors.rendimiento_unidad_medida_id?.message}
-                            </Form.Control.Feedback>
-                        </InputGroup>
-                    </Col>
                     <Col sm={6}>
                         <Form.Label className="p-1 fw-bold small mb-0">Porción o unidad de venta</Form.Label>
                         <InputGroup hasValidation>
@@ -326,8 +292,6 @@ function IngredientesReceta({ control, register, errors, producto, receta }: Ing
         rules: { validate: (items) => items.some((item) => item.tipo === "Ingrediente") || MENSAJE_SIN_INGREDIENTES },
     });
     const insumosActuales = useWatch({ control, name: "insumos" });
-    const rendimiento = useWatch({ control, name: "rendimiento" });
-    const rendimientoUnidadId = useWatch({ control, name: "rendimiento_unidad_medida_id" });
     const { data: insumosDisponibles } = useApi<Insumo[]>(producto ? "/insumos/" : null);
     const { data: aditivosDisponibles } = useApi<Aditivo[]>(producto ? "/aditivos/" : null);
     const [resultado, setResultado] = useState<{ consulta: string; evaluacion: EvaluacionSellos | null } | null>(null);
@@ -346,12 +310,7 @@ function IngredientesReceta({ control, register, errors, producto, receta }: Ing
         .map((aditivo) => ({ value: String(aditivo.id), label: etiquetaAditivo(aditivo) }));
 
     const items = insumosValidos(insumosActuales);
-    const rendimientoValido = Number(rendimiento) > 0 && rendimientoUnidadId !== "";
-    const consulta = JSON.stringify({
-        items,
-        rendimiento: rendimientoValido ? Number(rendimiento) : null,
-        rendimiento_unidad_medida_id: rendimientoValido ? Number(rendimientoUnidadId) : null,
-    });
+    const consulta = JSON.stringify({ items });
     const hayItems = items.length > 0;
     const calculando = hayItems && resultado?.consulta !== consulta;
     const evaluacion = hayItems && !calculando ? resultado?.evaluacion ?? null : null;
@@ -365,8 +324,6 @@ function IngredientesReceta({ control, register, errors, producto, receta }: Ing
             try {
                 const { data } = await api.post<EvaluacionSellos>("/recetas/sellos", {
                     producto_id: producto.id,
-                    rendimiento: datosConsulta.rendimiento,
-                    rendimiento_unidad_medida_id: datosConsulta.rendimiento_unidad_medida_id,
                     insumos: datosConsulta.items,
                 });
                 if (vigente) setResultado({ consulta, evaluacion: data });
@@ -389,7 +346,7 @@ function IngredientesReceta({ control, register, errors, producto, receta }: Ing
         <div className="text-start mb-2">
             <h6 className="fw-bold mb-1">Ingredientes y aditivos</h6>
             <p className="text-muted small mb-2">
-                Indicá la cantidad de cada insumo que se usa para obtener el rendimiento final. Clasificá cada renglón como ingrediente o aditivo; los aditivos se eligen de la lista de referencia.
+                Indicá la cantidad de cada insumo; su suma en gramos es el rendimiento final del producto. Clasificá cada renglón como ingrediente o aditivo; los aditivos se eligen de la lista de referencia.
             </p>
 
             {insumos.map((item, index) => {
@@ -491,6 +448,17 @@ function IngredientesReceta({ control, register, errors, producto, receta }: Ing
                 <Button variant="link" size="sm" className="px-0" onClick={() => append(renglonVacio("Aditivo"))}>
                     <i className="bi bi-plus-lg me-1"></i>Agregar aditivo
                 </Button>
+            </div>
+
+            <div className="d-flex align-items-center gap-2 small mb-2">
+                <span className="fw-bold">Rendimiento final estimado:</span>
+                {calculando ? (
+                    <span className="text-muted"><Spinner animation="border" size="sm" className="me-1" />Calculando…</span>
+                ) : evaluacion?.rendimiento != null ? (
+                    <span>{formatearGramos(evaluacion.rendimiento)}</span>
+                ) : (
+                    <span className="text-muted fst-italic">Agregá insumos para calcularlo</span>
+                )}
             </div>
 
             <SellosFrontales evaluacion={evaluacion} cargando={calculando} />

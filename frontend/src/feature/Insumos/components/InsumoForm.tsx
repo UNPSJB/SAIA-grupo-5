@@ -3,7 +3,8 @@ import { useState } from 'react';
 import  type { UnidadMedida } from '../../UnidadMedida/types'
 import { useNavigate } from 'react-router-dom';
 import { useApi } from '../../../hooks';
-import type { NewInsumo } from '../types';
+import type { InformacionNutricional, MarcasAporte, NewInsumo } from '../types';
+import { CAMPOS_NUTRICIONALES, MARCAS_APORTE, type CampoNutricional } from '../constants';
 import { DATOS_NUTRICIONALES_CAA, nutrientesANumero, nutrientesATexto, type InfoNutricionalFormValues } from '../../InformacionNutricionalInsumo/types';
 import {ESTADO_INFO_NUTRICIONAL_VACIO, InfoNutricionalInsumoForm, type InfoNutricionalFormState } from '../../InformacionNutricionalInsumo/components/InfoNutricionalInsumoForm';
 
@@ -45,9 +46,33 @@ export function InsumoForm({ textoBoton, onSubmit, valoresIniciales, nutricionIn
   const [pesoUnidad, setPesoUnidad] = useState(aTexto(valoresIniciales?.peso_unidad));
   const [nutricion, setNutricion] = useState<InfoNutricionalFormState>(armarEstadoNutricionInicial(nutricionInicial));
 
+  const [marcas, setMarcas] = useState<MarcasAporte>({
+    aporta_azucares: valoresIniciales?.aporta_azucares ?? false,
+    aporta_grasas: valoresIniciales?.aporta_grasas ?? false,
+    aporta_sodio: valoresIniciales?.aporta_sodio ?? false,
+    aporta_edulcorantes: valoresIniciales?.aporta_edulcorantes ?? false,
+    aporta_cafeina: valoresIniciales?.aporta_cafeina ?? false,
+  });
+
   const unidadSeleccionada = unidadesMedida?.find((u) => u.id === unidadMedidaId);
 
-  const nutricionObligatoria = true;
+  const algunNutrienteCargado =
+    nutricion.fuente_nutricional_id !== "" ||
+    nutricion.referencia_fuente.trim() !== "" ||
+    DATOS_NUTRICIONALES_CAA.some(({dato}) => (nutricion.valores?.[dato] ?? "").trim() !== "");
+
+  const nutricionObligatoria = Boolean(nutricionInicial) || algunNutrienteCargado;
+  const errorNutriente = (campo: CampoNutricional) => {
+    const valor = nutricion[campo].trim();
+    if (valor === "") return algunNutrienteCargado ? "Completá este valor o dejá vacía toda la información nutricional." : null;
+    if (Number(valor) < 0) return "El valor no puede ser negativo.";
+    const { maximo, unidad } = CAMPOS_NUTRICIONALES.find((c) => c.campo === campo)!;
+    if (Number(valor) > maximo) return `No puede superar ${maximo.toLocaleString("es-AR")} ${unidad}.`;
+    if (campo === "grasas_saturadas" && nutricion.grasas_totales.trim() !== "" && Number(valor) > Number(nutricion.grasas_totales)) {
+      return "No puede superar a las grasas totales.";
+    }
+    return null;
+  };
 
   const nutricionCompleta = !nutricionObligatoria || (
     nutricion.fuente_nutricional_id !== "" &&
@@ -81,6 +106,7 @@ export function InsumoForm({ textoBoton, onSubmit, valoresIniciales, nutricionIn
         marca: marca.trim(),
         unidad_medida_id: Number(unidadMedidaId),
         peso_unidad: aNumero(pesoUnidad),
+        ...marcas,
       },
       nutricion: payloadNutricion,
     });
@@ -157,6 +183,27 @@ export function InsumoForm({ textoBoton, onSubmit, valoresIniciales, nutricionIn
               </Form.Group>
           </Col>
         </Row>
+        
+        <fieldset className="mb-3 text-start border-top pt-3">
+          <legend className="fs-6 fw-bold p-1 mb-1">Marcas para el rotulado frontal</legend>
+          <p className="text-muted small px-1">
+            Indicá si el insumo aporta azúcares, grasas o sodio agregados, o si es un aditivo edulcorante o con cafeína. Se usa para proponer las marcas del producto.
+          </p>
+          <Row>
+            {MARCAS_APORTE.map(({ campo, etiqueta }) => (
+              <Col sm={6} key={campo}>
+                <Form.Check
+                  type="checkbox"
+                  id={`form_${campo}`}
+                  className="mb-2"
+                  label={etiqueta}
+                  checked={marcas[campo]}
+                  onChange={(e) => setMarcas({ ...marcas, [campo]: e.target.checked })}
+                />
+              </Col>
+            ))}
+          </Row>
+        </fieldset>
         <InfoNutricionalInsumoForm
           estado={nutricion}
           onChange={setNutricion}
@@ -164,7 +211,9 @@ export function InsumoForm({ textoBoton, onSubmit, valoresIniciales, nutricionIn
           validated={validated}
           esEdicion={Boolean(nutricionInicial)}
         />
-        <Button variant="secondary" type="button" onClick={() => navigate('/insumos')}>
+
+        <Button variant="secondary" type="button"
+          onClick={() => navigate('/insumos')}>
           <i className="bi bi-x-circle me-1"></i>Cancelar
         </Button>
         <Button className="ms-2" variant="primary" type="submit">
