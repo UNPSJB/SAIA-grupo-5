@@ -26,8 +26,8 @@ def update_parametro(parametro_id: int, datos: schemas.ParametroNutrienteUpdate,
     return services.actualizar_parametro(db, parametro_id, datos)
 
 @router.post("/recetas/{receta_id}/calcular", response_model=schemas.InformacionNutricionalReceta)
-def calcular_nutricion_receta(receta_id: int, db: Session = Depends(get_db)):
-    return services.calcular_informacion_receta(db, receta_id)
+def calcular_nutricion_receta(receta_id: int, datos: schemas.CalculoRecetaCreate, db: Session = Depends(get_db)):
+    return services.calcular_informacion_receta(db, receta_id, datos)
 
 @router.get("/recetas/{receta_id}", response_model=schemas.InformacionNutricionalReceta)
 def read_nutricion_receta(receta_id: int, db: Session = Depends(get_db)):

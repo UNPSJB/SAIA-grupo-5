@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Alert, Badge, Button, Card, Form, Spinner, Table } from "react-bootstrap";
+import { Alert, Badge, Button, Card, Form, InputGroup, Spinner, Table } from "react-bootstrap";
 import { mutate } from "swr";
 import { useApi } from "../../../hooks/useApi";
 import { useAuth } from "../../../hooks/useAuth";
@@ -25,11 +25,19 @@ export function InfoNutricionalReceta({ recetaId }: InfoNutricionalRecetaFormPro
     const { data: infoReceta, isLoading } = useApi<InformacionNutricionalReceta>(endpoint);
     const [calculando, setCalculando] = useState(false);
     const [verExactos, setVerExactos] = useState(false);
+    const [rendimiento, setRendimiento] = useState<string | null>(null);
+    const rendimientoIngresado = rendimiento ?? (infoReceta ? String(infoReceta.rendimiento) : "");
+    const rendimientoNumero = Number(rendimientoIngresado);
+    const rendimientoValido = rendimientoIngresado.trim() !== "" && rendimientoNumero > 0;
 
     const handleCalcular = async () => {
+        if (!rendimientoValido) return;
         setCalculando(true);
         try {
-            const { data } = await api.post<InformacionNutricionalReceta>(`/calculo-nutricional/recetas/${recetaId}/calcular`);
+            const { data } = await api.post<InformacionNutricionalReceta>(
+                `/calculo-nutricional/recetas/${recetaId}/calcular`,
+                { rendimiento: rendimientoNumero },
+            );
             await mutate(endpoint, data, false);
             mostrarAlertaExito("Información nutricional calculada correctamente.");
         } catch (error: any) {
@@ -89,10 +97,30 @@ export function InfoNutricionalReceta({ recetaId }: InfoNutricionalRecetaFormPro
                     )}
 
                     {currentUser?.administrar && (
+                        <InputGroup size="sm" style={{ width: "auto" }} hasValidation>
+                            <InputGroup.Text>Rendimiento final</InputGroup.Text>
+                            <Form.Control
+                                type="number"
+                                min={0}
+                                step="any"
+                                placeholder="Ej: 1000"
+                                aria-label="Rendimiento final en gramos"
+                                title="Peso real del producto terminado, después de la cocción o el envasado."
+                                style={{ maxWidth: "120px" }}
+                                value={rendimientoIngresado}
+                                isInvalid={rendimientoIngresado.trim() !== "" && !rendimientoValido}
+                                onChange={(e) => setRendimiento(e.target.value)}
+                            />
+                            <InputGroup.Text>g</InputGroup.Text>
+                        </InputGroup>
+                    )}
+
+                    {currentUser?.administrar && (
                         <Button
                             variant={infoReceta ? "outline-primary" : "primary"}
                             size="sm"
-                            disabled={calculando}
+                            disabled={calculando || !rendimientoValido}
+                            title={rendimientoValido ? undefined : "Ingresá el rendimiento final en gramos"}
                             onClick={handleCalcular}
                         >
                             {calculando ? (
@@ -112,8 +140,8 @@ export function InfoNutricionalReceta({ recetaId }: InfoNutricionalRecetaFormPro
                     </div>
                 ) : !infoReceta ? (
                     <Alert variant="light" className="border text-muted mb-0">
-                        Esta receta aún no tiene información nutricional calculada.
-                        <strong>Calcular Tabla Nutricional</strong> 
+                        Esta receta aún no tiene información nutricional calculada. Ingresá el rendimiento
+                        final en gramos y presioná <strong>Calcular Tabla Nutricional</strong>.
                     </Alert>
                 ) : (
                     <>

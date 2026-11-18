@@ -39,7 +39,6 @@ class EvaluacionSellos(BaseModel):
     evaluable: bool
     es_liquido: bool
     cantidad_base: float | None = None
-    rendimiento: float | None = None 
     valor_energetico: float | None = None
     azucares_anadidos: float | None = None
     grasas_totales: float | None = None
@@ -55,7 +54,6 @@ class EvaluacionSellosCreate(BaseModel):
 
 
 class RecetaBase(BaseModel):
-    # El rendimiento final no se ingresa: se calcula como la suma de los insumos en gramos.
     porcion: Annotated[float | None, Field(gt=0)] = None
     porcion_unidad_medida_id: int | None = None
     etapas: Annotated[list[EtapaRecetaAnidadaCreate], Field(min_length=1)]
@@ -91,7 +89,6 @@ class RecetaVersion(BaseModel):
 
 
 class Receta(RecetaVersion):
-    rendimiento: float | None = None  # calculado a partir de los insumos
     porcion: float | None = None
     porcion_unidad_medida_id: int | None = None
     porcion_unidad_medida: UnidadMedida | None = None

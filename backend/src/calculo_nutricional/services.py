@@ -9,6 +9,7 @@ from src.informacion_nutricional_insumo.models import InformacionNutricionalInsu
 from src.informacion_nutricional_insumo.constants import DATOS_NUTRICIONALES
 from src.receta.models import Receta, InsumoReceta
 from src.receta import constants as receta_constants
+from src.receta.sellos import gramos_de_insumo
 from src.calculo_nutricional.constants import ( ID_CONFIGURACION_CALCULO, PARAMETROS_NUTRIENTES_DEFAULT)
 
 logger = logging.getLogger(__name__)
@@ -89,10 +90,9 @@ def _construir_tabla_nutricional(totales: dict[str, Decimal], rendimiento_base: 
 
     return tabla
 
-def calcular_informacion_receta(db: Session, receta_id: int) -> InformacionNutricionalReceta:
+def calcular_informacion_receta(db: Session, receta_id: int, datos: schemas.CalculoRecetaCreate) -> InformacionNutricionalReceta:
     receta = db.scalars(select(Receta)
         .options(
-            joinedload(Receta.rendimiento_unidad_medida),
             joinedload(Receta.porcion_unidad_medida),
             joinedload(Receta.insumos).joinedload(InsumoReceta.insumo),
             joinedload(Receta.insumos).joinedload(InsumoReceta.aditivo),
@@ -101,10 +101,10 @@ def calcular_informacion_receta(db: Session, receta_id: int) -> InformacionNutri
     if not receta:
         raise exceptions.RecetaNoEncontrada()
 
-    if receta.rendimiento is None or receta.porcion is None:
-        raise exceptions.RendimientoInvalido()
+    if receta.porcion is None:
+        raise exceptions.PorcionInvalida()
 
-    rendimiento_base = _convertir_gramos(receta.rendimiento, receta.rendimiento_unidad_medida)
+    rendimiento_base = datos.rendimiento
     porcion_base = _convertir_gramos(receta.porcion, receta.porcion_unidad_medida)
 
     if rendimiento_base <= 0:
@@ -135,7 +135,11 @@ def calcular_informacion_receta(db: Session, receta_id: int) -> InformacionNutri
             if info is None:
                 raise exceptions.InsumoSinInfoNutricional()
 
-        cantidad_base = _convertir_gramos(item.cantidad, item.unidad_medida)
+        # Misma conversión a gramos que sellos y composición (incluye peso_unidad para unidades de conteo)
+        gramos = gramos_de_insumo(item.insumo, item.cantidad)
+        if gramos is None:
+            raise exceptions.UnidadNoConvertible()
+        cantidad_base = Decimal(str(gramos))
 
         for campo in DATOS_NUTRICIONALES:
             valor_100 = getattr(info, campo) or Decimal("0")

@@ -43,6 +43,9 @@ class ParametroNutriente(ParametroNutrienteBase):
 
     model_config = ConfigDict(from_attributes=True)
 
+class CalculoRecetaCreate(BaseModel):
+    rendimiento: Annotated[Decimal, Field(gt=0, le=10_000_000)]
+
 class FilaNutrienteCalculado(BaseModel):
     codigo: str
     nombre: str
