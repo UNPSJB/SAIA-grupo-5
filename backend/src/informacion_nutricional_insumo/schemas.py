@@ -26,8 +26,8 @@ class InfoNutricionalCreate(InfoNutricionalBase):
     modificado_respecto_fuente: bool = False
 
 class InfoNutricionalUpdate(InfoNutricionalBase):
-    pass
-    
+    motivo: Annotated[str | None, Field(default=None, max_length=500)] = None
+
 class InfoNutricional(InfoNutricionalBase):
     id: int
     insumo_id: int | None = None

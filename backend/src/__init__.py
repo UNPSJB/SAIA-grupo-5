@@ -33,3 +33,7 @@ from src.proveedor.models import Proveedor
 from src.lote_proveedor.models import LoteProveedor, HistorialEstadoLoteProveedor
 from src.insumos_lote.models import InsumoLote
 from src.lote_produccion.models import LoteProduccion, InsumoUtilizado, HistorialEstadoLote
+from src.fuente_nutricional.models import FuenteNutricional, AlimentoReferencia
+from src.informacion_nutricional_insumo.models import InformacionNutricionalInsumo
+from src.historial_nutricional_insumo.models import HistorialNutricionalInsumo
+from src.calculo_nutricional.models import ConfiguracionCalculoNutricional, ParametroNutriente, InformacionNutricionalReceta

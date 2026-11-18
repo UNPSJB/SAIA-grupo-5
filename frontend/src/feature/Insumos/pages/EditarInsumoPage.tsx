@@ -3,9 +3,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import { mutate } from "swr";
 import { PageHeader } from "../../../components/PageHeader";
 import { InsumoForm } from "../components/InsumoForm";
+import type { InsumoConNutricionSubmit } from "../components/InsumoForm";
 import { api } from "../../../libs/axios";
 import { useApi } from "../../../hooks/useApi";
-import type { Insumo, NewInsumo } from "../types";
+import type { Insumo } from "../types";
+import type { InfoNutricional } from "../../InformacionNutricionalInsumo/types";
 import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
 import { PageLoading } from "../../../components/PageLoading";
 
@@ -14,12 +16,22 @@ export function EditarInsumoPage(){
     const { id } = useParams();         //
 
     const { data: insumo, isLoading, error } = useApi<Insumo>(`/insumos/${id}`);
+    const { data: infoNutricional, isLoading: cargandoNutricion } = useApi<InfoNutricional>(id ? `/informaciones-nutricionales/insumo/${id}` : null);
 
-    const actualizarInsumo = async (datos: NewInsumo) => {
+    const actualizarInsumo = async ({ insumo: datosInsumo, nutricion }: InsumoConNutricionSubmit) => {
         try{
-            await api.put(`/insumos/${id}`, datos);
+            await api.put(`/insumos/${id}`, datosInsumo);
+            if (nutricion) {
+                if (infoNutricional) {
+                    const { modificado_respecto_fuente, ...payloadUpdate } = nutricion;
+                    await api.put(`/informaciones-nutricionales/${infoNutricional.id}`, payloadUpdate);
+                } else {
+                    await api.post("/informaciones-nutricionales/", { ...nutricion, insumo_id: Number(id)});
+                }
+            }
             await mutate("/insumos/");
             await mutate(`/insumos/${id}`);     // Se agrego esto ya que habia un bug en el editar
+            await mutate(`/informaciones-nutricionales/insumo/${id}`);
             mostrarAlertaExito("El insumo se edito correctamente.");
             navigate("/insumos");
         } catch (error: any){
@@ -35,7 +47,7 @@ export function EditarInsumoPage(){
 
     const tituloPagina = "Editar Insumo";
 
-    if (isLoading) return <PageLoading title={tituloPagina} />;
+    if (isLoading || cargandoNutricion) return <PageLoading title={tituloPagina} />;
 
     if (!insumo) return (
         <Container>
@@ -69,25 +81,38 @@ export function EditarInsumoPage(){
             </Row>
         </Container>
     )
-
-
+    
     return(
         <>
             <PageHeader title={tituloPagina}/>
-
             <Container>
                 <InsumoForm textoBoton="Editar Insumo"
                     onSubmit={actualizarInsumo}
                     valoresIniciales={{
                         nombre: insumo.nombre,
+                        marca: insumo.marca,
                         unidad_medida_id: insumo.unidad_medida_id,
-                        valor_energetico: insumo.valor_energetico,
-                        azucares_anadidos: insumo.azucares_anadidos,
-                        grasas_totales: insumo.grasas_totales,
-                        grasas_saturadas: insumo.grasas_saturadas,
-                        sodio: insumo.sodio,
                         peso_unidad: insumo.peso_unidad,
-                    }}/>
+                    }}
+                    nutricionInicial={
+                        infoNutricional
+                            ? {
+                                  fuente_nutricional_id: infoNutricional.fuente_nutricional_id,
+                                  referencia_fuente: infoNutricional.referencia_fuente,
+                                  valor_energetico: infoNutricional.valor_energetico,
+                                  carbohidratos: infoNutricional.carbohidratos,
+                                  azucares_totales: infoNutricional.azucares_totales,
+                                  azucares_anadidos: infoNutricional.azucares_anadidos,
+                                  proteinas: infoNutricional.proteinas,
+                                  grasas_totales: infoNutricional.grasas_totales,
+                                  grasas_saturadas: infoNutricional.grasas_saturadas,
+                                  grasas_trans: infoNutricional.grasas_trans,
+                                  fibra_alimentaria: infoNutricional.fibra_alimentaria,
+                                  sodio: infoNutricional.sodio,
+                              }
+                            : null
+                    }
+                />
             </Container>
         </>
     )

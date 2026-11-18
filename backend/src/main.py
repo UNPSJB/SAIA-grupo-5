@@ -91,6 +91,11 @@ from src.direcciones_cliente.router import router as direcciones_cliente_router
 from src.envios_lote.router import router as envios_lote_router
 from src.insumos_lote.router import router as insumo_lote_router
 from src.pedidos_proveedor.router import router as pedidos_proveedor_router
+from src.fuente_nutricional.router import router as fuente_nutricional_router
+from src.informacion_nutricional_insumo.router import router as informacion_nutricional_insumo_router
+from src.historial_nutricional_insumo.router import router as historial_nutricional_insumo_router
+from src.calculo_nutricional.router import router as calculo_nutricional_router
+
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -157,4 +162,9 @@ app.include_router(direcciones_cliente_router)
 app.include_router(envios_lote_router)
 app.include_router(insumo_lote_router)
 app.include_router(pedidos_proveedor_router)
+
+app.include_router(fuente_nutricional_router)
+app.include_router(informacion_nutricional_insumo_router)
+app.include_router(historial_nutricional_insumo_router)
+app.include_router(calculo_nutricional_router)
 

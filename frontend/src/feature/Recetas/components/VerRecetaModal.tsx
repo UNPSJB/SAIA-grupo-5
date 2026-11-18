@@ -6,6 +6,7 @@ import { EstadoBadge } from '../../../components/EstadoBadge';
 import type { Producto } from '../../Productos/types';
 import type { Receta, RecetaVersion } from '../types';
 import { SellosFrontales } from './SellosFrontales';
+import { InfoNutricionalReceta } from "../../CalculoNutricional/components/InfoNutricionalRecetaForm";
 
 interface VerRecetaModalProps {
     producto: Producto | null;
@@ -142,6 +143,7 @@ export function VerRecetaModal({ producto, onHide, onEditar }: VerRecetaModalPro
                         )}
 
                         <SellosFrontales evaluacion={receta.sellos} />
+                        <div className="text-start"> <InfoNutricionalReceta recetaId={receta.id} /></div>
 
                         <h6 className="fw-bold text-start mt-4 mb-2">Etapas y pasos</h6>
                         <Accordion alwaysOpen defaultActiveKey={receta.etapas.map((etapa) => String(etapa.id))}>

@@ -134,4 +134,4 @@ def leer_alimentos_referencia(db: Session, fuente_nutricional_id: int | None = N
         stmt = stmt.where(AlimentoReferencia.fuente_nutricional_id == fuente_nutricional_id)
     if busqueda:
         stmt = stmt.where(AlimentoReferencia.nombre.ilike(f"%{busqueda.strip()}%"))
-    return list(db.scalars(stmt.limit(50)).all())
+    return list(db.scalars(stmt.limit(500)).all())

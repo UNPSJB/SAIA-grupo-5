@@ -85,7 +85,8 @@ def modificar_info_nutricional(db: Session, info_nutricional_id: int, info_nutri
                 valor_anterior = valor_actual,
                 valor_nuevo = valor_nuevo,
                 persona_id = persona.id,
-                fecha = datetime.now()
+                fecha = datetime.now(),
+                motivo=info_nutricional.motivo,
                 )
     
     for key, value in info_nutricional.model_dump().items():

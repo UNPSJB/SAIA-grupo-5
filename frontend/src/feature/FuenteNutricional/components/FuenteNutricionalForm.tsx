@@ -50,7 +50,7 @@ export function FuenteNutricionalForm({ textoBoton, onSubmit, valoresIniciales }
                     <Form.Label className="p-1 fw-bold">Nombre (*)</Form.Label>
                     <Form.Control
                         type="text"
-                        placeholder="Ej: SARA 2, SARA 1..."
+                        placeholder="Ej: SARA 2, Rotulo Proveedor, Valor Propio..."
                         {...register("nombre", {
                             required: "El nombre es obligatorio.",
                             minLength: { value: 3, message: "El nombre debe tener al menos 3 caracteres." },
