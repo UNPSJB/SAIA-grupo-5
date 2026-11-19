@@ -15,7 +15,9 @@ class ProductoBase(BaseModel):
     cantidad_neta: Annotated[int, Field(gt=0)]
     unidad_medida_id: int
     fecha_lanzamiento: date
+    codigo_producto: Annotated[str | None, Field(pattern=r"^[0-9]{5}$")] = None
     foto_producto: str | None = None
+    
 
 class ProductoCreate(ProductoBase):
     pass
@@ -26,6 +28,13 @@ class ProductoUpdate(ProductoBase):
 class Producto(ProductoBase):
     id: int
     activo: bool
+    codigo_barras: str | None = None
+    envasado_ausencia_cliente: bool | None = None
+    azucares_agregados: bool | None = None
+    grasas_agregadas: bool | None = None
+    sodio_agregado: bool | None = None
+    contiene_edulcorantes: bool | None = None
+    contiene_cafeina: bool | None = None
     unidad_medida: UnidadMedida
     receta: Receta | None = None
 

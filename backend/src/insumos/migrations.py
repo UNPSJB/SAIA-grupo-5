@@ -7,6 +7,11 @@ COLUMNAS_INSUMOS = (
     ("grasas_saturadas", "FLOAT NULL"),
     ("sodio", "FLOAT NULL"),
     ("peso_unidad", "FLOAT NULL"),
+    ("aporta_azucares", "BOOLEAN NOT NULL DEFAULT 0"),
+    ("aporta_grasas", "BOOLEAN NOT NULL DEFAULT 0"),
+    ("aporta_sodio", "BOOLEAN NOT NULL DEFAULT 0"),
+    ("aporta_edulcorantes", "BOOLEAN NOT NULL DEFAULT 0"),
+    ("aporta_cafeina", "BOOLEAN NOT NULL DEFAULT 0"),
 )
 
 

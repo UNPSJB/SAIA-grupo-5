@@ -5,6 +5,7 @@ import { useApi } from "../../../hooks/useApi";
 import type { Producto } from "../types";
 import { PageLoading } from "../../../components/PageLoading";
 import { useAuth } from "../../../hooks";
+import { CodigoBarras } from "../components/CodigoBarras";
 
 export function VerProductoPage() {
     const navigate = useNavigate();
@@ -74,6 +75,25 @@ export function VerProductoPage() {
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
                                 <Col sm={4} className="fw-bold text-secondary">Fecha de lanzamiento</Col>
                                 <Col sm={8}>{producto.fecha_lanzamiento.split("-").reverse().join("/")}</Col>
+                            </Row>
+
+                            <Row className="mb-3 border-bottom pb-3 align-items-center">
+                                <Col sm={4} className="fw-bold text-secondary">Código del producto</Col>
+                                <Col sm={8}>{producto.codigo_producto || "Sin código asignado"}</Col>
+                            </Row>
+
+                            <Row className="mb-3 border-bottom pb-3 align-items-center">
+                                <Col sm={4} className="fw-bold text-secondary">Código de barras</Col>
+                                <Col sm={8}>
+                                    {producto.codigo_barras ? (
+                                        <div>
+                                            <CodigoBarras codigo={producto.codigo_barras} />
+                                            <p className="text-muted small mb-0">Código EAN-13 demostrativo</p>
+                                        </div>
+                                    ) : (
+                                        <span className="text-muted fst-italic">Sin código de barras asignado</span>
+                                    )}
+                                </Col>
                             </Row>
 
                             {/* Para el archivo adjunto preguntamos si existe, si no tiene nada cargado se muestra un texto, sino se comprueba si es una foto para mostrarla y si no lo es se deja descargar el archivo */}

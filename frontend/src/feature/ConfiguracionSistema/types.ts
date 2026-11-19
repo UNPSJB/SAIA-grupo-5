@@ -22,6 +22,8 @@ export type ConfiguracionSistema = {
     vista_publica_mostrar_documentos_tecnicos: boolean
     vista_publica_mostrar_productos_elaborados: boolean
     vista_publica_mostrar_lotes_producidos: boolean
+    prefijo_gs1: string
+    prefijo_empresa: string | null
 }
 
 export type ConfiguracionSistemaUpdate = {
@@ -34,4 +36,6 @@ export type ConfiguracionSistemaUpdate = {
     dias_antelacion_elementos?: number
     hora_generacion_checklists?: number
     minuto_generacion_checklists?: number
+    prefijo_gs1?: string
+    prefijo_empresa?: string | null
 }
