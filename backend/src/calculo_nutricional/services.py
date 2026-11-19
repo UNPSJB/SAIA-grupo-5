@@ -124,6 +124,12 @@ def calcular_informacion_receta(db: Session, receta_id: int, datos: schemas.Calc
                     InformacionNutricionalInsumo.aditivo_id == item.aditivo_id
                 )
             ).first()
+            if info is None and item.insumo_id is not None:
+                    info = db.scalars(
+                        select(InformacionNutricionalInsumo).where(
+                            InformacionNutricionalInsumo.insumo_id == item.insumo_id
+                        )
+                    ).first()
             if info is None:
                 continue
         else:
