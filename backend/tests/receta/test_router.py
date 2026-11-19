@@ -27,7 +27,7 @@ def test_crear_receta_con_ingredientes_y_aditivos(client, auth_headers, producto
     assert response.status_code == 200
     assert data["version"] == 1
     assert data["vigente"] is True
-    assert data["rendimiento"] == 101  # 70 g + 30 g + 1 ml de esencia (≈ 1 g)
+    assert "rendimiento" not in data
     assert data["porcion"] == 25
     assert [(item["nombre"], item["tipo"]) for item in data["insumos"]] == [
         ("Harina", "Ingrediente"), ("Azúcar", "Ingrediente"), ("Esencia", "Aditivo"),
@@ -61,8 +61,9 @@ def test_crear_receta_solo_con_aditivos(client, auth_headers, producto_solido, u
     assert ErrorCode.RECETA_SIN_INGREDIENTES in response.json()["detail"][0]["msg"]
 
 
-def test_rendimiento_se_calcula_como_suma_de_insumos_en_gramos(client, auth_headers, producto_solido, insumos_sellos):
-    # El rendimiento no se ingresa. Unidades de prueba: Gramo, Mililitro (≈ 1 g) y Unidad (peso_unidad):
+def test_sellos_usan_la_masa_de_insumos_en_gramos(client, auth_headers, producto_solido, insumos_sellos):
+    # La receta no tiene rendimiento: los sellos usan como base la masa de los insumos en gramos.
+    # Unidades de prueba: Gramo, Mililitro (≈ 1 g) y Unidad (peso_unidad):
     # 70 g de harina + 30 g de azúcar + 10 ml de agua (≈ 10 g) + 2 huevos de 50 g = 210 g
     response = client.post("/recetas/", json={
         "producto_id": producto_solido.id,
@@ -77,11 +78,12 @@ def test_rendimiento_se_calcula_como_suma_de_insumos_en_gramos(client, auth_head
     data = response.json()
 
     assert response.status_code == 200
-    assert data["rendimiento"] == 210
+    assert data["sellos"]["cantidad_base"] == 210
+    assert "rendimiento" not in data
     assert "rendimiento_unidad_medida" not in data
 
 
-def test_rendimiento_ingresado_por_el_usuario_se_ignora(client, auth_headers, producto_solido, insumos_sellos):
+def test_rendimiento_enviado_en_la_receta_se_ignora(client, auth_headers, producto_solido, insumos_sellos):
     response = client.post("/recetas/", json={
         "producto_id": producto_solido.id,
         "rendimiento": 9999,
@@ -90,7 +92,7 @@ def test_rendimiento_ingresado_por_el_usuario_se_ignora(client, auth_headers, pr
     }, headers=auth_headers)
 
     assert response.status_code == 200
-    assert response.json()["rendimiento"] == 100
+    assert "rendimiento" not in response.json()
 
 
 def test_crear_receta_con_aditivo_sin_clase_funcional(client, auth_headers, producto_solido, unidades_sellos, insumos_sellos):
@@ -234,7 +236,7 @@ def test_evaluar_sellos(client, auth_headers, producto_solido, unidades_sellos, 
     assert response.status_code == 200
     assert data["evaluable"] is True
     assert data["cantidad_base"] == 1000
-    assert data["rendimiento"] == 1000
+    assert "rendimiento" not in data
     assert data["valor_energetico"] == 364
     assert data["sellos"] == []
 

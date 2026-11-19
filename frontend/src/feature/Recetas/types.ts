@@ -33,7 +33,6 @@ export type EvaluacionSellos = {
     evaluable: boolean;
     es_liquido: boolean;
     cantidad_base: number | null;
-    rendimiento: number | null;
     valor_energetico: number | null;
     azucares_anadidos: number | null;
     grasas_totales: number | null;
@@ -54,8 +53,6 @@ export type RecetaVersion = {
 }
 
 export type Receta = RecetaVersion & {
-    // Rendimiento final en gramos: lo calcula el backend sumando los insumos (no se ingresa).
-    rendimiento: number | null;
     porcion: number | null;
     porcion_unidad_medida_id: number | null;
     porcion_unidad_medida: UnidadMedida | null;

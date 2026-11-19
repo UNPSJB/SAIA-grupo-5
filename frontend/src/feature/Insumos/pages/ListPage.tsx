@@ -38,6 +38,7 @@ export function ListPage() {
         return insumos.filter((insumo) => {
             const coincideBusqueda =
                 insumo.nombre.toLowerCase().includes(search.toLowerCase()) ||
+                insumo.marca.toLowerCase().includes(search.toLowerCase()) ||
                 insumo.unidad_medida.nombre.toLowerCase().includes(search.toLowerCase());
 
             const coincideEstado =
@@ -75,6 +76,13 @@ export function ListPage() {
             center: true,
             minWidth: '200px',
             grow: 2,
+        },
+        {
+            name: 'Marca',
+            selector: row => row.marca,
+            sortable: true,
+            center: true,
+            grow: 0.8,
         },
         {
             name: 'Unidad de medida',

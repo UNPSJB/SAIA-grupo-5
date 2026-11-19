@@ -41,9 +41,10 @@ def gramos_de_insumo(insumo: "Insumo", cantidad: float) -> float | None:
     return cantidad * equivalencia if equivalencia is not None else None
 
 
-def calcular_rendimiento(insumos: list[tuple["Insumo", float]]) -> float | None:
+# solo para sellos
+def _masa_total_gramos(insumos: list[tuple["Insumo", float]]) -> float:
     gramos = [g for g in (gramos_de_insumo(insumo, cantidad) for insumo, cantidad in insumos) if g is not None]
-    return round(sum(gramos), 2) if gramos else None
+    return round(sum(gramos), 2)
 
 
 def evaluar_sellos(
@@ -70,11 +71,10 @@ def evaluar_sellos(
         saturadas += insumo.grasas_saturadas * proporcion
         sodio += insumo.sodio * proporcion
 
-    rendimiento = calcular_rendimiento(insumos)
-    cantidad_base = rendimiento or 0.0
+    cantidad_base = _masa_total_gramos(insumos)
 
     if masa_total <= 0 or cantidad_base <= 0:
-        return EvaluacionSellos(evaluable=False, es_liquido=es_liquido, rendimiento=rendimiento, insumos_sin_informacion=sin_informacion)
+        return EvaluacionSellos(evaluable=False, es_liquido=es_liquido, insumos_sin_informacion=sin_informacion)
 
     escala = 100 / cantidad_base
     kcal_100 = kcal * escala
@@ -102,7 +102,6 @@ def evaluar_sellos(
         evaluable=True,
         es_liquido=es_liquido,
         cantidad_base=round(cantidad_base, 2),
-        rendimiento=rendimiento,
         valor_energetico=round(kcal_100, 2),
         azucares_anadidos=round(azucares_100, 2),
         grasas_totales=round(grasas * escala, 2),

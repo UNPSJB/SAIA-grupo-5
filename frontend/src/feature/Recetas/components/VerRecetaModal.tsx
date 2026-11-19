@@ -9,8 +9,8 @@ import { EstadoBadge } from '../../../components/EstadoBadge';
 import type { Producto } from '../../Productos/types';
 import type { Receta, RecetaVersion } from '../types';
 import { SellosFrontales } from './SellosFrontales';
+import { InfoNutricionalReceta } from "../../CalculoNutricional/components/InfoNutricionalRecetaForm";
 import { IngredientesComposicion } from './IngredientesComposicion';
-import { formatearGramos } from '../composicion/rendimiento';
 import "./VerRecetaModal.css";
 
 interface VerRecetaModalProps {
@@ -40,7 +40,7 @@ export function VerRecetaModal({ producto, onHide, onEditar }: VerRecetaModalPro
     );
 
     return (
-        <Modal show={producto !== null} onHide={onHide} size="lg" scrollable>
+        <Modal show={producto !== null} onHide={onHide} size="xl" scrollable>
             <Modal.Header closeButton>
                 <Modal.Title>Receta</Modal.Title>
             </Modal.Header>
@@ -93,16 +93,6 @@ export function VerRecetaModal({ producto, onHide, onEditar }: VerRecetaModalPro
 
                         <ListGroup horizontal="sm" className="mb-3 text-start">
                             <ListGroup.Item className="flex-fill">
-                                <div className="text-muted small" title="Se calcula sumando todos los insumos de la receta en gramos">
-                                    Rendimiento final calculado
-                                </div>
-                                <div className="fw-semibold">
-                                    {receta.rendimiento !== null
-                                        ? formatearGramos(receta.rendimiento)
-                                        : <span className="text-muted fst-italic">No se pudo calcular</span>}
-                                </div>
-                            </ListGroup.Item>
-                            <ListGroup.Item className="flex-fill">
                                 <div className="text-muted small">Porción o unidad de venta</div>
                                 <div className="fw-semibold">
                                     {receta.porcion !== null
@@ -111,7 +101,6 @@ export function VerRecetaModal({ producto, onHide, onEditar }: VerRecetaModalPro
                                 </div>
                             </ListGroup.Item>
                         </ListGroup>
-
                         <Tabs defaultActiveKey="etapas" id="secciones-receta" className="mb-3 receta-tabs" mountOnEnter>
                             <Tab eventKey="etapas" title="Etapas y pasos">
                                 <Accordion alwaysOpen defaultActiveKey={receta.etapas.map((etapa) => String(etapa.id))}>
@@ -141,6 +130,9 @@ export function VerRecetaModal({ producto, onHide, onEditar }: VerRecetaModalPro
                             </Tab>
                             <Tab eventKey="ingredientes" title="Ingredientes y composición">
                                 <IngredientesComposicion insumos={receta.insumos} mostrarComposicion={!!currentUser?.administrar} />
+                            </Tab>
+                            <Tab eventKey="informacion_nutricional" title="Información Nutricional">
+                                <div className="text-start"> <InfoNutricionalReceta recetaId={receta.id} /></div>
                             </Tab>
                         </Tabs>
                     </>

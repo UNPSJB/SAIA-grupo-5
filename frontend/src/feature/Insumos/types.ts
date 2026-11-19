@@ -1,13 +1,4 @@
-import type { UnidadMedida } from "../UnidadMedida/types"
-
-export type InformacionNutricional = {
-    valor_energetico: number | null;
-    azucares_anadidos: number | null;
-    grasas_totales: number | null;
-    grasas_saturadas: number | null;
-    sodio: number | null;
-    peso_unidad: number | null;
-}
+import type { UnidadMedida } from "../UnidadMedida/types" #
 
 export type MarcasAporte = {
     aporta_azucares: boolean;
@@ -22,10 +13,15 @@ export type Insumo = {
     nombre: string;
     unidad_medida_id: number;
     unidad_medida: UnidadMedida;
+    peso_unidad: number | null;
+    marca: string;
     activo: boolean;
 } & InformacionNutricional & MarcasAporte
 
 export type NewInsumo = {
     nombre: string;
     unidad_medida_id: number;
+    peso_unidad: number | null;
+    marca: string;
 } & Partial<InformacionNutricional> & Partial<MarcasAporte>
+
