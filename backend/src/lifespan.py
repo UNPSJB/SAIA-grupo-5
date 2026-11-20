@@ -44,6 +44,7 @@ async def db_creation_lifespan(app: FastAPI):
             "vista_publica_mostrar_documentos_tecnicos": "BOOLEAN NOT NULL DEFAULT 0",
             "vista_publica_mostrar_productos_elaborados": "BOOLEAN NOT NULL DEFAULT 0",
             "vista_publica_mostrar_lotes_producidos": "BOOLEAN NOT NULL DEFAULT 0",
+            "vista_publica_mostrar_catalogo": "BOOLEAN NOT NULL DEFAULT 0",
         }
         with engine.begin() as connection:
             for columna, definicion in migraciones_configuracion.items():

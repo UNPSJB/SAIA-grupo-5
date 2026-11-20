@@ -22,7 +22,7 @@ class Producto(ModeloBase):
     unidad_medida_id: Mapped[int] = mapped_column(ForeignKey("unidades_medida.id"), nullable=False)
     unidad_medida: Mapped["UnidadMedida"] = relationship()
 
-    foto_producto: Mapped[str | None] = mapped_column(Text, nullable=True)
+    foto_producto: Mapped[str] = mapped_column(Text, nullable=False)
     fecha_lanzamiento: Mapped[date] = mapped_column(Date, nullable=False)
 
     #lotes_produccion_id: Mapped[list[int]]

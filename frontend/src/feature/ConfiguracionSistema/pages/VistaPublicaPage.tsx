@@ -25,6 +25,7 @@ type AjustesPublicos = Pick<ConfiguracionSistema,
     | "vista_publica_mostrar_documentos_tecnicos"
     | "vista_publica_mostrar_productos_elaborados"
     | "vista_publica_mostrar_lotes_producidos"
+    | "vista_publica_mostrar_catalogo"
 >;
 
 type IndicadorToggle = {
@@ -45,6 +46,7 @@ const indicadores: IndicadorToggle[] = [
     { clave: "vista_publica_mostrar_documentos_tecnicos", titulo: "Documentos técnicos con versión vigente", detalle: "Porcentaje de documentos con versión vigente" },
     { clave: "vista_publica_mostrar_productos_elaborados", titulo: "Productos distintos elaborados", detalle: "Variedades de productos presentes en los lotes del mes" },
     { clave: "vista_publica_mostrar_lotes_producidos", titulo: "Lotes producidos", detalle: "Lotes de producción elaborados en el mes" },
+    { clave: "vista_publica_mostrar_catalogo", titulo: "Catalogo de productos", detalle: "Muestra los productos activos con su foto y presentacion para potenciales clientes" },
 ];
 
 export function VistaPublicaPage() {
