@@ -11,11 +11,10 @@ logger = logging.getLogger(__name__)
 # operaciones CRUD para Insumos
 
 def crear_insumo(db: Session, insumo: schemas.InsumoCreate) -> schemas.Insumo:
-    insumo_existente = db.scalars(select(Insumo).where(Insumo.nombre == insumo.nombre, Insumo.unidad_medida_id == insumo.unidad_medida_id)).first()
+    insumo_existente = db.scalars(select(Insumo).where(Insumo.nombre == insumo.nombre, Insumo.marca == insumo.marca, Insumo.unidad_medida_id == insumo.unidad_medida_id)).first()
 
     if insumo_existente:
         raise exceptions.InsumoDuplicado()
-
 
     _insumo = Insumo(**insumo.model_dump())
     db.add(_insumo)

@@ -157,6 +157,13 @@ import { NuevoPedidoProveedorPage } from './feature/PedidosProveedor/pages/Nuevo
 import { EditarPedidoProveedorPage } from './feature/PedidosProveedor/pages/EditarPedidoProveedorPage.tsx'
 import { VerPedidoProveedorPage } from './feature/PedidosProveedor/pages/VerPedidoProveedorPage.tsx'
 
+import { ListPage as FuenteNutricionalListPage } from './feature/FuenteNutricional/pages/Listpage.tsx'
+import { NuevaFuenteNutricionalPage } from './feature/FuenteNutricional/pages/NuevaFuenteNutricionalPage.tsx'
+import { EditarFuenteNutricionalPage } from './feature/FuenteNutricional/pages/EditarFuenteNutricionalPage.tsx'
+import { VerFuenteNutricionalPage } from './feature/FuenteNutricional/pages/VerFuenteNutricionalPage.tsx'
+
+import { ConfiguracionCalculoNutricionalPage } from './feature/CalculoNutricional/pages/ConfiguracionCalculoNutricionalPage.tsx'
+
 
 import { Login, NoAutorizado } from './feature/auth'
 import AuthLayout from './layouts/AuthLayout.tsx'
@@ -203,6 +210,13 @@ const router = createBrowserRouter([
             children: [
               { index: true, element: <ConfiguracionSistemaPage /> },
               { path: 'vista-publica', element: <VistaPublicaPage /> },
+            ],
+          },
+          {
+            path: 'configuracion-calculo-nutricional',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <ConfiguracionCalculoNutricionalPage /> },
             ],
           },
           {
@@ -578,6 +592,16 @@ const router = createBrowserRouter([
               { index: true, element: <AditivosListPage /> },
               { path: 'new', element: <NuevoAditivoPage /> },
               { path: ':id/edit', element: <EditarAditivoPage /> },
+            ],
+          },
+          {
+            path: 'fuentes-nutricionales',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <FuenteNutricionalListPage /> },
+              { path: 'new', element: <NuevaFuenteNutricionalPage /> },
+              { path: ':id/edit', element: <EditarFuenteNutricionalPage /> },
+              { path: ':id', element: <VerFuenteNutricionalPage /> },
             ],
           },
           { path: '*', element: <Page404 /> }

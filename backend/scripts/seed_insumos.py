@@ -7,10 +7,10 @@ Uso: python -m scripts.seed_insumos
 """
 
 from faker import Faker
-from sqlalchemy import select
+from sqlalchemy import Engine, inspect, select, text
 
 import src.all_models  # noqa: F401
-from src.database import SessionLocal
+from src.database import SessionLocal, engine
 from src.insumos.models import Insumo
 from src.unidad_medida.models import UnidadMedida
 
@@ -63,6 +63,79 @@ NOMBRES_INSUMOS = {
     "Papel manteca": "Unidad",
     "Bolsas de papel": "Docena",
 }
+
+MARCA_POR_DEFECTO = "Sin marca"
+MARCAS_INSUMOS = {
+    "Harina 000": "Morixe",
+    "Harina 0000": "Blancaflor",
+    "Azúcar": "Ledesma",
+    "Sal fina": "Dos Anclas",
+    "Levadura fresca": "Calsa",
+    "Levadura seca": "Levex",
+    "Manteca": "La Serenísima",
+    "Aceite de girasol": "Natura",
+    "Aceite de oliva": "Cocinero",
+    "Huevo": "Granja del Sol",
+    "Leche entera": "La Serenísima",
+    "Crema de leche": "Milkaut",
+    "Queso cremoso": "Sancor",
+    "Pollo entero": "Granja Tres Arroyos",
+    "Carne picada": "Frigorífico local",
+    "Malta pilsen": "Maltería Pampa",
+    "Lúpulo cascade": "Lúpulos Patagónicos",
+    "Agua": "Red de agua potable",
+    "Bicarbonato de sodio": "Alicante",
+    "Esencia de vainilla": "Alicante",
+    "Chocolate cobertura": "Águila",
+    "Miel": "Apícola del Sur",
+    "Polvo de hornear": "Royal",
+    "Almidón de maíz": "Maizena",
+    "Avena": "Quaker",
+    "Canela molida": "Alicante",
+    "Nuez moscada": "Alicante",
+    "Almendras": "Frutos del Valle",
+    "Nueces": "Frutos del Valle",
+    "Pasas de uva": "Frutos del Valle",
+    "Dulce de leche": "La Serenísima",
+    "Mermelada de frutilla": "Arcor",
+    "Vinagre de alcohol": "Menoyo",
+    "Jugo de limón": "Minerva",
+    "Colorante vegetal": "Fleibor",
+    "Papel manteca": "Rendipel",
+    "Bolsas de papel": "Bolsapel",
+    # Insumos que agrega seed_recetas
+    "Fermento láctico": "Chr. Hansen",
+    "Cuajo": "Chr. Hansen",
+    "Zanahoria": "Huerta local",
+    "Cebolla": "Huerta local",
+    "Ácido cítrico": "Alicante",
+    "Sorbato de potasio": "Alicante",
+}
+
+
+def marca_de(nombre: str) -> str:
+    return MARCAS_INSUMOS.get(nombre, MARCA_POR_DEFECTO)
+
+
+def asegurar_columna_marca(motor: Engine = engine) -> None:
+    inspector = inspect(motor)
+    if "insumos" not in inspector.get_table_names():
+        return
+    if "marca" in {columna["name"] for columna in inspector.get_columns("insumos")}:
+        return
+
+    with motor.begin() as connection:
+        connection.execute(text(
+            f"ALTER TABLE insumos ADD COLUMN marca VARCHAR(60) NOT NULL DEFAULT '{MARCA_POR_DEFECTO}'"
+        ))
+        connection.execute(text("CREATE INDEX IF NOT EXISTS ix_insumos_marca ON insumos (marca)"))
+        for nombre, marca in MARCAS_INSUMOS.items():
+            connection.execute(
+                text("UPDATE insumos SET marca = :marca WHERE nombre = :nombre"),
+                {"marca": marca, "nombre": nombre},
+            )
+    print("Se agregó la columna marca a la tabla insumos.")
+
 
 CAMPOS_NUTRICIONALES = ("valor_energetico", "azucares_anadidos", "grasas_totales", "grasas_saturadas", "sodio", "peso_unidad")
 
@@ -135,6 +208,7 @@ def generar_insumos(cantidad: int, db) -> list[Insumo]:
     return [
         Insumo(
             nombre=nombre,
+            marca=marca_de(nombre),
             unidad_medida_id=unidades[NOMBRES_INSUMOS[nombre]],
             activo=nombre not in inactivos,
             **informacion_nutricional(nombre),
@@ -145,6 +219,7 @@ def generar_insumos(cantidad: int, db) -> list[Insumo]:
 
 
 def main():
+    asegurar_columna_marca()
     db = SessionLocal()
 
     try:

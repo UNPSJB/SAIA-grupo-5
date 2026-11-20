@@ -15,6 +15,7 @@ from src.insumos.migrations import migrar_esquema_insumos
 from src.receta.migrations import migrar_esquema_recetas
 from src.unidad_medida.migrations import migrar_esquema_unidades_medida
 
+from scripts.seed_insumos import asegurar_columna_marca
 from scripts import (
     # Catálogos base
     seed_unidad_medida,
@@ -23,6 +24,7 @@ from scripts import (
     seed_productos,
     seed_aditivos,
     seed_recetas,
+    seed_informacion_nutricional,
     # Limpieza / instalaciones
     seed_planes_limpieza,
     seed_sectores,
@@ -52,6 +54,7 @@ ORDEN = [
     seed_productos,
     seed_aditivos,
     seed_recetas,
+    seed_informacion_nutricional,
     seed_planes_limpieza,
     seed_sectores,
     seed_superficies,
@@ -78,6 +81,7 @@ def preparar_esquema():
     migrar_esquema_insumos(engine)
     migrar_esquema_recetas(engine)
     migrar_esquema_unidades_medida(engine)
+    asegurar_columna_marca(engine)
 
 
 def main():

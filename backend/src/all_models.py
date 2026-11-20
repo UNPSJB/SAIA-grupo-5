@@ -53,3 +53,8 @@ from src.proveedor.models import ProveedorInsumo
 from src.insumo_quimico.models import InsumoQuimico
 from src.historial_vigencia_documento.models import HistorialVigencia
 from src.auth.models import AuthPasswordRecoveryToken
+
+from src.fuente_nutricional.models import FuenteNutricional, AlimentoReferencia
+from src.informacion_nutricional_insumo.models import InformacionNutricionalInsumo
+from src.historial_nutricional_insumo.models import HistorialNutricionalInsumo
+from src.calculo_nutricional.models import ConfiguracionCalculoNutricional, ParametroNutriente, InformacionNutricionalReceta
