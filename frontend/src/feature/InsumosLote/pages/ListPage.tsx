@@ -10,6 +10,7 @@ import { PageLoading } from '../../../components/PageLoading';
 import { PageError } from '../../../components/PageError';
 import { ActionButton } from '../../../components/ActionButton';
 import { ListFilter } from '../../../components/ListFilter';
+import { ExportMenu } from '../../../components/ExportMenu';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
 
@@ -323,6 +324,37 @@ export function ListPage() {
                         value={estadoFiltro}
                         options={FILTRO_LABELS}
                         onChange={(value) => setEstadoFiltro(value as FiltroVencimientoInsumo)}
+                    />
+                </Col>
+                <Col xs="auto">
+                    <ExportMenu
+                        title="Listado de Insumos Alimenticios"
+                        filename="insumos-lote"
+                        rows={filteredInsumos}
+                        orientation="landscape"
+                        exportColumns={[
+                            { header: 'Insumo', value: (r) => r.insumo.nombre },
+                            { header: 'Marca', value: (r) => r.marca },
+                            { header: 'N° Lote', value: (r) => r.numero_lote },
+                            { header: 'N° Remito', value: (r) => r.lote_proveedor?.numero_remito ?? '-' },
+                            { header: 'Proveedor', value: (r) => r.lote_proveedor?.proveedor?.nombre ?? '-' },
+                            { header: 'Stock restante', value: (r) => r.cantidad_restante },
+                            { header: 'Cantidad inicial', value: (r) => r.cantidad },
+                            {
+                                header: 'Estado físico',
+                                value: (r) => r.cantidad_restante === 0 ? 'Agotado' : r.activo ? 'Disponible' : 'Baja manual',
+                            },
+                            { header: 'Fecha venc.', value: (r) => r.fecha_vencimiento.split('-').reverse().join('/') },
+                            {
+                                header: 'Estado vencimiento',
+                                value: (r) => {
+                                    const dias = calcularDiasRestantes(r.fecha_vencimiento);
+                                    if (dias <= 0) return `Vencido (${Math.abs(dias)} d)`;
+                                    if (dias <= DIAS_ANTELACION_INSUMO) return `Próximo (${dias} d)`;
+                                    return `Vigente (${dias} d)`;
+                                },
+                            },
+                        ]}
                     />
                 </Col>
             </Row>

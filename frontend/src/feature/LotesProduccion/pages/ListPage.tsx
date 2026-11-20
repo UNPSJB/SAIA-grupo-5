@@ -9,6 +9,7 @@ import { PageHeader } from '../../../components/PageHeader';
 import { PageLoading } from '../../../components/PageLoading';
 import { PageError } from '../../../components/PageError';
 import { ActionButton } from '../../../components/ActionButton';
+import { ExportMenu } from '../../../components/ExportMenu';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
 import { CambiarEstadoLoteModal } from '../components/CambiarEstadoLoteProduccionModal';
@@ -270,6 +271,14 @@ export function ListPage() {
                             "Parcialmente despachado" : "Parcialmente despachado",
                             Enviado: "Enviado"
                         }}
+                    />
+                </Col>
+                <Col xs="auto">
+                    <ExportMenu
+                        title="Listado de lotes de Produccion"
+                        filename="LoteProduccion"
+                        columns={columns}
+                        rows={filteredLoteProduccion}
                     />
                 </Col>
                 {currentUser?.operar && (

@@ -174,7 +174,7 @@ export function ListPage() {
                         onChange={(value) => setEstadoFiltro(value as EstadoFiltro)}
                     />
                 </Col>
-                 <Col xs="auto">
+                <Col xs="auto">
                     <ExportMenu
                         title="Listado de Documentos"
                         filename="documentos"
