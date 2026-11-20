@@ -2,16 +2,21 @@ import secrets
 from datetime import date, datetime, timedelta
 
 from sqlalchemy import and_, func, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from src.configuracion_sistema.models import ConfiguracionSistema
-from src.configuracion_sistema.schemas import IndicadorVistaPublica, VistaPublica
+from src.configuracion_sistema.schemas import (
+    IndicadorVistaPublica,
+    ProductoCatalogoPublico,
+    VistaPublica,
+)
 from src.configuracion_sistema.services import obtener_o_crear_configuracion
 from src.documentos.models import Documento
 from src.elementosLimpieza.models import ElementoLimpieza
 from src.lote_produccion.models import LoteProduccion
 from src.plan_limpieza.models import PlanLimpieza
 from src.planesCalibracion.models import PlanCalibracion
+from src.producto.models import Producto
 from src.recambiosElementosLimpieza.models import RecambioElementoLimpieza
 from src.registrosCalibracion.models import RegistroCalibracion
 from src.tareas_ocurrencia.constants import EstadoTareaOcurrencia
@@ -235,6 +240,32 @@ def leer_vista_publica(db: Session, token: str) -> VistaPublica | None:
                 str(lotes_producidos), "bi-boxes",
             ))
 
+    catalogo_productos: list[ProductoCatalogoPublico] = []
+    if configuracion.vista_publica_mostrar_catalogo:
+        productos_activos = db.scalars(
+            select(Producto)
+            .where(Producto.activo.is_(True))
+            .options(joinedload(Producto.unidad_medida))
+            .order_by(Producto.nombre.asc())
+        ).all()
+        for producto in productos_activos:
+            unidad_nombre = producto.unidad_medida.nombre if producto.unidad_medida else "Unidades"
+            catalogo_productos.append(
+                ProductoCatalogoPublico(
+                    id=producto.id,
+                    nombre=producto.nombre,
+                    descripcion=producto.descripcion,
+                    cantidad_neta=producto.cantidad_neta,
+                    unidad_medida=unidad_nombre,
+                    foto_producto=producto.foto_producto,
+                    azucares_agregados=producto.azucares_agregados,
+                    grasas_agregadas=producto.grasas_agregadas,
+                    sodio_agregado=producto.sodio_agregado,
+                    contiene_edulcorantes=producto.contiene_edulcorantes,
+                    contiene_cafeina=producto.contiene_cafeina,
+                )
+            )
+
     return VistaPublica(
         establecimiento=configuracion.nombre_pyme,
         logo_pyme=configuracion.logo_pyme,
@@ -243,4 +274,5 @@ def leer_vista_publica(db: Session, token: str) -> VistaPublica | None:
         direccion_pyme=configuracion.direccion_pyme,
         actualizado=datetime.now().strftime("%d/%m/%Y"),
         indicadores=indicadores,
+        catalogo_productos=catalogo_productos,
     )
