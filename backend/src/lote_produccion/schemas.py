@@ -85,3 +85,45 @@ class HistorialEstadoLoteResponse(BaseModel):
     observacion: Annotated[Optional[str], Field(max_length=200)] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class TrazabilidadOrigenInsumo(BaseModel):
+    insumo_lote_id: int
+    insumo_nombre: str
+    marca: str
+    numero_lote_insumo: str
+    fecha_vencimiento: date
+    cantidad_utilizada: Decimal
+    unidad_medida: str
+    lote_proveedor_id: Optional[int] = None
+    numero_remito: Optional[str] = None
+    fecha_recepcion: Optional[date] = None
+    proveedor_id: Optional[int] = None
+    proveedor_nombre: Optional[str] = None
+    proveedor_cuit: Optional[str] = None
+
+
+class TrazabilidadDestinoEnvio(BaseModel):
+    envio_id: int
+    numero_remito: str
+    fecha_envio: date
+    fecha_entrega: Optional[date] = None
+    estado: str
+    cantidad: int
+    transportista: str
+    cliente_id: int
+    cliente_razon_social: str
+    cliente_cuit: str
+    direccion: str
+
+
+class TrazabilidadLoteProduccion(BaseModel):
+    lote_id: int
+    producto_nombre: str
+    fecha_produccion: date
+    fecha_vencimiento: date
+    cantidad_producida: int
+    cantidad_disponible: int
+    estado: str
+    origenes: list[TrazabilidadOrigenInsumo] = Field(default_factory=list)
+    destinos: list[TrazabilidadDestinoEnvio] = Field(default_factory=list)

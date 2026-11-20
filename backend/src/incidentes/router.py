@@ -40,11 +40,14 @@ def read_incidentes(
     tipo_id: int | None = None,
     fecha_desde: date | None = None,
     fecha_hasta: date | None = None,
+    lote_produccion_id: int | None = None,
+    lote_proveedor_id: int | None = None,
     db: Session = Depends(get_db),
 ):
     return services.listar_incidentes(
         db, estado=estado, orden=orden,
         tipo_id=tipo_id, fecha_desde=fecha_desde, fecha_hasta=fecha_hasta,
+        lote_produccion_id=lote_produccion_id, lote_proveedor_id=lote_proveedor_id,
     )
 
 @router.post("/", response_model=schemas.Incidente, dependencies=[Depends(tiene_permiso_operar)])

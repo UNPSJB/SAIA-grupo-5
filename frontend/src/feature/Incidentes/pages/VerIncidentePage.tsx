@@ -88,6 +88,39 @@ export function VerIncidentePage() {
                                 </Col>
                             </Row>
 
+                            {incidente.lote_produccion_id && (
+                                <Row className="mb-3 border-bottom pb-3 align-items-center">
+                                    <Col sm={4} className="fw-bold text-secondary">Lote de Produccion</Col>
+                                    <Col sm={8}>
+                                        <Button
+                                            variant="link"
+                                            className="p-0 fw-semibold text-decoration-none"
+                                            onClick={() => navigate(`/lotes-produccion/${incidente.lote_produccion_id}`)}
+                                        >
+                                            Lote #{incidente.lote_produccion_id}
+                                            {incidente.lote_produccion?.estado ? ` (${incidente.lote_produccion.estado})` : ""}
+                                        </Button>
+                                    </Col>
+                                </Row>
+                            )}
+
+                            {incidente.lote_proveedor_id && (
+                                <Row className="mb-3 border-bottom pb-3 align-items-center">
+                                    <Col sm={4} className="fw-bold text-secondary">Recepcion / Lote Proveedor</Col>
+                                    <Col sm={8}>
+                                        <Button
+                                            variant="link"
+                                            className="p-0 fw-semibold text-decoration-none"
+                                            onClick={() => navigate(`/recepciones/${incidente.lote_proveedor_id}`)}
+                                        >
+                                            {incidente.lote_proveedor?.numero_remito
+                                                ? `Remito ${incidente.lote_proveedor.numero_remito}`
+                                                : `Recepcion #${incidente.lote_proveedor_id}`}
+                                        </Button>
+                                    </Col>
+                                </Row>
+                            )}
+
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
                                 <Col sm={4} className="fw-bold text-secondary">Fecha de apertura</Col>
                                 <Col sm={8}>

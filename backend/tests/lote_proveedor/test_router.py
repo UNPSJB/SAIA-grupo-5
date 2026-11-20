@@ -82,3 +82,16 @@ def test_endpoint_cambiar_estado_lote_proveedor(client, auth_headers, unico_lote
     assert response.status_code == 200
     data = response.json()
     assert data["activo"] is False
+
+
+def test_endpoint_trazabilidad_lote_proveedor(client, auth_headers, unico_lote_proveedor):
+    response = client.get(f"/lotes-proveedor/{unico_lote_proveedor.id}/trazabilidad", headers=auth_headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["lote_proveedor_id"] == unico_lote_proveedor.id
+    assert "insumos" in data
+
+
+def test_endpoint_trazabilidad_lote_proveedor_inexistente(client, auth_headers):
+    response = client.get("/lotes-proveedor/99999/trazabilidad", headers=auth_headers)
+    assert response.status_code == 404

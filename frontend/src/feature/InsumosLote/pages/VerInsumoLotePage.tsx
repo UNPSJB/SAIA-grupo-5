@@ -5,6 +5,7 @@ import { PageHeader } from '../../../components/PageHeader';
 import { PageLoading } from '../../../components/PageLoading';
 import type { InsumoLote } from '../types';
 import { ActionButton } from '../../../components/ActionButton';
+import { TarjetaTrazabilidadLote } from '../../LotesProduccion/components/TarjetaTrazabilidadLote';
 
 export function VerInsumoLotePage() {
     const { id } = useParams();
@@ -60,11 +61,6 @@ export function VerInsumoLotePage() {
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
                                 <Col sm={5} className="fw-bold text-secondary">Insumo</Col>
                                 <Col sm={7} className="fs-6 fw-semibold">{item.insumo.nombre}</Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={5} className="fw-bold text-secondary">Marca</Col>
-                                <Col sm={7} className="fs-6">{item.marca}</Col>
                             </Row>
 
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
@@ -216,6 +212,10 @@ export function VerInsumoLotePage() {
                                     </tbody>
                                 </Table>
                             )}
+
+                            <hr className="my-4" />
+
+                            <TarjetaTrazabilidadLote modo="insumo_lote" entidadId={item.id} />
                         </Card.Body>
 
                         <Card.Footer className="bg-light border-top p-3 d-flex justify-content-start gap-2">

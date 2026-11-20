@@ -78,3 +78,8 @@ def create_insumos_lote(lote_id: int, datos: schemas.InsumosUtilizadosCreate, db
 @router.put("/{lote_id}/insumos", response_model=list[schemas.InsumoUtilizado], dependencies=[Depends(tiene_permiso_operar)])
 def update_insumos_lote(lote_id: int, datos: schemas.InsumosUtilizadosUpdate, db: Session = Depends(get_db)):
     return services.actualizar_insumos_lote(db, lote_id, datos)
+
+
+@router.get("/{lote_id}/trazabilidad", response_model=schemas.TrazabilidadLoteProduccion)
+def read_trazabilidad_lote_produccion(lote_id: int, db: Session = Depends(get_db)):
+    return services.obtener_trazabilidad_lote_produccion(db, lote_id)

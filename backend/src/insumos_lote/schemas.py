@@ -64,3 +64,45 @@ class InsumoLote(InsumoLoteBase):
     producciones_asociadas: list[InsumoUtilizadoResumen] = []
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class TrazabilidadEnvioAfectado(BaseModel):
+    envio_id: int
+    numero_remito: str
+    fecha_envio: date
+    estado: str
+    cantidad: int
+    cliente_id: int
+    cliente_razon_social: str
+    cliente_cuit: str
+    direccion: str
+
+
+class TrazabilidadProduccionAfectada(BaseModel):
+    lote_produccion_id: int
+    producto_nombre: str
+    fecha_produccion: date
+    fecha_vencimiento: date
+    estado: str
+    cantidad_producida: int
+    cantidad_utilizada: Decimal
+    unidad_medida: str
+    envios: list[TrazabilidadEnvioAfectado] = []
+
+
+class TrazabilidadInsumoLote(BaseModel):
+    insumo_lote_id: int
+    insumo_nombre: str
+    marca: str
+    numero_lote_insumo: str
+    fecha_vencimiento: date
+    cantidad: int
+    cantidad_restante: int
+    unidad_medida: str
+    lote_proveedor_id: Optional[int] = None
+    numero_remito: Optional[str] = None
+    fecha_recepcion: Optional[date] = None
+    proveedor_id: Optional[int] = None
+    proveedor_nombre: Optional[str] = None
+    proveedor_cuit: Optional[str] = None
+    producciones: list[TrazabilidadProduccionAfectada] = []

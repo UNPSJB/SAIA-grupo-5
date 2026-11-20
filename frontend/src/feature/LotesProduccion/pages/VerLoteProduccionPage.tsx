@@ -9,11 +9,12 @@ import { useAuth } from "../../../hooks/useAuth";
 import type { LoteProduccion, EstadoLote } from "../types";
 import { PageLoading } from "../../../components/PageLoading";
 import { AsociarInsumosModal } from "../components/AsociarInsumosModal";
+import { TarjetaTrazabilidadLote } from "../components/TarjetaTrazabilidadLote";
+import { ListaIncidentesVinculados } from "../../Incidentes/components/ListaIncidentesVinculados";
 import type { EnvioLote } from "../../EnviosLote/types";
 import { CrearEnvioModal } from "../../EnviosLote/components/CrearEnvioLoteModal";
 import { RecepcionEnvioModal } from "../../EnviosLote/components/RecepcionEnvioLoteModal";
 import { VerEnvioLoteModal } from "../../EnviosLote/components/VerEnvioLoteModal";
-import { ActionButton } from "../../../components/ActionButton";
 import { LineaTemporalEstadosLoteProduccion } from "../components/LineaTemporalEstadosLoteProduccion";
 
 const ESTILOS_ESTADO: Record<EstadoLote, { bg: string; color: string; icon: string }> = {
@@ -22,12 +23,6 @@ const ESTILOS_ESTADO: Record<EstadoLote, { bg: string; color: string; icon: stri
     "Terminado": { bg: "#dcfce7", color: "#166534", icon: "bi-check2-circle" },
     "Parcialmente despachado": { bg: "#e0e7ff", color: "#3730a3", icon: "bi-truck" },
     "Enviado": { bg: "#f3f4f6", color: "#374151", icon: "bi-truck" },
-};
-
-const BADGES_ENVIO: Record<string, string> = {
-    "En camino": "warning",
-    "Entregado": "success",
-    "Rechazado": "danger",
 };
 
 export function VerLoteProduccionPage() {
@@ -76,21 +71,38 @@ export function VerLoteProduccionPage() {
 
     const handleAsociado = () => {
         mutate(`/lotes-produccion/${id}`);
+        mutate(`/lotes-produccion/${id}/trazabilidad`);
+        mutate("/insumos-lote/");
         setMostrarAsociarInsumos(false);
     };
 
     const handleEnvioActualizado = () => {
-    mutate(`/lotes-produccion/${id}`);
-    mutate(`/envios-lote/lote/${id}`);
-};
+        mutate(`/lotes-produccion/${id}`);
+        mutate(`/envios-lote/lote/${id}`);
+        mutate(`/lotes-produccion/${id}/trazabilidad`);
+    };
+
+    const manejarVerEnvio = (envioId: number) => {
+        const envioEncontrado = envios?.find((e) => e.id === envioId);
+        if (envioEncontrado) {
+            setEnvioParaDetalle(envioEncontrado);
+        }
+    };
+
+    const manejarRegistrarRecepcion = (envioId: number) => {
+        const envioEncontrado = envios?.find((e) => e.id === envioId);
+        if (envioEncontrado) {
+            setEnvioParaRecepcion(envioEncontrado);
+        }
+    };
 
     return (
         <Container>
             <PageHeader title={tituloPagina} />
 
             <Row className="justify-content-center mt-3">
-                <Col md={8}>
-                    <Card className="shadow-sm border-0 rounded-3">
+                <Col xs={12}>
+                    <Card className="shadow-sm border-0 rounded-3 mb-4">
                         <Card.Body className="p-4">
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
                                 <Col sm={5} className="fw-bold text-secondary">Producto</Col>
@@ -202,13 +214,13 @@ export function VerLoteProduccionPage() {
                                                                 variant="link"
                                                                 className="p-0 fw-bold text-decoration-none d-inline-flex align-items-center gap-1"
                                                                 onClick={() => navigate(`/recepciones/${loteProv.id}`)}
-                                                                title="Ir a la recepción del lote"
+                                                                title="Ir a la recepcion de origen"
                                                             >
                                                                 <i className="bi bi-box-arrow-up-right small"></i>
-                                                                {loteProv.numero_lote}
+                                                                {registro.insumo_lote?.numero_lote || loteProv.numero_remito || `#${loteProv.id}`}
                                                             </Button>
                                                         ) : (
-                                                            <span className="text-muted">-</span>
+                                                            <span className="text-muted">{registro.insumo_lote?.numero_lote || '-'}</span>
                                                         )}
                                                     </td>
                                                     <td>
@@ -241,87 +253,39 @@ export function VerLoteProduccionPage() {
 
                             <hr className="my-4" />
 
-                                <div className="d-flex justify-content-between align-items-center mb-3">
-                                    <h5 className="mb-0">Despachos y Envios del Lote</h5>
-                                    {puedeDespachar && (
-                                        <Button variant="outline-success" size="sm" onClick={() => setMostrarCrearEnvio(true)}>
-                                            <i className="bi bi-truck me-1"></i>Nuevo Envío
-                                        </Button>
-                                    )}
-                                </div>
-
-                                {(!envios || envios.length === 0) ? (
-                                    <p className="text-muted mb-0">No se registran envios para este lote de producción.</p>
-                                ) : (
-                                    <Table responsive bordered hover size="sm" className="mb-0">
-                                        <thead>
-                                            <tr>
-                                                <th>Remito</th>
-                                                <th>Cliente</th>
-                                                <th>Cantidad</th>
-                                                <th>Fecha Envio</th>
-                                                <th>Estado</th>
-                                                <th className="text-center">Accion</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {envios.map((env) => (
-                                                <tr key={env.id}>
-                                                    <td><strong>{env.numero_remito}</strong></td>
-                                                    <td>{env.cliente.razon_social}</td>
-                                                    <td>{env.cantidad}</td>
-                                                    <td>{env.fecha_envio.split("-").reverse().join("/")}</td>
-                                                    <td>
-                                                        <Badge bg={BADGES_ENVIO[env.estado] || "secondary"}>
-                                                            {env.estado}
-                                                        </Badge>
-                                                    </td>
-                                                    <td className="text-center">
-                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
-                                                            <ActionButton
-                                                                variant="outline-info"
-                                                                size="sm"
-                                                                tooltip="Ver detalle"
-                                                                icon="bi bi-eye"
-                                                                onClick={() => setEnvioParaDetalle(env)}
-                                                            />
-                                                            {currentUser?.operar && env.estado === "En camino" && (
-                                                                <ActionButton
-                                                                    variant="outline-success"
-                                                                    size="sm"
-                                                                    tooltip="Registrar recepcion"
-                                                                    icon="bi bi-check2-circle"
-                                                                    onClick={() => setEnvioParaRecepcion(env)}
-                                                                />
-                                                            )}
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </Table>
-                                )}
+                            <TarjetaTrazabilidadLote
+                                modo="lote_produccion"
+                                entidadId={lote.id}
+                                puedeDespachar={puedeDespachar}
+                                onNuevoEnvio={() => setMostrarCrearEnvio(true)}
+                                onVerEnvio={manejarVerEnvio}
+                                onRegistrarRecepcion={currentUser?.operar ? manejarRegistrarRecepcion : undefined}
+                            />
                         </Card.Body>
-
-                        <Card.Footer className="bg-light border-top p-3 d-flex justify-content-start gap-2">
-                            <Button
-                                variant="outline-secondary"
-                                onClick={() => navigate(volverA)}
-                            >
-                                <i className="bi bi-arrow-left me-1"></i>Volver a la lista
-                            </Button>
-
-                            {currentUser?.operar && (
-                                <Button
-                                    variant="primary"
-                                    disabled={lote.estado === "Enviado" || lote.estado === "Parcialmente despachado"}
-                                    onClick={() => navigate(`/lotes-produccion/${lote.id}/edit`)}
-                                >
-                                    <i className="bi bi-pencil me-1"></i>Editar Lote
-                                </Button>
-                            )}
-                        </Card.Footer>
                     </Card>
+
+                    <div className="mb-4">
+                        <ListaIncidentesVinculados loteProduccionId={lote.id} />
+                    </div>
+
+                    <div className="d-flex justify-content-start gap-2 mb-4">
+                        <Button
+                            variant="outline-secondary"
+                            onClick={() => navigate(volverA)}
+                        >
+                            <i className="bi bi-arrow-left me-1"></i>Volver a la lista
+                        </Button>
+
+                        {currentUser?.operar && (
+                            <Button
+                                variant="primary"
+                                disabled={lote.estado === "Enviado" || lote.estado === "Parcialmente despachado"}
+                                onClick={() => navigate(`/lotes-produccion/${lote.id}/edit`)}
+                            >
+                                <i className="bi bi-pencil me-1"></i>Editar Lote
+                            </Button>
+                        )}
+                    </div>
                 </Col>
             </Row>
 
