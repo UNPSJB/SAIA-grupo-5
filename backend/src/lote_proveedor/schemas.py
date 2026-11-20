@@ -3,7 +3,7 @@ from typing import Optional, Annotated
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from src.lote_proveedor.constants import ErrorCode, EstadoLoteProveedor
 from src.proveedor.schemas import Proveedor
-from src.insumos_lote.schemas import InsumoLote
+from src.insumos_lote.schemas import InsumoLote, TrazabilidadProduccionAfectada
 from src.pedidos_proveedor.schemas import PedidoProveedor
 
 class PersonaSimple(BaseModel):
@@ -73,3 +73,26 @@ class HistorialEstadoLoteProveedorResponse(BaseModel):
     usuario: PersonaSimple | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class TrazabilidadInsumoRecepcion(BaseModel):
+    insumo_lote_id: int
+    insumo_nombre: str
+    marca: str
+    numero_lote_insumo: str
+    fecha_vencimiento: date
+    cantidad: int
+    cantidad_restante: int
+    unidad_medida: str
+    producciones: list[TrazabilidadProduccionAfectada] = []
+
+
+class TrazabilidadLoteProveedor(BaseModel):
+    lote_proveedor_id: int
+    numero_remito: Optional[str] = None
+    fecha_recepcion: date
+    estado: str
+    proveedor_id: Optional[int] = None
+    proveedor_nombre: Optional[str] = None
+    proveedor_cuit: Optional[str] = None
+    insumos: list[TrazabilidadInsumoRecepcion] = []

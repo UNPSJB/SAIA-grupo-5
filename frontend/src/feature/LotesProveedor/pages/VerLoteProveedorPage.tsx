@@ -12,6 +12,8 @@ import type { InsumoLote } from '../../InsumosLote/types';
 import { AgregarInsumoLoteModal } from '../../InsumosLote/components/AgregarInsumoLoteModal';
 import { DeleteInsumoLoteModal } from '../../InsumosLote/components/DeleteInsumoLoteModal';
 import { ActionButton } from '../../../components/ActionButton';
+import { TarjetaTrazabilidadLote } from '../../LotesProduccion/components/TarjetaTrazabilidadLote';
+import { ListaIncidentesVinculados } from '../../Incidentes/components/ListaIncidentesVinculados';
 
 const PASOS_FIJOS = ["Llegada", "Desempaque", "Acomodado"];
 
@@ -242,8 +244,13 @@ export function VerLoteProveedorPage() {
                                         <td className="fw-semibold">
                                             {item.insumo.nombre}{' '}
                                             <span className="text-muted small">
-                                                ({item.insumo.unidad_medida?.nombre || 'U'})
+                                                ({item.insumo.unidad_medida?.nombre || 'Unidades'})
                                             </span>
+                                            {item.cantidad_restante === 0 ? (
+                                                <Badge bg="secondary" className="ms-2">Agotado</Badge>
+                                            ) : !item.activo ? (
+                                                <Badge bg="danger" className="ms-2">Inactivo</Badge>
+                                            ) : null}
                                         </td>
                                         <td>
                                             <Badge bg="light" text="dark" className="border">
@@ -318,6 +325,10 @@ export function VerLoteProveedorPage() {
                     )}
                 </Card.Footer>
             </Card>
+
+            <TarjetaTrazabilidadLote modo="lote_proveedor" entidadId={lote.id} />
+
+            <ListaIncidentesVinculados loteProveedorId={lote.id} />
 
             <AvanzarEtapaLoteProveedorModal
                 lote={modalAvanzar ? lote : null}

@@ -59,3 +59,25 @@ class PedidoProveedor(PedidoProveedorBase):
     activo: bool
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class InsumoReposicionSugerido(BaseModel):
+    insumo_id: int
+    insumo_nombre: str
+    unidad_medida: str
+    stock_disponible: int
+    minimo_alerta: int
+    cantidad_sugerida: int
+    tiene_pedido_pendiente: bool
+
+
+class ProveedorReposicionSugerido(BaseModel):
+    proveedor_id: int
+    proveedor_nombre: str
+    cuit: str
+    insumos: list[InsumoReposicionSugerido] = []
+
+
+class SugerenciasReposicionResponse(BaseModel):
+    por_proveedor: list[ProveedorReposicionSugerido] = []
+    insumos_sin_proveedor: list[InsumoReposicionSugerido] = []

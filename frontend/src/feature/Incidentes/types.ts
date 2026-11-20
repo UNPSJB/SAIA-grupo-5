@@ -33,6 +33,10 @@ export type Incidente = {
     tipo_id: number;
     operario_id: number | null;
     sector_id: number | null;
+    lote_produccion_id?: number | null;
+    lote_produccion?: { id: number; estado: string } | null;
+    lote_proveedor_id?: number | null;
+    lote_proveedor?: { id: number; numero_remito?: string | null } | null;
     tipo: TipoIncidente;
     sector: Sector | null;
     operario: PersonaBasica | null;
@@ -51,6 +55,8 @@ export type IncidenteSeguimiento = {
     activo: boolean;
     tipo_id: number;
     tipo: { id: number; nombre: string };
+    lote_produccion_id?: number | null;
+    lote_proveedor_id?: number | null;
     dias_abierto: number;
     nivel_demora: NivelDemora;
 };
@@ -67,6 +73,8 @@ export type NewIncidente = {
     foto_opcional?: string | null;
     tipo_id: number;
     sector_id?: number | null;
+    lote_produccion_id?: number | null;
+    lote_proveedor_id?: number | null;
 };
 
 export type EditarIncidente = {
