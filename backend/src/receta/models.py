@@ -4,7 +4,7 @@ from src.models import ModeloBase
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Index, Integer, String, UniqueConstraint, text
 from src.receta.constants import TipoRenglon
-from src.receta.sellos import calcular_rendimiento, evaluar_sellos
+from src.receta.sellos import evaluar_sellos
 
 if TYPE_CHECKING:
     from src.producto.models import Producto
@@ -53,10 +53,6 @@ class Receta(ModeloBase):
 
     def _insumos_con_cantidad(self):
         return [(item.insumo, item.cantidad) for item in self.insumos]
-
-    @property
-    def rendimiento(self) -> float | None:
-        return calcular_rendimiento(self._insumos_con_cantidad())
 
     @property
     def sellos(self):

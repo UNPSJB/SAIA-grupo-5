@@ -58,6 +58,12 @@ export function ProductoForm({ textoBoton, onSubmit, valoresIniciales }: Product
     };
 
     const onSubmitHookForm = (data: ProductoFormData) => {
+        const fotoFinal = fotoBase64 || valoresIniciales?.foto_producto;
+        if (!fotoFinal) {
+            setFotoError("La foto del producto es obligatoria.");
+            return;
+        }
+
         onSubmit({
             nombre: data.nombre.trim(),
             codigo_producto: data.codigo_producto || null,
@@ -65,7 +71,7 @@ export function ProductoForm({ textoBoton, onSubmit, valoresIniciales }: Product
             cantidad_neta: Number(data.cantidad_neta),
             unidad_medida_id: Number(data.unidad_medida_id),
             fecha_lanzamiento: data.fecha_lanzamiento,
-            foto_producto: fotoBase64 ? fotoBase64 : (valoresIniciales?.foto_producto || null),
+            foto_producto: fotoFinal,
         });
     };
 
@@ -208,7 +214,7 @@ export function ProductoForm({ textoBoton, onSubmit, valoresIniciales }: Product
 
                 <Form.Group className="mb-3 text-start" controlId="formFotoProducto">
                     <Form.Label className="p-1 fw-bold">
-                        Foto del Producto
+                        Foto del Producto *
                     </Form.Label>
                     <Form.Control
                         type="file"

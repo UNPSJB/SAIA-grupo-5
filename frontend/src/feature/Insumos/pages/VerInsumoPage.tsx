@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { Container, Alert, Row, Col, Card, Button, Table } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 import type { Insumo } from "../types";
-import { CAMPOS_NUTRICIONALES } from "../constants";
+import type { InfoNutricional, HistorialNutricionalInsumo } from "../../InformacionNutricionalInsumo/types";
+import { DATOS_NUTRICIONALES_CAA } from '../../InformacionNutricionalInsumo/types';
+import { HistorialNutricionalModal } from "../../InformacionNutricionalInsumo/components/HistorialNutricionalModal";
 import { PageLoading } from "../../../components/PageLoading";
 import { useAuth } from "../../../hooks";
 
@@ -11,8 +14,11 @@ export function VerInsumoPage() {
     const navigate = useNavigate();
     const { id } = useParams(); 
     const { currentUser } = useAuth();
+    const [showHistorialModal, setShowHistorialModal] = useState(false);
 
     const { data: insumo, isLoading, error } = useApi<Insumo>(`/insumos/${id}`);
+    const { data: infoNutricional } = useApi<InfoNutricional>(id ? `/informaciones-nutricionales/insumo/${id}` : null);
+    const { data: historial } = useApi<HistorialNutricionalInsumo[]>(infoNutricional ? `/historial-nutricional/info-nutricional/${infoNutricional.id}` : null);
 
     const tituloPagina = "Detalle del Insumo";
 
@@ -44,6 +50,10 @@ export function VerInsumoPage() {
                                 <Col sm={4} className="fw-bold text-secondary">Nombre</Col>
                                 <Col sm={8} className="fs-5">{insumo.nombre}</Col>
                             </Row>
+                            <Row className="mb-3 border-bottom pb-3 align-items-center">
+                                <Col sm={4} className="fw-bold text-secondary">Marca</Col>
+                                <Col sm={8} className="fs-6">{insumo.marca}</Col>
+                            </Row>
 
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
                                 <Col sm={4} className="fw-bold text-secondary">Unidad de Medida</Col>
@@ -69,28 +79,59 @@ export function VerInsumoPage() {
                             </Row>
 
                             <Row className="mb-3 border-bottom pb-3">
-                                <Col sm={4} className="fw-bold text-secondary">Información nutricional<div className="small fw-normal">cada 100 g o ml</div></Col>
+                                <Col sm={4} className="fw-bold text-secondary"> Información nutricional <div className="small fw-normal">cada 100 g o ml</div></Col>
                                 <Col sm={8}>
-                                    {insumo.valor_energetico === null ? (
-                                        <span className="text-muted">Sin información nutricional cargada</span>
+                                    {!infoNutricional ? (
+                                        <span className="text-muted fst-italic">Sin información nutricional cargada</span>
                                     ) : (
-                                        <Table size="sm" className="mb-0">
-                                            <tbody>
-                                                {CAMPOS_NUTRICIONALES.map(({ campo, etiqueta, unidad }) => (
-                                                    <tr key={campo}>
-                                                        <td>{etiqueta}</td>
-                                                        <td className="text-end fw-semibold">{insumo[campo]} {unidad}</td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </Table>
-                                    )}
-                                    {insumo.peso_unidad !== null && (
-                                        <div className="small text-muted mt-2">1 {insumo.unidad_medida.nombre} equivale a {insumo.peso_unidad} g / ml</div>
+                                        <>
+                                            <div className="mb-2 p-2 rounded bg-light border small">
+                                                <div><strong>Fuente:</strong> {infoNutricional.fuente_nutricional?.nombre}</div>
+                                                <div><strong>Referencia:</strong> {infoNutricional.referencia_fuente || "-"}</div>
+                                                <div>
+                                                    <strong>Cargada por:</strong> {infoNutricional.cargada_por?.nombre} {infoNutricional.cargada_por?.apellido} ({new Date(infoNutricional.fecha_carga).toLocaleDateString("es-AR")})
+                                                </div>
+                                                {infoNutricional.modificado && (
+                                                    <div className="text-warning-emphasis mt-1">
+                                                        <i className="bi bi-pencil-square me-1"></i>
+                                                        Dato modificado
+                                                        {infoNutricional.modificada_por
+                                                            ? ` por ${infoNutricional.modificada_por.nombre} ${infoNutricional.modificada_por.apellido}`
+                                                            : ""}
+                                                        {infoNutricional.fecha_modificacion
+                                                            ? ` el ${new Date(infoNutricional.fecha_modificacion).toLocaleDateString("es-AR")}`
+                                                            : ""}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <Table size="sm" bordered className="mb-0">
+                                                <tbody>
+                                                    {DATOS_NUTRICIONALES_CAA.map(({ dato, etiqueta, unidad }) => (
+                                                        <tr key={dato}>
+                                                            <td>{etiqueta}</td>
+                                                            <td className="text-end fw-semibold">
+                                                                {infoNutricional[dato] ?? "-"} {unidad}
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </Table>
+
+                                            <div className="mt-3">
+                                                <Button
+                                                    variant="outline-secondary"
+                                                    size="sm"
+                                                    onClick={() => setShowHistorialModal(true)}
+                                                >
+                                                    <i className="bi bi-clock-history me-1"></i>
+                                                    Ver historial de cambios {historial && historial.length > 0 ? ` (${historial.length})` : ""}
+                                                </Button>
+                                            </div>
+                                        </>
                                     )}
                                 </Col>
                             </Row>
-
                             <Row className="mb-2 align-items-center">
                                 <Col sm={4} className="fw-bold text-secondary">Estado Actual</Col>
                                 <Col sm={8}>
@@ -134,6 +175,14 @@ export function VerInsumoPage() {
                     </Card>
                 </Col>
             </Row>
+            <HistorialNutricionalModal
+                show={showHistorialModal}
+                onHide={() => setShowHistorialModal(false)}
+                historial={historial ?? []}
+            />
         </Container>
     );
 }
+
+
+

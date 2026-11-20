@@ -1,15 +1,18 @@
 import pytest
+from pydantic import ValidationError
 from src.producto import services, schemas, exceptions
 from datetime import date
 from src.configuracion_sistema.models import ConfiguracionSistema
 from src.configuracion_sistema.constants import ID_CONFIGURACION_SISTEMA
 from pydantic import ValidationError
 
+FOTO_PRUEBA = "data:image/png;base64,iVBORw0KGgo="
+
 
 def test_crear_producto(db_session, unica_unidad_medida):
     datos = schemas.ProductoCreate(nombre="Frutillas empaquetadas", descripcion="Alguna descripcion",
                                     cantidad_neta=1, unidad_medida_id=unica_unidad_medida.id,
-                                    fecha_lanzamiento=date(2026, 10, 1), foto_producto=None)
+                                    fecha_lanzamiento=date(2026, 10, 1), foto_producto=FOTO_PRUEBA)
     
     nuevo = services.crear_producto(db = db_session, producto = datos)
 
@@ -19,10 +22,17 @@ def test_crear_producto(db_session, unica_unidad_medida):
     assert nuevo.activo is True
 
 
+def test_crear_producto_sin_foto_falla(unica_unidad_medida):
+    with pytest.raises(ValidationError):
+        schemas.ProductoCreate(nombre="Producto sin foto", descripcion="Alguna descripcion",
+                               cantidad_neta=1, unidad_medida_id=unica_unidad_medida.id,
+                               fecha_lanzamiento=date(2026, 10, 1), foto_producto="")
+
+
 def test_crear_producto_duplicado(db_session, unico_producto, unica_unidad_medida):
     datos = schemas.ProductoCreate(nombre=unico_producto.nombre, descripcion="Alguna descripcion",
                                     cantidad_neta=1, unidad_medida_id=unica_unidad_medida.id,
-                                    fecha_lanzamiento=date(2026, 10, 1), foto_producto=None)
+                                    fecha_lanzamiento=date(2026, 10, 1), foto_producto=FOTO_PRUEBA)
     with pytest.raises(exceptions.ProductoDuplicado):
         services.crear_producto(db = db_session, producto=datos)
 
@@ -49,7 +59,7 @@ def test_leer_producto_no_encontrado(db_session):
 def test_modificar_producto(db_session, unico_producto, unica_unidad_medida):
     datos = schemas.ProductoUpdate(nombre="Prueba", descripcion="Otra descripcion",
                                     cantidad_neta=1, unidad_medida_id=unica_unidad_medida.id,
-                                    fecha_lanzamiento=date(2026, 10, 10), foto_producto=None)
+                                    fecha_lanzamiento=date(2026, 10, 10), foto_producto=FOTO_PRUEBA)
     actualizado = services.modificar_producto(db = db_session,
                     producto_id = unico_producto.id, producto = datos)
 
@@ -68,7 +78,7 @@ def test_modificar_producto_dada_de_baja(db_session, unico_producto, unica_unida
 
     datos = schemas.ProductoUpdate(nombre="Prueba 2", descripcion="Otra descripcion",
                                     cantidad_neta=1, unidad_medida_id=unica_unidad_medida.id,
-                                    fecha_lanzamiento=date(2026, 10, 10), foto_producto=None)
+                                    fecha_lanzamiento=date(2026, 10, 10), foto_producto=FOTO_PRUEBA)
 
     with pytest.raises(exceptions.ProductoDadoDeBaja):
         services.modificar_producto(db=db_session, 

@@ -22,8 +22,7 @@ export type ConfiguracionSistema = {
     vista_publica_mostrar_documentos_tecnicos: boolean
     vista_publica_mostrar_productos_elaborados: boolean
     vista_publica_mostrar_lotes_producidos: boolean
-    prefijo_gs1: string
-    prefijo_empresa: string | null
+    vista_publica_mostrar_catalogo: boolean
 }
 
 export type ConfiguracionSistemaUpdate = {

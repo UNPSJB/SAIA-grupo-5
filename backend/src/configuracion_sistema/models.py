@@ -45,3 +45,4 @@ class ConfiguracionSistema(ModeloBase):
     vista_publica_mostrar_documentos_tecnicos: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     vista_publica_mostrar_productos_elaborados: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     vista_publica_mostrar_lotes_producidos: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    vista_publica_mostrar_catalogo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)

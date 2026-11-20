@@ -405,3 +405,41 @@ def test_indicador_productos_elaborados(client, auth_headers, db_session, multip
     indicador = data["indicadores"][0]
     assert indicador["clave"] == "productos_elaborados"
     assert indicador["valor"] == "2"
+
+
+def test_vista_publica_catalogo_desactivado_devuelve_vacio(client, auth_headers, multiples_productos):
+    update_configuracion(
+        client,
+        auth_headers,
+        vista_publica_activa=True,
+        vista_publica_mostrar_catalogo=False,
+    )
+    token = client.get("/configuracion-sistema/", headers=auth_headers).json()["vista_publica_token"]
+
+    response = client.get(f"/vista-publica/{token}")
+
+    assert response.status_code == 200
+    assert response.json()["catalogo_productos"] == []
+
+
+def test_vista_publica_catalogo_activado_devuelve_solo_activos(client, auth_headers, db_session, multiples_productos):
+    multiples_productos[1].activo = False
+    db_session.commit()
+
+    update_configuracion(
+        client,
+        auth_headers,
+        vista_publica_activa=True,
+        vista_publica_mostrar_catalogo=True,
+    )
+    token = client.get("/configuracion-sistema/", headers=auth_headers).json()["vista_publica_token"]
+
+    response = client.get(f"/vista-publica/{token}")
+
+    assert response.status_code == 200
+    catalogo = response.json()["catalogo_productos"]
+    assert len(catalogo) == 2
+    nombres = [item["nombre"] for item in catalogo]
+    assert "Aceitunas" in nombres
+    assert "Queso crema" in nombres
+    assert "Leche" not in nombres

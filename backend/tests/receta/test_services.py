@@ -17,7 +17,7 @@ def test_evaluar_sellos_con_todos_los_sellos(db_session, producto_solido, insumo
     assert evaluacion.evaluable is True
     assert evaluacion.es_liquido is False
     # 60 + 20 + 20 + 1 = 101 g → 441,8 kcal / 101 g * 100
-    assert evaluacion.rendimiento == 101
+    assert evaluacion.cantidad_base == 101
     assert evaluacion.valor_energetico == 437.43
     assert evaluacion.sellos == [
         SelloFrontal.EXCESO_AZUCARES,
@@ -84,7 +84,7 @@ def test_evaluar_sellos_producto_por_unidad(db_session, producto_por_unidad, ins
     evaluacion = services.evaluar_sellos_receta(db=db_session, datos=datos)
 
     assert evaluacion.evaluable is True
-    # 2 huevos (2 * 50 g) + 5 ml de esencia (≈ 5 g): la esencia no aporta nutrientes pero sí suma al rendimiento
+    # 2 huevos (2 * 50 g) + 5 ml de esencia (≈ 5 g): la esencia no aporta nutrientes pero sí suma a la masa base
     assert evaluacion.cantidad_base == 105
     assert evaluacion.valor_energetico == 136.19
     assert evaluacion.insumos_sin_informacion == ["Esencia"]

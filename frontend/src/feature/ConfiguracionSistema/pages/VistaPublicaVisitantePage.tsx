@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { Alert, Card, Col, Container, Row, Spinner } from "react-bootstrap";
+import { Alert, Badge, Card, Col, Container, Row, Spinner } from "react-bootstrap";
 import useSWR from "swr";
 import axios from "axios";
 import {
@@ -20,6 +20,19 @@ import {
 import { API_BASE_URL } from "../../../constants/api";
 
 type IndicadorPublico = { clave: string; titulo: string; descripcion: string; valor: string; icono: string };
+type ProductoCatalogoPublico = {
+    id: number;
+    nombre: string;
+    descripcion: string | null;
+    cantidad_neta: number;
+    unidad_medida: string;
+    foto_producto: string;
+    azucares_agregados: boolean | null;
+    grasas_agregadas: boolean | null;
+    sodio_agregado: boolean | null;
+    contiene_edulcorantes: boolean | null;
+    contiene_cafeina: boolean | null;
+};
 type DatosPublicos = {
     establecimiento: string;
     logo_pyme: string | null;
@@ -28,6 +41,7 @@ type DatosPublicos = {
     direccion_pyme: string | null;
     actualizado: string;
     indicadores: IndicadorPublico[];
+    catalogo_productos?: ProductoCatalogoPublico[];
 };
 
 
@@ -422,6 +436,64 @@ export function VistaPublicaVisitantePage() {
                                                                     aria-valuemin={0}
                                                                     aria-valuemax={100}
                                                                 />
+                                                            </div>
+                                                        )}
+                                                    </Card.Body>
+                                                </Card>
+                                            </Col>
+                                        );
+                                    })}
+                                </Row>
+                            </section>
+                        )}
+
+                        {data.catalogo_productos && data.catalogo_productos.length > 0 && (
+                            <section className="mt-4">
+                                <div className="d-flex align-items-center justify-content-between mb-3">
+                                    <div>
+                                        <h2 className="h5 fw-bold mb-1" style={{ color: "#1e293b" }}>Catalogo de productos</h2>
+                                        <p className="text-secondary small mb-0">Oferta disponible elaborada por el establecimiento</p>
+                                    </div>
+                                </div>
+                                <Row className="g-3">
+                                    {data.catalogo_productos.map((producto) => {
+                                        const sellos: string[] = [];
+                                        if (producto.azucares_agregados) sellos.push("Exceso en azucares");
+                                        if (producto.grasas_agregadas) sellos.push("Exceso en grasas");
+                                        if (producto.sodio_agregado) sellos.push("Exceso en sodio");
+                                        if (producto.contiene_edulcorantes) sellos.push("Contiene edulcorantes");
+                                        if (producto.contiene_cafeina) sellos.push("Contiene cafeina");
+
+                                        return (
+                                            <Col xs={12} sm={6} lg={4} key={producto.id}>
+                                                <Card className="h-100 border-0 shadow-sm overflow-hidden" style={{ borderRadius: 12 }}>
+                                                    <Card.Img
+                                                        variant="top"
+                                                        src={producto.foto_producto}
+                                                        alt={producto.nombre}
+                                                        style={{ height: 210, objectFit: "cover" }}
+                                                    />
+                                                    <Card.Body className="p-4 d-flex flex-column justify-content-between">
+                                                        <div>
+                                                            <div className="d-flex align-items-start justify-content-between gap-2 mb-2">
+                                                                <h3 className="h6 fw-bold mb-0" style={{ color: "#1e293b" }}>
+                                                                    {producto.nombre}
+                                                                </h3>
+                                                                <Badge bg="light" text="dark" className="border flex-shrink-0">
+                                                                    {producto.cantidad_neta} {producto.unidad_medida}
+                                                                </Badge>
+                                                            </div>
+                                                            <p className="text-secondary small mb-3">
+                                                                {producto.descripcion || "Producto disponible en catalogo."}
+                                                            </p>
+                                                        </div>
+                                                        {sellos.length > 0 && (
+                                                            <div className="d-flex flex-wrap gap-1 pt-2 border-top">
+                                                                {sellos.map((sello) => (
+                                                                    <Badge key={sello} bg="dark" className="fw-normal" style={{ fontSize: "0.7rem" }}>
+                                                                        {sello}
+                                                                    </Badge>
+                                                                ))}
                                                             </div>
                                                         )}
                                                     </Card.Body>

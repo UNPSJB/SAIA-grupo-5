@@ -178,6 +178,13 @@ export function ListPage() {
                             onClick={() => navigate(`/productos/${row.id}`)}
                         />
                     </span>
+                    <ActionButton
+                        variant="outline-secondary"
+                        size="sm"
+                        tooltip="Rotulado frontal"
+                        icon="bi bi-tags"
+                        onClick={() => setProductoRotulado(row)}
+                    />
                     {row.receta != null && (
                         <ActionButton
                             variant="outline-secondary"
@@ -187,13 +194,6 @@ export function ListPage() {
                             onClick={() => setProductoVerReceta(row)}
                         />
                     )}
-                    <ActionButton
-                        variant="outline-secondary"
-                        size="sm"
-                        tooltip="Rotulado frontal"
-                        icon="bi bi-tags"
-                        onClick={() => setProductoRotulado(row)}
-                    />
 
                     {currentUser?.administrar && (
                         <>

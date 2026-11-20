@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from typing import Annotated
 from datetime import date, datetime
 from src.unidad_medida.schemas import UnidadMedida
@@ -15,9 +15,15 @@ class ProductoBase(BaseModel):
     cantidad_neta: Annotated[int, Field(gt=0)]
     unidad_medida_id: int
     fecha_lanzamiento: date
-    codigo_producto: Annotated[str | None, Field(pattern=r"^[0-9]{5}$")] = None
-    foto_producto: str | None = None
-    
+
+    foto_producto: str
+
+    @field_validator("foto_producto")
+    @classmethod
+    def validar_foto_producto(cls, valor: str) -> str:
+        if not valor or not valor.strip():
+            raise ValueError("La foto del producto es obligatoria.")
+        return valor
 
 class ProductoCreate(ProductoBase):
     pass

@@ -13,7 +13,6 @@ import { PLANTILLA_ETAPAS } from '../constants';
 import { useApi } from '../../../hooks/useApi';
 import { SelectorConBusqueda } from '../../../components/SelectorConBusqueda';
 import { SellosFrontales } from './SellosFrontales';
-import { formatearGramos } from '../composicion/rendimiento';
 
 interface RecetaFormModalProps {
     producto: Producto | null;
@@ -232,7 +231,7 @@ function RendimientoReceta({ register, errors, receta }: RendimientoRecetaProps)
         <div className="text-start mb-3">
             <h6 className="fw-bold mb-1">Porción</h6>
             <p className="text-muted small mb-2">
-                Si corresponde, indicá la porción o unidad de venta. El rendimiento final no se ingresa: se calcula sumando los insumos de la receta en gramos.
+                Si corresponde, indicá la porción o unidad de venta.
             </p>
             {!unidadesMedida ? (
                 <div className="d-flex align-items-center gap-2 text-muted small">
@@ -346,7 +345,7 @@ function IngredientesReceta({ control, register, errors, producto, receta }: Ing
         <div className="text-start mb-2">
             <h6 className="fw-bold mb-1">Ingredientes y aditivos</h6>
             <p className="text-muted small mb-2">
-                Indicá la cantidad de cada insumo; su suma en gramos es el rendimiento final del producto. Clasificá cada renglón como ingrediente o aditivo; los aditivos se eligen de la lista de referencia.
+                Indicá la cantidad de cada insumo. Clasificá cada renglón como ingrediente o aditivo; los aditivos se eligen de la lista de referencia.
             </p>
 
             {insumos.map((item, index) => {
@@ -448,17 +447,6 @@ function IngredientesReceta({ control, register, errors, producto, receta }: Ing
                 <Button variant="link" size="sm" className="px-0" onClick={() => append(renglonVacio("Aditivo"))}>
                     <i className="bi bi-plus-lg me-1"></i>Agregar aditivo
                 </Button>
-            </div>
-
-            <div className="d-flex align-items-center gap-2 small mb-2">
-                <span className="fw-bold">Rendimiento final estimado:</span>
-                {calculando ? (
-                    <span className="text-muted"><Spinner animation="border" size="sm" className="me-1" />Calculando…</span>
-                ) : evaluacion?.rendimiento != null ? (
-                    <span>{formatearGramos(evaluacion.rendimiento)}</span>
-                ) : (
-                    <span className="text-muted fst-italic">Agregá insumos para calcularlo</span>
-                )}
             </div>
 
             <SellosFrontales evaluacion={evaluacion} cargando={calculando} />

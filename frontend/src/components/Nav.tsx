@@ -226,6 +226,9 @@ export function Nav({ children }: { children: React.ReactNode }) {
                                         <Dropdown.Item as="button" onClick={() => navigate('/configuracion-sistema')}>
                                             <i className="bi bi-gear me-2" />Configuración de Sistema
                                         </Dropdown.Item>
+                                        <Dropdown.Item as="button" onClick={() => navigate('/configuracion-calculo-nutricional')}>
+                                            <i className="bi bi-sliders me-2" />Configuración de Cálculo Nutricional
+                                        </Dropdown.Item>
                                         <Dropdown.Item as="button" onClick={() => navigate('/configuracion-sistema/vista-publica')}>
                                             <i className="bi bi-qr-code me-2" />Vista pública de cumplimiento
                                         </Dropdown.Item>
