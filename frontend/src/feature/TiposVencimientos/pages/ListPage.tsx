@@ -8,6 +8,8 @@ import { ActionButton } from '../../../components/ActionButton';
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader'; 
 import { useApi } from '../../../hooks'; 
+import { ExportMenu } from '../../../components/ExportMenu';
+
 import { useAuth } from '../../../hooks';
 
 import { DeleteTipoVencimientoModal } from '../components/DeleteTipoVencimientoModal';
@@ -173,6 +175,14 @@ export function ListPage() {
                         value={estadoFiltro}
                         options={ESTADO_FILTRO_LABELS}
                         onChange={(value) => setEstadoFiltro(value as EstadoFiltro)}
+                    />
+                </Col>
+                <Col xs="auto">
+                    <ExportMenu
+                        title="Listado de Tipos de Vencimientos"
+                        filename="tiposVencimientos"
+                        columns={columns}
+                        rows={filteredTiposVencimientos}
                     />
                 </Col>
                 {currentUser?.administrar &&(

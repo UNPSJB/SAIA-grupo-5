@@ -9,6 +9,7 @@ import { PageHeader } from "../../../components/PageHeader";
 import { PageLoading } from "../../../components/PageLoading";
 import { PageError } from "../../../components/PageError";
 import { ActionButton } from "../../../components/ActionButton";
+import { ExportMenu } from '../../../components/ExportMenu';
 import { useApi } from "../../../hooks/useApi";
 import { useAuth } from "../../../hooks/useAuth";
 
@@ -162,6 +163,14 @@ export function TiposElementoLimpiezaPage() {
                         onChange={(value) => setEstadoFiltro(value as EstadoFiltro)}
                     />
                 </Col>
+                <Col xs="auto">
+                    <ExportMenu
+                        title="Listado de Tipos de elementos de Limpieza"
+                        filename="tiposElementosLimpieza"
+                        columns={columns}
+                        rows={filteredTipos}
+                    />
+                </Col>      
                 {currentUser?.administrar && (
                     <Col xs="auto" className="d-flex justify-content-end">
                         <Button

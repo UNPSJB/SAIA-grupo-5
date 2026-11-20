@@ -4,7 +4,7 @@ import { Alert, Button, Col, Container, Form, Row, Spinner } from 'react-bootstr
 import { useNavigate, useParams } from 'react-router-dom';
 import { type TableColumn } from 'react-data-table-component';
 import { ActionButton } from '../../../components/ActionButton';
-
+import { ExportMenu } from '../../../components/ExportMenu';
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
 import { useApi } from '../../../hooks/useApi';
@@ -257,6 +257,14 @@ export function ListPage() {
                         value={estadoFiltro}
                         options={FILTRO_LABELS}
                         onChange={(value) => setEstadoFiltro(value as FiltroVencimientos)}
+                    />
+                </Col>
+                <Col xs="auto">
+                    <ExportMenu
+                        title="Listado de Vencimientos del Personal"
+                        filename="vencimientoPersonal"
+                        columns={columns}
+                        rows={filteredVencimientos}
                     />
                 </Col>
                 {currentUser?.administrar && (

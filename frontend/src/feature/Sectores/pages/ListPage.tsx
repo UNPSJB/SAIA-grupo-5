@@ -12,6 +12,8 @@ import { ActionButton } from '../../../components/ActionButton';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
 import { api } from '../../../libs/axios';
+import { ExportMenu } from '../../../components/ExportMenu';
+
 
 import { DeleteSectorModal } from '../components/DeleteSectorModal';
 import { EquiposDeSectorModal } from '../components/EquiposDeSectorModal';
@@ -223,6 +225,14 @@ export function ListPage() {
                         value={estadoFiltro}
                         options={ESTADO_FILTRO_LABELS}
                         onChange={(value) => setEstadoFiltro(value as EstadoFiltro)}
+                    />
+                </Col>
+<               Col xs="auto">
+                    <ExportMenu
+                        title="Listado de Sectores"
+                        filename="sectores"
+                        columns={columns}
+                        rows={filteredSectores}
                     />
                 </Col>
                 {currentUser?.administrar && (
