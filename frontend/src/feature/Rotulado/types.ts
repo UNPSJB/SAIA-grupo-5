@@ -23,6 +23,130 @@ export type EvaluacionRotulado = {
     sellos: EvaluacionSellos | null;
 }
 
+export type DatosRotuladoCAA = {
+    denominacion_venta: string;
+    contenido_neto: string;
+    lista_ingredientes: string;
+    razon_social: string;
+    domicilio: string;
+    numero_registro: string;
+    identificacion_lote: string;
+    fecha_duracion: string | null;
+    instrucciones_uso: string;
+    es_importado: boolean;
+    importador_razon_social: string;
+    importador_domicilio: string;
+    importador_cuit: string;
+};
+
+export type CampoCompletitud = {
+    clave: string;
+    nombre: string;
+    obligatorio: boolean;
+    completo: boolean;
+    automatico: boolean;
+    referencia: string | null;
+    condicional: string | null;
+    valor: string;
+    origen: "sistema" | "manual" | "vacio";
+};
+
+export type CambioRotulado = {
+    campo: string;
+    nombre_campo: string;
+    valor_anterior: string | null;
+    valor_nuevo: string | null;
+    usuario: string | null;
+    fecha_hora: string;
+};
+
+export type FilaNutricional = {
+    codigo: string;
+    nombre: string;
+    unidad: string;
+    texto_porcion: string;
+    texto_100g: string;
+    porcentaje_vd: number | null;
+    kj_porcion?: number | null;
+    kj_100g?: number | null;
+};
+
+export type BorradorRotuladoCAA = {
+    producto_id: number;
+    datos: DatosRotuladoCAA;
+    sugeridos: Record<string, string>;
+    campos: CampoCompletitud[];
+    faltantes: string[];
+    completitud: number;
+    historial: CambioRotulado[];
+    tabla_nutricional: FilaNutricional[] | null;
+    sellos: string[];
+    fecha_actualizacion: string | null;
+};
+
+export type ClaveElementoEmpaquetado =
+    | "denominacion"
+    | "contenido_neto"
+    | "ingredientes"
+    | "origen"
+    | "lote_fecha"
+    | "instrucciones"
+    | "tabla_nutricional"
+    | "sellos"
+    | "importador";
+
+export type ElementoEmpaquetado = {
+    clave: ClaveElementoEmpaquetado;
+    x: number;
+    y: number;
+    ancho: number;
+    alto: number;
+    visible: boolean;
+};
+
+export type VersionEmpaquetadoResumen = {
+    id: number;
+    version: number;
+    vigente: boolean;
+    tiene_foto: boolean;
+    observacion: string | null;
+    creado_por: string | null;
+    fecha_desde_vigencia: string;
+    fecha_hasta_vigencia: string | null;
+};
+
+export type VersionEmpaquetado = VersionEmpaquetadoResumen & {
+    foto: string | null;
+    elementos: ElementoEmpaquetado[];
+};
+
+export type EmpaquetadoProducto = {
+    producto_id: number;
+    vigente: VersionEmpaquetado | null;
+    versiones: VersionEmpaquetadoResumen[];
+    foto: string | null;
+    elementos: ElementoEmpaquetado[];
+    datos: DatosRotuladoCAA;
+    tabla_nutricional: FilaNutricional[] | null;
+    tabla_incompleta: boolean;
+    sellos: string[];
+    mensaje_sellos: string;
+    leyenda: string;
+    faltantes: string[];
+};
+
+export const ETIQUETAS_EMPAQUETADO: Record<ClaveElementoEmpaquetado, string> = {
+    denominacion: "Denominación de venta",
+    contenido_neto: "Contenido neto",
+    ingredientes: "Lista de ingredientes",
+    origen: "Origen con RNPA/RPPA",
+    lote_fecha: "Lote y fecha de duración",
+    instrucciones: "Instrucciones de uso",
+    tabla_nutricional: "Tabla nutricional",
+    sellos: "Octógonos / sellos",
+    importador: "Importador",
+};
+
 export type CampoDeclaracion =
     | "azucares_agregados"
     | "grasas_agregadas"

@@ -1460,7 +1460,11 @@ RELACIONES = {
 
 
 def generar_tareas(db) -> list[Tarea]:
-    planes = {p.nombre: p for p in db.scalars(select(PlanLimpieza)).all()}
+    # Si hubiera planes duplicados con el mismo nombre (cargas viejas del seed),
+    # gana el de menor id, que es al que apuntan las tareas ya cargadas.
+    planes: dict[str, PlanLimpieza] = {}
+    for plan in db.scalars(select(PlanLimpieza).order_by(PlanLimpieza.id)).all():
+        planes.setdefault(plan.nombre, plan)
     sectores = {s.nombre: s for s in db.scalars(select(Sector)).all()}
     superficies = {s.nombre: s for s in db.scalars(select(Superficie)).all()}
     equipos = {}
@@ -1469,6 +1473,9 @@ def generar_tareas(db) -> list[Tarea]:
         # desambigua con el sector del equipo.
         equipos[(e.nombre, e.sector_id)] = e
 
+    # Idempotente: no se repiten las tareas ya cargadas para el mismo plan.
+    existentes = {(t.plan_limpieza_id, t.nombre) for t in db.scalars(select(Tarea)).all()}
+
     tareas = []
     for nombre_plan, lista_tareas in TAREAS_POR_PLAN.items():
         plan = planes.get(nombre_plan)
@@ -1476,6 +1483,8 @@ def generar_tareas(db) -> list[Tarea]:
             continue
         relaciones_plan = RELACIONES.get(nombre_plan, {})
         for datos in lista_tareas:
+            if (plan.id, datos["nombre"]) in existentes:
+                continue
             tipo, nombre_entidad = relaciones_plan[datos["nombre"]]
             sector_id = superficie_id = equipo_id = None
             if tipo == "sector":
@@ -1513,7 +1522,7 @@ def main():
     try:
         tareas = generar_tareas(db)
         if not tareas:
-            print("No hay planes de limpieza cargados. Correr antes scripts.seed_planes_limpieza.")
+            print("No se insertaron tareas nuevas (ya están cargadas o faltan planes de limpieza).")
             return
  
         db.add_all(tareas)

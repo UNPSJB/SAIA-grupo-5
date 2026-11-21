@@ -36,6 +36,9 @@ def generar_equipos(db) -> list[Equipo]:
     if not sectores:
         return []
 
+    # Idempotente: no se repiten los equipos ya cargados (mismo nombre y sector).
+    existentes = {(e.nombre, e.sector_id) for e in db.scalars(select(Equipo)).all()}
+
     return [
         Equipo(
             nombre=nombre,
@@ -45,6 +48,7 @@ def generar_equipos(db) -> list[Equipo]:
         )
         for nombre, categoria, nombre_sector in EQUIPOS
         if nombre_sector in sectores
+        and (nombre, sectores[nombre_sector].id) not in existentes
     ]
 
 
@@ -53,7 +57,7 @@ def main():
     try:
         equipos = generar_equipos(db)
         if not equipos:
-            print("No hay sectores cargados. Correr antes scripts.seed_sectores.")
+            print("No se insertaron equipos nuevos (ya están cargados o faltan sectores).")
             return
 
         db.add_all(equipos)

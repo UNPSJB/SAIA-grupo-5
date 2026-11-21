@@ -16,6 +16,8 @@ Uso: python -m scripts.seed_documentos
 """
 from datetime import date, datetime, timedelta
 
+from sqlalchemy import select
+
 import src.all_models  # noqa: F401
 from src.database import SessionLocal
 from src.personal.models import Persona
@@ -68,16 +70,28 @@ DOCUMENTOS = [
 DOCUMENTO_VIGENTE = "Manual General de POES"
 
 
-def generar_tipos_documentos(db) -> dict[str, TipoDocumento]:
-    tipos = {nombre: TipoDocumento(nombre=nombre, descripcion=descripcion) for nombre, descripcion in TIPOS_DOCUMENTOS}
-    db.add_all(tipos.values())
+def generar_tipos_documentos(db) -> tuple[dict[str, TipoDocumento], int]:
+    # Idempotente: el nombre del tipo es UNIQUE, así que se crean solo los que faltan.
+    tipos = {t.nombre: t for t in db.scalars(select(TipoDocumento)).all()}
+    nuevos = [
+        TipoDocumento(nombre=nombre, descripcion=descripcion)
+        for nombre, descripcion in TIPOS_DOCUMENTOS
+        if nombre not in tipos
+    ]
+    db.add_all(nuevos)
     db.flush()  # necesitamos el id de cada tipo antes de crear los documentos
-    return tipos
+    tipos.update({t.nombre: t for t in nuevos})
+    return tipos, len(nuevos)
 
 
 def generar_documentos(db, tipos: dict[str, TipoDocumento]) -> list[tuple[Documento, str, str | None]]:
+    # Idempotente: se omiten los documentos ya cargados con el mismo nombre.
+    existentes = set(db.scalars(select(Documento.nombre)).all())
+
     pares = []
     for nombre, descripcion, tipo_nombre, archivo, observacion in DOCUMENTOS:
+        if nombre in existentes:
+            continue
         documento = Documento(
             nombre=nombre,
             descripcion=descripcion,
@@ -125,8 +139,13 @@ def main():
             print("No hay personal cargado. Correr antes scripts.seed_personal.")
             return
 
-        tipos = generar_tipos_documentos(db)
+        tipos, tipos_nuevos = generar_tipos_documentos(db)
         pares = generar_documentos(db, tipos)
+
+        if not pares:
+            db.commit()  # los tipos nuevos (si hubo) quedan cargados
+            print("No se generaron documentos nuevos (ya están cargados).")
+            return
 
         documentos = [documento for documento, _, _ in pares]
         db.add_all(documentos)
@@ -150,7 +169,7 @@ def main():
         db.commit()
 
         print(
-            f"Se insertaron {len(tipos)} tipos de documento, {len(documentos)} documentos y "
+            f"Se insertaron {tipos_nuevos} tipos de documento, {len(documentos)} documentos y "
             f"{len(versiones)} versiones (1 marcada como vigente: '{DOCUMENTO_VIGENTE}')."
         )
     finally:

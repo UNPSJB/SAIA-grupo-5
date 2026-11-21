@@ -4,6 +4,8 @@ Uso: python -m scripts.seed_elementos_limpieza
 """
 from datetime import date, timedelta
 
+from sqlalchemy import select
+
 import src.all_models  # noqa: F401
 from src.database import SessionLocal
 from src.elementosLimpieza.models import ElementoLimpieza, TipoElementoLimpieza
@@ -32,11 +34,18 @@ ELEMENTOS = [
 ]
 
 
-def generar_tipos(db) -> dict[str, TipoElementoLimpieza]:
-    tipos = {nombre: TipoElementoLimpieza(nombre=nombre, prefijo=prefijo) for nombre, prefijo in TIPOS}
-    db.add_all(tipos.values())
-    db.flush()  
-    return tipos
+def generar_tipos(db) -> tuple[dict[str, TipoElementoLimpieza], int]:
+    # Idempotente: nombre y prefijo son UNIQUE, así que se crean solo los que faltan.
+    tipos = {t.nombre: t for t in db.scalars(select(TipoElementoLimpieza)).all()}
+    nuevos = [
+        TipoElementoLimpieza(nombre=nombre, prefijo=prefijo)
+        for nombre, prefijo in TIPOS
+        if nombre not in tipos
+    ]
+    db.add_all(nuevos)
+    db.flush()
+    tipos.update({t.nombre: t for t in nuevos})
+    return tipos, len(nuevos)
 
 
 def generar_elementos(db, tipos: dict[str, TipoElementoLimpieza]) -> list[ElementoLimpieza]:
@@ -44,7 +53,18 @@ def generar_elementos(db, tipos: dict[str, TipoElementoLimpieza]) -> list[Elemen
     contadores: dict[str, int] = {}
     elementos = []
 
+    # Idempotente: se omiten los elementos ya cargados y la numeración de los
+    # códigos continúa desde el último código existente de cada prefijo.
+    existentes = list(db.scalars(select(ElementoLimpieza)).all())
+    nombres_existentes = {e.nombre for e in existentes}
+    for existente in existentes:
+        prefijo, _, numero = existente.codigo.partition("-")
+        if numero.isdigit():
+            contadores[prefijo] = max(contadores.get(prefijo, 0), int(numero))
+
     for nombre, nombre_tipo, frecuencia, ubicacion, dias_desde_alta in ELEMENTOS:
+        if nombre in nombres_existentes:
+            continue
         tipo = tipos[nombre_tipo]
         contadores[tipo.prefijo] = contadores.get(tipo.prefijo, 0) + 1
         codigo = f"{tipo.prefijo}-{contadores[tipo.prefijo]:03d}"
@@ -66,13 +86,13 @@ def generar_elementos(db, tipos: dict[str, TipoElementoLimpieza]) -> list[Elemen
 def main():
     db = SessionLocal()
     try:
-        tipos = generar_tipos(db)
+        tipos, tipos_nuevos = generar_tipos(db)
         elementos = generar_elementos(db, tipos)
 
         db.add_all(elementos)
         db.commit()
 
-        print(f"Se insertaron {len(tipos)} tipos y {len(elementos)} elementos de limpieza.")
+        print(f"Se insertaron {tipos_nuevos} tipos y {len(elementos)} elementos de limpieza.")
     finally:
         db.close()
 
