@@ -15,6 +15,7 @@ class ProductoBase(BaseModel):
     cantidad_neta: Annotated[int, Field(gt=0)]
     unidad_medida_id: int
     fecha_lanzamiento: date
+
     foto_producto: str
 
     @field_validator("foto_producto")
@@ -33,6 +34,7 @@ class ProductoUpdate(ProductoBase):
 class Producto(ProductoBase):
     id: int
     activo: bool
+    codigo_barras: str | None = None
     envasado_ausencia_cliente: bool | None = None
     azucares_agregados: bool | None = None
     grasas_agregadas: bool | None = None

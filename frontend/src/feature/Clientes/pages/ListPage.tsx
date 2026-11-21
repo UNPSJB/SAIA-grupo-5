@@ -9,6 +9,7 @@ import { PageHeader } from '../../../components/PageHeader';
 import { PageLoading } from '../../../components/PageLoading';
 import { PageError } from '../../../components/PageError';
 import { ActionButton } from '../../../components/ActionButton';
+import { ExportMenu } from '../../../components/ExportMenu';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
 import { CambiarEstadoClienteModal } from '../components/CambiarEstadoClienteModal';
@@ -159,6 +160,14 @@ export function ListPage() {
                 </Col>
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
+                </Col>
+                <Col xs="auto">
+                    <ExportMenu
+                        title="Listado de Clientes"
+                        filename="clientes"
+                        columns={columns}
+                        rows={filteredClientes}
+                    />
                 </Col>
                 {currentUser?.administrar && (
                     <Col xs="auto" className="d-flex justify-content-end">

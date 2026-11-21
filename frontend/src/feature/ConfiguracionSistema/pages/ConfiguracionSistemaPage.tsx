@@ -39,6 +39,10 @@ export function ConfiguracionSistemaPage() {
     const [guardandoPyme, setGuardandoPyme] = useState(false);
     const [leyendoLogo, setLeyendoLogo] = useState(false);
 
+    const [prefijoGs1, setPrefijoGs1] = useState("779");
+    const [prefijoEmpresa, setPrefijoEmpresa] = useState("");
+    const [guardandoPrefijos, setGuardandoPrefijos] = useState(false);
+
     useEffect(() => {
         if (!configuracion) return;
         setDiasAntelacion(configuracion.dias_antelacion_vencimiento);
@@ -49,6 +53,8 @@ export function ConfiguracionSistemaPage() {
         setEmailPyme(configuracion.email_pyme ?? "");
         setDireccionPyme(configuracion.direccion_pyme ?? "");
         setLogoBase64(configuracion.logo_pyme);
+        setPrefijoGs1(configuracion.prefijo_gs1);
+        setPrefijoEmpresa(configuracion.prefijo_empresa ?? "");
     }, [configuracion]);
 
     const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -105,6 +111,30 @@ export function ConfiguracionSistemaPage() {
             mostrarAlertaError(Array.isArray(detail) ? detail[0]?.msg : detail || "No se pudieron guardar los datos de la PyME.");
         } finally {
             setGuardandoPyme(false);
+        }
+    };
+
+    const handleSubmitPrefijos = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!/^[0-9]{3}$/.test(prefijoGs1) || (prefijoEmpresa && !/^[0-9]{4}$/.test(prefijoEmpresa))) {
+            mostrarAlertaError("El prefijo GS1 debe tener 3 dígitos y el de empresa 4.");
+            return;
+        }
+
+        setGuardandoPrefijos(true);
+        try {
+            await api.put(CONFIGURACION_URL, {
+                prefijo_gs1: prefijoGs1,
+                prefijo_empresa: prefijoEmpresa || null
+            });
+            await mutate(CONFIGURACION_URL);
+            mostrarAlertaExito("Los prefijos se guardaron correctamente.");
+        } catch (err: any) {
+            const detail = err.response?.data?.detail;
+            mostrarAlertaError(Array.isArray(detail) ? detail[0]?.msg : detail || "No se pudieron guardar los prefijos.");
+        } finally {
+            setGuardandoPrefijos(false);
         }
     };
 
@@ -201,6 +231,38 @@ export function ConfiguracionSistemaPage() {
 
                                 <Button variant="primary" type="submit" disabled={guardandoPyme || leyendoLogo || !!logoError}>
                                     <i className="bi bi-floppy me-1"></i> {guardandoPyme ? "Guardando..." : "Guardar datos de la PyME"}
+                                </Button>
+                            </Form>
+                        </Card.Body>
+                    </Card>
+
+                    <Card className="shadow-sm mb-4">
+                        <Card.Header className="fw-bold">
+                            <i className="bi bi-upc-scan me-2"></i>Configuración de códigos de barras
+                        </Card.Header>
+                        <Card.Body>
+                            <Form onSubmit={handleSubmitPrefijos}>
+                                <Row className="g-3">
+                                    <Col md={6}>
+                                        <Form.Group className="mb-3 text-start" controlId="formPrefijoGs1">
+                                            <Form.Label className="p-1 fw-bold">Prefijo GS1 *</Form.Label>
+                                            <Form.Control required type="text" inputMode="numeric" maxLength={3} value={prefijoGs1} onChange={(e) => setPrefijoGs1(e.target.value.replace(/\D/g, ""))} />
+                                            <Form.Text className="text-muted">Por defecto, 779 (GS1 Argentina).</Form.Text>
+                                        </Form.Group>
+                                    </Col>
+                                    <Col md={6}>
+                                        <Form.Group className="mb-3 text-start" controlId="formPrefijoEmpresa">
+                                            <Form.Label className="p-1 fw-bold">Prefijo de empresa</Form.Label>
+                                            <Form.Control type="text" inputMode="numeric" maxLength={4} placeholder="Ej: 1234" value={prefijoEmpresa} onChange={(e) => setPrefijoEmpresa(e.target.value.replace(/\D/g, ""))} />
+                                            <Form.Text className="text-muted">Dejar vacío para no generar códigos nuevos.</Form.Text>
+                                        </Form.Group>
+                                    </Col>
+                                </Row>
+
+                                <Form.Text className="text-muted d-block mb-3">Los códigos generados son demostrativos hasta disponer de un prefijo oficial asignado por GS1. Modificar los prefijos no cambia los códigos ya guardados.</Form.Text>
+
+                                <Button variant="primary" type="submit" disabled={guardandoPrefijos}>
+                                    <i className="bi bi-floppy me-1"></i> {guardandoPrefijos ? "Guardando..." : "Guardar prefijos"}
                                 </Button>
                             </Form>
                         </Card.Body>

@@ -10,6 +10,7 @@ import { PageLoading } from '../../../components/PageLoading';
 import { PageError } from '../../../components/PageError';
 import { ActionButton } from '../../../components/ActionButton';
 import { EstadoBadge } from '../../../components/EstadoBadge';
+import { ExportMenu } from '../../../components/ExportMenu';
 import { ESTADO_HISTORIAL_ESTILOS } from '../../Historial/types';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks';
@@ -263,6 +264,15 @@ export function ListPage() {
                     xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
                 </Col>
+                <Col xs="auto">
+                    <ExportMenu
+                        title="Listado del Checklis"
+                        filename="checklist"
+                        columns={columns}
+                        rows={filteredTareas}
+                    />
+                </Col>  
+                
             </Row>
             <div data-tour="listado-checklist">
                 <div className="d-none d-lg-block">  {/*Si es tamaño lg muestra como bloque */}

@@ -6,6 +6,8 @@ import { AppTable } from "../../../components/AppTable";
 import { PageHeader } from "../../../components/PageHeader";
 import { PageLoading } from "../../../components/PageLoading";
 import { PageError } from "../../../components/PageError";
+import { ExportMenu } from '../../../components/ExportMenu';
+
 import { ActionButton } from "../../../components/ActionButton";
 import { useApi } from "../../../hooks/useApi";
 import { useAuth } from "../../../hooks/useAuth";
@@ -116,7 +118,14 @@ export function RecambiosElementoLimpiezaPage() {
                 <Col xs="auto" className="align-self-center">
                     {subHeaderComponentMemo}
                 </Col>
-
+                <Col xs="auto">
+                    <ExportMenu
+                        title="Listado de Recambios"
+                        filename="recambios"
+                        columns={columns}
+                        rows={filteredRecambios}
+                    />
+                </Col>
                 <Col xs="auto" className="d-flex justify-content-end">
                     {currentUser?.administrar && (
                         <Button

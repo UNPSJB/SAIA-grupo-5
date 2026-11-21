@@ -9,6 +9,7 @@ import { PageHeader } from '../../../components/PageHeader'
 import { PageLoading } from '../../../components/PageLoading'
 import { PageError } from '../../../components/PageError'
 import { ActionButton } from '../../../components/ActionButton'
+import { ExportMenu } from '../../../components/ExportMenu';
 import { useApi } from '../../../hooks/useApi'
 import { useAuth } from '../../../hooks/useAuth'
 import { Capacidades } from '../../Capacidades/types'
@@ -251,6 +252,14 @@ export function ListPage() {
               options={ESTADO_FILTRO_LABELS}
               onChange={(value) => setEstadoFiltro(value as EstadoFiltro)}
           />
+        </Col>
+        <Col xs="auto">
+            <ExportMenu
+              title="Listado del Personal"
+              filename="personal"
+              columns={columns}
+              rows={filteredPersonal}
+            />
         </Col>
         {currentUser?.administrar && (
           <Col xs="auto" className="d-flex justify-content-end gap-2">

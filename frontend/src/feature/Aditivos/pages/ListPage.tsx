@@ -9,6 +9,7 @@ import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
 import { ListFilter } from '../../../components/ListFilter';
 import { EstadoBadge } from '../../../components/EstadoBadge';
+import { ExportMenu } from '../../../components/ExportMenu';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
 import { DeleteAditivoModal } from '../components/DeleteAditivoModal';
@@ -138,6 +139,14 @@ export function ListPage() {
                         value={estadoFiltro}
                         options={ESTADO_FILTRO_LABELS}
                         onChange={(value) => setEstadoFiltro(value as EstadoFiltro)}
+                    />
+                </Col>
+                <Col xs="auto">
+                    <ExportMenu
+                        title="Listado de Aditivos"
+                        filename="aditivos"
+                        columns={columns}
+                        rows={aditivosFiltrados}
                     />
                 </Col>
                 {currentUser?.administrar && (

@@ -105,11 +105,18 @@ INCIDENTES = [
 ]
 
 
-def generar_tipos_incidentes(db) -> dict[str, TipoIncidente]:
-    tipos = {nombre: TipoIncidente(nombre=nombre, descripcion=descripcion) for nombre, descripcion in TIPOS_INCIDENTES}
-    db.add_all(tipos.values())
+def generar_tipos_incidentes(db) -> tuple[dict[str, TipoIncidente], int]:
+    # Idempotente: el nombre del tipo es UNIQUE, así que se crean solo los que faltan.
+    tipos = {t.nombre: t for t in db.scalars(select(TipoIncidente)).all()}
+    nuevos = [
+        TipoIncidente(nombre=nombre, descripcion=descripcion)
+        for nombre, descripcion in TIPOS_INCIDENTES
+        if nombre not in tipos
+    ]
+    db.add_all(nuevos)
     db.flush()  # necesitamos el id de cada tipo antes de crear los incidentes
-    return tipos
+    tipos.update({t.nombre: t for t in nuevos})
+    return tipos, len(nuevos)
 
 
 def generar_incidentes(db, tipos: dict[str, TipoIncidente]) -> list[tuple[Incidente, tuple[str, str] | None]]:
@@ -122,7 +129,12 @@ def generar_incidentes(db, tipos: dict[str, TipoIncidente]) -> list[tuple[Incide
     hoy = datetime.now()
     pares = []
 
+    # Idempotente: se omiten los incidentes ya cargados con el mismo nombre.
+    existentes = set(db.scalars(select(Incidente.nombre)).all())
+
     for nombre, descripcion, tipo_nombre, sector_nombre, dias_abierto, estado, dias_cerrado, accion_correctiva in INCIDENTES:
+        if nombre in existentes:
+            continue
         operario = fake.random_element(elements=operarios)
         sector = sectores.get(sector_nombre) if sector_nombre else None
 
@@ -187,11 +199,12 @@ def generar_historial(db, pares: list[tuple[Incidente, tuple[str, str] | None]])
 def main():
     db = SessionLocal()
     try:
-        tipos = generar_tipos_incidentes(db)
+        tipos, tipos_nuevos = generar_tipos_incidentes(db)
         pares = generar_incidentes(db, tipos)
 
         if not pares:
-            print("No hay personal cargado. Correr antes scripts.seed_personal.")
+            db.commit()  # los tipos nuevos (si hubo) quedan cargados
+            print("No se generaron incidentes nuevos (ya están cargados o falta personal).")
             return
 
         incidentes = [incidente for incidente, _ in pares]
@@ -204,7 +217,7 @@ def main():
         abiertos = sum(1 for i in incidentes if i.estado == EstadoIncidente.ABIERTO)
         cerrados = len(incidentes) - abiertos
         print(
-            f"Se insertaron {len(tipos)} tipos de incidente, {len(incidentes)} incidentes "
+            f"Se insertaron {tipos_nuevos} tipos de incidente, {len(incidentes)} incidentes "
             f"({abiertos} abiertos, {cerrados} cerrados) y {len(acciones)} acciones correctivas."
         )
     finally:

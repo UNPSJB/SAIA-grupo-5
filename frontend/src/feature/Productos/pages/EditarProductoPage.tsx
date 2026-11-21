@@ -80,7 +80,8 @@ export function EditarProductoPage(){
                     onSubmit={actualizarProducto}
                     valoresIniciales={{ nombre: producto.nombre, unidad_medida_id: producto.unidad_medida_id,
                                         cantidad_neta: producto.cantidad_neta, fecha_lanzamiento: producto.fecha_lanzamiento,
-                                        foto_producto: producto.foto_producto, descripcion: producto.descripcion
+                                        foto_producto: producto.foto_producto, descripcion: producto.descripcion,
+                                        codigo_producto: producto.codigo_producto
                     }}/>
             </Container>
         </>

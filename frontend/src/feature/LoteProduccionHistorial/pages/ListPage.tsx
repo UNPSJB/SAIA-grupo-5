@@ -4,6 +4,7 @@ import { type TableColumn } from 'react-data-table-component';
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
 import { ActionButton } from '../../../components/ActionButton';
+import { ExportMenu } from '../../../components/ExportMenu';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
@@ -175,6 +176,21 @@ export function LotesHistorialPage() {
                                     value: String(producto.id),
                                     label: producto.nombre
                                 }))
+                        ]}
+                    />
+                </Col>
+                <Col xs="auto" className="ms-auto">
+                    <ExportMenu
+                        title="Historial de Lotes de Producción"
+                        filename="historial-lotes"
+                        rows={lotesFiltrados}
+                        exportColumns={[
+                            { header: 'Lote', value: (l) => l.id },
+                            { header: 'Producto', value: (l) => l.producto.nombre },
+                            { header: 'Descripción', value: (l) => l.producto.descripcion },
+                            { header: 'Cantidad', value: (l) => l.cantidad_producida },
+                            { header: 'Fecha de producción', value: (l) => formatDate(l.fecha_produccion) },
+                            { header: 'Fecha de vencimiento', value: (l) => formatDate(l.fecha_vencimiento) },
                         ]}
                     />
                 </Col>

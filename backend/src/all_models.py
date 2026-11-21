@@ -42,7 +42,7 @@ from src.paso_etapa.models import PasoEtapa
 from src.clientes.models import Cliente
 from src.direcciones_cliente.models import DireccionCliente
 from src.envios_lote.models import EnvioLote
-from src.rotulado.models import ReglasRotulado
+from src.rotulado.models import ReglasRotulado, RotuladoProducto, HistorialRotuladoProducto, VersionEmpaquetado
 from src.proveedor.models import Proveedor
 from src.lote_proveedor.models import LoteProveedor, HistorialEstadoLoteProveedor
 from src.insumos_lote.models import InsumoLote
