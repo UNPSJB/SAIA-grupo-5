@@ -12,6 +12,7 @@ COLUMNAS_INSUMOS = (
     ("aporta_sodio", "BOOLEAN NOT NULL DEFAULT 0"),
     ("aporta_edulcorantes", "BOOLEAN NOT NULL DEFAULT 0"),
     ("aporta_cafeina", "BOOLEAN NOT NULL DEFAULT 0"),
+    ("contiene_gluten", "BOOLEAN NOT NULL DEFAULT 0"),
 )
 
 
