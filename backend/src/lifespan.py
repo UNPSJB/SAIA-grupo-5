@@ -35,6 +35,8 @@ async def db_creation_lifespan(app: FastAPI):
             "telefono_pyme": "VARCHAR(30)",
             "email_pyme": "VARCHAR(150)",
             "direccion_pyme": "VARCHAR(200)",
+            "prefijo_gs1": "VARCHAR(3) NOT NULL DEFAULT '779'",
+            "prefijo_empresa": "VARCHAR(4)",
             "vista_publica_activa": "BOOLEAN NOT NULL DEFAULT 0",
             "vista_publica_token": "VARCHAR(64)",
             "vista_publica_nombre_establecimiento": "VARCHAR(100) NOT NULL DEFAULT 'Mi establecimiento'",

@@ -11,7 +11,6 @@ import type { Receta, RecetaVersion } from '../types';
 import { SellosFrontales } from './SellosFrontales';
 import { InfoNutricionalReceta } from "../../CalculoNutricional/components/InfoNutricionalRecetaForm";
 import { IngredientesComposicion } from './IngredientesComposicion';
-import { formatearGramos } from '../composicion/rendimiento';
 import type { UnidadMedida } from '../../UnidadMedida/types';
 import { exportarRecetaPdf } from '../ExportRecetapdf';
 

@@ -7,6 +7,13 @@ COLUMNAS_PRODUCTOS = (
     ("sodio_agregado", "BOOLEAN NULL"),
     ("contiene_edulcorantes", "BOOLEAN NULL"),
     ("contiene_cafeina", "BOOLEAN NULL"),
+    ("codigo_producto", "VARCHAR(5) NULL"),
+    ("codigo_barras", "VARCHAR(13) NULL"),
+)
+
+INDICES_UNICOS_PRODUCTOS = (
+    ("uq_productos_codigo_producto", "codigo_producto"),
+    ("uq_productos_codigo_barras", "codigo_barras"),
 )
 
 
@@ -21,3 +28,6 @@ def migrar_esquema_productos(engine: Engine) -> None:
             if columna not in columnas:
                 connection.execute(text(f"ALTER TABLE productos ADD COLUMN {columna} {definicion}"))
                 columnas.add(columna)
+
+        for indice, columna in INDICES_UNICOS_PRODUCTOS:
+            connection.execute(text(f"CREATE UNIQUE INDEX IF NOT EXISTS {indice} ON productos ({columna})"))
