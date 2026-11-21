@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from src.historial_incidente.models import HistorialIncidente
     from src.lote_produccion.models import LoteProduccion
     from src.lote_proveedor.models import LoteProveedor
+    from src.insumos_lote.models import InsumoLote
 
 
 def _valores_estado(enum_cls):
@@ -42,11 +43,13 @@ class Incidente(ModeloBase):
     sector_id: Mapped[int | None] = mapped_column(ForeignKey("sectores.id"), nullable=True)
     lote_produccion_id: Mapped[int | None] = mapped_column(ForeignKey("lotes_produccion.id"), index=True, nullable=True)
     lote_proveedor_id: Mapped[int | None] = mapped_column(ForeignKey("lotes_proveedor.id"), index=True, nullable=True)
+    insumo_lote_id: Mapped[int | None] = mapped_column(ForeignKey("insumos_lote.id"), index=True, nullable=True)
 
     tipo: Mapped["TipoIncidente"] = relationship(back_populates="incidentes")
     operario: Mapped["Persona"] = relationship()
     sector: Mapped["Sector | None"] = relationship()
     lote_produccion: Mapped["LoteProduccion | None"] = relationship()
     lote_proveedor: Mapped["LoteProveedor | None"] = relationship()
+    insumo_lote: Mapped["InsumoLote | None"] = relationship()
     acciones_correctivas: Mapped[list["AccionCorrectiva"]] = relationship(back_populates="incidente")
     historial: Mapped[list["HistorialIncidente"]] = relationship(back_populates="incidente")

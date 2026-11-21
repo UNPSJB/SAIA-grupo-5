@@ -121,6 +121,23 @@ export function VerIncidentePage() {
                                 </Row>
                             )}
 
+                            {incidente.insumo_lote_id && (
+                                <Row className="mb-3 border-bottom pb-3 align-items-center">
+                                    <Col sm={4} className="fw-bold text-secondary">Insumo Alimenticio</Col>
+                                    <Col sm={8}>
+                                        <Button
+                                            variant="link"
+                                            className="p-0 fw-semibold text-decoration-none"
+                                            onClick={() => navigate(`/insumos-lote/${incidente.insumo_lote_id}`)}
+                                        >
+                                            {incidente.insumo_lote
+                                                ? `Lote ${incidente.insumo_lote.numero_lote} (${incidente.insumo_lote.marca})`
+                                                : `Insumo Lote #${incidente.insumo_lote_id}`}
+                                        </Button>
+                                    </Col>
+                                </Row>
+                            )}
+
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
                                 <Col sm={4} className="fw-bold text-secondary">Fecha de apertura</Col>
                                 <Col sm={8}>

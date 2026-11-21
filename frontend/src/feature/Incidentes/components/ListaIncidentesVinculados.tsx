@@ -6,9 +6,10 @@ import type { IncidenteSeguimiento } from '../types';
 interface ListaIncidentesVinculadosProps {
     loteProduccionId?: number;
     loteProveedorId?: number;
+    insumoLoteId?: number;
 }
 
-export function ListaIncidentesVinculados({loteProduccionId, loteProveedorId,}: ListaIncidentesVinculadosProps) {
+export function ListaIncidentesVinculados({loteProduccionId, loteProveedorId, insumoLoteId}: ListaIncidentesVinculadosProps) {
     const navigate = useNavigate();
     const { currentUser } = useAuth();
 
@@ -16,6 +17,8 @@ export function ListaIncidentesVinculados({loteProduccionId, loteProveedorId,}: 
         ? `/incidentes?lote_produccion_id=${loteProduccionId}`
         : loteProveedorId
         ? `/incidentes?lote_proveedor_id=${loteProveedorId}`
+        : insumoLoteId
+        ? `/incidentes?insumo_lote_id=${insumoLoteId}`
         : null;
 
     const { data: incidentes } = useApi<IncidenteSeguimiento[]>(query);
@@ -26,6 +29,7 @@ export function ListaIncidentesVinculados({loteProduccionId, loteProveedorId,}: 
             state: {
                 lote_produccion_id: loteProduccionId,
                 lote_proveedor_id: loteProveedorId,
+                insumo_lote_id: insumoLoteId,
             },
         });
     };
@@ -38,7 +42,7 @@ export function ListaIncidentesVinculados({loteProduccionId, loteProveedorId,}: 
                         <i className="bi bi-exclamation-diamond me-2 text-warning"></i>
                         Incidentes de Calidad Vinculados
                     </h5>
-                    {currentUser?.operar && (
+                    {(currentUser?.operar || currentUser?.supervisor) && (
                         <Button variant="outline-danger" size="sm" onClick={irAReportar}>
                             <i className="bi bi-plus-circle me-1"></i>Reportar incidente
                         </Button>

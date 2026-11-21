@@ -33,6 +33,7 @@ class IncidenteCreate(IncidenteBase):
     sector_id: int | None = None
     lote_produccion_id: int | None = None
     lote_proveedor_id: int | None = None
+    insumo_lote_id: int | None = None
 
 
 class IncidenteUpdate(IncidenteBase):
@@ -55,6 +56,14 @@ class LoteProveedorIncidenteResumen(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class InsumoLoteIncidenteResumen(BaseModel):
+    id: int
+    numero_lote: str
+    marca: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class Incidente(IncidenteBase):
     id: int
     fecha_abierto: datetime
@@ -71,6 +80,8 @@ class Incidente(IncidenteBase):
     lote_produccion: LoteProduccionIncidenteResumen | None = None
     lote_proveedor_id: int | None = None
     lote_proveedor: LoteProveedorIncidenteResumen | None = None
+    insumo_lote_id: int | None = None
+    insumo_lote: InsumoLoteIncidenteResumen | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -90,6 +101,7 @@ class IncidenteSeguimiento(BaseModel):
     tipo: TipoIncidenteResumen
     lote_produccion_id: int | None = None
     lote_proveedor_id: int | None = None
+    insumo_lote_id: int | None = None
     dias_abierto: int
     nivel_demora: Literal["normal", "demorado"]
 

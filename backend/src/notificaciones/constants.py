@@ -11,3 +11,5 @@ class TipoNotificacion(str, Enum):
     PEDIDO_PROVEEDOR_DEMORADO = "pedido_proveedor_demorado"
     INCIDENTE_LOTE_PRODUCCION = "incidente_lote_produccion"
     INCIDENTE_LOTE_PROVEEDOR = "incidente_lote_proveedor"
+    INCIDENTE_INSUMO_LOTE = "incidente_insumo_lote"
+    TEMPERATURA_FUERA_RANGO = "temperatura_fuera_rango"

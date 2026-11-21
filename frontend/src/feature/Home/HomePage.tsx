@@ -1,18 +1,6 @@
 import { useMemo } from "react";
 import { Alert, Button, Card, Col, Container, Row, Spinner } from "react-bootstrap";
-import {
-    Bar,
-    BarChart,
-    CartesianGrid,
-    Cell,
-    Legend,
-    Pie,
-    PieChart,
-    ResponsiveContainer,
-    Tooltip,
-    XAxis,
-    YAxis,
-} from "recharts";
+import {Bar,BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
 import { useApi } from "../../hooks/useApi";
 import type { ElementoLimpieza } from "../ElementosLimpieza/types";
 import type { TareaOcurrencia } from "../TareasOcurrencias/types";
@@ -44,10 +32,12 @@ function VistaOperador() {
     const { data: checklistHoy } = useApi<TareaOcurrencia[]>("/tareas-ocurrencia/");
     const { data: recepciones } = useApi<any[]>("/lotes-proveedor/");
     const { data: lotesProduccion } = useApi<any[]>("/lotes-produccion/");
+    const { data: equiposTempPendientes } = useApi<any[]>("/registros-temperatura/pendientes-hoy");
 
     const tareasPendientesHoy = (checklistHoy ?? []).filter((tarea) => tarea.estado === "Pendiente").length;
     const recepcionesEnCurso = (recepciones ?? []).filter((recepcion) => recepcion.activo && recepcion.estado !== "acomodado").length;
     const lotesEnProduccion = (lotesProduccion ?? []).filter((lote) => lote.activo && lote.estado === "En produccion").length;
+    const controlesTempPendientes = (equiposTempPendientes ?? []).length;
 
     return (
         <Container fluid className="dashboard-page">
@@ -60,7 +50,7 @@ function VistaOperador() {
             </div>
 
             <Row className="g-3 mb-4">
-                <Col xs={12} md={4}>
+                <Col xs={12} sm={6} xl={3}>
                     <MetricCard
                         label="Checklists pendientes hoy"
                         value={String(tareasPendientesHoy)}
@@ -70,7 +60,7 @@ function VistaOperador() {
                         to="/checklist"
                     />
                 </Col>
-                <Col xs={12} md={4}>
+                <Col xs={12} sm={6} xl={3}>
                     <MetricCard
                         label="Recepciones en curso"
                         value={String(recepcionesEnCurso)}
@@ -80,7 +70,7 @@ function VistaOperador() {
                         to="/recepciones"
                     />
                 </Col>
-                <Col xs={12} md={4}>
+                <Col xs={12} sm={6} xl={3}>
                     <MetricCard
                         label="Lotes en produccion"
                         value={String(lotesEnProduccion)}
@@ -88,6 +78,16 @@ function VistaOperador() {
                         tone={SEAFOAM.primary}
                         detail="Lotes activos fabricandose"
                         to="/lotes-produccion"
+                    />
+                </Col>
+                <Col xs={12} sm={6} xl={3}>
+                    <MetricCard
+                        label="Controles de temperatura hoy"
+                        value={String(controlesTempPendientes)}
+                        icon="bi-thermometer-half"
+                        tone={controlesTempPendientes > 0 ? SEAFOAM.warning : SEAFOAM.primary}
+                        detail={controlesTempPendientes > 0 ? "Equipos pendientes de medicion" : "Todos controlados hoy"}
+                        to="/equipos"
                     />
                 </Col>
             </Row>

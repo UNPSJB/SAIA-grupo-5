@@ -3,7 +3,11 @@ from decimal import Decimal
 from typing import Annotated, Optional
 from pydantic import BaseModel, ConfigDict, Field
 from src.producto.schemas import Producto
-from src.insumos_lote.schemas import InsumoLote
+from src.insumos_lote.schemas import (
+    EquipoAlmacenamientoResumen,
+    InsumoLote,
+    SectorAlmacenamientoResumen,
+)
 from src.lote_produccion.models import EstadoLote
 from src.personal.schemas import Persona
 
@@ -13,6 +17,8 @@ class LoteProduccionBase(BaseModel):
     fecha_produccion: date
     fecha_vencimiento: date
     cantidad_producida: Annotated[int, Field(gt=0)]
+    equipo_id: Optional[int] = None
+    sector_id: Optional[int] = None
 
 
 class LoteProduccionCreate(LoteProduccionBase):
@@ -29,6 +35,8 @@ class LoteProduccion(LoteProduccionBase):
     activo: bool
     producto: Producto
     cantidad_disponible: int
+    equipo: Optional[EquipoAlmacenamientoResumen] = None
+    sector: Optional[SectorAlmacenamientoResumen] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -74,6 +82,13 @@ class LoteProduccionDetalle(LoteProduccion):
 
 class AvanzarEstadoLote(BaseModel):
     observacion: Annotated[Optional[str], Field(max_length=200)] = None
+    equipo_id: Optional[int] = None
+    sector_id: Optional[int] = None
+
+
+class ActualizarAlmacenamiento(BaseModel):
+    equipo_id: Optional[int] = None
+    sector_id: Optional[int] = None
 
 class HistorialEstadoLoteResponse(BaseModel):
     id: int

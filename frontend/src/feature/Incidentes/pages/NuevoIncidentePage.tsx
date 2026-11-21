@@ -10,7 +10,13 @@ import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
 export function NuevoIncidentePage() {
     const navigate = useNavigate();
     const location = useLocation();
-    const estadoInicial = (location.state as { lote_produccion_id?: number; lote_proveedor_id?: number; nombre?: string; descripcion?: string } | null) ?? null;
+    const estadoInicial = (location.state as {
+        lote_produccion_id?: number;
+        lote_proveedor_id?: number;
+        insumo_lote_id?: number;
+        nombre?: string;
+        descripcion?: string;
+    } | null) ?? null;
 
     const guardarIncidente = async (datos: NewIncidente) => {
         try{
@@ -21,6 +27,9 @@ export function NuevoIncidentePage() {
             }
             if (datos.lote_proveedor_id) {
                 await mutate(`/incidentes?lote_proveedor_id=${datos.lote_proveedor_id}`);
+            }
+            if (datos.insumo_lote_id) {
+                await mutate(`/incidentes?insumo_lote_id=${datos.insumo_lote_id}`);
             }
             mostrarAlertaExito("El nuevo incidente se creo correctamente.");     
             navigate("/incidentes/");
@@ -50,6 +59,7 @@ export function NuevoIncidentePage() {
                         sector_id: null,
                         lote_produccion_id: estadoInicial.lote_produccion_id ?? null,
                         lote_proveedor_id: estadoInicial.lote_proveedor_id ?? null,
+                        insumo_lote_id: estadoInicial.insumo_lote_id ?? null,
                         foto_opcional: null,
                         fecha_abierto: "",
                         fecha_cierre: null,

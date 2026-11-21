@@ -14,6 +14,8 @@ class InsumoLoteBase(BaseModel):
     costo_unitario: Annotated[Optional[Decimal], Field(ge=0)]= None
     minimo_alerta: Annotated[int, Field(ge=0)]
     numero_lote: Annotated[str, Field(min_length=1, max_length=100)]
+    equipo_id: Optional[int] = None
+    sector_id: Optional[int] = None
 
     @model_validator(mode="after")
     def validar_vencimiento_no_pasado(self):
@@ -24,6 +26,11 @@ class InsumoLoteBase(BaseModel):
 
 class InsumoLoteCreate(InsumoLoteBase):
     pass
+
+
+class ActualizarAlmacenamiento(BaseModel):
+    equipo_id: Optional[int] = None
+    sector_id: Optional[int] = None
 
 class ProveedorResumen(BaseModel):
     id: int
@@ -54,6 +61,22 @@ class InsumoUtilizadoResumen(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+class SectorAlmacenamientoResumen(BaseModel):
+    id: int
+    nombre: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class EquipoAlmacenamientoResumen(BaseModel):
+    id: int
+    nombre: str
+    ubicacion: Optional[str] = None
+    sector: Optional[SectorAlmacenamientoResumen] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class InsumoLote(InsumoLoteBase):
     id: int
     lote_proveedor_id: int
@@ -61,6 +84,8 @@ class InsumoLote(InsumoLoteBase):
     activo: bool
     insumo: Insumo
     lote_proveedor: Optional[LoteProveedorResumen] = None
+    equipo: Optional[EquipoAlmacenamientoResumen] = None
+    sector: Optional[SectorAlmacenamientoResumen] = None
     producciones_asociadas: list[InsumoUtilizadoResumen] = []
 
     model_config = ConfigDict(from_attributes=True)

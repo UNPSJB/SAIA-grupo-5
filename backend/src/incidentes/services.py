@@ -17,6 +17,9 @@ from src.lote_produccion.models import LoteProduccion
 from src.lote_produccion import exceptions as lote_produccion_exceptions
 from src.lote_proveedor.models import LoteProveedor
 from src.lote_proveedor import exceptions as lote_proveedor_exceptions
+from src.insumos_lote.models import InsumoLote
+from src.insumos_lote import exceptions as insumos_lote_exceptions
+from src.notificaciones.services import generar_notificacion_incidente_lote
 
 
 def _dias_abierto(incidente: Incidente, estado: str, hoy: date | None = None) -> int:
@@ -51,6 +54,7 @@ def _incidente_a_respuesta(incidente: Incidente, hoy: date | None = None) -> dic
         "tipo": incidente.tipo,
         "lote_produccion_id": incidente.lote_produccion_id,
         "lote_proveedor_id": incidente.lote_proveedor_id,
+        "insumo_lote_id": incidente.insumo_lote_id,
         "dias_abierto": dias_abierto,
         "nivel_demora": "demorado"
         if estado_enum == EstadoIncidente.ABIERTO and dias_abierto >= DIAS_UMBRAL_INCIDENTE_DEMORADO
@@ -59,7 +63,12 @@ def _incidente_a_respuesta(incidente: Incidente, hoy: date | None = None) -> dic
 
 
 def crear_incidente(db: Session, incidente: schemas.IncidenteCreate, persona: Persona) -> Incidente:
-    if incidente.lote_produccion_id is not None and incidente.lote_proveedor_id is not None:
+    vinculos = [
+        incidente.lote_produccion_id,
+        incidente.lote_proveedor_id,
+        incidente.insumo_lote_id,
+    ]
+    if sum(1 for v in vinculos if v is not None) > 1:
         raise exceptions.IncidenteLotesExcluyentes()
     if incidente.lote_produccion_id is not None:
         if db.get(LoteProduccion, incidente.lote_produccion_id) is None:
@@ -67,6 +76,9 @@ def crear_incidente(db: Session, incidente: schemas.IncidenteCreate, persona: Pe
     if incidente.lote_proveedor_id is not None:
         if db.get(LoteProveedor, incidente.lote_proveedor_id) is None:
             raise lote_proveedor_exceptions.LoteProveedorNoEncontrado()
+    if incidente.insumo_lote_id is not None:
+        if db.get(InsumoLote, incidente.insumo_lote_id) is None:
+            raise insumos_lote_exceptions.InsumoLoteNoEncontrado()
 
     datos = incidente.model_dump()
     datos["operario_id"] = persona.id
@@ -84,8 +96,11 @@ def crear_incidente(db: Session, incidente: schemas.IncidenteCreate, persona: Pe
 
     db.commit()
     db.refresh(nuevo_incidente)
-    if nuevo_incidente.lote_produccion_id is not None or nuevo_incidente.lote_proveedor_id is not None:
-        from src.notificaciones.services import generar_notificacion_incidente_lote
+    if (
+        nuevo_incidente.lote_produccion_id is not None
+        or nuevo_incidente.lote_proveedor_id is not None
+        or nuevo_incidente.insumo_lote_id is not None
+    ):
         generar_notificacion_incidente_lote(db, nuevo_incidente)
     return nuevo_incidente
 
@@ -154,6 +169,7 @@ def listar_incidentes(
     fecha_hasta: date | None = None,
     lote_produccion_id: int | None = None,
     lote_proveedor_id: int | None = None,
+    insumo_lote_id: int | None = None,
 ) -> list[dict]:
     accion_registrada = select(AccionCorrectiva.id).where(
         AccionCorrectiva.incidente_id == Incidente.id,
@@ -180,6 +196,8 @@ def listar_incidentes(
         consulta = consulta.where(Incidente.lote_produccion_id == lote_produccion_id)
     if lote_proveedor_id is not None:
         consulta = consulta.where(Incidente.lote_proveedor_id == lote_proveedor_id)
+    if insumo_lote_id is not None:
+        consulta = consulta.where(Incidente.insumo_lote_id == insumo_lote_id)
     if fecha_desde is not None:
         consulta = consulta.where(
             Incidente.fecha_abierto >= datetime.combine(fecha_desde, time.min)

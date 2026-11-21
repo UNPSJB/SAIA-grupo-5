@@ -16,3 +16,11 @@ class EquipoDadoDeBaja(HTTPException):
             status_code=status.HTTP_409_CONFLICT,
             detail=ErrorCode.EQUIPO_DADO_DE_BAJA,
         )
+
+
+class RangoTemperaturaIncompleto(BadRequest):
+    DETAIL = ErrorCode.RANGO_TEMPERATURA_INCOMPLETO
+
+
+class RangoTemperaturaInvalido(BadRequest):
+    DETAIL = ErrorCode.RANGO_TEMPERATURA_INVALIDO

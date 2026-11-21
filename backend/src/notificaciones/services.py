@@ -706,7 +706,11 @@ def generar_notificaciones_pedidos_demorados(db: Session) -> list[Notificacion]:
 
 
 def generar_notificacion_incidente_lote(db: Session, incidente) -> list[Notificacion]:
-    if incidente.lote_produccion_id is None and incidente.lote_proveedor_id is None:
+    if (
+        incidente.lote_produccion_id is None
+        and incidente.lote_proveedor_id is None
+        and incidente.insumo_lote_id is None
+    ):
         return []
 
     administradores = _listar_administradores(db)
@@ -742,6 +746,51 @@ def generar_notificacion_incidente_lote(db: Session, incidente) -> list[Notifica
             )
         )
 
+    if incidente.insumo_lote_id is not None:
+        creadas.extend(
+            _crear_notificaciones_si_no_existen(
+                db=db,
+                administradores=administradores,
+                clave_origen=f"incidente_insumo_lote:{incidente.id}",
+                tipo=TipoNotificacion.INCIDENTE_INSUMO_LOTE.value,
+                entidad_id=incidente.insumo_lote_id,
+                entidad="InsumoLote",
+                titulo=f"Incidente en Insumo Alimenticio #{incidente.insumo_lote_id}: {incidente.nombre}",
+                descripcion=incidente.descripcion,
+                url=f"/incidentes/{incidente.id}",
+            )
+        )
+
+    if creadas:
+        db.add_all(creadas)
+        db.commit()
+        for notificacion in creadas:
+            db.refresh(notificacion)
+    return creadas
+
+
+#################### Control de temperatura en equipos ##################
+
+
+def generar_notificacion_temperatura_fuera_rango(db: Session, registro, equipo) -> list[Notificacion]:
+    administradores = _listar_administradores(db)
+    titulo = f"Temperatura fuera de rango: {equipo.nombre}"
+    descripcion = (
+        f"Se registro {registro.temperatura_registrada} C en {equipo.nombre} "
+        f"(rango permitido: {equipo.temperatura_minima} C a {equipo.temperatura_maxima} C). "
+        f"Accion tomada: {registro.accion_tomada or 'Sin detalle'}."
+    )
+    creadas = _crear_notificaciones_si_no_existen(
+        db=db,
+        administradores=administradores,
+        clave_origen=f"temperatura_fuera_rango:{registro.id}",
+        tipo=TipoNotificacion.TEMPERATURA_FUERA_RANGO.value,
+        entidad_id=equipo.id,
+        entidad="Equipo",
+        titulo=titulo,
+        descripcion=descripcion,
+        url=f"/equipos/{equipo.id}",
+    )
     if creadas:
         db.add_all(creadas)
         db.commit()

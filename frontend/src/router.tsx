@@ -12,6 +12,7 @@ import { VerInsumoPage } from './feature/Insumos/pages/VerInsumoPage.tsx'
 import { EquiposPage } from './feature/Equipos/pages/ListPage.tsx'
 import { EditarEquipoPage } from './feature/Equipos/pages/EditarEquipoPage.tsx'
 import { NuevoEquipoPage } from './feature/Equipos/pages/NuevoEquipoPage.tsx'
+import { VerEquipoPage } from './feature/Equipos/pages/VerEquipoPage.tsx'
 
 import { ListPage as SectoresPage } from './feature/Sectores/pages/ListPage.tsx';
 import { EditarSectorPage } from './feature/Sectores/pages/EditarSectorPage.tsx';
@@ -421,6 +422,7 @@ const router = createBrowserRouter([
             path: 'equipos',
             children: [
               { index: true, element: <EquiposPage /> },
+              { path: ':id', element: <VerEquipoPage /> },
               {
                 element: <ProtectedRoute requireAdmin />,
                 children: [

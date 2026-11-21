@@ -1,8 +1,9 @@
 
 import { useState } from "react";
 import { mutate } from "swr";
-import { Container, Alert, Row, Col, Card, Button, Table, Badge } from "react-bootstrap";
+import { Container, Alert, Row, Col, Card, Button, Table } from "react-bootstrap";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { ActionButton } from "../../../components/ActionButton";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 import { useAuth } from "../../../hooks/useAuth";
@@ -11,6 +12,7 @@ import { PageLoading } from "../../../components/PageLoading";
 import { AsociarInsumosModal } from "../components/AsociarInsumosModal";
 import { TarjetaTrazabilidadLote } from "../components/TarjetaTrazabilidadLote";
 import { ListaIncidentesVinculados } from "../../Incidentes/components/ListaIncidentesVinculados";
+import { CambiarAlmacenamientoModal } from "../../Equipos/components/CambiarAlmacenamientoModal";
 import type { EnvioLote } from "../../EnviosLote/types";
 import { CrearEnvioModal } from "../../EnviosLote/components/CrearEnvioLoteModal";
 import { RecepcionEnvioModal } from "../../EnviosLote/components/RecepcionEnvioLoteModal";
@@ -31,11 +33,17 @@ export function VerLoteProduccionPage() {
     const { currentUser } = useAuth();
     const [mostrarAsociarInsumos, setMostrarAsociarInsumos] = useState(false);
     const [mostrarCrearEnvio, setMostrarCrearEnvio] = useState(false);
+    const [mostrarModalAlmacenamiento, setMostrarModalAlmacenamiento] = useState(false);
     const [envioParaRecepcion, setEnvioParaRecepcion] = useState<EnvioLote | null>(null);
     const [envioParaDetalle, setEnvioParaDetalle] = useState<EnvioLote | null>(null);
 
     const { data: envios } = useApi<EnvioLote[]>(id ? `/envios-lote/lote/${id}` : null);
     const { data: lote, isLoading, error } = useApi<LoteProduccion>(`/lotes-produccion/${id}`);
+    const puedeCambiarAlmacenamiento = Boolean(
+        (currentUser?.operar || currentUser?.supervisor) &&
+        lote?.activo &&
+        lote?.estado !== "Enviado"
+    );
 
     const location = useLocation();
     const origen = location.state?.origen;
@@ -151,7 +159,7 @@ export function VerLoteProduccionPage() {
                                 <Col sm={7} className="fs-6">{fechaVencFormateada}</Col>
                             </Row>
 
-                            <Row className="mb-2 align-items-center">
+                            <Row className="mb-3 border-bottom pb-3 align-items-center">
                                 <Col sm={5} className="fw-bold text-secondary">Estado Actual</Col>
                                 <Col sm={7}>
                                     <div
@@ -169,6 +177,39 @@ export function VerLoteProduccionPage() {
                                         <i className={`bi ${estilo.icon} me-2`}></i>
                                         {lote.estado}
                                     </div>
+                                </Col>
+                            </Row>
+
+                            <Row className="mb-2 align-items-center">
+                                <Col sm={5} className="fw-bold text-secondary">Almacenamiento</Col>
+                                <Col sm={7} className="fs-6 d-flex align-items-center gap-2">
+                                    {lote.equipo ? (
+                                        <Button
+                                            variant="link"
+                                            className="p-0 fw-semibold text-decoration-none"
+                                            onClick={() => navigate(`/equipos/${lote.equipo?.id}`)}
+                                        >
+                                            <i className="bi bi-thermometer-half me-1"></i>
+                                            {lote.equipo.nombre}
+                                            {lote.equipo.sector ? ` (${lote.equipo.sector.nombre})` : ''}
+                                        </Button>
+                                    ) : lote.sector ? (
+                                        <span>
+                                            <i className="bi bi-geo-alt me-1 text-secondary"></i>
+                                            Sector: <strong>{lote.sector.nombre}</strong>
+                                        </span>
+                                    ) : (
+                                        <span className="text-muted">Sin ubicacion asignada</span>
+                                    )}
+                                    {puedeCambiarAlmacenamiento && (
+                                        <ActionButton
+                                            variant="outline-primary"
+                                            size="sm"
+                                            tooltip="Cambiar almacenamiento"
+                                            icon="bi-pencil"
+                                            onClick={() => setMostrarModalAlmacenamiento(true)}
+                                        />
+                                    )}
                                 </Col>
                             </Row>
 
@@ -312,6 +353,16 @@ export function VerLoteProduccionPage() {
             <VerEnvioLoteModal
                 envio={envioParaDetalle}
                 onHide={() => setEnvioParaDetalle(null)}
+            />
+            <CambiarAlmacenamientoModal
+                show={mostrarModalAlmacenamiento}
+                onHide={() => setMostrarModalAlmacenamiento(false)}
+                tipo="lote_produccion"
+                entidadId={lote.id}
+                etiqueta={`Lote de Produccion #${lote.id} - ${lote.producto.nombre}`}
+                equipoActualId={lote.equipo_id ?? lote.equipo?.id ?? null}
+                sectorActualId={lote.sector_id ?? lote.sector?.id ?? null}
+                onActualizado={() => mutate(`/lotes-produccion/${id}`)}
             />
         </Container>
     );

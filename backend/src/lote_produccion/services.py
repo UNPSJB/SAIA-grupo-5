@@ -13,6 +13,11 @@ from src.insumos_lote.services import descontar_stock_insumo_lote
 from src.insumos.models import Insumo
 from src.lote_proveedor.models import LoteProveedor
 from src.envios_lote.models import EnvioLote
+from src.equipos import exceptions as equipo_exceptions
+from src.equipos.models import Equipo
+from src.notificaciones.services import generar_notificacion_alerta_stock_individual
+from src.sector import exceptions as sector_exceptions
+from src.sector.models import Sector
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +56,8 @@ def crear_lote_produccion(db: Session, lote: schemas.LoteProduccionCreate, usuar
 def listar_lotes_produccion(db: Session) -> List[schemas.LoteProduccionDetalle]:
     return db.scalars(select(LoteProduccion).options(joinedload(LoteProduccion.producto).
                                                 joinedload(Producto.unidad_medida),
+                                                joinedload(LoteProduccion.equipo).joinedload(Equipo.sector),
+                                                joinedload(LoteProduccion.sector),
                                                 selectinload(LoteProduccion.insumos_utilizados).joinedload(InsumoUtilizado.insumo_lote).
                                                 joinedload(InsumoLote.insumo).
                                                 joinedload(Insumo.unidad_medida))).all()
@@ -60,6 +67,8 @@ def leer_lote_produccion(db: Session, lote_id: int) -> schemas.LoteProduccionDet
     db_lote = db.scalar(
         select(LoteProduccion).where(LoteProduccion.id == lote_id).options(
             joinedload(LoteProduccion.producto).joinedload(Producto.unidad_medida),
+            joinedload(LoteProduccion.equipo).joinedload(Equipo.sector),
+            joinedload(LoteProduccion.sector),
             selectinload(LoteProduccion.insumos_utilizados).joinedload(InsumoUtilizado.insumo_lote)
             .joinedload(InsumoLote.insumo).joinedload(Insumo.unidad_medida),
             selectinload(LoteProduccion.insumos_utilizados).joinedload(InsumoUtilizado.insumo_lote)
@@ -75,7 +84,14 @@ def listar_lotes_por_producto(db: Session, producto_id: int) -> List[schemas.Lot
                     .options(joinedload(LoteProduccion.producto).joinedload(Producto.unidad_medida))).all()
 
 
-def cambiar_estado_lote_produccion(db: Session, lote_id: int, usuario_id: int, observacion: str | None = None) -> schemas.LoteProduccion:
+def cambiar_estado_lote_produccion(
+    db: Session,
+    lote_id: int,
+    usuario_id: int,
+    observacion: str | None = None,
+    equipo_id: int | None = None,
+    sector_id: int | None = None,
+) -> schemas.LoteProduccion:
     db_lote = leer_lote_produccion(db, lote_id)
 
     if not db_lote.producto.activo:
@@ -87,6 +103,20 @@ def cambiar_estado_lote_produccion(db: Session, lote_id: int, usuario_id: int, o
     nuevo_estado = SIGUIENTE_ESTADO[db_lote.estado]
     db_lote.estado = nuevo_estado
 
+    if nuevo_estado == EstadoLote.TERMINADO.value:
+        if equipo_id is not None:
+            equipo_db = db.get(Equipo, equipo_id)
+            if not equipo_db or not equipo_db.estado:
+                raise equipo_exceptions.EquipoNoEncontrado()
+            db_lote.equipo_id = equipo_id
+            db_lote.sector_id = sector_id if sector_id is not None else equipo_db.sector_id
+        elif sector_id is not None:
+            sector_db = db.get(Sector, sector_id)
+            if not sector_db or not sector_db.activo:
+                raise sector_exceptions.SectorNoEncontrado()
+            db_lote.sector_id = sector_id
+            db_lote.equipo_id = None
+
     hito = HistorialEstadoLote(
         lote_id=db_lote.id,
         estado=nuevo_estado,
@@ -95,8 +125,7 @@ def cambiar_estado_lote_produccion(db: Session, lote_id: int, usuario_id: int, o
 
     db.add(hito)
     db.commit()
-    db.refresh(db_lote)
-    return db_lote
+    return leer_lote_produccion(db, db_lote.id)
 
 
 def modificar_lote_produccion(db: Session, lote_id: int, lote: schemas.LoteProduccionUpdate) -> schemas.LoteProduccion:
@@ -110,12 +139,51 @@ def modificar_lote_produccion(db: Session, lote_id: int, lote: schemas.LoteProdu
     if not db_producto.activo:
         raise exceptions.ProductoDadoDeBaja()
 
-    lote_actualizado = lote.model_dump()
+    lote_actualizado = lote.model_dump(exclude_unset=True)
+    if "equipo_id" in lote_actualizado or "sector_id" in lote_actualizado:
+        eq_id = lote_actualizado.get("equipo_id")
+        sec_id = lote_actualizado.get("sector_id")
+        if eq_id is not None:
+            equipo_db = db.get(Equipo, eq_id)
+            if not equipo_db or not equipo_db.estado:
+                raise equipo_exceptions.EquipoNoEncontrado()
+            lote_actualizado["sector_id"] = sec_id if sec_id is not None else equipo_db.sector_id
+        elif sec_id is not None:
+            sector_db = db.get(Sector, sec_id)
+            if not sector_db or not sector_db.activo:
+                raise sector_exceptions.SectorNoEncontrado()
+            lote_actualizado["equipo_id"] = None
+
     for key, value in lote_actualizado.items():
         setattr(db_lote, key, value)
 
     db.commit()
     db.refresh(db_lote)
+    return leer_lote_produccion(db, db_lote.id)
+
+
+def actualizar_almacenamiento_lote_produccion(db: Session, lote_id: int, datos: schemas.ActualizarAlmacenamiento) -> schemas.LoteProduccion:
+    db_lote = leer_lote_produccion(db, lote_id)
+    if not db_lote.activo:
+        raise exceptions.LoteProduccionDadoDeBaja()
+
+    if datos.equipo_id is not None:
+        equipo_db = db.get(Equipo, datos.equipo_id)
+        if not equipo_db or not equipo_db.estado:
+            raise equipo_exceptions.EquipoNoEncontrado()
+        db_lote.equipo_id = datos.equipo_id
+        db_lote.sector_id = datos.sector_id if datos.sector_id is not None else equipo_db.sector_id
+    elif datos.sector_id is not None:
+        sector_db = db.get(Sector, datos.sector_id)
+        if not sector_db or not sector_db.activo:
+            raise sector_exceptions.SectorNoEncontrado()
+        db_lote.sector_id = datos.sector_id
+        db_lote.equipo_id = None
+    else:
+        db_lote.equipo_id = None
+        db_lote.sector_id = None
+
+    db.commit()
     return leer_lote_produccion(db, db_lote.id)
 
 
@@ -305,7 +373,6 @@ def actualizar_insumos_lote(db: Session, lote_id: int, datos: schemas.InsumosUti
 
     db.commit()
 
-    from src.notificaciones.services import generar_notificacion_alerta_stock_individual
     for insumo_lote_id in ids_afectados:
         generar_notificacion_alerta_stock_individual(db, insumo_lote_id)
 

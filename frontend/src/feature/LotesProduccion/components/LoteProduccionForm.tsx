@@ -1,14 +1,18 @@
+import { useState } from 'react';
 import { Button, Form, Row, Col } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { useApi } from '../../../hooks/useApi';
+import type { Equipo } from '../../Equipos/types';
 import type { Producto } from '../../Productos/types';
+import type { Sector } from '../../Sectores/types';
 import type { NewLoteProduccion } from '../types';
 
 interface LoteProduccionFormProps {
     textoBoton: string;
     onSubmit: (datos: NewLoteProduccion) => void;
     valoresIniciales?: NewLoteProduccion;
+    mostrarAlmacenamiento?: boolean;
 }
 
 interface LoteProduccionFormData {
@@ -18,9 +22,17 @@ interface LoteProduccionFormData {
     cantidad_producida: number | "";
 }
 
-export function LoteProduccionForm({ textoBoton, onSubmit, valoresIniciales }: LoteProduccionFormProps) {
+export function LoteProduccionForm({ textoBoton, onSubmit, valoresIniciales, mostrarAlmacenamiento = false }: LoteProduccionFormProps) {
     const navigate = useNavigate();
     const { data: productos, isLoading } = useApi<Producto[]>('/productos/');
+    const { data: equipos } = useApi<Equipo[]>(mostrarAlmacenamiento ? '/equipos/' : null);
+    const { data: sectores } = useApi<Sector[]>(mostrarAlmacenamiento ? '/sectores/' : null);
+
+    const [tipoUbicacion, setTipoUbicacion] = useState<'ninguno' | 'equipo' | 'sector'>(
+        valoresIniciales?.equipo_id ? 'equipo' : valoresIniciales?.sector_id ? 'sector' : 'ninguno'
+    );
+    const [equipoId, setEquipoId] = useState<string>(valoresIniciales?.equipo_id ? String(valoresIniciales.equipo_id) : '');
+    const [sectorId, setSectorId] = useState<string>(valoresIniciales?.sector_id ? String(valoresIniciales.sector_id) : '');
 
     const { register, handleSubmit, watch, formState: { errors } } = useForm<LoteProduccionFormData>({
         defaultValues: {
@@ -36,12 +48,17 @@ export function LoteProduccionForm({ textoBoton, onSubmit, valoresIniciales }: L
     const fechaProduccion = watch("fecha_produccion");
 
     const onSubmitHookForm = (data: LoteProduccionFormData) => {
-        onSubmit({
+        const payload: NewLoteProduccion = {
             producto_id: Number(data.producto_id),
             fecha_produccion: data.fecha_produccion,
             fecha_vencimiento: data.fecha_vencimiento,
             cantidad_producida: Number(data.cantidad_producida),
-        });
+        };
+        if (mostrarAlmacenamiento) {
+            payload.equipo_id = tipoUbicacion === 'equipo' && equipoId ? Number(equipoId) : null;
+            payload.sector_id = tipoUbicacion === 'sector' && sectorId ? Number(sectorId) : null;
+        }
+        onSubmit(payload);
     };
 
     return (
@@ -138,6 +155,80 @@ export function LoteProduccionForm({ textoBoton, onSubmit, valoresIniciales }: L
                         </Form.Group>
                     </Col>
                 </Row>
+
+                {mostrarAlmacenamiento && (
+                    <div className="p-3 border rounded bg-light-subtle mb-3 text-start">
+                        <Form.Label className="fw-bold small mb-2">
+                            Ubicacion de almacenamiento
+                        </Form.Label>
+                        <div className="d-flex flex-wrap gap-3 mb-2 small">
+                            <Form.Check
+                                type="radio"
+                                id="form-lote-ubic-ninguno"
+                                label="Sin ubicacion asignada"
+                                checked={tipoUbicacion === 'ninguno'}
+                                onChange={() => {
+                                    setTipoUbicacion('ninguno');
+                                    setEquipoId('');
+                                    setSectorId('');
+                                }}
+                            />
+                            <Form.Check
+                                type="radio"
+                                id="form-lote-ubic-sector"
+                                label="Sector / Deposito"
+                                checked={tipoUbicacion === 'sector'}
+                                onChange={() => {
+                                    setTipoUbicacion('sector');
+                                    setEquipoId('');
+                                }}
+                            />
+                            <Form.Check
+                                type="radio"
+                                id="form-lote-ubic-equipo"
+                                label="Equipo / Camara"
+                                checked={tipoUbicacion === 'equipo'}
+                                onChange={() => {
+                                    setTipoUbicacion('equipo');
+                                    setSectorId('');
+                                }}
+                            />
+                        </div>
+
+                        {tipoUbicacion === 'sector' && (
+                            <Form.Select
+                                size="sm"
+                                value={sectorId}
+                                onChange={(e) => setSectorId(e.target.value)}
+                            >
+                                <option value="">Selecciona un sector...</option>
+                                {(sectores ?? []).filter((s) => s.activo).map((s) => (
+                                    <option key={s.id} value={s.id}>
+                                        {s.nombre}
+                                    </option>
+                                ))}
+                            </Form.Select>
+                        )}
+
+                        {tipoUbicacion === 'equipo' && (
+                            <Form.Select
+                                size="sm"
+                                value={equipoId}
+                                onChange={(e) => setEquipoId(e.target.value)}
+                            >
+                                <option value="">Selecciona un equipo / camara...</option>
+                                {(equipos ?? []).filter((eq) => eq.estado).map((eq) => (
+                                    <option key={eq.id} value={eq.id}>
+                                        {eq.nombre} ({eq.sector?.nombre || 'Sin sector'})
+                                        {eq.controla_temperatura
+                                            ? ` [${eq.temperatura_minima} C a ${eq.temperatura_maxima} C]`
+                                            : ''}
+                                    </option>
+                                ))}
+                            </Form.Select>
+                        )}
+                    </div>
+                )}
 
                 <Button variant="secondary" type="button" onClick={() => navigate('/lotes-produccion')}>
                     <i className="bi bi-x-circle me-1"></i>Cancelar

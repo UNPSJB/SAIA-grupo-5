@@ -25,6 +25,8 @@ const ETIQUETAS_TIPO: Record<string, { label: string; bg: string }> = {
     pedido_proveedor_demorado: { label: 'Pedido demorado', bg: 'danger' },
     incidente_lote_produccion: { label: 'Incidente produccion', bg: 'danger' },
     incidente_lote_proveedor: { label: 'Incidente recepcion', bg: 'danger' },
+    incidente_insumo_lote: { label: 'Incidente insumo', bg: 'danger' },
+    temperatura_fuera_rango: { label: 'Temperatura fuera de rango', bg: 'danger' },
 };
 
 const ETIQUETAS_ENTIDAD: Record<string, string> = {
@@ -35,7 +37,7 @@ const ETIQUETAS_ENTIDAD: Record<string, string> = {
     PedidoProveedor: 'Pedido a Proveedor',
     ElementoLimpieza: 'Elemento de Limpieza',
     VencimientoPersonal: 'Personal',
-    Equipo: 'Equipo',
+    Equipo: 'Equipo / Camara',
 };
 
 export function NotificacionesPage() {
