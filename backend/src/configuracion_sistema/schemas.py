@@ -57,6 +57,7 @@ class ConfiguracionSistemaBase(DatosPymeBase):
     vista_publica_mostrar_documentos_tecnicos: bool = False
     vista_publica_mostrar_productos_elaborados: bool = False
     vista_publica_mostrar_lotes_producidos: bool = False
+    vista_publica_mostrar_catalogo: bool = False
 
 
 class ConfiguracionSistemaUpdate(BaseModel):
@@ -82,6 +83,7 @@ class ConfiguracionSistemaUpdate(BaseModel):
     vista_publica_mostrar_documentos_tecnicos: bool | None = None
     vista_publica_mostrar_productos_elaborados: bool | None = None
     vista_publica_mostrar_lotes_producidos: bool | None = None
+    vista_publica_mostrar_catalogo: bool | None = None
 
     @field_validator("nombre_pyme")
     @classmethod
@@ -113,6 +115,20 @@ class IndicadorVistaPublica(BaseModel):
     icono: str
 
 
+class ProductoCatalogoPublico(BaseModel):
+    id: int
+    nombre: str
+    descripcion: str | None = None
+    cantidad_neta: int
+    unidad_medida: str
+    foto_producto: str
+    azucares_agregados: bool | None = None
+    grasas_agregadas: bool | None = None
+    sodio_agregado: bool | None = None
+    contiene_edulcorantes: bool | None = None
+    contiene_cafeina: bool | None = None
+
+
 class VistaPublica(BaseModel):
     establecimiento: str
     logo_pyme: str | None = None
@@ -121,6 +137,7 @@ class VistaPublica(BaseModel):
     direccion_pyme: str | None = None
     actualizado: str
     indicadores: list[IndicadorVistaPublica]
+    catalogo_productos: list[ProductoCatalogoPublico] = []
 
 
 class ConfiguracionSistema(ConfiguracionSistemaBase):

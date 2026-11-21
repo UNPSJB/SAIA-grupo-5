@@ -181,7 +181,7 @@ def unico_producto(db_session, unica_unidad_medida):
                         cantidad_neta=1, 
                         unidad_medida_id=unica_unidad_medida.id,
                         fecha_lanzamiento=date(2026, 10, 1), 
-                        foto_producto=None,)
+                        foto_producto="data:image/png;base64,iVBORw0KGgo=",)
 
     db_session.add(producto)
     db_session.commit()
@@ -196,7 +196,7 @@ def multiples_productos(db_session, unica_unidad_medida):
                 cantidad_neta=1, 
                 unidad_medida_id=unica_unidad_medida.id,
                 fecha_lanzamiento=date(2024, 10, 1), 
-                foto_producto=None,
+                foto_producto="data:image/png;base64,iVBORw0KGgo=",
                 activo=True),
 
         Producto(nombre="Leche", 
@@ -204,7 +204,7 @@ def multiples_productos(db_session, unica_unidad_medida):
                 cantidad_neta=1, 
                 unidad_medida_id=unica_unidad_medida.id,
                 fecha_lanzamiento=date(2023, 10, 1), 
-                foto_producto=None,
+                foto_producto="data:image/png;base64,iVBORw0KGgo=",
                 activo=True),
 
         Producto(nombre="Aceitunas", 
@@ -212,7 +212,7 @@ def multiples_productos(db_session, unica_unidad_medida):
                 cantidad_neta=1, 
                 unidad_medida_id=unica_unidad_medida.id,
                 fecha_lanzamiento=date(2020, 10, 1), 
-                foto_producto=None,
+                foto_producto="data:image/png;base64,iVBORw0KGgo=",
                 activo=True)
     ]
     db_session.add_all(productos)
