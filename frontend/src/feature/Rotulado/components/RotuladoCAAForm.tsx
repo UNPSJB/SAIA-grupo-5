@@ -1,0 +1,409 @@
+import { useState } from 'react';
+import { Alert, Badge, Button, Col, Form, ProgressBar, Row, Spinner, Table } from 'react-bootstrap';
+import { mutate } from 'swr';
+import { isAxiosError } from 'axios';
+import { api } from '../../../libs/axios';
+import { useApi } from '../../../hooks/useApi';
+import { mostrarAlertaError, mostrarAlertaExito } from '../../../libs/alertas';
+import type { Producto } from '../../Productos/types';
+import type { BorradorRotuladoCAA, CampoCompletitud, DatosRotuladoCAA } from '../types';
+
+interface RotuladoCAAFormProps {
+    producto: Producto;
+    puedeEditar: boolean;
+}
+
+export function RotuladoCAAForm({ producto, puedeEditar }: RotuladoCAAFormProps) {
+    const clave = `/rotulado/productos/${producto.id}/borrador`;
+    const { data, error, isLoading } = useApi<BorradorRotuladoCAA>(clave);
+
+    if (isLoading) {
+        return (
+            <div className="d-flex align-items-center gap-2 text-muted">
+                <Spinner animation="border" size="sm" /> Cargando los datos del rótulo…
+            </div>
+        );
+    }
+
+    if (error || !data) {
+        return <p className="text-muted mb-0">No se pudieron cargar los datos del rótulo del producto.</p>;
+    }
+
+    return (
+        <FormularioCAA
+            key={`${producto.id}-${data.fecha_actualizacion ?? 'nuevo'}`}
+            producto={producto}
+            borrador={data}
+            clave={clave}
+            puedeEditar={puedeEditar}
+        />
+    );
+}
+
+interface FormularioCAAProps {
+    producto: Producto;
+    borrador: BorradorRotuladoCAA;
+    clave: string;
+    puedeEditar: boolean;
+}
+
+const OrigenBadge = ({ campo }: { campo?: CampoCompletitud }) => {
+    if (!campo?.automatico) return null;
+    return campo.origen === 'manual' ? (
+        <Badge bg="warning" text="dark" className="ms-2">Editado a mano</Badge>
+    ) : (
+        <Badge bg="secondary" className="ms-2">Automático · {campo.referencia}</Badge>
+    );
+};
+
+function FormularioCAA({ producto, borrador, clave, puedeEditar }: FormularioCAAProps) {
+    const [datos, setDatos] = useState<DatosRotuladoCAA>(borrador.datos);
+    const [guardando, setGuardando] = useState(false);
+
+    const cambiar = <K extends keyof DatosRotuladoCAA>(campo: K, valor: DatosRotuladoCAA[K]) =>
+        setDatos((previos) => ({ ...previos, [campo]: valor }));
+
+    const campo = (claveCampo: string): CampoCompletitud | undefined =>
+        borrador.campos.find((c) => c.clave === claveCampo);
+
+    const valorTexto = (claveCampo: string) => {
+        if (claveCampo === 'informacion_nutricional') {
+            return borrador.tabla_nutricional?.length ? 'ok' : '';
+        }
+        const valor = datos[claveCampo as keyof DatosRotuladoCAA];
+        return typeof valor === 'string' ? valor.trim() : valor ? 'ok' : '';
+    };
+
+    // El indicador se recalcula con lo que hay en pantalla, así se ve qué falta
+    // antes de guardar (guardar nunca está bloqueado por datos faltantes).
+    const obligatorios = borrador.campos.filter((c) => {
+        if (!datos.es_importado && c.clave.startsWith('importador_')) return false;
+        // Al marcar el producto como importado sus datos pasan a ser obligatorios
+        // aunque el borrador guardado todavía no lo refleje.
+        const obligatorio = c.obligatorio || (datos.es_importado && c.clave !== 'importador_cuit'
+            && c.clave.startsWith('importador_'));
+        return obligatorio;
+    });
+    const faltantes = obligatorios.filter((c) => valorTexto(c.clave) === '').map((c) => c.nombre);
+    const completitud = obligatorios.length
+        ? Math.round((100 * (obligatorios.length - faltantes.length)) / obligatorios.length)
+        : 100;
+
+    const guardar = async () => {
+        setGuardando(true);
+        try {
+            const { data } = await api.put<BorradorRotuladoCAA>(clave, {
+                ...datos,
+                fecha_duracion: datos.fecha_duracion || null,
+            });
+            await mutate(clave, data, false);
+            mostrarAlertaExito(
+                data.faltantes.length
+                    ? `Borrador guardado. Faltan ${data.faltantes.length} datos obligatorios.`
+                    : 'Borrador del rótulo guardado y completo.',
+            );
+        } catch (error) {
+            let mensaje = `No se pudieron guardar los datos del rótulo de '${producto.nombre}'.`;
+            const detail = isAxiosError(error) ? error.response?.data?.detail : undefined;
+            if (typeof detail === 'string') mensaje = detail;
+            if (Array.isArray(detail) && detail[0]?.msg) mensaje = detail[0].msg;
+            mostrarAlertaError(mensaje);
+            console.log(error);
+        } finally {
+            setGuardando(false);
+        }
+    };
+
+    const textoAyuda = (claveCampo: string) =>
+        campo(claveCampo)?.referencia ? `Completado desde ${campo(claveCampo)?.referencia}.` : undefined;
+
+    return (
+        <>
+            <Alert variant={faltantes.length ? 'warning' : 'success'} className="py-2">
+                <div className="d-flex justify-content-between align-items-center">
+                    <strong>Completitud del rótulo: {completitud}%</strong>
+                    <span className="small">
+                        {faltantes.length
+                            ? `Faltan ${faltantes.length} de ${obligatorios.length} campos obligatorios`
+                            : 'Todos los campos obligatorios están completos'}
+                    </span>
+                </div>
+                <ProgressBar
+                    now={completitud}
+                    variant={faltantes.length ? 'warning' : 'success'}
+                    className="my-2"
+                    style={{ height: '0.5rem' }}
+                />
+                {faltantes.length > 0 && (
+                    <div className="small">
+                        Faltan: {faltantes.join(', ')}. Podés guardar el borrador y completarlos después.
+                    </div>
+                )}
+            </Alert>
+
+            <h6 className="fw-bold">Identificación del producto</h6>
+            <Row className="mb-3">
+                <Col md={7}>
+                    <Form.Group className="mb-2" controlId="caa-denominacion">
+                        <Form.Label className="mb-1">
+                            Denominación de venta <OrigenBadge campo={campo('denominacion_venta')} />
+                        </Form.Label>
+                        <Form.Control
+                            value={datos.denominacion_venta}
+                            maxLength={120}
+                            disabled={!puedeEditar}
+                            onChange={(e) => cambiar('denominacion_venta', e.target.value)}
+                        />
+                        <Form.Text className="text-muted">{textoAyuda('denominacion_venta')}</Form.Text>
+                    </Form.Group>
+                </Col>
+                <Col md={5}>
+                    <Form.Group className="mb-2" controlId="caa-contenido">
+                        <Form.Label className="mb-1">
+                            Contenido neto <OrigenBadge campo={campo('contenido_neto')} />
+                        </Form.Label>
+                        <Form.Control
+                            value={datos.contenido_neto}
+                            maxLength={60}
+                            disabled={!puedeEditar}
+                            onChange={(e) => cambiar('contenido_neto', e.target.value)}
+                        />
+                        <Form.Text className="text-muted">{textoAyuda('contenido_neto')}</Form.Text>
+                    </Form.Group>
+                </Col>
+            </Row>
+
+            <h6 className="fw-bold">Identificación del origen</h6>
+            <Row className="mb-2">
+                <Col md={6}>
+                    <Form.Group className="mb-2" controlId="caa-razon-social">
+                        <Form.Label className="mb-1">Razón social del elaborador</Form.Label>
+                        <Form.Control
+                            value={datos.razon_social}
+                            maxLength={150}
+                            disabled={!puedeEditar}
+                            onChange={(e) => cambiar('razon_social', e.target.value)}
+                        />
+                    </Form.Group>
+                </Col>
+                <Col md={6}>
+                    <Form.Group className="mb-2" controlId="caa-domicilio">
+                        <Form.Label className="mb-1">Domicilio del elaborador</Form.Label>
+                        <Form.Control
+                            value={datos.domicilio}
+                            maxLength={200}
+                            disabled={!puedeEditar}
+                            onChange={(e) => cambiar('domicilio', e.target.value)}
+                        />
+                    </Form.Group>
+                </Col>
+            </Row>
+            <Row className="mb-3">
+                <Col md={6}>
+                    <Form.Group className="mb-2" controlId="caa-registro">
+                        <Form.Label className="mb-1">Número de RNPA/RPPA</Form.Label>
+                        <Form.Control
+                            value={datos.numero_registro}
+                            maxLength={30}
+                            placeholder="RNPA 1234567"
+                            disabled={!puedeEditar}
+                            onChange={(e) => cambiar('numero_registro', e.target.value)}
+                        />
+                        <Form.Text className="text-muted">
+                            Dato declarado por el elaborador; el sistema no lo verifica contra registros oficiales.
+                        </Form.Text>
+                    </Form.Group>
+                </Col>
+                <Col md={6} className="d-flex align-items-start pt-4">
+                    <Form.Check
+                        type="checkbox"
+                        id="caa-importado"
+                        label="El producto es importado"
+                        checked={datos.es_importado}
+                        disabled={!puedeEditar}
+                        onChange={(e) => cambiar('es_importado', e.target.checked)}
+                    />
+                </Col>
+            </Row>
+
+            {datos.es_importado && (
+                <>
+                    <h6 className="fw-bold">Importador</h6>
+                    <Row className="mb-3">
+                        <Col md={5}>
+                            <Form.Group className="mb-2" controlId="caa-importador-razon">
+                                <Form.Label className="mb-1">Razón social del importador</Form.Label>
+                                <Form.Control
+                                    value={datos.importador_razon_social}
+                                    maxLength={150}
+                                    disabled={!puedeEditar}
+                                    onChange={(e) => cambiar('importador_razon_social', e.target.value)}
+                                />
+                            </Form.Group>
+                        </Col>
+                        <Col md={5}>
+                            <Form.Group className="mb-2" controlId="caa-importador-domicilio">
+                                <Form.Label className="mb-1">Domicilio del importador</Form.Label>
+                                <Form.Control
+                                    value={datos.importador_domicilio}
+                                    maxLength={200}
+                                    disabled={!puedeEditar}
+                                    onChange={(e) => cambiar('importador_domicilio', e.target.value)}
+                                />
+                            </Form.Group>
+                        </Col>
+                        <Col md={2}>
+                            <Form.Group className="mb-2" controlId="caa-importador-cuit">
+                                <Form.Label className="mb-1">CUIT</Form.Label>
+                                <Form.Control
+                                    value={datos.importador_cuit}
+                                    maxLength={20}
+                                    disabled={!puedeEditar}
+                                    onChange={(e) => cambiar('importador_cuit', e.target.value)}
+                                />
+                            </Form.Group>
+                        </Col>
+                    </Row>
+                </>
+            )}
+
+            <h6 className="fw-bold">Lote y fecha de duración</h6>
+            <Row className="mb-3">
+                <Col md={7}>
+                    <Form.Group className="mb-2" controlId="caa-lote">
+                        <Form.Label className="mb-1">
+                            Identificación del lote <OrigenBadge campo={campo('identificacion_lote')} />
+                        </Form.Label>
+                        <Form.Control
+                            value={datos.identificacion_lote}
+                            maxLength={100}
+                            disabled={!puedeEditar}
+                            onChange={(e) => cambiar('identificacion_lote', e.target.value)}
+                        />
+                        <Form.Text className="text-muted">{textoAyuda('identificacion_lote')}</Form.Text>
+                    </Form.Group>
+                </Col>
+                <Col md={5}>
+                    <Form.Group className="mb-2" controlId="caa-fecha-duracion">
+                        <Form.Label className="mb-1">Fecha de duración</Form.Label>
+                        <Form.Control
+                            type="date"
+                            value={datos.fecha_duracion ?? ''}
+                            disabled={!puedeEditar}
+                            onChange={(e) => cambiar('fecha_duracion', e.target.value || null)}
+                        />
+                    </Form.Group>
+                </Col>
+            </Row>
+
+            <h6 className="fw-bold">Lista de ingredientes</h6>
+            <Form.Group className="mb-3" controlId="caa-ingredientes">
+                <Form.Label className="mb-1">
+                    Ingredientes <OrigenBadge campo={campo('lista_ingredientes')} />
+                </Form.Label>
+                <Form.Control
+                    as="textarea"
+                    rows={3}
+                    value={datos.lista_ingredientes}
+                    maxLength={2000}
+                    disabled={!puedeEditar}
+                    onChange={(e) => cambiar('lista_ingredientes', e.target.value)}
+                />
+                <Form.Text className="text-muted">
+                    {textoAyuda('lista_ingredientes')} Si lo editás, el cambio queda registrado en el historial.
+                </Form.Text>
+            </Form.Group>
+
+            <h6 className="fw-bold">Preparación e instrucciones de uso</h6>
+            <Form.Group className="mb-3" controlId="caa-instrucciones">
+                <Form.Label className="mb-1">Instrucciones de uso (cuando corresponda)</Form.Label>
+                <Form.Control
+                    as="textarea"
+                    rows={2}
+                    value={datos.instrucciones_uso}
+                    maxLength={2000}
+                    disabled={!puedeEditar}
+                    placeholder="Conservar en frío. Una vez abierto, consumir dentro de los 3 días."
+                    onChange={(e) => cambiar('instrucciones_uso', e.target.value)}
+                />
+            </Form.Group>
+
+            <h6 className="fw-bold">
+                Información nutricional <OrigenBadge campo={campo('informacion_nutricional')} />
+            </h6>
+            {borrador.tabla_nutricional?.length ? (
+                <Table size="sm" bordered className="mb-2">
+                    <thead>
+                        <tr>
+                            <th>Nutriente</th>
+                            <th>Por porción</th>
+                            <th>%VD</th>
+                            <th>Cada 100 g/ml</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {borrador.tabla_nutricional.map((fila) => (
+                            <tr key={fila.codigo}>
+                                <td>{fila.nombre}</td>
+                                <td>{fila.texto_porcion} {fila.unidad}</td>
+                                <td>{fila.porcentaje_vd ?? '-'}</td>
+                                <td>{fila.texto_100g} {fila.unidad}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </Table>
+            ) : (
+                <p className="text-muted small">La receta todavía no tiene la información nutricional calculada (E11).</p>
+            )}
+
+            <div className="mb-3">
+                <span className="fw-semibold me-2">
+                    Sellos de advertencia <OrigenBadge campo={campo('sellos')} />
+                </span>
+                {borrador.sellos.length ? (
+                    borrador.sellos.map((sello) => (
+                        <Badge key={sello} bg="danger" className="me-1">{sello}</Badge>
+                    ))
+                ) : (
+                    <span className="text-muted small">Sin sellos según la evaluación vigente (E12).</span>
+                )}
+            </div>
+
+            {borrador.historial.length > 0 && (
+                <details className="mb-3">
+                    <summary className="fw-semibold">Historial de cambios ({borrador.historial.length})</summary>
+                    <Table size="sm" className="mt-2 mb-0">
+                        <thead>
+                            <tr>
+                                <th>Campo</th>
+                                <th>Valor anterior</th>
+                                <th>Valor nuevo</th>
+                                <th>Usuario</th>
+                                <th>Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {borrador.historial.map((cambio, indice) => (
+                                <tr key={`${cambio.campo}-${cambio.fecha_hora}-${indice}`}>
+                                    <td>{cambio.nombre_campo}</td>
+                                    <td className="text-muted">{cambio.valor_anterior ?? '—'}</td>
+                                    <td>{cambio.valor_nuevo ?? '—'}</td>
+                                    <td>{cambio.usuario ?? '—'}</td>
+                                    <td>{new Date(cambio.fecha_hora).toLocaleString('es-AR')}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </Table>
+                </details>
+            )}
+
+            {puedeEditar && (
+                <div className="d-flex justify-content-end">
+                    <Button variant="success" onClick={guardar} disabled={guardando}>
+                        {guardando ? 'Guardando...' : 'Guardar borrador'}
+                    </Button>
+                </div>
+            )}
+        </>
+    );
+}

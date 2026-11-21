@@ -1,4 +1,4 @@
-import type { UnidadMedida } from "../UnidadMedida/types" #
+import type { UnidadMedida } from "../UnidadMedida/types";
 
 export type MarcasAporte = {
     aporta_azucares: boolean;

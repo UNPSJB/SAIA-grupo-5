@@ -36,8 +36,13 @@ def generar_superficies(db) -> list[Superficie]:
     if not sectores:
         return []
 
+    # Idempotente: el nombre es UNIQUE, así que se omiten las ya cargadas.
+    existentes = set(db.scalars(select(Superficie.nombre)).all())
+
     superficies = []
     for nombre, tipo_contacto, nombre_sector in SUPERFICIES:
+        if nombre in existentes:
+            continue
         sector = sectores.get(nombre_sector)
         superficies.append(
             Superficie(
@@ -54,7 +59,7 @@ def main():
     try:
         superficies = generar_superficies(db)
         if not superficies:
-            print("No hay sectores cargados. Correr antes scripts.seed_sectores.")
+            print("No se insertaron superficies nuevas (ya están cargadas o faltan sectores).")
             return
 
         db.add_all(superficies)
