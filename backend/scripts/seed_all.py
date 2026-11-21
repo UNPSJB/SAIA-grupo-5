@@ -24,6 +24,8 @@ from scripts import (
     seed_productos,
     seed_aditivos,
     seed_recetas,
+    seed_alergenos,
+    seed_declaracion_alergenos,
     seed_informacion_nutricional,
     # Limpieza / instalaciones
     seed_planes_limpieza,
@@ -54,6 +56,8 @@ ORDEN = [
     seed_productos,
     seed_aditivos,
     seed_recetas,
+    seed_alergenos,
+    seed_declaracion_alergenos,
     seed_informacion_nutricional,
     seed_planes_limpieza,
     seed_sectores,
