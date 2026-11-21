@@ -7,6 +7,7 @@ import { ActionButton } from "../../../components/ActionButton";
 
 import { AppTable } from "../../../components/AppTable";
 import { PageHeader } from "../../../components/PageHeader";
+import { ExportMenu } from '../../../components/ExportMenu';
 import { useApi } from "../../../hooks/useApi";
 import { useAuth } from "../../../hooks/useAuth";
 
@@ -266,6 +267,14 @@ export function PlanesCalibracionPage() {
                         value={estadoFiltro}
                         options={ESTADO_FILTRO_LABELS}
                         onChange={(value) => setEstadoFiltro(value as EstadoFiltro)}
+                    />
+                </Col>
+                <Col xs="auto">
+                    <ExportMenu
+                        title="Listado de Plannes de Calibracion"
+                        filename="planesCalibracion"
+                        columns={columns}
+                        rows={filteredPlanes}
                     />
                 </Col>
                 {currentUser?.administrar && (

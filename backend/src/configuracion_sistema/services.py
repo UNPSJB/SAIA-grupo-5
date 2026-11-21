@@ -37,7 +37,7 @@ def modificar_configuracion(db: Session, configuracion: schemas.ConfiguracionSis
         db_configuracion = actualizar_vista_publica(db, datos_vista)
 
     for clave, valor in cambios.items():
-        if not clave.startswith("vista_publica_") and (valor is not None or clave == "logo_pyme"):
+        if not clave.startswith("vista_publica_") and (valor is not None or clave in ("logo_pyme", "prefijo_empresa")):
             setattr(db_configuracion, clave, valor)
 
     db.commit()

@@ -9,6 +9,7 @@ import { PageHeader } from '../../../components/PageHeader';
 import { PageLoading } from '../../../components/PageLoading';
 import { PageError } from '../../../components/PageError';
 import { ActionButton } from '../../../components/ActionButton';
+import { ExportMenu } from '../../../components/ExportMenu';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
 
@@ -162,6 +163,14 @@ export function ListPage() {
                         value={estadoFiltro}
                         options={ESTADO_FILTRO_LABELS}
                         onChange={(value) => setEstadoFiltro(value as EstadoFiltro)}
+                    />
+                </Col>
+                <Col xs="auto">
+                    <ExportMenu
+                        title="Listado de Tipos Quimicos"
+                        filename="tiposQuimicos"
+                        columns={columns}
+                        rows={filteredTiposQuimicos}
                     />
                 </Col>
                 {currentUser?.administrar &&(

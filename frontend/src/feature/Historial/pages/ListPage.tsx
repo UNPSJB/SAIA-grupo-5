@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Alert, Badge, Button, Card, Col, Container, Form, Row, Spinner } from "react-bootstrap";
 import { type ConditionalStyles, type TableColumn } from "react-data-table-component";
-
+import { ExportMenu } from "../../../components/ExportMenu";
 import { AppTable } from "../../../components/AppTable";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
@@ -179,9 +179,22 @@ export function HistorialPage() {
                     </div>
                 </Col>
                 <Col className="d-flex justify-content-end">
+                <ExportMenu
+                    title="Historial de Checklists"
+                    filename="historial-checklists"
+                    rows={(soloIncumplidas ? incumplidas : historial) ?? []}
+                    exportColumns={[
+                        { header: 'Tarea', value: (r) => r.tarea_nombre_snap },
+                        { header: 'Plan de Limpieza', value: (r) => r.plan_nombre_snap },
+                        { header: 'Prioridad', value: (r) => PRIORIDAD_LABELS[r.prioridad_snap as Prioridad] ?? r.prioridad_snap },
+                        { header: 'Fecha Completado', value: (r) => r.fecha_completado ? new Date(r.fecha_completado).toLocaleString('es-AR') : '-' },
+                        { header: 'Estado', value: (r) => getEstadoHistorial(r) },
+                    ]}
+                />
                     <Button
                         data-tour="btn-solo-incumplidas"
                         variant="outline-danger"
+                        size="sm"
                         active={soloIncumplidas}
                         onClick={() => setSoloIncumplidas((prev) => !prev)}
                     >

@@ -12,6 +12,7 @@ import { DeleteIncidenteModal } from '../components/DeleteIncidenteModal';
 import { AccionCorrectivaModal } from '../components/AccionCorrectivaModal';
 import { ReabrirIncidenteModal } from '../components/ReabrirIncidenteModal';
 import { HistorialIncidenteModal } from '../components/HistorialIncidenteModal';
+import { ExportMenu } from '../../../components/ExportMenu';
 import { ESTADO_INCIDENTE_ESTILOS, type IncidenteSeguimiento } from '../types';
 import { EstadoBadge } from '../../../components/EstadoBadge';
 import './ListPage.css';
@@ -208,6 +209,21 @@ export function ListPage() {
                                 <i className="bi bi-exclamation-triangle me-1" />{demorados} demorados
                             </Badge>
                         )}
+                        <ExportMenu
+                            title={titulo}
+                            filename="incidentes"
+                            rows={incidentesFiltrados}
+                            orientation="landscape"
+                            exportColumns={[
+                                { header: 'Incidente', value: (i) => i.nombre },
+                                { header: 'Descripción', value: (i) => i.descripcion },
+                                { header: 'Tipo', value: (i) => i.tipo.nombre },
+                                { header: 'Fecha', value: (i) => formatDate(i.fecha) },
+                                { header: 'Reportado por', value: (i) => i.reportado_por },
+                                { header: 'Días abierto', value: (i) => i.dias_abierto },
+                                { header: 'Estado', value: (i) => i.estado },
+                            ]}
+                        />
                         {currentUser?.operar && (
                             <Button
                                 data-tour="btn-nuevo-incidente"
