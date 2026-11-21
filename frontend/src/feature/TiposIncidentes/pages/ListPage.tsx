@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { type TableColumn } from 'react-data-table-component';
 import { PageLoading } from "../../../components/PageLoading";
 import { ActionButton } from '../../../components/ActionButton';
-
+import { ExportMenu } from '../../../components/ExportMenu';
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
 import { useApi } from '../../../hooks/useApi';
@@ -168,6 +168,14 @@ export function ListPage() {
                         value={estadoFiltro}
                         options={ESTADO_FILTRO_LABELS}
                         onChange={(value) => setEstadoFiltro(value as EstadoFiltro)}
+                    />
+                </Col>
+                <Col xs="auto">
+                    <ExportMenu
+                        title="Listado de Tipos de Incidentes"
+                        filename="tiposIncidentes"
+                        columns={columns}
+                        rows={filteredTiposIncidentes}
                     />
                 </Col>
                 {currentUser?.administrar &&(

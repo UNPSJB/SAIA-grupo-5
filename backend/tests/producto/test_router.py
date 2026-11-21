@@ -1,3 +1,6 @@
+from src.configuracion_sistema.models import ConfiguracionSistema
+from src.configuracion_sistema.constants import ID_CONFIGURACION_SISTEMA
+
 def test_endpoint_get_producto(client, auth_headers, unico_producto):
     response = client.get(f"/productos/{unico_producto.id}",
                 headers = auth_headers,)
@@ -52,3 +55,40 @@ def test_endpoint_cambiar_estado_producto(client, auth_headers, unico_producto):
 
     assert response.status_code == 200
     assert data["activo"] is False
+
+
+def test_endpoint_crear_producto_con_codigo(client, auth_headers, db_session, unica_unidad_medida):
+    configuracion = ConfiguracionSistema(id=ID_CONFIGURACION_SISTEMA, prefijo_gs1="590", prefijo_empresa="1234")
+    db_session.add(configuracion)
+    db_session.commit()
+
+    response = client.post("/productos/", json={"nombre": "Producto con codigo", "descripcion": "Producto de prueba",
+                                                "cantidad_neta": 500, "unidad_medida_id": unica_unidad_medida.id,
+                                                "fecha_lanzamiento": "2026-10-01", "foto_producto": None,
+                                                "codigo_producto": "12345"},
+                    headers=auth_headers)
+    data = response.json()
+
+    assert response.status_code == 200
+    assert data["codigo_producto"] == "12345"
+    assert data["codigo_barras"] == "5901234123457"
+
+
+def test_endpoint_modificar_codigo_producto(client, auth_headers, db_session, unico_producto, unica_unidad_medida):
+    configuracion = ConfiguracionSistema(id=ID_CONFIGURACION_SISTEMA, prefijo_gs1="590", prefijo_empresa="1234")
+    db_session.add(configuracion)
+    db_session.commit()
+
+    response = client.put(f"/productos/{unico_producto.id}", json={"nombre": unico_producto.nombre,
+                                                                    "descripcion": "Producto modificado",
+                                                                    "cantidad_neta": 500,
+                                                                    "unidad_medida_id": unica_unidad_medida.id,
+                                                                    "fecha_lanzamiento": "2026-10-01",
+                                                                    "foto_producto": None,
+                                                                    "codigo_producto": "12345"},
+                    headers=auth_headers)
+    data = response.json()
+
+    assert response.status_code == 200
+    assert data["codigo_producto"] == "12345"
+    assert data["codigo_barras"] == "5901234123457"

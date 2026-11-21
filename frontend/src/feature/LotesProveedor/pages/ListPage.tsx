@@ -6,12 +6,14 @@ import { type TableColumn } from 'react-data-table-component';
 import { ActionButton } from '../../../components/ActionButton';
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
+import { ExportMenu } from '../../../components/ExportMenu';
 import { useApi, useAuth } from '../../../hooks';
 import { ListFilter } from "../../../components/ListFilter";
 import { AvanzarEtapaLoteProveedorModal } from '../componets/AvanzarEtapaLoteProveedorModal';
 import { DeleteLoteProveedorModal } from '../componets/DeleteLoteProveedorModal';
 import type { LoteProveedor, EstadoLoteProveedor } from '../types';
 import { PageLoading } from '../../../components/PageLoading';
+import { filter } from 'motion/react-client';
 
 type EstadoFiltro = "todos" | "activo" | "inactivo";
 
@@ -217,6 +219,14 @@ export function ListPage() {
                         value={estadoFiltro}
                         options={ESTADO_FILTRO_LABELS}
                         onChange={(val) => setEstadoFiltro(val as EstadoFiltro)}
+                    />
+                </Col>
+                <Col xs="auto">
+                    <ExportMenu
+                        title="Listado de Recepciones"
+                        filename="recepcion"
+                        columns={columns}
+                        rows={filteredLotes}
                     />
                 </Col>
                 {currentUser?.operar && (

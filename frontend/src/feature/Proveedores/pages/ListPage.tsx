@@ -9,6 +9,8 @@ import { PageHeader } from '../../../components/PageHeader';
 import { useApi, useAuth } from '../../../hooks';
 import { ListFilter } from "../../../components/ListFilter";
 import { DeleteProveedorModal } from '../components/DeleteProveedorModel';
+import { ExportMenu } from '../../../components/ExportMenu';
+
 import { RenovarHabilitacionProveedorModal } from '../components/RenovarHabilitacionProveedorModal';
 import type { Proveedor } from '../types';
 import { PageLoading } from '../../../components/PageLoading';
@@ -265,6 +267,14 @@ export function ListPage() {
                         value={estadoFiltro}
                         options={ESTADO_FILTRO_LABELS}
                         onChange={(value) => setEstadoFiltro(value as EstadoFiltro)}
+                    />
+                </Col>
+                <Col xs="auto">
+                    <ExportMenu
+                        title="Listado de Proveedores"
+                        filename="proveedores"
+                        columns={columns}
+                        rows={filteredProveedores}
                     />
                 </Col>
                 {currentUser?.administrar && (

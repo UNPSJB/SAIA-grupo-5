@@ -14,3 +14,6 @@ class ProductoDadoDeBaja(BadRequest):
 
 class UnidadMedidaDadaDeBaja(BadRequest):
     DETAIL = ErrorCode.UNIDAD_MEDIDAD_DADA_DE_BAJA
+
+class CodigoProductoDuplicado(BadRequest):
+    DETAIL = ErrorCode.CODIGO_PRODUCTO_DUPLICADO

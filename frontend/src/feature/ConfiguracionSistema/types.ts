@@ -35,4 +35,6 @@ export type ConfiguracionSistemaUpdate = {
     dias_antelacion_elementos?: number
     hora_generacion_checklists?: number
     minuto_generacion_checklists?: number
+    prefijo_gs1?: string
+    prefijo_empresa?: string | null
 }

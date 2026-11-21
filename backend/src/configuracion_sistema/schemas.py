@@ -40,6 +40,9 @@ class DatosPymeBase(BaseModel):
 
 
 class ConfiguracionSistemaBase(DatosPymeBase):
+    prefijo_gs1: Annotated[str, Field(pattern=r"^[0-9]{3}$")] = "779"
+    prefijo_empresa: Annotated[str | None, Field(pattern=r"^[0-9]{4}$")] = None
+    
     dias_antelacion_vencimiento: Annotated[int, Field(ge=0, default=DIAS_ANTELACION_VENCIMIENTO_DEFAULT)]
     dias_antelacion_elementos: Annotated[int, Field(ge=0, default=DIAS_ANTELACION_VENCIMIENTO_DEFAULT)]
     hora_generacion_checklists: Annotated[int, Field(ge=0, le=23, default=HORA_GENERACION_CHECKLISTS_DEFAULT)]
@@ -66,6 +69,9 @@ class ConfiguracionSistemaUpdate(BaseModel):
     telefono_pyme: Annotated[str | None, Field(max_length=30)] = None
     email_pyme: Annotated[str | None, Field(max_length=150)] = None
     direccion_pyme: Annotated[str | None, Field(max_length=200)] = None
+
+    prefijo_gs1: Annotated[str | None, Field(pattern=r"^[0-9]{3}$")] = None
+    prefijo_empresa: Annotated[str | None, Field(pattern=r"^[0-9]{4}$")] = None
 
     dias_antelacion_vencimiento: Annotated[int | None, Field(ge=0)] = None
     dias_antelacion_elementos: Annotated[int | None, Field(ge=0)] = None

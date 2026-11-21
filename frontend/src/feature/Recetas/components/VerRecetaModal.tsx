@@ -11,6 +11,10 @@ import type { Receta, RecetaVersion } from '../types';
 import { SellosFrontales } from './SellosFrontales';
 import { InfoNutricionalReceta } from "../../CalculoNutricional/components/InfoNutricionalRecetaForm";
 import { IngredientesComposicion } from './IngredientesComposicion';
+import { formatearGramos } from '../composicion/rendimiento';
+import type { UnidadMedida } from '../../UnidadMedida/types';
+import { exportarRecetaPdf } from '../ExportRecetapdf';
+
 import "./VerRecetaModal.css";
 
 interface VerRecetaModalProps {
@@ -38,6 +42,7 @@ export function VerRecetaModal({ producto, onHide, onEditar }: VerRecetaModalPro
     const { data: receta, error, isLoading } = useApi<Receta>(
         !producto ? null : recetaSeleccionadaId ? `/recetas/${recetaSeleccionadaId}` : `/recetas/producto/${producto.id}`,
     );
+    const { data: unidades } = useApi<UnidadMedida[]>(currentUser?.administrar ? '/unidades-medida/' : null);
 
     return (
         <Modal show={producto !== null} onHide={onHide} size="xl" scrollable>
@@ -147,7 +152,21 @@ export function VerRecetaModal({ producto, onHide, onEditar }: VerRecetaModalPro
                 >
                     Escalar
                 </Button>
+                
                 <Button variant="secondary" onClick={onHide}>Cerrar</Button>
+                <Button
+                    className="ms-2"
+                    variant="outline-primary"
+                    disabled={!receta || (!!currentUser?.administrar && !unidades)}
+                    onClick={() => producto && receta && exportarRecetaPdf({
+                        producto: producto.nombre,
+                        receta,
+                        unidades,
+                        mostrarComposicion: !!currentUser?.administrar,
+                    })}
+                >
+                    <i className="bi bi-download me-1"></i> Descargar receta
+                </Button>
                 {onEditar && receta?.vigente && (
                     <Button className="ms-2" variant="primary" onClick={() => onEditar(receta)}>
                         <i className="bi bi-pencil me-1"></i> Editar receta
