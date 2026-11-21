@@ -2,7 +2,6 @@ import jsPDF from 'jspdf';
 import { autoTable } from 'jspdf-autotable';
 import type { UnidadMedida } from '../UnidadMedida/types';
 import type { Receta } from './types';
-import { formatearGramos } from './composicion/rendimiento';
 import { calcularComposicionPorcentual, DECIMALES_COMPOSICION } from './composicion/composicionPorcentual';
 
 const formatearFecha = (fecha: string | null) =>
@@ -65,7 +64,6 @@ export function exportarRecetaPdf({ producto, receta, unidades, mostrarComposici
             ? `Versión ${receta.version} (vigente) - Vigente desde ${formatearFecha(receta.fecha_desde_vigencia ?? receta.fecha_creacion)}`
             : `Versión ${receta.version} (anterior, solo lectura) - Vigente del ${formatearFecha(receta.fecha_desde_vigencia)} al ${formatearFecha(receta.fecha_hasta_vigencia)}`,
     );
-    escribir(`Rendimiento final calculado: ${receta.rendimiento !== null ? formatearGramos(receta.rendimiento) : 'No se pudo calcular'}`);
     escribir(`Porción o unidad de venta: ${receta.porcion !== null ? `${receta.porcion} ${receta.porcion_unidad_medida?.nombre ?? ''}`.trim() : 'Sin indicar'}`);
 
     titulo('Ingredientes y composición');
