@@ -164,6 +164,12 @@ import { VerFuenteNutricionalPage } from './feature/FuenteNutricional/pages/VerF
 
 import { ConfiguracionCalculoNutricionalPage } from './feature/CalculoNutricional/pages/ConfiguracionCalculoNutricionalPage.tsx'
 
+import { ListPage as AlergenosListPage } from './feature/Alergenos/pages/Listpage.tsx'
+import { NuevoAlergenoPage } from './feature/Alergenos/pages/NuevoAlergenoPage.tsx'
+import { EditarAlergenoPage } from './feature/Alergenos/pages/EditarAlergenoPage.tsx'
+//import { VerAlergenoPage } from './feature/Alergenos/pages/VerFuenteNutricionalPage.tsx'
+
+
 
 import { Login, NoAutorizado } from './feature/auth'
 import AuthLayout from './layouts/AuthLayout.tsx'
@@ -602,6 +608,15 @@ const router = createBrowserRouter([
               { path: 'new', element: <NuevaFuenteNutricionalPage /> },
               { path: ':id/edit', element: <EditarFuenteNutricionalPage /> },
               { path: ':id', element: <VerFuenteNutricionalPage /> },
+            ],
+          },
+          {
+            path: 'alergenos',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <AlergenosListPage /> },
+              { path: 'new', element: <NuevoAlergenoPage /> },
+              { path: ':id/edit', element: <EditarAlergenoPage /> },
             ],
           },
           { path: '*', element: <Page404 /> }

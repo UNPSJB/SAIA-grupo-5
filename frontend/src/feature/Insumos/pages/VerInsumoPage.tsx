@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Container, Alert, Row, Col, Card, Button, Table } from "react-bootstrap";
+import { Container, Alert, Row, Col, Card, Button, Table, Badge } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
@@ -7,6 +7,7 @@ import type { Insumo } from "../types";
 import type { InfoNutricional, HistorialNutricionalInsumo } from "../../InformacionNutricionalInsumo/types";
 import { DATOS_NUTRICIONALES_CAA } from '../../InformacionNutricionalInsumo/types';
 import { HistorialNutricionalModal } from "../../InformacionNutricionalInsumo/components/HistorialNutricionalModal";
+import type { InsumoAlergenos } from "../../Alergenos/types";
 import { PageLoading } from "../../../components/PageLoading";
 import { useAuth } from "../../../hooks";
 
@@ -18,6 +19,7 @@ export function VerInsumoPage() {
 
     const { data: insumo, isLoading, error } = useApi<Insumo>(`/insumos/${id}`);
     const { data: infoNutricional } = useApi<InfoNutricional>(id ? `/informaciones-nutricionales/insumo/${id}` : null);
+    const { data: infoAlergenos } = useApi<InsumoAlergenos>(id ? `/alergenos/insumo/${id}` : null);
     const { data: historial } = useApi<HistorialNutricionalInsumo[]>(infoNutricional ? `/historial-nutricional/info-nutricional/${infoNutricional.id}` : null);
 
     const tituloPagina = "Detalle del Insumo";
@@ -37,6 +39,9 @@ export function VerInsumoPage() {
             </Row>
         </Container>
     );
+
+    const contieneGluten = infoAlergenos?.contiene_gluten ?? false;
+    const listaAlergenos = infoAlergenos?.alergenos ?? [];
 
     return (
         <Container>
@@ -75,6 +80,44 @@ export function VerInsumoPage() {
                                         {insumo.unidad_medida.nombre}
                                     </div>
                                 </div>
+                                </Col>
+                            </Row>
+
+                            <Row className="mb-3 border-bottom pb-3 align-items-start">
+                                <Col sm={4} className="fw-bold text-secondary">Alérgenos y Gluten</Col>
+                                <Col sm={8}>
+                                    <div className="mb-2">
+                                        {contieneGluten ? (
+                                            <Badge bg="warning" text="dark" className="px-3 py-2">
+                                                <i className="bi bi-exclamation-triangle-fill me-1"></i>
+                                                Contiene Gluten (Con TACC)
+                                            </Badge>
+                                        ) : (
+                                            <Badge bg="success" className="px-3 py-2">
+                                                <i className="bi bi-check-circle-fill me-1"></i>
+                                                Sin Gluten (Sin TACC)
+                                            </Badge>
+                                        )}
+                                    </div>
+
+                                    {listaAlergenos.length === 0 ? (
+                                        <span className="text-muted fst-italic small">Sin alérgenos declarados</span>
+                                    ) : (
+                                        <div className="d-flex flex-wrap gap-2 mt-2">
+                                            {listaAlergenos.map((item) => (
+                                                <Badge
+                                                    key={item.id}
+                                                    bg="light"
+                                                    text="dark"
+                                                    className="border px-2 py-1 fw-normal"
+                                                >
+                                                    <strong>{item.alergeno.nombre}</strong>
+                                                    {item.es_derivado ? " (Derivado)" : ""}
+                                                    {item.alergeno.es_tacc ? " • TACC" : ""}
+                                                </Badge>
+                                            ))}
+                                        </div>
+                                    )}
                                 </Col>
                             </Row>
 
@@ -183,6 +226,3 @@ export function VerInsumoPage() {
         </Container>
     );
 }
-
-
-
