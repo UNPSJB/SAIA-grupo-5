@@ -30,8 +30,7 @@ def leer_alergeno(db: Session, alergeno_id: int) -> schemas.Alergeno:
         raise exceptions.AlergenoNoEncontrado()
     return db_alergeno
 
-def modificar_alergeno(db: Session, alergeno_id: int, alergeno: schemas.AlergenoUpdate) -> schemas.Alergeno:  # Permite modificar el insumo pero si o si se tienen que enviar todos los campos
-    db_alergeno = leer_alergeno(db, alergeno_id)
+def modificar_alergeno(db: Session, alergeno_id: int, alergeno: schemas.AlergenoUpdate) -> schemas.Alergeno:  
 
     alergeno_duplicado = db.scalars(select(Alergeno).where(Alergeno.nombre == alergeno.nombre, Alergeno.id != alergeno_id)).first()
     
