@@ -1,13 +1,12 @@
 import { Spinner } from 'react-bootstrap';
 import type { EvaluacionSellos } from '../types';
+import { SelloOctogono } from './SelloOctogono';
 import './SellosFrontales.css';
 
 interface SellosFrontalesProps {
     evaluacion?: EvaluacionSellos | null;
     cargando?: boolean;
 }
-
-const PREFIJO_SELLO = "EXCESO EN ";
 
 const formatear = (valor: number | null) => (valor ?? 0).toLocaleString('es-AR', { maximumFractionDigits: 1 });
 
@@ -41,14 +40,7 @@ export function SellosFrontales({ evaluacion, cargando = false }: SellosFrontale
                     </p>
                     <div className="sellos-frontales-lista">
                         {evaluacion.sellos.map((sello) => (
-                            <div key={sello} className="sello-octogono" title={sello}>
-                                <div className="sello-octogono-borde">
-                                    <div className="sello-octogono-contenido">
-                                        <span className="sello-octogono-exceso">{PREFIJO_SELLO.trim()}</span>
-                                        <span className="sello-octogono-nutriente">{sello.replace(PREFIJO_SELLO, '')}</span>
-                                    </div>
-                                </div>
-                            </div>
+                            <SelloOctogono key={sello} sello={sello} />
                         ))}
                     </div>
                 </>

@@ -13,6 +13,7 @@ Uso: python -m scripts.seed_vencimientoPersonal
 from datetime import date, timedelta
 
 from faker import Faker
+from sqlalchemy import select
 
 import src.all_models  # noqa: F401
 from src.database import SessionLocal
@@ -42,11 +43,18 @@ VENCIMIENTOS = [
 ]
 
 
-def generar_tipos_vencimientos(db) -> dict[str, TipoVencimiento]:
-    tipos = {nombre: TipoVencimiento(nombre=nombre, descripcion=descripcion) for nombre, descripcion in TIPOS_VENCIMIENTOS}
-    db.add_all(tipos.values())
+def generar_tipos_vencimientos(db) -> tuple[dict[str, TipoVencimiento], int]:
+    # Idempotente: el nombre del tipo es UNIQUE, así que se crean solo los que faltan.
+    tipos = {t.nombre: t for t in db.scalars(select(TipoVencimiento)).all()}
+    nuevos = [
+        TipoVencimiento(nombre=nombre, descripcion=descripcion)
+        for nombre, descripcion in TIPOS_VENCIMIENTOS
+        if nombre not in tipos
+    ]
+    db.add_all(nuevos)
     db.flush()  # necesitamos el id de cada tipo antes de crear los vencimientos
-    return tipos
+    tipos.update({t.nombre: t for t in nuevos})
+    return tipos, len(nuevos)
 
 
 def generar_vencimientos(db, tipos: dict[str, TipoVencimiento]) -> list[VencimientoPersonal]:
@@ -58,12 +66,23 @@ def generar_vencimientos(db, tipos: dict[str, TipoVencimiento]) -> list[Vencimie
     cantidad = min(len(VENCIMIENTOS), len(personas))
     personas_elegidas = fake.random_elements(elements=personas, length=cantidad, unique=True)
 
+    existentes = {
+        (fila[0], fila[1])
+        for fila in db.execute(
+            select(VencimientoPersonal.persona_id, VencimientoPersonal.tipo_vencimiento_id)
+        ).all()
+    }
+
     vencimientos = []
     for persona, (tipo_nombre, dias_desde, dias_hasta_vencer) in zip(personas_elegidas, VENCIMIENTOS):
+        tipo = tipos[tipo_nombre]
+        # Idempotente: no se repite el vencimiento de una persona para el mismo tipo.
+        if (persona.id, tipo.id) in existentes:
+            continue
         vencimientos.append(
             VencimientoPersonal(
                 persona_id=persona.id,
-                tipo_vencimiento_id=tipos[tipo_nombre].id,
+                tipo_vencimiento_id=tipo.id,
                 fecha_desde=hoy - timedelta(days=dias_desde),
                 fecha_hasta=hoy + timedelta(days=dias_hasta_vencer),
                 es_actual=True,
@@ -76,17 +95,13 @@ def generar_vencimientos(db, tipos: dict[str, TipoVencimiento]) -> list[Vencimie
 def main():
     db = SessionLocal()
     try:
-        tipos = generar_tipos_vencimientos(db)
+        tipos, tipos_nuevos = generar_tipos_vencimientos(db)
         vencimientos = generar_vencimientos(db, tipos)
-
-        if not vencimientos:
-            print("No hay personal cargado. Correr antes scripts.seed_personal.")
-            return
 
         db.add_all(vencimientos)
         db.commit()
 
-        print(f"Se insertaron {len(tipos)} tipos de vencimiento y {len(vencimientos)} vencimientos de personal.")
+        print(f"Se insertaron {tipos_nuevos} tipos de vencimiento y {len(vencimientos)} vencimientos de personal.")
     finally:
         db.close()
 

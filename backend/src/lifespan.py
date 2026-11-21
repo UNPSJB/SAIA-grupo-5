@@ -30,6 +30,11 @@ async def db_creation_lifespan(app: FastAPI):
     if "configuracion_sistema" in tablas:
         columnas_configuracion = {col["name"] for col in inspector.get_columns("configuracion_sistema")}
         migraciones_configuracion = {
+            "nombre_pyme": "VARCHAR(100) NOT NULL DEFAULT 'Mi establecimiento'",
+            "logo_pyme": "TEXT",
+            "telefono_pyme": "VARCHAR(30)",
+            "email_pyme": "VARCHAR(150)",
+            "direccion_pyme": "VARCHAR(200)",
             "vista_publica_activa": "BOOLEAN NOT NULL DEFAULT 0",
             "vista_publica_token": "VARCHAR(64)",
             "vista_publica_nombre_establecimiento": "VARCHAR(100) NOT NULL DEFAULT 'Mi establecimiento'",
