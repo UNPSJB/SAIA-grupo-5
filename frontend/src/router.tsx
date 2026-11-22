@@ -126,6 +126,9 @@ import { ListPage as ProductoListPage } from './feature/Productos/pages/ListPage
 import { NuevoProductoPage } from './feature/Productos/pages/NuevoProductoPage.tsx'
 import { EditarProductoPage } from './feature/Productos/pages/EditarProductoPage.tsx'
 import { VerProductoPage } from './feature/Productos/pages/VerProductoPage.tsx'
+import { NuevaRecetaPage } from './feature/Recetas/pages/NuevaRecetaPage.tsx';
+import { EditarRecetaPage } from './feature/Recetas/pages/EditarRecetaPage.tsx';
+import { VerRecetaPage } from './feature/Recetas/pages/VerRecetaPage.tsx';
 import { EscalarRecetaPage } from './feature/Recetas/pages/EscalarRecetaPage.tsx'
 import { ReglasRotuladoPage } from './feature/Rotulado/pages/ReglasRotuladoPage.tsx'
 
@@ -165,7 +168,7 @@ import { VerFuenteNutricionalPage } from './feature/FuenteNutricional/pages/VerF
 
 import { ConfiguracionCalculoNutricionalPage } from './feature/CalculoNutricional/pages/ConfiguracionCalculoNutricionalPage.tsx'
 
-import { ListPage as AlergenosListPage } from './feature/Alergenos/pages/Listpage.tsx'
+import { ListPage as AlergenosListPage } from './feature/Alergenos/pages/ListPage.tsx'
 import { NuevoAlergenoPage } from './feature/Alergenos/pages/NuevoAlergenoPage.tsx'
 import { EditarAlergenoPage } from './feature/Alergenos/pages/EditarAlergenoPage.tsx'
 
@@ -298,6 +301,9 @@ const router = createBrowserRouter([
               { path: 'new', element: <NuevoProductoPage />},
               { path: ':id/edit', element: <EditarProductoPage />},
               { path: ':id', element: <VerProductoPage />},
+              { path: ':id/receta/nueva', element: <NuevaRecetaPage /> },
+              { path: ':id/receta/editar', element: <EditarRecetaPage /> },
+              { path: ':id/receta', element: <VerRecetaPage /> },
               { path: ':id/receta/escalar', element: <EscalarRecetaPage />},
             ],
           },
