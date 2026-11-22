@@ -1,5 +1,5 @@
 import { Container } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { mutate } from "swr";
 import { PageHeader } from "../../../components/PageHeader";
 import { PedidoProveedorForm } from "../components/PedidoProveedorForm";
@@ -9,6 +9,13 @@ import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
 
 export function NuevoPedidoProveedorPage() {
     const navigate = useNavigate();
+    const location = useLocation();
+    const valoresIniciales = (location.state as {
+        proveedor_id: number;
+        fecha_entrega_estimada: string | null;
+        observacion: string | null;
+        items: { insumo_id: number; cantidad_pedida: number }[];
+    } | null) ?? undefined;
 
     const guardarPedido = async (datos: NewPedidoProveedor) => {
         try {
@@ -31,7 +38,11 @@ export function NuevoPedidoProveedorPage() {
         <>
             <PageHeader title="Nuevo Pedido a Proveedor" />
             <Container>
-                <PedidoProveedorForm textoBoton="Registrar Pedido" onSubmit={guardarPedido} />
+                <PedidoProveedorForm
+                    textoBoton="Registrar Pedido"
+                    onSubmit={guardarPedido}
+                    valoresIniciales={valoresIniciales}
+                />
             </Container>
         </>
     );

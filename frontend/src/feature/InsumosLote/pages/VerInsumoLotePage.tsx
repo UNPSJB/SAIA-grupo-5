@@ -1,16 +1,29 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Card, Button, Alert, Table } from 'react-bootstrap';
+import { mutate } from 'swr';
 import { useApi } from '../../../hooks/useApi';
+import { useAuth } from '../../../hooks/useAuth';
 import { PageHeader } from '../../../components/PageHeader';
 import { PageLoading } from '../../../components/PageLoading';
 import type { InsumoLote } from '../types';
 import { ActionButton } from '../../../components/ActionButton';
+import { TarjetaTrazabilidadLote } from '../../LotesProduccion/components/TarjetaTrazabilidadLote';
+import { ListaIncidentesVinculados } from '../../Incidentes/components/ListaIncidentesVinculados';
+import { CambiarAlmacenamientoModal } from '../../Equipos/components/CambiarAlmacenamientoModal';
 
 export function VerInsumoLotePage() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { currentUser } = useAuth();
+    const [mostrarModalAlmacenamiento, setMostrarModalAlmacenamiento] = useState(false);
 
     const { data: item, isLoading, error } = useApi<InsumoLote>(`/insumos-lote/${id}`);
+    const puedeCambiarAlmacenamiento = Boolean(
+        (currentUser?.operar || currentUser?.supervisor) &&
+        item?.activo &&
+        item?.cantidad_restante > 0
+    );
 
     const tituloPagina = 'Detalle de Insumo Alimenticio';
 
@@ -60,11 +73,6 @@ export function VerInsumoLotePage() {
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
                                 <Col sm={5} className="fw-bold text-secondary">Insumo</Col>
                                 <Col sm={7} className="fs-6 fw-semibold">{item.insumo.nombre}</Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={5} className="fw-bold text-secondary">Marca</Col>
-                                <Col sm={7} className="fs-6">{item.marca}</Col>
                             </Row>
 
                             <Row className="mb-3 border-bottom pb-3 align-items-center">
@@ -124,12 +132,45 @@ export function VerInsumoLotePage() {
                                 </Col>
                             </Row>
 
-                            <Row className="align-items-center">
+                            <Row className="mb-3 border-bottom pb-3 align-items-center">
                                 <Col sm={5} className="fw-bold text-secondary">Costo Unitario</Col>
                                 <Col sm={7} className="fs-6">
                                     {item.costo_unitario != null
                                         ? `$${Number(item.costo_unitario).toFixed(2)}`
                                         : <span className="text-muted fst-italic">Sin costo especificado</span>}
+                                </Col>
+                            </Row>
+
+                            <Row className="align-items-center">
+                                <Col sm={5} className="fw-bold text-secondary">Almacenamiento</Col>
+                                <Col sm={7} className="fs-6 d-flex align-items-center gap-2">
+                                    {item.equipo ? (
+                                        <Button
+                                            variant="link"
+                                            className="p-0 fw-semibold text-decoration-none"
+                                            onClick={() => navigate(`/equipos/${item.equipo?.id}`)}
+                                        >
+                                            <i className="bi bi-thermometer-half me-1"></i>
+                                            {item.equipo.nombre}
+                                            {item.equipo.sector ? ` (${item.equipo.sector.nombre})` : ''}
+                                        </Button>
+                                    ) : item.sector ? (
+                                        <span>
+                                            <i className="bi bi-geo-alt me-1 text-secondary"></i>
+                                            Sector: <strong>{item.sector.nombre}</strong>
+                                        </span>
+                                    ) : (
+                                        <span className="text-muted">Sin ubicacion asignada</span>
+                                    )}
+                                    {puedeCambiarAlmacenamiento && (
+                                        <ActionButton
+                                            variant="outline-primary"
+                                            size="sm"
+                                            tooltip="Cambiar almacenamiento"
+                                            icon="bi-pencil"
+                                            onClick={() => setMostrarModalAlmacenamiento(true)}
+                                        />
+                                    )}
                                 </Col>
                             </Row>
 
@@ -216,25 +257,44 @@ export function VerInsumoLotePage() {
                                     </tbody>
                                 </Table>
                             )}
-                        </Card.Body>
 
-                        <Card.Footer className="bg-light border-top p-3 d-flex justify-content-start gap-2">
-                            <Button
-                                variant="outline-secondary"
-                                onClick={() => navigate('/insumos-lote')}
-                            >
-                                <i className="bi bi-arrow-left me-1"></i>Volver a la lista
-                            </Button>
-                            <Button
-                                variant="outline-primary"
-                                onClick={() => navigate(`/recepciones/${item.lote_proveedor?.id || item.lote_proveedor_id}`)}
-                            >
-                                <i className="bi bi-box-arrow-up-right me-1"></i>Ver Recepcion de Origen
-                            </Button>
-                        </Card.Footer>
+                            <hr className="my-4" />
+
+                            <TarjetaTrazabilidadLote modo="insumo_lote" entidadId={item.id} />
+                        </Card.Body>
                     </Card>
+
+                    <div className="mb-4">
+                        <ListaIncidentesVinculados insumoLoteId={item.id} />
+                    </div>
+
+                    <div className="d-flex justify-content-start gap-2 mb-4">
+                        <Button
+                            variant="outline-secondary"
+                            onClick={() => navigate('/insumos-lote')}
+                        >
+                            <i className="bi bi-arrow-left me-1"></i>Volver a la lista
+                        </Button>
+                        <Button
+                            variant="outline-primary"
+                            onClick={() => navigate(`/recepciones/${item.lote_proveedor?.id || item.lote_proveedor_id}`)}
+                        >
+                            <i className="bi bi-box-arrow-up-right me-1"></i>Ver Recepcion de Origen
+                        </Button>
+                    </div>
                 </Col>
             </Row>
+
+            <CambiarAlmacenamientoModal
+                show={mostrarModalAlmacenamiento}
+                onHide={() => setMostrarModalAlmacenamiento(false)}
+                tipo="insumo_lote"
+                entidadId={item.id}
+                etiqueta={`${item.insumo.nombre} (${item.marca}) - Lote ${item.numero_lote}`}
+                equipoActualId={item.equipo_id ?? item.equipo?.id ?? null}
+                sectorActualId={item.sector_id ?? item.sector?.id ?? null}
+                onActualizado={() => mutate(`/insumos-lote/${id}`)}
+            />
         </Container>
     );
 }

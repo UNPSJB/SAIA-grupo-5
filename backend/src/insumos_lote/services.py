@@ -4,15 +4,29 @@ from src.insumos_lote.models import InsumoLote
 from src.insumos_lote import schemas, exceptions
 from src.insumos.models import Insumo
 from src.lote_proveedor.models import LoteProveedor
-from src.lote_produccion.models import InsumoUtilizado
+from src.lote_produccion.models import InsumoUtilizado, LoteProduccion
+from src.envios_lote.models import EnvioLote
+from src.equipos import exceptions as equipo_exceptions
+from src.equipos.models import Equipo
+import src.notificaciones.services as notificaciones_services
+from src.sector import exceptions as sector_exceptions
+from src.sector.models import Sector
 
 def listar_insumos_de_lote(db: Session, lote_proveedor_id: int) -> list[InsumoLote]:
-    return db.scalars(
-        select(InsumoLote).where(InsumoLote.lote_proveedor_id == lote_proveedor_id,InsumoLote.activo == True)
-        .options(joinedload(InsumoLote.insumo)
-                .joinedload(Insumo.unidad_medida),
-                joinedload(InsumoLote.lote_proveedor)
-                .joinedload(LoteProveedor.proveedor))).all()
+    lote = db.get(LoteProveedor, lote_proveedor_id)
+    consulta = (
+        select(InsumoLote)
+        .where(InsumoLote.lote_proveedor_id == lote_proveedor_id)
+        .options(
+            joinedload(InsumoLote.insumo).joinedload(Insumo.unidad_medida),
+            joinedload(InsumoLote.lote_proveedor).joinedload(LoteProveedor.proveedor),
+            joinedload(InsumoLote.equipo).joinedload(Equipo.sector),
+            joinedload(InsumoLote.sector),
+        )
+    )
+    if lote and lote.estado != "acomodado":
+        consulta = consulta.where(InsumoLote.activo == True)
+    return db.scalars(consulta).all()
 
 
 def agregar_insumo_a_lote(db: Session, lote_proveedor_id: int, datos: schemas.InsumoLoteCreate) -> InsumoLote:
@@ -41,6 +55,18 @@ def agregar_insumo_a_lote(db: Session, lote_proveedor_id: int, datos: schemas.In
         if datos.insumo_id not in ids_pedido:
             raise exceptions.InsumoNoEnPedido()
 
+    sector_id_final = datos.sector_id
+    if datos.equipo_id is not None:
+        equipo_db = db.get(Equipo, datos.equipo_id)
+        if not equipo_db or not equipo_db.estado:
+            raise equipo_exceptions.EquipoNoEncontrado()
+        if sector_id_final is None:
+            sector_id_final = equipo_db.sector_id
+    elif sector_id_final is not None:
+        sector_db = db.get(Sector, sector_id_final)
+        if not sector_db or not sector_db.activo:
+            raise sector_exceptions.SectorNoEncontrado()
+
     nuevo_insumo_lote = InsumoLote(
         lote_proveedor_id=lote_proveedor_id,
         insumo_id=datos.insumo_id,
@@ -51,11 +77,15 @@ def agregar_insumo_a_lote(db: Session, lote_proveedor_id: int, datos: schemas.In
         fecha_vencimiento=datos.fecha_vencimiento,
         costo_unitario=datos.costo_unitario,
         minimo_alerta=datos.minimo_alerta,
+        equipo_id=datos.equipo_id,
+        sector_id=sector_id_final,
         activo=True,
     )
     db.add(nuevo_insumo_lote)
     db.commit()
     db.refresh(nuevo_insumo_lote)
+    notificaciones_services.generar_notificaciones_alerta_stock(db)
+    notificaciones_services.generar_notificaciones_vencimiento_insumo_lote(db)
     return nuevo_insumo_lote
 
 
@@ -63,7 +93,10 @@ def listar_todos_los_insumos_lote(db: Session) -> list[InsumoLote]:
     return db.scalars(
         select(InsumoLote).options(
             joinedload(InsumoLote.insumo).joinedload(Insumo.unidad_medida),
-            joinedload(InsumoLote.lote_proveedor).joinedload(LoteProveedor.proveedor))).all()
+            joinedload(InsumoLote.lote_proveedor).joinedload(LoteProveedor.proveedor),
+            joinedload(InsumoLote.equipo).joinedload(Equipo.sector),
+            joinedload(InsumoLote.sector),
+        )).all()
 
 
 def leer_insumo_lote(db: Session, insumo_lote_id: int) -> InsumoLote:
@@ -71,6 +104,8 @@ def leer_insumo_lote(db: Session, insumo_lote_id: int) -> InsumoLote:
         select(InsumoLote).where(InsumoLote.id == insumo_lote_id).options(
             joinedload(InsumoLote.insumo).joinedload(Insumo.unidad_medida),
             joinedload(InsumoLote.lote_proveedor).joinedload(LoteProveedor.proveedor),
+            joinedload(InsumoLote.equipo).joinedload(Equipo.sector),
+            joinedload(InsumoLote.sector),
             joinedload(InsumoLote.producciones_asociadas)
             .joinedload(InsumoUtilizado.lote_produccion)
         )
@@ -102,6 +137,116 @@ def cambiar_estado_insumo_lote(db: Session, insumo_lote_id: int) -> InsumoLote:
     return insumo_lote
 
 
+def actualizar_almacenamiento_insumo_lote(db: Session, insumo_lote_id: int, datos: schemas.ActualizarAlmacenamiento) -> InsumoLote:
+    insumo_lote = leer_insumo_lote(db, insumo_lote_id)
+
+    if datos.equipo_id is not None:
+        equipo_db = db.get(Equipo, datos.equipo_id)
+        if not equipo_db or not equipo_db.estado:
+            raise equipo_exceptions.EquipoNoEncontrado()
+        insumo_lote.equipo_id = datos.equipo_id
+        insumo_lote.sector_id = datos.sector_id if datos.sector_id is not None else equipo_db.sector_id
+    elif datos.sector_id is not None:
+        sector_db = db.get(Sector, datos.sector_id)
+        if not sector_db or not sector_db.activo:
+            raise sector_exceptions.SectorNoEncontrado()
+        insumo_lote.sector_id = datos.sector_id
+        insumo_lote.equipo_id = None
+    else:
+        insumo_lote.equipo_id = None
+        insumo_lote.sector_id = None
+
+    db.commit()
+    return leer_insumo_lote(db, insumo_lote_id)
+
+
+def obtener_trazabilidad_insumo_lote(db: Session, insumo_lote_id: int) -> schemas.TrazabilidadInsumoLote:
+    insumo_lote = db.scalar(
+        select(InsumoLote)
+        .where(InsumoLote.id == insumo_lote_id)
+        .options(
+            joinedload(InsumoLote.insumo).joinedload(Insumo.unidad_medida),
+            joinedload(InsumoLote.lote_proveedor).joinedload(LoteProveedor.proveedor),
+            joinedload(InsumoLote.producciones_asociadas)
+            .joinedload(InsumoUtilizado.lote_produccion)
+            .joinedload(LoteProduccion.producto),
+            joinedload(InsumoLote.producciones_asociadas)
+            .joinedload(InsumoUtilizado.lote_produccion)
+            .joinedload(LoteProduccion.envios)
+            .joinedload(EnvioLote.cliente),
+            joinedload(InsumoLote.producciones_asociadas)
+            .joinedload(InsumoUtilizado.lote_produccion)
+            .joinedload(LoteProduccion.envios)
+            .joinedload(EnvioLote.direccion),
+        )
+    )
+    if not insumo_lote:
+        raise exceptions.InsumoLoteNoEncontrado()
+
+    lote_proveedor = insumo_lote.lote_proveedor
+    proveedor = lote_proveedor.proveedor if lote_proveedor else None
+    unidad_medida = "Unidades"
+    if insumo_lote.insumo and insumo_lote.insumo.unidad_medida:
+        unidad_medida = insumo_lote.insumo.unidad_medida.nombre
+
+    producciones = []
+    for asociacion in insumo_lote.producciones_asociadas:
+        lote_produccion = asociacion.lote_produccion
+        if not lote_produccion:
+            continue
+        envios = []
+        for envio in lote_produccion.envios:
+            direccion_completa = ""
+            if envio.direccion:
+                direccion_completa = (
+                    f"{envio.direccion.calle_altura}, {envio.direccion.localidad} ({envio.direccion.provincia})"
+                )
+            envios.append(
+                schemas.TrazabilidadEnvioAfectado(
+                    envio_id=envio.id,
+                    numero_remito=envio.numero_remito,
+                    fecha_envio=envio.fecha_envio,
+                    estado=envio.estado,
+                    cantidad=envio.cantidad,
+                    cliente_id=envio.cliente_id,
+                    cliente_razon_social=envio.cliente.razon_social if envio.cliente else "Cliente",
+                    cliente_cuit=envio.cliente.cuit if envio.cliente else "",
+                    direccion=direccion_completa,
+                )
+            )
+        producciones.append(
+            schemas.TrazabilidadProduccionAfectada(
+                lote_produccion_id=lote_produccion.id,
+                producto_nombre=lote_produccion.producto.nombre if lote_produccion.producto else "Producto",
+                fecha_produccion=lote_produccion.fecha_produccion,
+                fecha_vencimiento=lote_produccion.fecha_vencimiento,
+                estado=lote_produccion.estado,
+                cantidad_producida=lote_produccion.cantidad_producida,
+                cantidad_utilizada=asociacion.cantidad_utilizada,
+                unidad_medida=unidad_medida,
+                envios=envios,
+            )
+        )
+
+    return schemas.TrazabilidadInsumoLote(
+        insumo_lote_id=insumo_lote.id,
+        insumo_nombre=insumo_lote.insumo.nombre if insumo_lote.insumo else "Insumo",
+        marca=insumo_lote.marca,
+        numero_lote_insumo=insumo_lote.numero_lote,
+        fecha_vencimiento=insumo_lote.fecha_vencimiento,
+        cantidad=insumo_lote.cantidad,
+        cantidad_restante=insumo_lote.cantidad_restante,
+        unidad_medida=unidad_medida,
+        lote_proveedor_id=lote_proveedor.id if lote_proveedor else None,
+        numero_remito=lote_proveedor.numero_remito if lote_proveedor else None,
+        fecha_recepcion=lote_proveedor.fecha_recepcion if lote_proveedor else None,
+        proveedor_id=proveedor.id if proveedor else None,
+        proveedor_nombre=proveedor.nombre if proveedor else None,
+        proveedor_cuit=proveedor.cuit if proveedor else None,
+        producciones=producciones,
+    )
+
+
 def descontar_stock_insumo_lote(db: Session, insumo_lote_id: int, cantidad_a_descontar: int) -> InsumoLote:
     insumo_lote = leer_insumo_lote(db, insumo_lote_id)
 
@@ -113,9 +258,6 @@ def descontar_stock_insumo_lote(db: Session, insumo_lote_id: int, cantidad_a_des
     db.commit()
     db.refresh(insumo_lote)
 
-    # Alerta stock
-    # para evitar import circular ya que notificaciones importa insumos_lote.services
-    from src.notificaciones.services import generar_notificacion_alerta_stock_individual
-    generar_notificacion_alerta_stock_individual(db, insumo_lote.id)
+    notificaciones_services.generar_notificacion_alerta_stock_individual(db, insumo_lote.id)
 
     return insumo_lote

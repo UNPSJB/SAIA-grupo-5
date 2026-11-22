@@ -66,3 +66,24 @@ def test_endpoint_cambiar_estado_pedido_proveedor(client, auth_headers, unico_pe
     response = client.patch(f"/pedidos-proveedor/{unico_pedido_proveedor.id}/estado", headers=auth_headers)
     assert response.status_code == 200
     assert response.json()["activo"] is False
+
+
+def test_endpoint_sugerencias_reposicion(client, auth_headers, db_session, unico_insumo_lote, unico_proveedor, unico_insumo):
+    from src.proveedor.models import ProveedorInsumo
+
+    unico_insumo_lote.minimo_alerta = 100
+    unico_insumo_lote.cantidad_restante = 10
+    db_session.add(ProveedorInsumo(proveedor_id=unico_proveedor.id, insumo_id=unico_insumo.id))
+    db_session.commit()
+
+    response = client.get("/pedidos-proveedor/sugerencias-reposicion", headers=auth_headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert "por_proveedor" in data
+    assert "insumos_sin_proveedor" in data
+    assert len(data["por_proveedor"]) >= 1
+
+
+def test_endpoint_sugerencias_reposicion_sin_permiso(client, auth_headers_sin_permiso):
+    response = client.get("/pedidos-proveedor/sugerencias-reposicion", headers=auth_headers_sin_permiso)
+    assert response.status_code == 403

@@ -2,8 +2,11 @@ import { useState, useEffect } from 'react';
 import { Modal, Button, Form, Row, Col, Alert } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { api } from '../../../libs/axios';
+import { useApi } from '../../../hooks/useApi';
 import { mostrarAlertaError, mostrarAlertaExito } from '../../../libs/alertas';
 import { postInsumoLote } from './InsumoLoteService';
+import type { Equipo } from '../../Equipos/types';
+import type { Sector } from '../../Sectores/types';
 import type { InsumoLote } from '../types';
 import type { PedidoProveedorItem } from '../../PedidosProveedor/types';
 
@@ -39,6 +42,12 @@ interface InsumoLoteFormData {
 export function AgregarInsumoLoteModal({show, loteProveedorId, insumosYaRegistrados, itemsPedido, onHide, onGuardado,}: AgregarInsumoLoteModalProps) {
     const [insumosCatalogo, setInsumosCatalogo] = useState<InsumoCatalogo[]>([]);
     const [cargando, setCargando] = useState(false);
+    const [tipoUbicacion, setTipoUbicacion] = useState<'ninguno' | 'equipo' | 'sector'>('ninguno');
+    const [equipoId, setEquipoId] = useState('');
+    const [sectorId, setSectorId] = useState('');
+
+    const { data: equipos } = useApi<Equipo[]>(show ? '/equipos/' : null);
+    const { data: sectores } = useApi<Sector[]>(show ? '/sectores/' : null);
 
     const { register, handleSubmit, watch, formState: { errors }, reset } = useForm<InsumoLoteFormData>({
         defaultValues: {
@@ -97,6 +106,8 @@ export function AgregarInsumoLoteModal({show, loteProveedorId, insumosYaRegistra
                 fecha_vencimiento: data.fecha_vencimiento,
                 minimo_alerta: Number(data.minimo_alerta),
                 costo_unitario: data.costo_unitario ? Number(data.costo_unitario) : null,
+                equipo_id: tipoUbicacion === 'equipo' && equipoId ? Number(equipoId) : null,
+                sector_id: tipoUbicacion === 'sector' && sectorId ? Number(sectorId) : null,
             };
 
             await postInsumoLote(loteProveedorId, payload);
@@ -119,6 +130,9 @@ export function AgregarInsumoLoteModal({show, loteProveedorId, insumosYaRegistra
 
     const handleClose = () => {
         reset();
+        setTipoUbicacion('ninguno');
+        setEquipoId('');
+        setSectorId('');
         onHide();
     };
 
@@ -315,6 +329,75 @@ export function AgregarInsumoLoteModal({show, loteProveedorId, insumosYaRegistra
                                     </Form.Group>
                                 </Col>
                             </Row>
+
+                            <div className="p-3 border rounded bg-light-subtle text-start mb-2">
+                                <Form.Label className="fw-bold small mb-2">
+                                    Ubicacion de almacenamiento (Opcional)
+                                </Form.Label>
+                                <div className="d-flex flex-wrap gap-3 mb-2 small">
+                                    <Form.Check
+                                        type="radio"
+                                        id="insumo-ubic-ninguno"
+                                        label="Sin especificar"
+                                        checked={tipoUbicacion === 'ninguno'}
+                                        onChange={() => {
+                                            setTipoUbicacion('ninguno');
+                                            setEquipoId('');
+                                            setSectorId('');
+                                        }}
+                                    />
+                                    <Form.Check
+                                        type="radio"
+                                        id="insumo-ubic-equipo"
+                                        label="Equipo / Camara"
+                                        checked={tipoUbicacion === 'equipo'}
+                                        onChange={() => {
+                                            setTipoUbicacion('equipo');
+                                            setSectorId('');
+                                        }}
+                                    />
+                                    <Form.Check
+                                        type="radio"
+                                        id="insumo-ubic-sector"
+                                        label="Sector / Deposito"
+                                        checked={tipoUbicacion === 'sector'}
+                                        onChange={() => {
+                                            setTipoUbicacion('sector');
+                                            setEquipoId('');
+                                        }}
+                                    />
+                                </div>
+
+                                {tipoUbicacion === 'equipo' && (
+                                    <Form.Select
+                                        size="sm"
+                                        value={equipoId}
+                                        onChange={(e) => setEquipoId(e.target.value)}
+                                    >
+                                        <option value="">Selecciona un equipo / camara...</option>
+                                        {(equipos ?? []).filter((eq) => eq.estado).map((eq) => (
+                                            <option key={eq.id} value={eq.id}>
+                                                {eq.nombre} ({eq.sector?.nombre || 'Sin sector'})
+                                            </option>
+                                        ))}
+                                    </Form.Select>
+                                )}
+
+                                {tipoUbicacion === 'sector' && (
+                                    <Form.Select
+                                        size="sm"
+                                        value={sectorId}
+                                        onChange={(e) => setSectorId(e.target.value)}
+                                    >
+                                        <option value="">Selecciona un sector...</option>
+                                        {(sectores ?? []).filter((s) => s.activo).map((s) => (
+                                            <option key={s.id} value={s.id}>
+                                                {s.nombre}
+                                            </option>
+                                        ))}
+                                    </Form.Select>
+                                )}
+                            </div>
                         </>
                     )}
                 </Modal.Body>

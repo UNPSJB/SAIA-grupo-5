@@ -6,7 +6,10 @@ from src.tareas_ocurrencia.services import generar_ocurrencias_pendientes
 from src.notificaciones.services import (
     generar_notificaciones_alerta_stock,
     generar_notificaciones_calibracion_equipos,
+    generar_notificaciones_habilitacion_proveedor,
+    generar_notificaciones_pedidos_demorados,
     generar_notificaciones_recambio_elementos,
+    generar_notificaciones_vencimiento_insumo_lote,
     generar_notificaciones_vencimiento_personal,
 )
 
@@ -19,6 +22,9 @@ JOB_ID_NOTIFICACIONES_RECAMBIO_ELEMENTOS = "generar_notificaciones_recambio_elem
 JOB_ID_NOTIFICACIONES_VENCIMIENTO_PERSONAL = "generar_notificaciones_vencimiento_personal"
 JOB_ID_NOTIFICACIONES_CALIBRACION_EQUIPOS = "generar_notificaciones_calibracion_equipos"
 JOB_ID_NOTIFICACIONES_ALERTA_STOCK = "generar_notificaciones_alerta_stock"
+JOB_ID_NOTIFICACIONES_VENCIMIENTO_INSUMO_LOTE = "generar_notificaciones_vencimiento_insumo_lote"
+JOB_ID_NOTIFICACIONES_HABILITACION_PROVEEDOR = "generar_notificaciones_habilitacion_proveedor"
+JOB_ID_NOTIFICACIONES_PEDIDOS_DEMORADOS = "generar_notificaciones_pedidos_demorados"
 
 
 def job_generar_ocurrencias():
@@ -63,6 +69,33 @@ def job_generar_notificaciones_alerta_stock():
     try:
         creadas = generar_notificaciones_alerta_stock(db)
         logger.info(f"Se generaron {len(creadas)} notificaciones de alerta de stock.")
+    finally:
+        db.close()
+
+
+def job_generar_notificaciones_vencimiento_insumo_lote():
+    db = SessionLocal()
+    try:
+        creadas = generar_notificaciones_vencimiento_insumo_lote(db)
+        logger.info(f"Se generaron {len(creadas)} notificaciones de vencimiento de insumos lote.")
+    finally:
+        db.close()
+
+
+def job_generar_notificaciones_habilitacion_proveedor():
+    db = SessionLocal()
+    try:
+        creadas = generar_notificaciones_habilitacion_proveedor(db)
+        logger.info(f"Se generaron {len(creadas)} notificaciones de habilitacion de proveedores.")
+    finally:
+        db.close()
+
+
+def job_generar_notificaciones_pedidos_demorados():
+    db = SessionLocal()
+    try:
+        creadas = generar_notificaciones_pedidos_demorados(db)
+        logger.info(f"Se generaron {len(creadas)} notificaciones de pedidos a proveedor demorados.")
     finally:
         db.close()
 
@@ -114,6 +147,27 @@ def iniciar_scheduler():
         replace_existing=True,
         misfire_grace_time=3600,
     )
+    scheduler.add_job(
+        job_generar_notificaciones_vencimiento_insumo_lote,
+        trigger=CronTrigger(hour=hour, minute=minute),
+        id=JOB_ID_NOTIFICACIONES_VENCIMIENTO_INSUMO_LOTE,
+        replace_existing=True,
+        misfire_grace_time=3600,
+    )
+    scheduler.add_job(
+        job_generar_notificaciones_habilitacion_proveedor,
+        trigger=CronTrigger(hour=hour, minute=minute),
+        id=JOB_ID_NOTIFICACIONES_HABILITACION_PROVEEDOR,
+        replace_existing=True,
+        misfire_grace_time=3600,
+    )
+    scheduler.add_job(
+        job_generar_notificaciones_pedidos_demorados,
+        trigger=CronTrigger(hour=hour, minute=minute),
+        id=JOB_ID_NOTIFICACIONES_PEDIDOS_DEMORADOS,
+        replace_existing=True,
+        misfire_grace_time=3600,
+    )
     scheduler.start()
 
 
@@ -126,6 +180,9 @@ def reprogramar_generacion_checklists(hour: int, minute: int):
         JOB_ID_NOTIFICACIONES_VENCIMIENTO_PERSONAL,
         JOB_ID_NOTIFICACIONES_CALIBRACION_EQUIPOS,
         JOB_ID_NOTIFICACIONES_ALERTA_STOCK,
+        JOB_ID_NOTIFICACIONES_VENCIMIENTO_INSUMO_LOTE,
+        JOB_ID_NOTIFICACIONES_HABILITACION_PROVEEDOR,
+        JOB_ID_NOTIFICACIONES_PEDIDOS_DEMORADOS,
     ):
         scheduler.reschedule_job(job_id, trigger=CronTrigger(hour=hour, minute=minute))
     logger.info(f"Se reprogramó la generación de ocurrencias para las {hour:02d}:{minute:02d}.")

@@ -11,6 +11,8 @@ if TYPE_CHECKING:
     from src.insumos_lote.models import InsumoLote
     from src.envios_lote.models import EnvioLote
     from src.personal.models import Persona
+    from src.equipos.models import Equipo
+    from src.sector.models import Sector
 
 class EstadoLote(str, enum.Enum):
     EN_PRODUCCION = "En produccion"
@@ -34,6 +36,11 @@ class LoteProduccion(ModeloBase):
     estado: Mapped[str] = mapped_column(String, default=EstadoLote.EN_PRODUCCION.value, nullable=False)
 
     cantidad_disponible: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    equipo_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("equipos.id"), nullable=True, index=True)
+    sector_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("sectores.id"), nullable=True, index=True)
+    equipo: Mapped["Equipo | None"] = relationship()
+    sector: Mapped["Sector | None"] = relationship()
 
     activo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 

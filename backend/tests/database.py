@@ -499,8 +499,8 @@ def unico_insumo_lote(db_session, unico_insumo, unico_lote_proveedor):
 
 @pytest.fixture(scope="function")
 def multiples_insumos_lote(db_session, unica_unidad_medida, unico_insumo, unico_lote_proveedor):
-    insumo2 = Insumo(nombre="Sal Fina", unidad_medida_id=unica_unidad_medida.id, activo=True)
-    insumo3 = Insumo(nombre="Levadura Seca", unidad_medida_id=unica_unidad_medida.id, activo=True)
+    insumo2 = Insumo(nombre="Sal Fina", marca="Generica", unidad_medida_id=unica_unidad_medida.id, activo=True)
+    insumo3 = Insumo(nombre="Levadura Seca", marca="Generica", unidad_medida_id=unica_unidad_medida.id, activo=True)
     db_session.add_all([insumo2, insumo3])
     db_session.commit()
 
@@ -549,6 +549,7 @@ def multiples_insumos_lote(db_session, unica_unidad_medida, unico_insumo, unico_
 def unico_insumo(db_session, unica_unidad_medida):
     insumo = Insumo(
         nombre="Harina de Trigo 000",
+        marca="Generica",
         unidad_medida_id=unica_unidad_medida.id,
         activo=True,
     )

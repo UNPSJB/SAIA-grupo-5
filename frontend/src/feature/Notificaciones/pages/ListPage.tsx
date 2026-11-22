@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Alert, Badge, Button, Card, Form, InputGroup, Spinner } from 'react-bootstrap';
 import { type ConditionalStyles, type TableColumn } from 'react-data-table-component';
+import { useNavigate } from 'react-router-dom';
 import { mutate } from 'swr';
 import { AppTable } from '../../../components/AppTable';
 import { useApi } from '../../../hooks/useApi';
@@ -14,7 +15,33 @@ function formatDate(value: string) {
     return new Intl.DateTimeFormat('es-AR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value));
 }
 
+const ETIQUETAS_TIPO: Record<string, { label: string; bg: string }> = {
+    recambio_elemento: { label: 'Recambio de elemento', bg: 'info' },
+    calibracion_equipo: { label: 'Calibracion de equipo', bg: 'primary' },
+    vencimiento_personal: { label: 'Vencimiento personal', bg: 'secondary' },
+    alerta_stock: { label: 'Stock bajo', bg: 'danger' },
+    vencimiento_insumo_lote: { label: 'Vencimiento insumo', bg: 'warning' },
+    habilitacion_proveedor: { label: 'Habilitacion proveedor', bg: 'dark' },
+    pedido_proveedor_demorado: { label: 'Pedido demorado', bg: 'danger' },
+    incidente_lote_produccion: { label: 'Incidente produccion', bg: 'danger' },
+    incidente_lote_proveedor: { label: 'Incidente recepcion', bg: 'danger' },
+    incidente_insumo_lote: { label: 'Incidente insumo', bg: 'danger' },
+    temperatura_fuera_rango: { label: 'Temperatura fuera de rango', bg: 'danger' },
+};
+
+const ETIQUETAS_ENTIDAD: Record<string, string> = {
+    InsumoLote: 'Insumo Alimenticio',
+    LoteProduccion: 'Lote de Produccion',
+    LoteProveedor: 'Recepcion de Proveedor',
+    Proveedor: 'Proveedor',
+    PedidoProveedor: 'Pedido a Proveedor',
+    ElementoLimpieza: 'Elemento de Limpieza',
+    VencimientoPersonal: 'Personal',
+    Equipo: 'Equipo / Camara',
+};
+
 export function NotificacionesPage() {
+    const navigate = useNavigate();
     const { data: notifications, error, isLoading } = useApi<Notificacion[]>(NOTIFICATIONS_URL);
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState<'todas' | 'pendientes' | 'leidas' | 'resueltas'>('todas');
@@ -53,9 +80,23 @@ export function NotificacionesPage() {
         },
         {
             name: 'Elemento / entidad',
-            selector: (notification) => notification.entidad,
+            selector: (notification) => ETIQUETAS_ENTIDAD[notification.entidad] || notification.entidad,
             sortable: true,
-            minWidth: '160px',
+            minWidth: '175px',
+            cell: (notification) => {
+                const info = ETIQUETAS_TIPO[notification.tipo];
+                const nombreEntidad = ETIQUETAS_ENTIDAD[notification.entidad] || notification.entidad;
+                return (
+                    <div>
+                        <div className="small fw-semibold">{nombreEntidad}</div>
+                        {info && (
+                            <Badge bg={info.bg} text={info.bg === 'warning' || info.bg === 'info' ? 'dark' : undefined} className="mt-1">
+                                {info.label}
+                            </Badge>
+                        )}
+                    </div>
+                );
+            },
         },
         {
             name: 'Fecha',
@@ -74,12 +115,26 @@ export function NotificacionesPage() {
         {
             name: 'Acción',
             button: true,
-            minWidth: '145px',
-            cell: (notification) => !notification.leida && !notification.resuelta ? (
-                <Button data-tour="btn-marcar-leida" variant="outline-primary" size="sm" onClick={() => void markRead(notification)}>
-                    <i className="bi bi-check2 me-1" />Marcar leída
-                </Button>
-            ) : null,
+            minWidth: '200px',
+            cell: (notification) => (
+                <div className="d-flex gap-1">
+                    {notification.url && (
+                        <Button
+                            variant="outline-secondary"
+                            size="sm"
+                            onClick={() => navigate(notification.url!)}
+                            title="Ir al recurso"
+                        >
+                            <i className="bi bi-box-arrow-up-right" />
+                        </Button>
+                    )}
+                    {!notification.leida && !notification.resuelta && (
+                        <Button data-tour="btn-marcar-leida" variant="outline-primary" size="sm" onClick={() => void markRead(notification)}>
+                            <i className="bi bi-check2 me-1" />Marcar leída
+                        </Button>
+                    )}
+                </div>
+            ),
         },
     ];
     const unreadRowStyles: ConditionalStyles<Notificacion>[] = [{
