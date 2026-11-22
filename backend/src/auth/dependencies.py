@@ -132,3 +132,12 @@ async def tiene_permiso_supervisor(
     if not persona.supervisor:
         raise PermissionDenied()
     return persona
+
+
+async def tiene_permiso_operar_o_supervisor(
+    persona: personal_models.Persona = Depends(get_current_persona),
+) -> personal_models.Persona:
+    """Verifica que la persona autenticada tenga permiso de operar o supervisor."""
+    if not (persona.operar or persona.supervisor):
+        raise PermissionDenied()
+    return persona

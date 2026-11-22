@@ -1,5 +1,5 @@
 import { Container } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { mutate } from "swr";
 import { PageHeader } from "../../../components/PageHeader";
 import { IncidenteForm } from "../components/IncidenteForm";
@@ -9,11 +9,28 @@ import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
 
 export function NuevoIncidentePage() {
     const navigate = useNavigate();
+    const location = useLocation();
+    const estadoInicial = (location.state as {
+        lote_produccion_id?: number;
+        lote_proveedor_id?: number;
+        insumo_lote_id?: number;
+        nombre?: string;
+        descripcion?: string;
+    } | null) ?? null;
 
     const guardarIncidente = async (datos: NewIncidente) => {
         try{
             await api.post("/incidentes/", datos);
             await mutate("/incidentes/");
+            if (datos.lote_produccion_id) {
+                await mutate(`/incidentes?lote_produccion_id=${datos.lote_produccion_id}`);
+            }
+            if (datos.lote_proveedor_id) {
+                await mutate(`/incidentes?lote_proveedor_id=${datos.lote_proveedor_id}`);
+            }
+            if (datos.insumo_lote_id) {
+                await mutate(`/incidentes?insumo_lote_id=${datos.insumo_lote_id}`);
+            }
             mostrarAlertaExito("El nuevo incidente se creo correctamente.");     
             navigate("/incidentes/");
         } catch (error: any){  
@@ -32,7 +49,22 @@ export function NuevoIncidentePage() {
             <PageHeader title="Crear nuevo Incidente" />
 
             <Container>
-                <IncidenteForm textoBoton="Crear Incidente" onSubmit={guardarIncidente}/>     
+                <IncidenteForm
+                    textoBoton="Crear Incidente"
+                    onSubmit={guardarIncidente}
+                    valoresIniciales={estadoInicial ? {
+                        nombre: estadoInicial.nombre || "",
+                        descripcion: estadoInicial.descripcion || "",
+                        tipo_id: 0,
+                        sector_id: null,
+                        lote_produccion_id: estadoInicial.lote_produccion_id ?? null,
+                        lote_proveedor_id: estadoInicial.lote_proveedor_id ?? null,
+                        insumo_lote_id: estadoInicial.insumo_lote_id ?? null,
+                        foto_opcional: null,
+                        fecha_abierto: "",
+                        fecha_cierre: null,
+                    } : undefined}
+                />     
             </Container>
         </>
     );

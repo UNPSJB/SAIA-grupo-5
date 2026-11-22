@@ -11,6 +11,7 @@ import { PageLoading } from "../../../components/PageLoading";
 import { ExportMenu } from '../../../components/ExportMenu';
 import { useApi, useAuth } from "../../../hooks";
 import { DeletePedidoProveedorModal } from "../components/DeletePedidoProveedorModal";
+import { SugerenciasReposicionModal } from "../components/SugerenciasReposicionModal";
 import type { PedidoProveedor } from "../types";
 
 type EstadoFiltro = "todos" | "pendiente" | "recibido" | "inactivo";
@@ -28,6 +29,7 @@ export function ListPage() {
     const [search, setSearch] = useState("");
     const [estadoFiltro, setEstadoFiltro] = useState<EstadoFiltro>("todos");
     const [pedidoToDelete, setPedidoToDelete] = useState<PedidoProveedor | null>(null);
+    const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
 
     const { data: pedidos, error, isLoading } = useApi<PedidoProveedor[]>("/pedidos-proveedor/");
 
@@ -223,7 +225,15 @@ export function ListPage() {
                     />
                 </Col>
                 {currentUser?.administrar && (
-                    <Col xs="auto" className="d-flex justify-content-end">
+                    <Col xs="auto" className="d-flex justify-content-end gap-2">
+                        <Button
+                            variant="outline-primary"
+                            size="sm"
+                            onClick={() => setMostrarSugerencias(true)}
+                            style={{ whiteSpace: "nowrap" }}
+                        >
+                            <i className="bi bi-cart-plus me-1"></i>Sugerencias de Reposicion
+                        </Button>
                         <Button
                             variant="primary"
                             size="sm"
@@ -244,6 +254,11 @@ export function ListPage() {
                 pedido={pedidoToDelete}
                 onHide={() => setPedidoToDelete(null)}
                 onDeleted={() => mutate("/pedidos-proveedor/")}
+            />
+
+            <SugerenciasReposicionModal
+                show={mostrarSugerencias}
+                onHide={() => setMostrarSugerencias(false)}
             />
         </Container>
     );

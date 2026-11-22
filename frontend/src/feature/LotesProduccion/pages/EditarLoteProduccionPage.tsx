@@ -78,10 +78,13 @@ export function EditarLoteProduccionPage(){
             <Container>
                 <LoteProduccionForm textoBoton="Editar Producto"
                     onSubmit={actualizarLoteProduccion}
+                    mostrarAlmacenamiento={Boolean(lote.estado === "Terminado" || lote.equipo_id || lote.sector_id || lote.equipo || lote.sector)}
                     valoresIniciales={{ producto_id: lote.producto_id,
                                         fecha_produccion: lote.fecha_produccion,
                                         fecha_vencimiento: lote.fecha_vencimiento,
-                                        cantidad_producida: lote.cantidad_producida
+                                        cantidad_producida: lote.cantidad_producida,
+                                        equipo_id: lote.equipo_id ?? lote.equipo?.id ?? null,
+                                        sector_id: lote.sector_id ?? lote.sector?.id ?? null,
                     }}/>
             </Container>
         </>

@@ -5,4 +5,7 @@ class IncidenteNoEncontrado(NotFound):
     DETAIL = ErrorCode.INCIDENTE_NO_ENCONTRADO
 
 class IncidenteDuplicado(BadRequest):
-    DETAIL = ErrorCode.INCIDENTE_DUPLICADO       
+    DETAIL = ErrorCode.INCIDENTE_DUPLICADO
+
+class IncidenteLotesExcluyentes(BadRequest):
+    DETAIL = ErrorCode.INCIDENTE_LOTES_EXCLUYENTES

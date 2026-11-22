@@ -1,6 +1,6 @@
 import { useMemo, useRef } from "react";
 import { Alert, Button, Card, Col, Container, Row, Spinner } from "react-bootstrap";
-import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import {Bar,BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
 import { useApi } from "../../hooks/useApi";
 import type { ElementoLimpieza } from "../ElementosLimpieza/types";
 import type { TareaOcurrencia } from "../TareasOcurrencias/types";
@@ -30,6 +30,16 @@ function VistaOperador() {
     const navigate = useNavigate();
     const nombre = currentUser?.nombre || "Operador";
 
+    const { data: checklistHoy } = useApi<TareaOcurrencia[]>("/tareas-ocurrencia/");
+    const { data: recepciones } = useApi<any[]>("/lotes-proveedor/");
+    const { data: lotesProduccion } = useApi<any[]>("/lotes-produccion/");
+    const { data: equiposTempPendientes } = useApi<any[]>("/registros-temperatura/pendientes-hoy");
+
+    const tareasPendientesHoy = (checklistHoy ?? []).filter((tarea) => tarea.estado === "Pendiente").length;
+    const recepcionesEnCurso = (recepciones ?? []).filter((recepcion) => recepcion.activo && recepcion.estado !== "acomodado").length;
+    const lotesEnProduccion = (lotesProduccion ?? []).filter((lote) => lote.activo && lote.estado === "En produccion").length;
+    const controlesTempPendientes = (equiposTempPendientes ?? []).length;
+
     return (
         <Container fluid className="dashboard-page">
             <div className="dashboard-heading">
@@ -39,6 +49,49 @@ function VistaOperador() {
                     <p>Selecciona una actividad para comenzar tu turno de trabajo.</p>
                 </div>
             </div>
+
+            <Row className="g-3 mb-4">
+                <Col xs={12} sm={6} xl={3}>
+                    <MetricCard
+                        label="Checklists pendientes hoy"
+                        value={String(tareasPendientesHoy)}
+                        icon="bi-check2-square"
+                        tone={tareasPendientesHoy > 0 ? SEAFOAM.warning : SEAFOAM.primary}
+                        detail="Tareas programadas para el turno"
+                        to="/checklist"
+                    />
+                </Col>
+                <Col xs={12} sm={6} xl={3}>
+                    <MetricCard
+                        label="Recepciones en curso"
+                        value={String(recepcionesEnCurso)}
+                        icon="bi-truck"
+                        tone={recepcionesEnCurso > 0 ? SEAFOAM.info : SEAFOAM.secondary}
+                        detail="En llegada o desempaque"
+                        to="/recepciones"
+                    />
+                </Col>
+                <Col xs={12} sm={6} xl={3}>
+                    <MetricCard
+                        label="Lotes en produccion"
+                        value={String(lotesEnProduccion)}
+                        icon="bi-box2-fill"
+                        tone={SEAFOAM.primary}
+                        detail="Lotes activos fabricandose"
+                        to="/lotes-produccion"
+                    />
+                </Col>
+                <Col xs={12} sm={6} xl={3}>
+                    <MetricCard
+                        label="Controles de temperatura hoy"
+                        value={String(controlesTempPendientes)}
+                        icon="bi-thermometer-half"
+                        tone={controlesTempPendientes > 0 ? SEAFOAM.warning : SEAFOAM.primary}
+                        detail={controlesTempPendientes > 0 ? "Equipos pendientes de medicion" : "Todos controlados hoy"}
+                        to="/equipos"
+                    />
+                </Col>
+            </Row>
             <Row className="g-3">
                 <Col xs={12} md={6} xl={4}>
                     <Card className="h-100 shadow-sm border-0">
@@ -207,6 +260,50 @@ function VistaAdmin() {
     const { data: planesCalibracion, error: planesCalibracionError, isLoading: planesCalibracionLoading } = useApi<PlanCalibracion[]>(
         currentUser?.administrar ? "/planes-calibracion/" : null,
     );
+    const { data: insumosLote, isLoading: insumosLoteLoading, error: insumosLoteError } = useApi<any[]>(
+        currentUser?.administrar ? "/insumos-lote/" : null,
+    );
+    const { data: proveedores, isLoading: proveedoresLoading, error: proveedoresError } = useApi<any[]>(
+        currentUser?.administrar ? "/proveedores/" : null,
+    );
+    const { data: pedidosProveedor, isLoading: pedidosLoading, error: pedidosError } = useApi<any[]>(
+        currentUser?.administrar ? "/pedidos-proveedor/" : null,
+    );
+
+    const hoySinHora = useMemo(() => {
+        const fechaActual = new Date();
+        fechaActual.setHours(0, 0, 0, 0);
+        return fechaActual;
+    }, []);
+
+    const insumosLoteRiesgo = useMemo(() => {
+        return (insumosLote ?? []).filter((insumoLote) => {
+            if (!insumoLote.activo || insumoLote.cantidad_restante <= 0 || !insumoLote.fecha_vencimiento) return false;
+            const partes = String(insumoLote.fecha_vencimiento).split("-");
+            const fechaVencimiento = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
+            const dias = Math.round((fechaVencimiento.getTime() - hoySinHora.getTime()) / (1000 * 60 * 60 * 24));
+            return dias <= 15;
+        });
+    }, [insumosLote, hoySinHora]);
+
+    const proveedoresHabilitacionRiesgo = useMemo(() => {
+        return (proveedores ?? []).filter((proveedor) => {
+            if (!proveedor.activo || !proveedor.vencimiento_habilitacion) return false;
+            const partes = String(proveedor.vencimiento_habilitacion).split("-");
+            const fechaVencimiento = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
+            const dias = Math.round((fechaVencimiento.getTime() - hoySinHora.getTime()) / (1000 * 60 * 60 * 24));
+            return dias <= 30;
+        });
+    }, [proveedores, hoySinHora]);
+
+    const pedidosDemorados = useMemo(() => {
+        return (pedidosProveedor ?? []).filter((pedido) => {
+            if (!pedido.activo || pedido.estado !== "pendiente" || !pedido.fecha_entrega_estimada) return false;
+            const partes = String(pedido.fecha_entrega_estimada).split("-");
+            const fechaEntrega = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
+            return fechaEntrega.getTime() <= hoySinHora.getTime();
+        });
+    }, [pedidosProveedor, hoySinHora]);
     const planesCalibracionActivos = (planesCalibracion ?? []).filter((plan) => plan.estado);
     const planesCalibracionVencidosOProximos = planesCalibracionActivos.filter((plan) => {
         const estado = clasificarPorDiasRestantes(plan.dias_restantes, diasAntelacionVencimiento);
@@ -404,6 +501,36 @@ function VistaAdmin() {
                             tone={SEAFOAM.info}
                             detail={currentUser?.administrar ? "Personal, elementos y equipos" : "Solo administración"}
                             to={currentUser?.administrar ? "/vencimientos" : undefined}
+                        />
+                    </Col>}
+                    {currentUser?.administrar && <Col xs={6} md={4} xl={3}>
+                        <MetricCard
+                            label="Insumos lote en riesgo"
+                            value={formatMetric(insumosLoteLoading, Boolean(insumosLoteError), insumosLoteRiesgo.length)}
+                            icon="bi-egg"
+                            tone={insumosLoteRiesgo.length > 0 ? SEAFOAM.warning : SEAFOAM.primary}
+                            detail="Vencidos o por vencer (<= 15 dias)"
+                            to="/insumos-lote"
+                        />
+                    </Col>}
+                    {currentUser?.administrar && <Col xs={6} md={4} xl={3}>
+                        <MetricCard
+                            label="Habilitaciones proveedor"
+                            value={formatMetric(proveedoresLoading, Boolean(proveedoresError), proveedoresHabilitacionRiesgo.length)}
+                            icon="bi-building-exclamation"
+                            tone={proveedoresHabilitacionRiesgo.length > 0 ? SEAFOAM.warning : SEAFOAM.primary}
+                            detail="Vencidas o por vencer (<= 30 dias)"
+                            to="/proveedores"
+                        />
+                    </Col>}
+                    {currentUser?.administrar && <Col xs={6} md={4} xl={3}>
+                        <MetricCard
+                            label="Pedidos demorados"
+                            value={formatMetric(pedidosLoading, Boolean(pedidosError), pedidosDemorados.length)}
+                            icon="bi-clock-history"
+                            tone={pedidosDemorados.length > 0 ? SEAFOAM.danger : SEAFOAM.primary}
+                            detail="Pendientes con fecha vencida"
+                            to="/pedidos-proveedor"
                         />
                     </Col>}
                 </Row>

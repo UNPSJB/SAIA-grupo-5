@@ -96,3 +96,16 @@ def test_endpoint_eliminar_insumo_lote_exitoso(client, auth_headers, unico_insum
 def test_endpoint_eliminar_insumo_lote_inexistente(client, auth_headers):
     response = client.delete("/insumos-lote/99999", headers=auth_headers)
     assert response.status_code == 404
+
+
+def test_endpoint_trazabilidad_insumo_lote(client, auth_headers, unico_insumo_lote):
+    response = client.get(f"/insumos-lote/{unico_insumo_lote.id}/trazabilidad", headers=auth_headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["insumo_lote_id"] == unico_insumo_lote.id
+    assert "producciones" in data
+
+
+def test_endpoint_trazabilidad_insumo_lote_inexistente(client, auth_headers):
+    response = client.get("/insumos-lote/99999/trazabilidad", headers=auth_headers)
+    assert response.status_code == 404

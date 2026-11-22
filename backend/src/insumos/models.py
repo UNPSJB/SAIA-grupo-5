@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from src.unidad_medida.models import UnidadMedida
     from src.informacion_nutricional_insumo.models import InformacionNutricionalInsumo
+    from src.alergenos.models import InsumoAlergeno
 
 
 class Insumo(ModeloBase):
@@ -17,7 +18,7 @@ class Insumo(ModeloBase):
 
     unidad_medida_id: Mapped[int] = mapped_column(ForeignKey("unidades_medida.id"), nullable=False)
     unidad_medida: Mapped["UnidadMedida"] = relationship()
-
+    denominacion_rotulo: Mapped[str | None] = mapped_column(String(120), nullable=True)
     activo: Mapped[bool] = mapped_column(Boolean, default=True)
     
     valor_energetico: Mapped[float | None] = mapped_column(Float, nullable=True)
@@ -32,6 +33,9 @@ class Insumo(ModeloBase):
     aporta_sodio: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     aporta_edulcorantes: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     aporta_cafeina: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+
+    contiene_gluten: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    alergenos: Mapped[list["InsumoAlergeno"]] = relationship(back_populates="insumo")
 
     tipo_herencia: Mapped[str] = mapped_column(String(30))
     informacion_nutricional: Mapped["InformacionNutricionalInsumo | None"] = relationship(back_populates="insumo")

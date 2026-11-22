@@ -22,6 +22,11 @@ def read_pedidos_proveedor(db: Session = Depends(get_db)):
     return services.listar_pedidos_proveedor(db)
 
 
+@router.get("/sugerencias-reposicion",response_model=schemas.SugerenciasReposicionResponse,dependencies=[Depends(tiene_permiso_administrar)],)
+def read_sugerencias_reposicion(db: Session = Depends(get_db)):
+    return services.obtener_sugerencias_reposicion(db)
+
+
 @router.get("/{pedido_id}", response_model=schemas.PedidoProveedor)
 def read_pedido_proveedor(pedido_id: int, db: Session = Depends(get_db)):
     return services.leer_pedido_proveedor(db, pedido_id)

@@ -18,10 +18,16 @@ interface InsumoFila {
 }
 
 export function AsociarInsumosModal({ loteId, insumosAsociados, onHide, onAsociado }: AsociarInsumosModalProps) {
-    const { data: insumosLote, isLoading, error } = useApi<InsumoLote[]>("/insumos-lote/");
+    const { data: insumosLote, isLoading } = useApi<InsumoLote[]>("/insumos-lote/");
+    const esEdicion = insumosAsociados.length > 0;
+
+    const cantidadesPrevias = new Map<number, number>();
+    for (const item of insumosAsociados) {
+        cantidadesPrevias.set(Number(item.insumo_lote_id), Number(item.cantidad_utilizada));
+    }
 
     const [filas, setFilas] = useState<InsumoFila[]>(
-        insumosAsociados.length > 0
+        esEdicion
             ? insumosAsociados.map((item) => ({
                   insumo_lote_id: String(item.insumo_lote_id),
                   cantidad_utilizada: String(item.cantidad_utilizada),
@@ -34,7 +40,15 @@ export function AsociarInsumosModal({ loteId, insumosAsociados, onHide, onAsocia
     hoy.setHours(0, 0, 0, 0);
 
     const disponibles = (insumosLote ?? []).filter((insumo) => {
-        if (!insumo.activo || insumo.cantidad_restante <= 0) return false;
+        const cantidadPrevia = cantidadesPrevias.get(insumo.id) ?? 0;
+        const stockEfectivo = insumo.cantidad_restante + cantidadPrevia;
+
+        if (stockEfectivo <= 0) return false;
+
+        const estaActivoEfectivo = insumo.activo || cantidadPrevia > 0;
+        if (!estaActivoEfectivo) return false;
+
+        if (insumo.insumo?.activo === false && cantidadPrevia === 0) return false;
 
         const partes = insumo.fecha_vencimiento.split("-");
         const fVenc = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
@@ -62,17 +76,20 @@ export function AsociarInsumosModal({ loteId, insumosAsociados, onHide, onAsocia
 
     const guardar = async () => {
         if (filas.some((f) => !f.insumo_lote_id || Number(f.cantidad_utilizada) <= 0)) {
-            mostrarAlertaError("Seleccioná un lote de insumo e ingresá una cantidad mayor a cero.");
+            mostrarAlertaError("Selecciona un lote de insumo e ingresa una cantidad mayor a cero.");
             return;
         }
 
         for (const f of filas) {
             const loteEncontrado = disponibles.find((d) => String(d.id) === f.insumo_lote_id);
-            if (loteEncontrado && Number(f.cantidad_utilizada) > loteEncontrado.cantidad_restante) {
-                mostrarAlertaError(
-                    `Stock insuficiente para ${loteEncontrado.insumo.nombre} (${loteEncontrado.marca}). Disponible: ${loteEncontrado.cantidad_restante}`
-                );
-                return;
+            if (loteEncontrado) {
+                const stockMaximo = loteEncontrado.cantidad_restante + (cantidadesPrevias.get(loteEncontrado.id) ?? 0);
+                if (Number(f.cantidad_utilizada) > stockMaximo) {
+                    mostrarAlertaError(
+                        `Stock insuficiente para ${loteEncontrado.insumo.nombre} (${loteEncontrado.marca}). Disponible: ${stockMaximo}`
+                    );
+                    return;
+                }
             }
         }
 
@@ -85,8 +102,13 @@ export function AsociarInsumosModal({ loteId, insumosAsociados, onHide, onAsocia
                 })),
             };
 
-            await api.post(`/lotes-produccion/${loteId}/insumos`, payload);
-            mostrarAlertaExito("Los insumos se asociaron y descontaron del stock correctamente.");
+            if (esEdicion) {
+                await api.put(`/lotes-produccion/${loteId}/insumos`, payload);
+            } else {
+                await api.post(`/lotes-produccion/${loteId}/insumos`, payload);
+            }
+
+            mostrarAlertaExito("Los insumos se asociaron y actualizaron en el stock correctamente.");
             onAsociado();
         } catch (err: any) {
             mostrarAlertaError(err?.response?.data?.detail || "No se pudieron asociar los insumos.");
@@ -98,14 +120,14 @@ export function AsociarInsumosModal({ loteId, insumosAsociados, onHide, onAsocia
     return (
         <Modal show onHide={onHide} size="lg" centered>
             <Modal.Header closeButton>
-                <Modal.Title>Asociar Insumos al Lote #{loteId}</Modal.Title>
+                <Modal.Title>{esEdicion ? "Modificar" : "Asociar"} Insumos del Lote #{loteId}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 {isLoading ? (
                     <p>Cargando stock de insumos...</p>
                 ) : disponibles.length === 0 ? (
                     <p className="text-danger mb-0">
-                        No hay insumos disponibles que cumplan con la fecha mínima de vencimiento (mínimo 15 días de vida útil) y stock disponible.
+                        No hay insumos disponibles que cumplan con la fecha minima de vencimiento (minimo 15 dias de vida util) y stock disponible.
                     </p>
                 ) : (
                     <>
@@ -128,17 +150,20 @@ export function AsociarInsumosModal({ loteId, insumosAsociados, onHide, onAsocia
                                                         String(d.id) === fila.insumo_lote_id ||
                                                         !idsSeleccionados.includes(String(d.id))
                                                 )
-                                                .map((d) => (
-                                                    <option key={d.id} value={d.id}>
-                                                        {d.insumo.nombre} - Marca: {d.marca} (Disp: {d.cantidad_restante} | Vence: {d.fecha_vencimiento.split("-").reverse().join("/")})
-                                                    </option>
-                                                ))}
+                                                .map((d) => {
+                                                    const stockEfectivo = d.cantidad_restante + (cantidadesPrevias.get(d.id) ?? 0);
+                                                    return (
+                                                        <option key={d.id} value={d.id}>
+                                                            {d.insumo.nombre} - Marca: {d.marca} (Disp: {stockEfectivo} | Vence: {d.fecha_vencimiento.split("-").reverse().join("/")})
+                                                        </option>
+                                                    );
+                                                })}
                                         </Form.Select>
                                     </Col>
 
                                     <Col md={3}>
                                         <Form.Label className="fw-bold">
-                                            Cantidad {insumoActual ? `(${insumoActual.insumo.unidad_medida?.nombre || 'U'})` : ""}
+                                            Cantidad {insumoActual ? `(${insumoActual.insumo.unidad_medida?.nombre || "Unidades"})` : ""}
                                         </Form.Label>
                                         <Form.Control
                                             type="number"

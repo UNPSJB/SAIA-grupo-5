@@ -73,13 +73,19 @@ export function InfoNutricionalReceta({ recetaId }: InfoNutricionalRecetaFormPro
             <Card.Header className="bg-white border-bottom py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
                 <div>
                     <h5 className="mb-0 fw-bold">
-                        <i className="bi bi-table me-2 text-primary"></i> Información Nutricional
+                        <i
+                            className="bi b
+                            i-table me-2"
+                            style={
+                                { color: "var(--sb-seafoam-primary)" }
+                            }>
+                        </i> Información Nutricional
                     </h5>
                     {infoReceta && (
                         <small className="text-muted">
                             Rendimiento: <strong>{infoReceta.rendimiento} g</strong> | Porción:{" "}
                             <strong>{infoReceta.porcion} g</strong> | Calculado el{" "}
-                            {new Date(infoReceta.fecha_calculo).toLocaleString("es-AR", {dateStyle: "short", timeStyle: "short"})}
+                            {new Date(infoReceta.fecha_calculo).toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" })}
                         </small>
                     )}
                 </div>

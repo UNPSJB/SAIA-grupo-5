@@ -49,3 +49,25 @@ export type UpdatePedidoProveedor = {
     observacion: string | null;
     items: PedidoProveedorItemCreate[];
 };
+
+export type InsumoReposicionSugerido = {
+    insumo_id: number;
+    insumo_nombre: string;
+    unidad_medida: string;
+    stock_disponible: number;
+    minimo_alerta: number;
+    cantidad_sugerida: number;
+    tiene_pedido_pendiente: boolean;
+};
+
+export type ProveedorReposicionSugerido = {
+    proveedor_id: number;
+    proveedor_nombre: string;
+    cuit: string;
+    insumos: InsumoReposicionSugerido[];
+};
+
+export type SugerenciasReposicionResponse = {
+    por_proveedor: ProveedorReposicionSugerido[];
+    insumos_sin_proveedor: InsumoReposicionSugerido[];
+};

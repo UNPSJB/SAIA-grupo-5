@@ -11,9 +11,14 @@ import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
 export function NuevoInsumoPage(){
     const navigate = useNavigate();     // Esto se usa para cambiar de pagina cuando cree el insumo
 
-    const guardarInsumo = async ({ insumo, nutricion }: InsumoConNutricionSubmit) => {
+    const guardarInsumo = async ({ insumo, nutricion, alergenos }: InsumoConNutricionSubmit) => {
         try{
             const { data: insumoCreado } = await api.post<Insumo>("/insumos/", insumo);
+
+            if (alergenos.contiene_gluten || alergenos.alergenos.length > 0) {
+                await api.put(`/alergenos/insumo/${insumoCreado.id}`, alergenos);
+            }
+            
             if (nutricion) {
                 try {
                     await api.post("/informaciones-nutricionales/", { ...nutricion, insumo_id: insumoCreado.id});
@@ -52,3 +57,4 @@ export function NuevoInsumoPage(){
         </>
     )
 }
+

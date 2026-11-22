@@ -9,6 +9,8 @@ if TYPE_CHECKING:
     from src.insumos.models import Insumo
     from src.lote_proveedor.models import LoteProveedor
     from src.lote_produccion.models import InsumoUtilizado
+    from src.equipos.models import Equipo
+    from src.sector.models import Sector
 
 
 class InsumoLote(ModeloBase):
@@ -29,6 +31,11 @@ class InsumoLote(ModeloBase):
 
     lote_proveedor: Mapped["LoteProveedor"] = relationship(back_populates="insumos")
     insumo: Mapped["Insumo"] = relationship()
+
+    equipo_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("equipos.id"), nullable=True, index=True)
+    sector_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("sectores.id"), nullable=True, index=True)
+    equipo: Mapped["Equipo | None"] = relationship()
+    sector: Mapped["Sector | None"] = relationship()
 
     producciones_asociadas: Mapped[list["InsumoUtilizado"]] = relationship(back_populates="insumo_lote")
     

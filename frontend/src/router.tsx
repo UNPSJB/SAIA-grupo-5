@@ -12,6 +12,7 @@ import { VerInsumoPage } from './feature/Insumos/pages/VerInsumoPage.tsx'
 import { EquiposPage } from './feature/Equipos/pages/ListPage.tsx'
 import { EditarEquipoPage } from './feature/Equipos/pages/EditarEquipoPage.tsx'
 import { NuevoEquipoPage } from './feature/Equipos/pages/NuevoEquipoPage.tsx'
+import { VerEquipoPage } from './feature/Equipos/pages/VerEquipoPage.tsx'
 
 import { ListPage as SectoresPage } from './feature/Sectores/pages/ListPage.tsx';
 import { EditarSectorPage } from './feature/Sectores/pages/EditarSectorPage.tsx';
@@ -125,6 +126,9 @@ import { ListPage as ProductoListPage } from './feature/Productos/pages/ListPage
 import { NuevoProductoPage } from './feature/Productos/pages/NuevoProductoPage.tsx'
 import { EditarProductoPage } from './feature/Productos/pages/EditarProductoPage.tsx'
 import { VerProductoPage } from './feature/Productos/pages/VerProductoPage.tsx'
+import { NuevaRecetaPage } from './feature/Recetas/pages/NuevaRecetaPage.tsx';
+import { EditarRecetaPage } from './feature/Recetas/pages/EditarRecetaPage.tsx';
+import { VerRecetaPage } from './feature/Recetas/pages/VerRecetaPage.tsx';
 import { EscalarRecetaPage } from './feature/Recetas/pages/EscalarRecetaPage.tsx'
 import { ReglasRotuladoPage } from './feature/Rotulado/pages/ReglasRotuladoPage.tsx'
 
@@ -157,13 +161,16 @@ import { NuevoPedidoProveedorPage } from './feature/PedidosProveedor/pages/Nuevo
 import { EditarPedidoProveedorPage } from './feature/PedidosProveedor/pages/EditarPedidoProveedorPage.tsx'
 import { VerPedidoProveedorPage } from './feature/PedidosProveedor/pages/VerPedidoProveedorPage.tsx'
 
-import { ListPage as FuenteNutricionalListPage } from './feature/FuenteNutricional/pages/Listpage.tsx'
+import { ListPage as FuenteNutricionalListPage } from './feature/FuenteNutricional/pages/ListPage.tsx'
 import { NuevaFuenteNutricionalPage } from './feature/FuenteNutricional/pages/NuevaFuenteNutricionalPage.tsx'
 import { EditarFuenteNutricionalPage } from './feature/FuenteNutricional/pages/EditarFuenteNutricionalPage.tsx'
 import { VerFuenteNutricionalPage } from './feature/FuenteNutricional/pages/VerFuenteNutricionalPage.tsx'
 
 import { ConfiguracionCalculoNutricionalPage } from './feature/CalculoNutricional/pages/ConfiguracionCalculoNutricionalPage.tsx'
 
+import { ListPage as AlergenosListPage } from './feature/Alergenos/pages/ListPage.tsx'
+import { NuevoAlergenoPage } from './feature/Alergenos/pages/NuevoAlergenoPage.tsx'
+import { EditarAlergenoPage } from './feature/Alergenos/pages/EditarAlergenoPage.tsx'
 
 import { Login, NoAutorizado } from './feature/auth'
 import AuthLayout from './layouts/AuthLayout.tsx'
@@ -294,6 +301,9 @@ const router = createBrowserRouter([
               { path: 'new', element: <NuevoProductoPage />},
               { path: ':id/edit', element: <EditarProductoPage />},
               { path: ':id', element: <VerProductoPage />},
+              { path: ':id/receta/nueva', element: <NuevaRecetaPage /> },
+              { path: ':id/receta/editar', element: <EditarRecetaPage /> },
+              { path: ':id/receta', element: <VerRecetaPage /> },
               { path: ':id/receta/escalar', element: <EscalarRecetaPage />},
             ],
           },
@@ -421,6 +431,7 @@ const router = createBrowserRouter([
             path: 'equipos',
             children: [
               { index: true, element: <EquiposPage /> },
+              { path: ':id', element: <VerEquipoPage /> },
               {
                 element: <ProtectedRoute requireAdmin />,
                 children: [
@@ -602,6 +613,15 @@ const router = createBrowserRouter([
               { path: 'new', element: <NuevaFuenteNutricionalPage /> },
               { path: ':id/edit', element: <EditarFuenteNutricionalPage /> },
               { path: ':id', element: <VerFuenteNutricionalPage /> },
+            ],
+          },
+          {
+            path: 'alergenos',
+            element: <ProtectedRoute requireAdmin />,
+            children: [
+              { index: true, element: <AlergenosListPage /> },
+              { path: 'new', element: <NuevoAlergenoPage /> },
+              { path: ':id/edit', element: <EditarAlergenoPage /> },
             ],
           },
           { path: '*', element: <Page404 /> }

@@ -16,6 +16,7 @@ class ReglasRotuladoBase(BaseModel):
     aplica_por_cafeina: bool
     mensaje_no_corresponde: Annotated[str, Field(min_length=5, max_length=300)]
     mensaje_exceptuado: Annotated[str, Field(min_length=5, max_length=300)]
+    formato_declaracion_aditivos: Literal["nombre", "ins", "nombre_e_ins"] = "nombre_e_ins"
 
 
 class ReglasRotuladoCreate(ReglasRotuladoBase):
@@ -167,7 +168,33 @@ class VersionEmpaquetadoResumen(BaseModel):
     creado_por: str | None = None
     fecha_desde_vigencia: datetime
     fecha_hasta_vigencia: datetime | None = None
+    
+class IngredienteRotulo(BaseModel):
+    insumo_id: int
+    texto: str
+    porcentaje: float | None = None
+    empata: bool = False
+    model_config = ConfigDict(from_attributes=True)
 
+
+class AditivoRotulo(BaseModel):
+    funcion: str | None = None
+    texto: str
+    aditivos: list[str] = []
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ListaIngredientesRotulo(BaseModel):
+    ingredientes: list[IngredienteRotulo]
+    aditivos: list[AditivoRotulo]
+    texto: str
+    orden_manual: bool
+    formato: str
+    model_config = ConfigDict(from_attributes=True)
+
+
+class OrdenIngredientesUpdate(BaseModel):
+    orden: list[int] = []
 
 class VersionEmpaquetado(VersionEmpaquetadoResumen):
     foto: str | None = None
@@ -186,6 +213,14 @@ class EmpaquetadoProducto(BaseModel):
     tabla_incompleta: bool = False
     sellos: list[str] = []
     mensaje_sellos: str = ""
+    descripcion: str | None = None
+    codigo_barras: str | None = None
+    alergenos: list[str] = []
+    conservacion: str | None = None
+    porciones_por_envase: str | None = None
+    leyendas_obligatorias: list[str] = []
+    fecha_elaboracion: date | None = None
+    fecha_vencimiento: date | None = None
     leyenda: str
     faltantes: list[str] = []
 
@@ -201,3 +236,6 @@ class BorradorRotuladoCAA(BaseModel):
     tabla_nutricional: list[dict] | None = None
     sellos: list[str] = []
     fecha_actualizacion: datetime | None = None
+    lista_ordenada: ListaIngredientesRotulo | None = None
+
+
