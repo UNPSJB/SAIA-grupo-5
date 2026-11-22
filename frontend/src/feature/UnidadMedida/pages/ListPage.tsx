@@ -9,6 +9,7 @@ import { PageHeader } from '../../../components/PageHeader';
 import { PageLoading } from '../../../components/PageLoading';
 import { PageError } from '../../../components/PageError';
 import { ActionButton } from '../../../components/ActionButton';
+import { ExportMenu } from '../../../components/ExportMenu';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
 
@@ -162,6 +163,14 @@ const filteredUnidadesMedida = useMemo(() => {
                         value={estadoFiltro}
                         options={ESTADO_FILTRO_LABELS}
                         onChange={(value) => setEstadoFiltro(value as EstadoFiltro)}
+                    />
+                </Col>
+                <Col xs="auto">
+                    <ExportMenu
+                        title="Listado de Unidades de Medida"
+                        filename="unidadMedida"
+                        columns={columns}
+                        rows={filteredUnidadesMedida}
                     />
                 </Col>
                 {currentUser?.administrar &&(

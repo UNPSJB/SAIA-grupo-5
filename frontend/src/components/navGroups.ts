@@ -103,7 +103,8 @@ export const navGroups: NavGroup[] = [
             { label: 'Unidades de Medida', to: '/unidades-medida', icon: 'bi bi-rulers'},
             { label: 'Fuentes Nutricionales', to: '/fuentes-nutricionales', icon: 'bi bi-clipboard2-data' },
             { label: 'Reglas de Rotulado', to: '/reglas-rotulado', icon: 'bi-tags'},
-            { label: 'Aditivos', to: '/aditivos', icon: 'bi-eyedropper' }
+            { label: 'Aditivos', to: '/aditivos', icon: 'bi-eyedropper' },
+            { label: 'Alergenos', to: '/alergenos', icon: 'bi bi-shield-exclamation' }
         ],
     },
 ];

@@ -14,6 +14,7 @@ Uso: python -m scripts.seed_planCalibracion
 from datetime import date, timedelta
 
 from faker import Faker
+from sqlalchemy import select
 
 import src.all_models  # noqa: F401
 from src.database import SessionLocal
@@ -29,7 +30,13 @@ CANTIDAD_PLANES = 6
 
 
 def generar_planes_calibracion(db) -> list[PlanCalibracion]:
-    equipos = db.query(Equipo).filter(Equipo.estado == True).all()
+    # Idempotente: cada equipo admite un solo plan (equipo_id es UNIQUE), así que
+    # solo se consideran los equipos que todavía no tienen uno.
+    con_plan = set(db.scalars(select(PlanCalibracion.equipo_id)).all())
+    equipos = [
+        e for e in db.query(Equipo).filter(Equipo.estado == True).all()
+        if e.id not in con_plan
+    ]
     if not equipos:
         return []
 
@@ -61,7 +68,7 @@ def main():
         planes = generar_planes_calibracion(db)
 
         if not planes:
-            print("No hay equipos cargados. Correr antes scripts.seed_sectores y scripts.seed_equipos.")
+            print("No se generaron planes nuevos (ya tienen plan o faltan equipos).")
             return
 
         db.add_all(planes)

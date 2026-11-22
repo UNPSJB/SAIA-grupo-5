@@ -11,6 +11,9 @@ import type { Receta, RecetaVersion } from '../types';
 import { SellosFrontales } from './SellosFrontales';
 import { InfoNutricionalReceta } from "../../CalculoNutricional/components/InfoNutricionalRecetaForm";
 import { IngredientesComposicion } from './IngredientesComposicion';
+import { AlergenosReceta } from "../../Alergenos/components/AlergenosRecetaForm";
+import type { UnidadMedida } from '../../UnidadMedida/types';
+import { exportarRecetaPdf } from '../ExportRecetapdf';
 import "./VerRecetaModal.css";
 
 interface VerRecetaModalProps {
@@ -38,6 +41,7 @@ export function VerRecetaModal({ producto, onHide, onEditar }: VerRecetaModalPro
     const { data: receta, error, isLoading } = useApi<Receta>(
         !producto ? null : recetaSeleccionadaId ? `/recetas/${recetaSeleccionadaId}` : `/recetas/producto/${producto.id}`,
     );
+    const { data: unidades } = useApi<UnidadMedida[]>(currentUser?.administrar ? '/unidades-medida/' : null);
 
     return (
         <Modal show={producto !== null} onHide={onHide} size="xl" scrollable>
@@ -131,6 +135,9 @@ export function VerRecetaModal({ producto, onHide, onEditar }: VerRecetaModalPro
                             <Tab eventKey="ingredientes" title="Ingredientes y composición">
                                 <IngredientesComposicion insumos={receta.insumos} mostrarComposicion={!!currentUser?.administrar} />
                             </Tab>
+                            <Tab eventKey="alergenos" title="Alérgenos y Gluten">
+                                <AlergenosReceta recetaId={receta.id} recetaVigente={receta.vigente} />
+                            </Tab>
                             <Tab eventKey="informacion_nutricional" title="Información Nutricional">
                                 <div className="text-start"> <InfoNutricionalReceta recetaId={receta.id} /></div>
                             </Tab>
@@ -147,7 +154,21 @@ export function VerRecetaModal({ producto, onHide, onEditar }: VerRecetaModalPro
                 >
                     Escalar
                 </Button>
+                
                 <Button variant="secondary" onClick={onHide}>Cerrar</Button>
+                <Button
+                    className="ms-2"
+                    variant="outline-primary"
+                    disabled={!receta || (!!currentUser?.administrar && !unidades)}
+                    onClick={() => producto && receta && exportarRecetaPdf({
+                        producto: producto.nombre,
+                        receta,
+                        unidades,
+                        mostrarComposicion: !!currentUser?.administrar,
+                    })}
+                >
+                    <i className="bi bi-download me-1"></i> Descargar receta
+                </Button>
                 {onEditar && receta?.vigente && (
                     <Button className="ms-2" variant="primary" onClick={() => onEditar(receta)}>
                         <i className="bi bi-pencil me-1"></i> Editar receta
@@ -157,3 +178,4 @@ export function VerRecetaModal({ producto, onHide, onEditar }: VerRecetaModalPro
         </Modal>
     );
 }
+

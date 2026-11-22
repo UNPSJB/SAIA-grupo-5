@@ -20,9 +20,10 @@
 }
 
 .sello-octogono {
-    width: 96px;
-    height: 96px;
-    padding: 3px;
+    --sello-tamano: 96px;
+    width: var(--sello-tamano);
+    height: var(--sello-tamano);
+    padding: calc(var(--sello-tamano) * 0.03125);
     background: #000;
     flex-shrink: 0;
 }
@@ -30,7 +31,7 @@
 .sello-octogono-borde {
     width: 100%;
     height: 100%;
-    padding: 2px;
+    padding: calc(var(--sello-tamano) * 0.021);
     background: #fff;
 }
 
@@ -41,7 +42,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 6px;
+    padding: calc(var(--sello-tamano) * 0.0625);
     background: #000;
     color: #fff;
     text-align: center;
@@ -49,13 +50,13 @@
 }
 
 .sello-octogono-exceso {
-    font-size: 0.6rem;
+    font-size: calc(var(--sello-tamano) * 0.1);
     font-weight: 700;
     letter-spacing: 0.02em;
 }
 
 .sello-octogono-nutriente {
-    font-size: 0.72rem;
+    font-size: calc(var(--sello-tamano) * 0.12);
     font-weight: 800;
     word-break: break-word;
 }

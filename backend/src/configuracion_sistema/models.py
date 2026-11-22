@@ -17,6 +17,10 @@ class ConfiguracionSistema(ModeloBase):
     email_pyme: Mapped[str | None] = mapped_column(String(150), nullable=True)
     direccion_pyme: Mapped[str | None] = mapped_column(String(200), nullable=True)
 
+    # Prefijos para armar el código de barras
+    prefijo_gs1: Mapped[str] = mapped_column(String(3), nullable=False, default="779") # Dejo en predeterminado el de Argentina
+    prefijo_empresa: Mapped[str | None] = mapped_column(String(4), nullable=True)
+
     # Antelación de alerta de vencimiento de personal
     dias_antelacion_vencimiento: Mapped[int] = mapped_column(Integer, nullable=False, default=15)
 

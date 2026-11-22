@@ -5,6 +5,8 @@ Correr ANTES que seed_sectores, seed_superficies, seed_tareas y seed_equipos
 (todos referencian un PlanLimpieza existente).
 Uso: python -m scripts.seed_planes_limpieza
 """
+from sqlalchemy import select
+
 import src.all_models
 from src.database import SessionLocal
 from src.plan_limpieza.models import PlanLimpieza
@@ -73,17 +75,21 @@ PLANES = [
 ]
 
 
-def generar_planes_limpieza() -> list[PlanLimpieza]:
+def generar_planes_limpieza(db) -> list[PlanLimpieza]:
+    # Idempotente: se omiten los planes ya cargados, así las tareas siguen
+    # apuntando a un único plan por nombre.
+    existentes = set(db.scalars(select(PlanLimpieza.nombre)).all())
     return [
         PlanLimpieza(nombre=nombre, descripcion=descripcion)
         for nombre, descripcion in PLANES
+        if nombre not in existentes
     ]
 
 
 def main():
     db = SessionLocal()
     try:
-        planes = generar_planes_limpieza()
+        planes = generar_planes_limpieza(db)
 
         db.add_all(planes)
         db.commit()

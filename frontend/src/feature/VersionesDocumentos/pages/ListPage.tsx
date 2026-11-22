@@ -9,6 +9,7 @@ import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
+import { ExportMenu } from '../../../components/ExportMenu';
 
 import { DeleteVersionDocumentoModal } from '../components/DeleteVersionDocumentoModal'; 
 import { MarcarVigenteModal } from '../components/MarcarVigenteModal';
@@ -228,6 +229,14 @@ export function ListPage() {
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setIncluirHistoricas(e.target.checked)}
                         />
                     </div>
+                </Col>
+                <Col xs="auto">
+                    <ExportMenu
+                        title="Listado de Versiones de Documentos"
+                        filename="versionesDocumentos"
+                        columns={columns}
+                        rows={filteredVersionesDocumentos}
+                    />
                 </Col>
                 {currentUser?.administrar &&(
                     <Col xs="auto" className="d-flex justify-content-end">

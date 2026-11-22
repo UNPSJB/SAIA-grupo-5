@@ -5,6 +5,7 @@ import { mutate } from 'swr';
 import { AppTable } from '../../../components/AppTable';
 import { PageHeader } from '../../../components/PageHeader';
 import { ActionButton } from '../../../components/ActionButton';
+import { ExportMenu } from '../../../components/ExportMenu';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
@@ -229,6 +230,23 @@ export function IncidentesHistorialPage() {
                                 </option>
                         ))}
                     </Form.Select>
+                </Col>
+                <Col xs="auto" className="ms-auto">
+                    <ExportMenu
+                            title={titulo}
+                            filename="historial-incidentes"
+                            rows={incidentesFiltrados}
+                            orientation="landscape"
+                            exportColumns={[
+                                { header: 'Incidente', value: (i) => i.nombre },
+                                { header: 'Descripción', value: (i) => i.descripcion },
+                                { header: 'Tipo', value: (i) => i.tipo.nombre },
+                                { header: 'Fecha', value: (i) => formatDate(i.fecha) },
+                                { header: 'Reportado por', value: (i) => i.reportado_por },
+                                { header: 'Días abierto', value: (i) => i.dias_abierto },
+                                { header: 'Estado', value: (i) => i.estado },
+                            ]}
+                        />
                 </Col>
             </Row>
 

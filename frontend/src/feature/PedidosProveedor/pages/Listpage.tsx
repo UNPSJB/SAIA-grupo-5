@@ -8,6 +8,7 @@ import { AppTable } from "../../../components/AppTable";
 import { PageHeader } from "../../../components/PageHeader";
 import { ListFilter } from "../../../components/ListFilter";
 import { PageLoading } from "../../../components/PageLoading";
+import { ExportMenu } from '../../../components/ExportMenu';
 import { useApi, useAuth } from "../../../hooks";
 import { DeletePedidoProveedorModal } from "../components/DeletePedidoProveedorModal";
 import { SugerenciasReposicionModal } from "../components/SugerenciasReposicionModal";
@@ -213,6 +214,14 @@ export function ListPage() {
                         value={estadoFiltro}
                         options={ESTADO_FILTRO_LABELS}
                         onChange={(value) => setEstadoFiltro(value as EstadoFiltro)}
+                    />
+                </Col>
+                <Col xs="auto">
+                    <ExportMenu
+                        title="Listado de Pedidos"
+                        filename="pedidos"
+                        columns={columns}
+                        rows={filteredPedidos}
                     />
                 </Col>
                 {currentUser?.administrar && (
