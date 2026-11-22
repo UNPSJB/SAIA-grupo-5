@@ -11,7 +11,7 @@ from src.rotulado.constants import (
     CAMPOS_TEXTO, ELEMENTOS_EMPAQUETADO, LEYENDA_BORRADOR, MARCAS, MENSAJE_APLICA,
     MENSAJE_PENDIENTE, NOMBRE_CAMPO, OBSERVACION_INICIAL, REGLAS_INICIALES, EstadoRotulado,
 )
-from src.rotulado.ingredientes import texto_ingredientes
+from src.rotulado.ingredientes import armar_lista
 from src.rotulado.models import (
     HistorialRotuladoProducto, ReglasRotulado, RotuladoProducto, VersionEmpaquetado,
 )
@@ -20,6 +20,7 @@ from src.personal.models import Persona
 from src.receta.models import Receta, InsumoReceta
 from src.receta.schemas import EvaluacionSellosCreate
 from src.receta.sellos import evaluar_sellos
+from src.receta.constants import TipoRenglon
 from src.insumos.models import Insumo
 from src.informacion_nutricional_insumo.models import InformacionNutricionalInsumo
 from src.calculo_nutricional.models import InformacionNutricionalReceta
@@ -28,9 +29,30 @@ from src.producto.services import leer_producto
 
 if TYPE_CHECKING:
     from src.producto.models import Producto
+    from src.rotulado.ingredientes import ListaIngredientes
 
 logger = logging.getLogger(__name__)
 
+
+def _registro(db: Session, producto_id: int) -> RotuladoProducto | None:
+    return db.scalars(select(RotuladoProducto).where(RotuladoProducto.producto_id == producto_id)).first()
+
+def _lista_ordenada(db: Session, producto_id: int) -> "ListaIngredientes | None":
+    receta = _receta_vigente(db, producto_id)
+    if receta is None:
+        return None
+    registro = _registro(db, producto_id)
+    formato = obtener_reglas_vigentes(db).formato_declaracion_aditivos
+    return armar_lista(receta, formato, registro.orden_ingredientes_manual if registro else None)
+
+
+def obtener_lista_ingredientes(db: Session, producto_id: int) -> schemas.ListaIngredientesRotulo:
+    """Resultado ordenado para el rotulado (E13)."""
+    leer_producto(db, producto_id)
+    lista = _lista_ordenada(db, producto_id)
+    if lista is None:
+        raise exceptions.ProductoSinReceta()
+    return schemas.ListaIngredientesRotulo.model_validate(lista, from_attributes=True)
 
 def obtener_reglas_vigentes(db: Session) -> schemas.ReglasRotulado:
     reglas = db.scalar(select(ReglasRotulado).where(ReglasRotulado.vigente.is_(True)))
@@ -41,6 +63,63 @@ def obtener_reglas_vigentes(db: Session) -> schemas.ReglasRotulado:
         db.commit()
         db.refresh(reglas)
     return reglas
+
+
+def _nombres(lista) -> str:
+    return " > ".join(i.texto for i in lista.ingredientes)
+
+def guardar_orden_ingredientes(
+    db: Session, producto_id: int, datos: schemas.OrdenIngredientesUpdate, usuario: Persona | None = None,
+) -> schemas.BorradorRotuladoCAA:
+    producto = leer_producto(db, producto_id)
+    receta = _receta_vigente(db, producto_id)
+    if receta is None:
+        raise exceptions.ProductoSinReceta()
+
+    formato = obtener_reglas_vigentes(db).formato_declaracion_aditivos
+    registro = _registro(db, producto_id)
+    previa = armar_lista(receta, formato, registro.orden_ingredientes_manual if registro else None)
+
+    ids = {i.insumo_id for i in receta.insumos if i.tipo == TipoRenglon.INGREDIENTE.value}
+    if datos.orden:
+        if len(set(datos.orden)) != len(datos.orden) or set(datos.orden) != ids:
+            raise exceptions.OrdenIngredientesInvalido()
+        # El pedido debe coincidir con lo que da el orden decreciente más el desempate pedido.
+        if [i.insumo_id for i in armar_lista(receta, formato, datos.orden).ingredientes] != datos.orden:
+            raise exceptions.OrdenIngredientesInvalido()
+
+    nueva = armar_lista(receta, formato, datos.orden or None)
+    if registro is None:
+        registro = RotuladoProducto(producto_id=producto_id)
+        db.add(registro)
+
+    ahora = datetime.now()
+    usuario_id = usuario.id if usuario else None
+    registro.orden_ingredientes_manual = datos.orden if nueva.orden_manual else None
+
+    if _nombres(previa) != _nombres(nueva) or previa.orden_manual != nueva.orden_manual:
+        db.add(HistorialRotuladoProducto(
+            rotulado=registro, campo="orden_ingredientes",
+            valor_anterior=f"{'Manual' if previa.orden_manual else 'Automático'}: {_nombres(previa)}",
+            valor_nuevo=f"{'Manual' if nueva.orden_manual else 'Automático'}: {_nombres(nueva)}",
+            usuario_id=usuario_id, fecha_hora=ahora,
+        ))
+
+    if registro.lista_ingredientes and registro.lista_ingredientes.strip() != nueva.texto:
+        db.add(HistorialRotuladoProducto(
+            rotulado=registro, campo="lista_ingredientes",
+            valor_anterior=registro.lista_ingredientes, valor_nuevo=nueva.texto,
+            usuario_id=usuario_id, fecha_hora=ahora,
+        ))
+        registro.lista_ingredientes = nueva.texto
+
+    registro.actualizado_por_id = usuario_id
+    registro.fecha_actualizacion = ahora
+    db.commit()
+    db.refresh(registro)
+
+    sugeridos = _sugeridos(db, producto)
+    return _armar_borrador(db, producto, registro, sugeridos, _datos_del_borrador(registro, sugeridos))
 
 def listar_versiones_reglas(db: Session) -> list[schemas.ReglasRotulado]:
     obtener_reglas_vigentes(db)
@@ -223,7 +302,7 @@ def _receta_vigente(db: Session, producto_id: int) -> "Receta | None":
 
 def _sugeridos(db: Session, producto: "Producto") -> dict[str, str]:
     """Valores que el sistema ya conoce y completa solo en el formulario."""
-    receta = _receta_vigente(db, producto.id)
+    lista = _lista_ordenada(db, producto.id)
     ultimo_lote = db.scalars(
         select(LoteProduccion)
         .where(LoteProduccion.producto_id == producto.id)
@@ -232,7 +311,7 @@ def _sugeridos(db: Session, producto: "Producto") -> dict[str, str]:
     return {
         "denominacion_venta": producto.nombre,
         "contenido_neto": _contenido_neto_sugerido(producto),
-        "lista_ingredientes": texto_ingredientes(receta) if receta else "",
+        "lista_ingredientes": lista.texto if lista else "",
         "identificacion_lote": (
             f"{ultimo_lote.id:06d} · {ultimo_lote.fecha_produccion:%d/%m/%Y}" if ultimo_lote else ""
         ),
@@ -349,16 +428,16 @@ def _campos_completitud(
     return campos
 
 
-def _armar_borrador(
-    db: Session,
-    producto: "Producto",
-    registro: RotuladoProducto | None,
-    sugeridos: dict[str, str],
-    datos: schemas.DatosRotuladoCAA,
-) -> schemas.BorradorRotuladoCAA:
+def _armar_borrador(db, producto, registro, sugeridos, datos):
+    lista = _lista_ordenada(db, producto.id)
+    lista_ordenada = (
+        schemas.ListaIngredientesRotulo.model_validate(lista, from_attributes=True)
+        if lista else None
+    )
     tabla = _tabla_nutricional(db, producto.id)
     evaluacion = evaluar_rotulado(db, producto, _insumos_de_receta(db, producto.id))
     campos = _campos_completitud(datos, sugeridos, tabla, evaluacion)
+    
 
     obligatorios = [campo for campo in campos if campo.obligatorio]
     completos = [campo for campo in obligatorios if campo.completo]
@@ -374,6 +453,7 @@ def _armar_borrador(
         tabla_nutricional=tabla,
         sellos=evaluacion.sellos.sellos if evaluacion.sellos else [],
         fecha_actualizacion=registro.fecha_actualizacion if registro else None,
+        lista_ordenada=lista_ordenada,
     )
 
 
@@ -395,10 +475,7 @@ def guardar_borrador_caa(
     """Guarda el borrador aunque falten datos; cada cambio sobre un dato automático queda registrado."""
     producto = leer_producto(db, producto_id)
     sugeridos = _sugeridos(db, producto)
-    registro = db.scalars(
-        select(RotuladoProducto).where(RotuladoProducto.producto_id == producto_id)
-    ).first()
-    es_nuevo = registro is None
+    registro = _registro(db, producto_id)
     if registro is None:
         registro = RotuladoProducto(producto_id=producto_id)
         db.add(registro)
@@ -420,10 +497,9 @@ def guardar_borrador_caa(
 
     for clave in CAMPOS_TEXTO:
         nuevo = (getattr(datos, clave) or "").strip()
-        if es_nuevo:
+        anterior = (getattr(registro, clave) or "").strip()
+        if not anterior and clave in CAMPOS_AUTOMATICOS:
             anterior = (sugeridos.get(clave) or "").strip()
-        else:
-            anterior = (getattr(registro, clave) or "").strip()
         setattr(registro, clave, nuevo or None)
         registrar(clave, anterior, nuevo)
 
@@ -443,7 +519,6 @@ def guardar_borrador_caa(
     db.refresh(registro)
 
     return _armar_borrador(db, producto, registro, sugeridos, _datos_del_borrador(registro, sugeridos))
-
 
 # --- Empaquetado: foto del envase y ubicación de los elementos del rótulo ---
 

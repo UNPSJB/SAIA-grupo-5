@@ -71,6 +71,29 @@ export type FilaNutricional = {
     kj_100g?: number | null;
 };
 
+export type FormatoDeclaracionAditivos = "nombre" | "ins" | "nombre_e_ins";
+
+export type IngredienteRotulo = {
+    insumo_id: number;
+    texto: string;
+    porcentaje: number | null;
+    empata: boolean;
+};
+
+export type AditivoRotulo = {
+    funcion: string | null;
+    texto: string;
+    aditivos: string[];
+};
+
+export type ListaIngredientesRotulo = {
+    ingredientes: IngredienteRotulo[];
+    aditivos: AditivoRotulo[];
+    texto: string;
+    orden_manual: boolean;
+    formato: FormatoDeclaracionAditivos;
+};
+
 export type BorradorRotuladoCAA = {
     producto_id: number;
     datos: DatosRotuladoCAA;
@@ -82,6 +105,7 @@ export type BorradorRotuladoCAA = {
     tabla_nutricional: FilaNutricional[] | null;
     sellos: string[];
     fecha_actualizacion: string | null;
+    lista_ordenada: ListaIngredientesRotulo | null;
 };
 
 export type ClaveElementoEmpaquetado =
@@ -135,6 +159,12 @@ export type EmpaquetadoProducto = {
     faltantes: string[];
 };
 
+export const ETIQUETAS_FORMATO_DECLARACION: Record<FormatoDeclaracionAditivos, string> = {
+    nombre: "Nombre completo",
+    ins: "Número INS",
+    nombre_e_ins: "Nombre completo e INS",
+};
+
 export const ETIQUETAS_EMPAQUETADO: Record<ClaveElementoEmpaquetado, string> = {
     denominacion: "Denominación de venta",
     contenido_neto: "Contenido neto",
@@ -165,6 +195,7 @@ export type ReglasRotuladoBase = {
     aplica_por_sodio: boolean;
     aplica_por_edulcorantes: boolean;
     aplica_por_cafeina: boolean;
+    formato_declaracion_aditivos: FormatoDeclaracionAditivos;
     mensaje_no_corresponde: string;
     mensaje_exceptuado: string;
 }

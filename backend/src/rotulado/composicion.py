@@ -26,12 +26,13 @@ class ItemComposicion:
     cantidad: float
     unidad: str
     porcentaje: float
-
+    insumo_id: int = 0
 
 @dataclass(frozen=True)
 class RenglonExcluido:
     nombre: str
     motivo: str
+    insumo_id: int = 0
 
 
 @dataclass(frozen=True)
@@ -71,9 +72,9 @@ def calcular_composicion_porcentual(insumos: list["InsumoReceta"]) -> Composicio
     excluidos: list[RenglonExcluido] = []
     for item, unidad in unidades:
         if not _es_convertible(unidad):
-            excluidos.append(RenglonExcluido(nombre=item.nombre, motivo=MOTIVO_UNIDAD_NO_RECONOCIDA))
+            excluidos.append(RenglonExcluido(nombre=item.nombre, motivo=MOTIVO_UNIDAD_NO_RECONOCIDA, insumo_id=item.insumo_id))
         elif unidad.masa_volumen != base:
-            excluidos.append(RenglonExcluido(nombre=item.nombre, motivo=MOTIVO_OTRA_UNIDAD_MEDIDA_ESTANDAR))
+            excluidos.append(RenglonExcluido(nombre=item.nombre, motivo=MOTIVO_OTRA_UNIDAD_MEDIDA_ESTANDAR, insumo_id=item.insumo_id))
         else:
             incluidos.append((item, item.cantidad * unidad.factor_a_base))
 
@@ -85,6 +86,7 @@ def calcular_composicion_porcentual(insumos: list["InsumoReceta"]) -> Composicio
             cantidad=item.cantidad,
             unidad=item.unidad_medida.nombre,
             porcentaje=_redondear((cantidad / total) * 100) if total > 0 else 0.0,
+            insumo_id=item.insumo_id,
         )
         for item, cantidad in incluidos
     ]

@@ -30,7 +30,7 @@ class ReglasRotulado(ModeloBase):
     aplica_por_sodio: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     aplica_por_edulcorantes: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     aplica_por_cafeina: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
-
+    formato_declaracion_aditivos: Mapped[str] = mapped_column(String(20), nullable=False, default="nombre_e_ins")
     mensaje_no_corresponde: Mapped[str] = mapped_column(String(300), nullable=False)
     mensaje_exceptuado: Mapped[str] = mapped_column(String(300), nullable=False)
 
@@ -70,7 +70,7 @@ class RotuladoProducto(ModeloBase):
 
     actualizado_por_id: Mapped[int | None] = mapped_column(ForeignKey("personal.id"), nullable=True)
     fecha_actualizacion: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-
+    orden_ingredientes_manual: Mapped[list[int] | None] = mapped_column(JSON, nullable=True)
     producto: Mapped["Producto"] = relationship()
     actualizado_por: Mapped["Persona | None"] = relationship()
     historial: Mapped[list["HistorialRotuladoProducto"]] = relationship(
