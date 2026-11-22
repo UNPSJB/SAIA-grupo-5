@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Accordion, Badge, Button, Col, Form, InputGroup, Modal, Row, Spinner } from 'react-bootstrap';
+import { Accordion, Badge, Button, Card, Col, Form, InputGroup, Row, Spinner } from 'react-bootstrap';
 import { Controller, useFieldArray, useForm, useWatch, type Control, type FieldErrors, type UseFormRegister } from 'react-hook-form';
 import { isAxiosError } from 'axios';
 import { api } from '../../../libs/axios';
@@ -14,9 +14,8 @@ import { useApi } from '../../../hooks/useApi';
 import { SelectorConBusqueda } from '../../../components/SelectorConBusqueda';
 import { SellosFrontales } from './SellosFrontales';
 
-interface RecetaFormModalProps {
+interface RecetaFormProps {
     producto: Producto | null;
-    // Si se pasa una receta el modal la edita; si no, da de alta una nueva desde la plantilla
     receta?: Receta | null;
     onHide: () => void;
     onSaved: (receta: Receta) => void;
@@ -78,7 +77,7 @@ const insumosValidos = (insumos: InsumoRecetaFormData[] = []): NewInsumoReceta[]
         .map((item) => ({ ...aRenglon(item), tipo: "Ingrediente" as TipoRenglon, aditivo_id: null }));
 };
 
-export function RecetaFormModal({ producto, receta, onHide, onSaved }: RecetaFormModalProps) {
+export function RecetaForm({ producto, receta, onHide, onSaved }: RecetaFormProps) {
     const [cargando, setCargando] = useState(false);
     const esEdicion = Boolean(receta);
 
@@ -88,7 +87,7 @@ export function RecetaFormModal({ producto, receta, onHide, onSaved }: RecetaFor
     const { fields: etapas, append, remove } = useFieldArray({ control, name: "etapas" });
     const etapasActuales = useWatch({ control, name: "etapas" });
 
-    // Cada vez que se abre arranca con la receta a editar o, en el alta, con la plantilla
+    // Al cargar el producto, inicializa el formulario con la receta o la plantilla
     useEffect(() => {
         if (producto) reset(receta ? valoresDeReceta(receta) : plantillaInicial());
     }, [producto, receta, reset]);
@@ -114,7 +113,6 @@ export function RecetaFormModal({ producto, receta, onHide, onSaved }: RecetaFor
                 ? `Se creó la versión ${guardada.version} de la receta del producto '${producto.nombre}'.`
                 : `La receta del producto '${producto.nombre}' se creó correctamente.`);
             onSaved(guardada);
-            onHide();
         } catch (error) {
             let mensajeFinal = `No se pudo ${esEdicion ? 'actualizar' : 'crear'} la receta del producto '${producto.nombre}'.`;
             const detail = isAxiosError(error) ? error.response?.data?.detail : undefined;
@@ -129,12 +127,12 @@ export function RecetaFormModal({ producto, receta, onHide, onSaved }: RecetaFor
     };
 
     return (
-        <Modal show={producto !== null} onHide={onHide} size="lg" scrollable>
+        <Card className="shadow-sm border-0 rounded-3 mt-3">
             <Form onSubmit={handleSubmit(onSubmit)} noValidate className="d-flex flex-column overflow-hidden">
-                <Modal.Header closeButton>
-                    <Modal.Title>{esEdicion ? 'Editar receta' : 'Nueva receta'}</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
+                <Card.Header className="bg-white py-3">
+                    <h5 className="mb-0">{esEdicion ? 'Editar receta' : 'Nueva receta'}</h5>
+                </Card.Header>
+                <Card.Body className="p-4">
                     <p className="mb-1"><strong>Producto:</strong> {producto?.nombre}</p>
                     <p className="text-muted small mb-3">
                         {esEdicion
@@ -204,15 +202,15 @@ export function RecetaFormModal({ producto, receta, onHide, onSaved }: RecetaFor
                     >
                         <i className="bi bi-plus-lg me-1"></i>Agregar etapa
                     </Button>
-                </Modal.Body>
-                <Modal.Footer className="justify-content-start">
+                </Card.Body>
+                <Card.Footer className="bg-white d-flex gap-2">
                     <Button variant="secondary" onClick={onHide} disabled={cargando}>Cancelar</Button>
                     <Button variant="success" type="submit" disabled={cargando}>
                         {cargando ? "Guardando..." : esEdicion ? "Guardar nueva versión" : "Guardar receta"}
                     </Button>
-                </Modal.Footer>
+                </Card.Footer>
             </Form>
-        </Modal>
+        </Card>
     );
 }
 

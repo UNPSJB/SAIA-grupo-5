@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { mutate } from 'swr';
 import { Accordion, Alert, Button, Card, Container, Form, ListGroup, Spinner } from 'react-bootstrap';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
@@ -10,7 +9,6 @@ import { EstadoBadge } from '../../../components/EstadoBadge';
 import { PageHeader } from '../../../components/PageHeader';
 import type { Producto } from '../../Productos/types';
 import type { Receta, RecetaVersion } from '../types';
-import { RecetaFormModal } from '../components/RecetaFormModal';
 import { SellosFrontales } from '../components/SellosFrontales';
 import { InfoNutricionalReceta } from '../../CalculoNutricional/components/InfoNutricionalRecetaForm';
 import { IngredientesComposicion } from '../components/IngredientesComposicion';
@@ -31,8 +29,7 @@ export function VerRecetaPage() {
     const navigate = useNavigate();
     const { currentUser } = useAuth();
     const [recetaSeleccionadaId, setRecetaSeleccionadaId] = useState<number | null>(null);
-    const [recetaEditar, setRecetaEditar] = useState<Receta | null>(null);
-
+    
     const productoId = Number(id);
     const { data: producto, isLoading: cargandoProducto, error: errorProducto } = useApi<Producto>(
         id && Number.isInteger(productoId) && productoId > 0 ? `/productos/${productoId}` : null
@@ -49,18 +46,8 @@ export function VerRecetaPage() {
 
     const volver = () => navigate(`/productos/${productoId}`);
 
-    const onSaved = (guardada: Receta) => {
-        setRecetaEditar(null);
-        setRecetaSeleccionadaId(null);
-        mutate(`/recetas/producto/${productoId}`);
-        mutate(`/recetas/producto/${productoId}/versiones`);
-        mutate(`/recetas/${guardada.id}`);
-        mutate(`/productos/${productoId}`);
-        mutate('/productos/');
-    };
-
     return (
-        <Container fluid="lg">
+        <Container fluid style={{ maxWidth: '1140px' }}>
             <PageHeader title="Detalle de receta" />
 
             <Card className="shadow-sm border-0 rounded-3 mt-3">
@@ -89,8 +76,8 @@ export function VerRecetaPage() {
                             >
                                 <i className="bi bi-download me-1"></i>Descargar receta
                             </Button>
-                            {currentUser?.administrar && (
-                                <Button variant="primary" disabled={!receta?.vigente} onClick={() => receta && setRecetaEditar(receta)}>
+                            {currentUser?.administrar && receta?.vigente && (
+                                <Button variant="primary" onClick={() => producto && navigate(`/productos/${producto.id}/receta/editar`)}>
                                     <i className="bi bi-pencil me-1"></i>Editar receta
                                 </Button>
                             )}
@@ -205,15 +192,6 @@ export function VerRecetaPage() {
                     )}
                 </Card.Body>
             </Card>
-
-            {producto && (
-                <RecetaFormModal
-                    producto={recetaEditar ? producto : null}
-                    receta={recetaEditar}
-                    onHide={() => setRecetaEditar(null)}
-                    onSaved={onSaved}
-                />
-            )}
         </Container>
     );
 }
