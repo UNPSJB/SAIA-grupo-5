@@ -5,6 +5,7 @@ import { useApi } from "../../../hooks/useApi";
 import type { Producto } from "../types";
 import { PageLoading } from "../../../components/PageLoading";
 import { useAuth } from "../../../hooks";
+import { ResumenRecetaProducto } from "../../Recetas/components/ResumenRecetaProducto";
 import { CodigoBarras } from "../components/CodigoBarras";
 
 export function VerProductoPage() {
@@ -157,6 +158,10 @@ export function VerProductoPage() {
                             )}
                         </Card.Footer>
                     </Card>
+                    <ResumenRecetaProducto
+                        productoId={producto.id}
+                        tieneReceta={producto.receta != null}
+                    />
                 </Col>
             </Row>
         </Container>
