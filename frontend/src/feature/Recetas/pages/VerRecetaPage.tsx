@@ -15,6 +15,7 @@ import { IngredientesComposicion } from '../components/IngredientesComposicion';
 import { AlergenosReceta } from '../../Alergenos/components/AlergenosRecetaForm';
 import type { UnidadMedida } from '../../UnidadMedida/types';
 import { exportarRecetaPdf } from '../ExportRecetapdf';
+import './VerRecetaPage.css';
 
 const formatearFecha = (fecha: string | null) =>
     fecha ? new Date(fecha).toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" }) : "-";
@@ -29,7 +30,7 @@ export function VerRecetaPage() {
     const navigate = useNavigate();
     const { currentUser } = useAuth();
     const [recetaSeleccionadaId, setRecetaSeleccionadaId] = useState<number | null>(null);
-    
+
     const productoId = Number(id);
     const { data: producto, isLoading: cargandoProducto, error: errorProducto } = useApi<Producto>(
         id && Number.isInteger(productoId) && productoId > 0 ? `/productos/${productoId}` : null
@@ -92,7 +93,10 @@ export function VerRecetaPage() {
                         <Alert variant="danger">No se pudo cargar el producto.</Alert>
                     ) : (
                         <>
-                            <p className="mb-2"><strong>Producto:</strong> {producto.nombre}</p>
+                            <p className="mb-2">
+                                <strong>Producto:</strong>
+                                {producto.nombre}
+                            </p>
 
                             {versiones && versiones.length > 1 && (
                                 <Form.Group className="mb-3 text-start" controlId="versionReceta">
@@ -183,7 +187,9 @@ export function VerRecetaPage() {
                                             <AlergenosReceta recetaId={receta.id} recetaVigente={receta.vigente} />
                                         </Tab>
                                         <Tab eventKey="informacion_nutricional" title="Información Nutricional">
-                                            <div className="text-start"><InfoNutricionalReceta recetaId={receta.id} /></div>
+                                            <div className="text-start">
+                                                <InfoNutricionalReceta recetaId={receta.id} />
+                                            </div>
                                         </Tab>
                                     </Tabs>
                                 </>
