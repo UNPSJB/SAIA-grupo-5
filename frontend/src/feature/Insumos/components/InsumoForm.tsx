@@ -7,10 +7,13 @@ import type { InformacionNutricional, MarcasAporte, NewInsumo } from '../types';
 import { CAMPOS_NUTRICIONALES, MARCAS_APORTE, type CampoNutricional } from '../constants';
 import { DATOS_NUTRICIONALES_CAA, nutrientesANumero, nutrientesATexto, type InfoNutricionalFormValues } from '../../InformacionNutricionalInsumo/types';
 import {ESTADO_INFO_NUTRICIONAL_VACIO, InfoNutricionalInsumoForm, type InfoNutricionalFormState } from '../../InformacionNutricionalInsumo/components/InfoNutricionalInsumoForm';
+import type { InsumoAlergenosUpdate } from '../../Alergenos/types';
+import { InsumoAlergenosForm } from '../../Alergenos/components/InsumoAlergenosForm';
 
 export interface InsumoConNutricionSubmit {
   insumo: NewInsumo;
   nutricion: InfoNutricionalFormValues | null;
+  alergenos: InsumoAlergenosUpdate;
 }
 
 interface InsumoFormProps {
@@ -18,6 +21,7 @@ interface InsumoFormProps {
   onSubmit: (datos: InsumoConNutricionSubmit) => void;
   valoresIniciales?: NewInsumo;
   nutricionInicial?: InfoNutricionalFormValues | null;
+  alergenosIniciales?: InsumoAlergenosUpdate | null;
 }
 
 const aTexto = (valor?: number | null) => (valor === null || valor === undefined ? "" : String(valor));
@@ -34,7 +38,7 @@ const armarEstadoNutricionInicial = (inicial?: InfoNutricionalFormValues | null)
   };
 };
 
-export function InsumoForm({ textoBoton, onSubmit, valoresIniciales, nutricionInicial }: InsumoFormProps) {
+export function InsumoForm({ textoBoton, onSubmit, valoresIniciales, nutricionInicial, alergenosIniciales }: InsumoFormProps) {
   const [validated, setValidated] = useState(false);
   const navigate = useNavigate();
   const { data: unidadesMedida, isLoading } = useApi<UnidadMedida[]> ('/unidades-medida/');
@@ -53,6 +57,8 @@ export function InsumoForm({ textoBoton, onSubmit, valoresIniciales, nutricionIn
     aporta_edulcorantes: valoresIniciales?.aporta_edulcorantes ?? false,
     aporta_cafeina: valoresIniciales?.aporta_cafeina ?? false,
   });
+
+  const [alergenosData, setAlergenosData] = useState<InsumoAlergenosUpdate>(alergenosIniciales ?? { contiene_gluten: false, alergenos: [] });
 
   const unidadSeleccionada = unidadesMedida?.find((u) => u.id === unidadMedidaId);
 
@@ -109,6 +115,7 @@ export function InsumoForm({ textoBoton, onSubmit, valoresIniciales, nutricionIn
         ...marcas,
       },
       nutricion: payloadNutricion,
+      alergenos: alergenosData,
     });
   }
 
@@ -204,6 +211,9 @@ export function InsumoForm({ textoBoton, onSubmit, valoresIniciales, nutricionIn
             ))}
           </Row>
         </fieldset>
+        
+        <InsumoAlergenosForm valor={alergenosData} onChange={setAlergenosData} />
+
         <InfoNutricionalInsumoForm
           estado={nutricion}
           onChange={setNutricion}
@@ -223,4 +233,3 @@ export function InsumoForm({ textoBoton, onSubmit, valoresIniciales, nutricionIn
     </div>
   );
 }
-

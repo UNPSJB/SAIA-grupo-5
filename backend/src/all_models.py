@@ -58,3 +58,6 @@ from src.fuente_nutricional.models import FuenteNutricional, AlimentoReferencia
 from src.informacion_nutricional_insumo.models import InformacionNutricionalInsumo
 from src.historial_nutricional_insumo.models import HistorialNutricionalInsumo
 from src.calculo_nutricional.models import ConfiguracionCalculoNutricional, ParametroNutriente, InformacionNutricionalReceta
+
+from src.alergenos.models import Alergeno, InsumoAlergeno
+from src.declaracion_alergenos.models import DeclaracionAlergenosReceta

@@ -97,6 +97,9 @@ from src.fuente_nutricional.router import router as fuente_nutricional_router
 from src.informacion_nutricional_insumo.router import router as informacion_nutricional_insumo_router
 from src.historial_nutricional_insumo.router import router as historial_nutricional_insumo_router
 from src.calculo_nutricional.router import router as calculo_nutricional_router
+from src.alergenos.router import router as alergenos_router
+from src.declaracion_alergenos.router import router as declaracion_alergenos_router
+
 
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -170,4 +173,7 @@ app.include_router(fuente_nutricional_router)
 app.include_router(informacion_nutricional_insumo_router)
 app.include_router(historial_nutricional_insumo_router)
 app.include_router(calculo_nutricional_router)
+
+app.include_router(alergenos_router)
+app.include_router(declaracion_alergenos_router)
 

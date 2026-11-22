@@ -11,9 +11,9 @@ import type { Receta, RecetaVersion } from '../types';
 import { SellosFrontales } from './SellosFrontales';
 import { InfoNutricionalReceta } from "../../CalculoNutricional/components/InfoNutricionalRecetaForm";
 import { IngredientesComposicion } from './IngredientesComposicion';
+import { AlergenosReceta } from "../../Alergenos/components/AlergenosRecetaForm";
 import type { UnidadMedida } from '../../UnidadMedida/types';
 import { exportarRecetaPdf } from '../ExportRecetapdf';
-
 import "./VerRecetaModal.css";
 
 interface VerRecetaModalProps {
@@ -135,6 +135,9 @@ export function VerRecetaModal({ producto, onHide, onEditar }: VerRecetaModalPro
                             <Tab eventKey="ingredientes" title="Ingredientes y composición">
                                 <IngredientesComposicion insumos={receta.insumos} mostrarComposicion={!!currentUser?.administrar} />
                             </Tab>
+                            <Tab eventKey="alergenos" title="Alérgenos y Gluten">
+                                <AlergenosReceta recetaId={receta.id} recetaVigente={receta.vigente} />
+                            </Tab>
                             <Tab eventKey="informacion_nutricional" title="Información Nutricional">
                                 <div className="text-start"> <InfoNutricionalReceta recetaId={receta.id} /></div>
                             </Tab>
@@ -175,3 +178,4 @@ export function VerRecetaModal({ producto, onHide, onEditar }: VerRecetaModalPro
         </Modal>
     );
 }
+

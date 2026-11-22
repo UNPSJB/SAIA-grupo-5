@@ -4,6 +4,7 @@ import { mutate } from "swr";
 import { PageHeader } from "../../../components/PageHeader";
 import { InsumoForm } from "../components/InsumoForm";
 import type { InsumoConNutricionSubmit } from "../components/InsumoForm";
+import type { InsumoAlergenos } from "../../Alergenos/types";
 import { api } from "../../../libs/axios";
 import { useApi } from "../../../hooks/useApi";
 import type { Insumo } from "../types";
@@ -17,10 +18,12 @@ export function EditarInsumoPage(){
 
     const { data: insumo, isLoading, error } = useApi<Insumo>(`/insumos/${id}`);
     const { data: infoNutricional, isLoading: cargandoNutricion } = useApi<InfoNutricional>(id ? `/informaciones-nutricionales/insumo/${id}` : null);
+    const { data: infoAlergenos, isLoading: cargandoAlergenos } = useApi<InsumoAlergenos>(id ? `/alergenos/insumo/${id}` : null);
 
-    const actualizarInsumo = async ({ insumo: datosInsumo, nutricion }: InsumoConNutricionSubmit) => {
+    const actualizarInsumo = async ({ insumo: datosInsumo, nutricion, alergenos }: InsumoConNutricionSubmit) => {
         try{
             await api.put(`/insumos/${id}`, datosInsumo);
+            await api.put(`/alergenos/insumo/${id}`, alergenos);
             if (nutricion) {
                 if (infoNutricional) {
                     const { modificado_respecto_fuente, ...payloadUpdate } = nutricion;
@@ -31,6 +34,7 @@ export function EditarInsumoPage(){
             }
             await mutate("/insumos/");
             await mutate(`/insumos/${id}`);     // Se agrego esto ya que habia un bug en el editar
+            await mutate(`/alergenos/insumo/${id}`);
             await mutate(`/informaciones-nutricionales/insumo/${id}`);
             mostrarAlertaExito("El insumo se edito correctamente.");
             navigate("/insumos");
@@ -47,7 +51,7 @@ export function EditarInsumoPage(){
 
     const tituloPagina = "Editar Insumo";
 
-    if (isLoading || cargandoNutricion) return <PageLoading title={tituloPagina} />;
+    if (isLoading || cargandoNutricion || cargandoAlergenos) return <PageLoading title={tituloPagina} />;
 
     if (!insumo) return (
         <Container>
@@ -99,6 +103,17 @@ export function EditarInsumoPage(){
                         aporta_edulcorantes: insumo.aporta_edulcorantes,
                         aporta_cafeina: insumo.aporta_cafeina,
                     }}
+                    alergenosIniciales={
+                        infoAlergenos
+                            ? {
+                                  contiene_gluten: infoAlergenos.contiene_gluten,
+                                  alergenos: infoAlergenos.alergenos.map((a) => ({
+                                      alergeno_id: a.alergeno_id,
+                                      es_derivado: a.es_derivado,
+                                  })),
+                              }
+                            : null
+                    }
                     nutricionInicial={
                         infoNutricional
                             ? {
