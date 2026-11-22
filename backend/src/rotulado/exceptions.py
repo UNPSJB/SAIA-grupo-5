@@ -6,6 +6,10 @@ class ReglasNoEncontradas(NotFound):
     DETAIL = ErrorCode.REGLAS_NO_ENCONTRADAS
 
 
+class OrdenIngredientesInvalido(NotFound):
+    DETAIL = ErrorCode.ORDEN_INVALIDO
+
+
 class ProductoSinReceta(BadRequest):
     DETAIL = ErrorCode.PRODUCTO_SIN_RECETA
 

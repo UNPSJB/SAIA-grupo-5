@@ -1,6 +1,13 @@
 from dataclasses import dataclass
 from enum import Enum
 
+class FormatoDeclaracionAditivos(str, Enum):
+    NOMBRE = "nombre"
+    INS = "ins"
+    NOMBRE_E_INS = "nombre_e_ins"
+
+PREFIJO_AROMATIZANTE = "aromatizante"
+
 
 class EstadoRotulado(str, Enum):
     PENDIENTE = "pendiente"
@@ -38,6 +45,7 @@ REGLAS_INICIALES = {
     "aplica_por_sodio": True,
     "aplica_por_edulcorantes": True,
     "aplica_por_cafeina": True,
+    "formato_declaracion_aditivos": FormatoDeclaracionAditivos.NOMBRE_E_INS.value,
     "mensaje_no_corresponde": "El producto no se comercializa envasado en ausencia del cliente, por lo que no corresponde el rotulado frontal.",
     "mensaje_exceptuado": "El producto no tiene agregado de azúcares, grasas ni sodio y no contiene edulcorantes ni cafeína, por lo que queda exceptuado del rotulado frontal.",
 }
@@ -119,6 +127,7 @@ CAMPOS_TEXTO = tuple(
 CAMPOS_AUTOMATICOS = tuple(campo.clave for campo in CAMPOS_ROTULADO if campo.automatico)
 
 NOMBRE_CAMPO = {campo.clave: campo.nombre for campo in CAMPOS_ROTULADO}
+NOMBRE_CAMPO["orden_ingredientes"] = "Orden de ingredientes"
 
 # Abreviaturas para armar el contenido neto sugerido a partir del producto.
 ABREVIATURA_UNIDAD = {
@@ -144,3 +153,5 @@ class ErrorCode:
         "La foto del empaquetado debe ser una imagen PNG, JPEG o WebP de hasta 8 MB."
     )
     ELEMENTO_EMPAQUETADO_INVALIDO = "Los elementos del empaquetado tienen posiciones o tamaños inválidos."
+    ORDEN_INVALIDO = "El orden solo puede cambiarse entre ingredientes con el mismo porcentaje."
+

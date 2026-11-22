@@ -36,6 +36,20 @@ def read_rotulado_producto(producto_id: int, db: Session = Depends(get_db)):
 def update_rotulado_producto(producto_id: int, datos: schemas.RotuladoProductoUpdate, db: Session = Depends(get_db)):
     return services.actualizar_rotulado_producto(db, producto_id, datos)
 
+@router.get("/productos/{producto_id}/ingredientes", response_model=schemas.ListaIngredientesRotulo)
+def read_lista_ingredientes(producto_id: int, db: Session = Depends(get_db)):
+    return services.obtener_lista_ingredientes(db, producto_id)
+
+
+@router.put("/productos/{producto_id}/ingredientes/orden", response_model=schemas.BorradorRotuladoCAA)
+def update_orden_ingredientes(
+    producto_id: int,
+    datos: schemas.OrdenIngredientesUpdate,
+    db: Session = Depends(get_db),
+    usuario: Persona = Depends(get_current_persona),
+):
+    return services.guardar_orden_ingredientes(db, producto_id, datos, usuario)
+
 
 ## Datos del rótulo del Capítulo V del CAA (borrador editable)
 
