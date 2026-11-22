@@ -15,6 +15,8 @@ from src.rotulado.ingredientes import armar_lista
 from src.rotulado.models import (
     HistorialRotuladoProducto, ReglasRotulado, RotuladoProducto, VersionEmpaquetado,
 )
+from src.declaracion_alergenos.models import DeclaracionAlergenosReceta
+from src.declaracion_alergenos.services import _calcular_desde_insumos
 from src.lote_produccion.models import LoteProduccion
 from src.personal.models import Persona
 from src.receta.models import Receta, InsumoReceta
@@ -300,14 +302,18 @@ def _receta_vigente(db: Session, producto_id: int) -> "Receta | None":
     ).first()
 
 
+def _ultimo_lote(db: Session, producto_id: int) -> LoteProduccion | None:
+    return db.scalars(
+        select(LoteProduccion)
+        .where(LoteProduccion.producto_id == producto_id)
+        .order_by(LoteProduccion.id.desc())
+    ).first()
+
+
 def _sugeridos(db: Session, producto: "Producto") -> dict[str, str]:
     """Valores que el sistema ya conoce y completa solo en el formulario."""
     lista = _lista_ordenada(db, producto.id)
-    ultimo_lote = db.scalars(
-        select(LoteProduccion)
-        .where(LoteProduccion.producto_id == producto.id)
-        .order_by(LoteProduccion.id.desc())
-    ).first()
+    ultimo_lote = _ultimo_lote(db, producto.id)
     return {
         "denominacion_venta": producto.nombre,
         "contenido_neto": _contenido_neto_sugerido(producto),
@@ -605,6 +611,99 @@ def _unidad_empaquetado(producto: "Producto", evaluacion: schemas.EvaluacionRotu
     )
 
 
+def _declaracion_alergenos(
+    db: Session, receta: "Receta | None"
+) -> DeclaracionAlergenosReceta | None:
+    if receta is None:
+        return None
+    return db.scalars(
+        select(DeclaracionAlergenosReceta).where(DeclaracionAlergenosReceta.receta_id == receta.id)
+    ).first()
+
+
+def _leyendas_alergenos(
+    declaracion: DeclaracionAlergenosReceta | None, receta: "Receta | None"
+) -> list[str]:
+    """Leyendas de alérgenos, gluten y contaminación cruzada que van al rótulo."""
+    if declaracion is None:
+        if receta is None:
+            return []
+        # Sin declaración guardada se usa la propuesta que el sistema calcula desde los insumos.
+        _, texto_alergenos, contiene_gluten, texto_gluten = _calcular_desde_insumos(receta)
+        contaminacion = None
+    else:
+        texto_alergenos = declaracion.texto_alergenos
+        contiene_gluten = declaracion.contiene_gluten
+        texto_gluten = declaracion.texto_gluten
+        contaminacion = declaracion.texto_contaminacion_cruzada
+
+    leyendas = [texto_alergenos] if texto_alergenos else []
+    # "LIBRE DE GLUTEN / SIN TACC (sugerido…)" es un texto interno: al rótulo solo va la leyenda positiva.
+    if contiene_gluten and texto_gluten:
+        leyendas.append(texto_gluten)
+    if contaminacion:
+        leyendas.append(contaminacion)
+    return leyendas
+
+
+def _leyendas_obligatorias(evaluacion: schemas.EvaluacionRotulado) -> list[str]:
+    """Leyendas de edulcorantes y cafeína (Ley 27.642) según lo declarado o sugerido."""
+    valores = {marca.clave: marca.valor for marca in evaluacion.marcas}
+    leyendas = []
+    if valores.get("edulcorantes"):
+        leyendas.append("CONTIENE EDULCORANTES. NO RECOMENDABLE EN NIÑOS/AS.")
+    if valores.get("cafeina"):
+        leyendas.append("CONTIENE CAFEÍNA. EVITAR EN NIÑOS/AS.")
+    return leyendas
+
+
+FACTOR_UNIDAD_BASE = {
+    "gramo": 1.0, "g": 1.0, "kilogramo": 1000.0, "kg": 1000.0,
+    "mililitro": 1.0, "ml": 1.0, "litro": 1000.0, "l": 1000.0,
+}
+
+FAMILIA_UNIDAD = {
+    "gramo": "masa", "g": "masa", "kilogramo": "masa", "kg": "masa",
+    "mililitro": "volumen", "ml": "volumen", "litro": "volumen", "l": "volumen",
+}
+
+
+def _porcion_declarada(
+    receta: "Receta | None", info, unidad: str
+) -> float | None:
+    """Porción en la unidad de la tabla nutricional: la calculada o la declarada en la receta."""
+    if info is not None and info.porcion and float(info.porcion) > 0:
+        return float(info.porcion)
+    if receta is None or not receta.porcion or float(receta.porcion) <= 0:
+        return None
+
+    nombre = (
+        receta.porcion_unidad_medida.nombre.strip().lower()
+        if receta.porcion_unidad_medida else ""
+    )
+    factor = FACTOR_UNIDAD_BASE.get(nombre)
+    if factor is None or FAMILIA_UNIDAD.get(nombre) != FAMILIA_UNIDAD.get(unidad):
+        return None
+    return float(receta.porcion) * factor
+
+
+def _porciones_por_envase(
+    producto: "Producto", porcion: float | None, unidad: str
+) -> str | None:
+    """Cantidad de porciones que rinde el envase, comparando unidades compatibles."""
+    if not porcion or float(porcion) <= 0:
+        return None
+    nombre = producto.unidad_medida.nombre.strip().lower()
+    factor = FACTOR_UNIDAD_BASE.get(nombre)
+    if factor is None or FAMILIA_UNIDAD.get(nombre) != FAMILIA_UNIDAD.get(unidad):
+        return None
+
+    porciones = producto.cantidad_neta * factor / float(porcion)
+    if porciones <= 0:
+        return None
+    return f"{round(porciones, 1):g} × {float(porcion):g} {unidad}"
+
+
 def _info_nutricional_vigente(db: Session, producto_id: int):
     receta = _receta_vigente(db, producto_id)
     if receta is None:
@@ -632,6 +731,12 @@ def obtener_empaquetado(db: Session, producto_id: int) -> schemas.EmpaquetadoPro
     vigente = next((version for version in versiones if version.vigente), None)
     campos = _campos_completitud(datos, sugeridos, tabla, evaluacion)
 
+    receta = _receta_vigente(db, producto_id)
+    declaracion = _declaracion_alergenos(db, receta)
+    info = _info_nutricional_vigente(db, producto_id)
+    lote = _ultimo_lote(db, producto_id)
+    unidad = _unidad_empaquetado(producto, evaluacion)
+
     return schemas.EmpaquetadoProducto(
         producto_id=producto_id,
         vigente=_version_empaquetado_esquema(vigente, datos.es_importado),
@@ -647,6 +752,16 @@ def obtener_empaquetado(db: Session, producto_id: int) -> schemas.EmpaquetadoPro
         ),
         sellos=evaluacion.sellos.sellos if evaluacion.sellos else [],
         mensaje_sellos=_mensaje_sellos(evaluacion),
+        descripcion=producto.descripcion,
+        codigo_barras=producto.codigo_barras,
+        alergenos=_leyendas_alergenos(declaracion, receta),
+        conservacion=declaracion.condiciones_conservacion if declaracion else None,
+        porciones_por_envase=_porciones_por_envase(
+            producto, _porcion_declarada(receta, info, unidad), unidad
+        ),
+        leyendas_obligatorias=_leyendas_obligatorias(evaluacion),
+        fecha_elaboracion=lote.fecha_produccion if lote else None,
+        fecha_vencimiento=lote.fecha_vencimiento if lote else None,
         leyenda=LEYENDA_BORRADOR,
         faltantes=[campo.nombre for campo in campos if campo.obligatorio and not campo.completo],
     )
@@ -728,6 +843,14 @@ def generar_pdf_empaquetado(db: Session, producto_id: int) -> bytes:
         tabla_nutricional=empaquetado.tabla_nutricional,
         sellos=empaquetado.sellos,
         mensaje_sellos=empaquetado.mensaje_sellos,
+        descripcion=empaquetado.descripcion,
+        codigo_barras=empaquetado.codigo_barras,
+        alergenos=empaquetado.alergenos,
+        conservacion=empaquetado.conservacion,
+        porciones_por_envase=empaquetado.porciones_por_envase,
+        leyendas_obligatorias=empaquetado.leyendas_obligatorias,
+        fecha_elaboracion=empaquetado.fecha_elaboracion,
+        fecha_vencimiento=empaquetado.fecha_vencimiento,
         unidad=_unidad_empaquetado(producto, evaluacion),
         porcion=info.porcion if info else None,
         leyenda=empaquetado.leyenda,

@@ -70,16 +70,28 @@ class ElementoEmpaquetado:
 
 
 # Posiciones iniciales (porcentajes del lienzo) de los elementos del empaquetado.
+# Ningún bloque queda visible de entrada: la vista previa arranca con la lista de elementos
+# sin tildar y el administrador elige qué ubicar sobre la foto del envase.
 ELEMENTOS_EMPAQUETADO = (
-    ElementoEmpaquetado("denominacion", "Denominación de venta", 6, 5, 58, 11),
-    ElementoEmpaquetado("contenido_neto", "Contenido neto", 6, 17, 40, 6),
-    ElementoEmpaquetado("ingredientes", "Lista de ingredientes", 6, 24, 58, 15),
-    ElementoEmpaquetado("origen", "Origen con RNPA/RPPA", 6, 40, 58, 14),
-    ElementoEmpaquetado("lote_fecha", "Lote y fecha de duración", 6, 55, 58, 12),
-    ElementoEmpaquetado("instrucciones", "Preparación e instrucciones de uso", 6, 68, 58, 9),
-    ElementoEmpaquetado("tabla_nutricional", "Tabla nutricional", 66, 58, 29, 33),
-    ElementoEmpaquetado("sellos", "Octógonos / sellos de advertencia", 66, 5, 29, 24),
-    ElementoEmpaquetado("importador", "Importador", 6, 78, 58, 10, visible=False),
+    ElementoEmpaquetado("denominacion", "Denominación de venta", 4, 3, 58, 9, visible=False),
+    ElementoEmpaquetado("contenido_neto", "Contenido neto", 4, 12.5, 34, 4.5, visible=False),
+    ElementoEmpaquetado("descripcion", "Descripción del producto", 4, 17.5, 58, 6, visible=False),
+    ElementoEmpaquetado("ingredientes", "Lista de ingredientes", 4, 24, 58, 13, visible=False),
+    ElementoEmpaquetado("alergenos", "Leyendas de alérgenos y gluten", 4, 37.5, 58, 7.5,
+                        visible=False),
+    ElementoEmpaquetado("origen", "Origen con RNPA/RPPA", 4, 45.5, 58, 9, visible=False),
+    ElementoEmpaquetado("lote_fecha", "Lote, elaboración y vencimiento", 4, 55, 58, 8.5,
+                        visible=False),
+    ElementoEmpaquetado("conservacion", "Condiciones de conservación", 4, 64, 58, 5, visible=False),
+    ElementoEmpaquetado("instrucciones", "Preparación e instrucciones de uso", 4, 69.5, 58, 8,
+                        visible=False),
+    ElementoEmpaquetado("porciones", "Porciones por envase", 4, 78, 34, 4, visible=False),
+    ElementoEmpaquetado("leyendas", "Leyendas de edulcorantes y cafeína", 4, 82.5, 58, 7,
+                        visible=False),
+    ElementoEmpaquetado("importador", "Importador", 4, 90, 58, 9, visible=False),
+    ElementoEmpaquetado("sellos", "Octógonos / sellos de advertencia", 65, 3, 31, 24, visible=False),
+    ElementoEmpaquetado("codigo_barras", "Código de barras", 65, 28, 31, 12, visible=False),
+    ElementoEmpaquetado("tabla_nutricional", "Tabla nutricional", 65, 41, 31, 42, visible=False),
 )
 
 CLAVES_ELEMENTO_EMPAQUETADO = tuple(elemento.clave for elemento in ELEMENTOS_EMPAQUETADO)

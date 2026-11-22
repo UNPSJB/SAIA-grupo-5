@@ -6,6 +6,7 @@ import { api } from '../../../libs/axios';
 import { useApi } from '../../../hooks/useApi';
 import { mostrarAlertaError, mostrarAlertaExito } from '../../../libs/alertas';
 import type { Producto } from '../../Productos/types';
+import { CodigoBarras } from '../../Productos/components/CodigoBarras';
 import { SelloOctogono } from '../../Recetas/components/SelloOctogono';
 import {
     ETIQUETAS_EMPAQUETADO,
@@ -893,7 +894,20 @@ function ContenidoEmpaquetado({
     empaquetado: EmpaquetadoProducto;
     sinFondo?: boolean;
 }) {
-    const { datos, tabla_nutricional: tabla, sellos, mensaje_sellos: mensajeSellos } = empaquetado;
+    const {
+        datos,
+        tabla_nutricional: tabla,
+        sellos,
+        mensaje_sellos: mensajeSellos,
+        descripcion,
+        codigo_barras: codigoBarras,
+        alergenos,
+        conservacion,
+        porciones_por_envase: porciones,
+        leyendas_obligatorias: leyendas,
+        fecha_elaboracion: fechaElaboracion,
+        fecha_vencimiento: fechaVencimiento,
+    } = empaquetado;
 
     if (clave === 'denominacion') {
         return <strong>{datos.denominacion_venta || 'Denominación de venta pendiente'}</strong>;
@@ -901,8 +915,25 @@ function ContenidoEmpaquetado({
     if (clave === 'contenido_neto') {
         return <>Contenido neto: {datos.contenido_neto || '—'}</>;
     }
+    if (clave === 'descripcion') {
+        return descripcion
+            ? <>{descripcion}</>
+            : <span className="text-muted">Sin descripción del producto</span>;
+    }
     if (clave === 'ingredientes') {
         return <>Ingredientes: {datos.lista_ingredientes || '—'}</>;
+    }
+    if (clave === 'alergenos') {
+        if (!alergenos.length) {
+            return <span className="text-muted">Sin leyendas de alérgenos declaradas</span>;
+        }
+        return (
+            <>
+                {alergenos.map((leyenda) => (
+                    <div key={leyenda} className="fw-bold">{leyenda}</div>
+                ))}
+            </>
+        );
     }
     if (clave === 'origen') {
         const elaborador = [datos.razon_social, datos.domicilio].filter(Boolean).join(' - ');
@@ -914,17 +945,58 @@ function ContenidoEmpaquetado({
         );
     }
     if (clave === 'lote_fecha') {
+        const comoFecha = (valor: string) =>
+            new Date(`${valor}T00:00:00`).toLocaleDateString('es-AR');
+        const vencimiento = fechaVencimiento ?? datos.fecha_duracion;
         return (
             <>
                 {datos.identificacion_lote ? <>Lote: {datos.identificacion_lote}<br /></> : null}
-                {datos.fecha_duracion
-                    ? `Consumir preferentemente antes del: ${new Date(`${datos.fecha_duracion}T00:00:00`).toLocaleDateString('es-AR')}`
+                {fechaElaboracion ? <>Elaborado el: {comoFecha(fechaElaboracion)}<br /></> : null}
+                {vencimiento
+                    ? `Consumir preferentemente antes del: ${comoFecha(vencimiento)}`
                     : 'Fecha de duración: —'}
+            </>
+        );
+    }
+    if (clave === 'conservacion') {
+        return <>Conservación: {conservacion || '—'}</>;
+    }
+    if (clave === 'porciones') {
+        return <>Porciones por envase: {porciones || '—'}</>;
+    }
+    if (clave === 'leyendas') {
+        if (!leyendas.length) {
+            return <span className="text-muted">Sin leyendas de edulcorantes ni cafeína</span>;
+        }
+        return (
+            <>
+                {leyendas.map((leyenda) => (
+                    <div key={leyenda} className="fw-bold">{leyenda}</div>
+                ))}
             </>
         );
     }
     if (clave === 'instrucciones') {
         return <>Preparación e instrucciones de uso: {datos.instrucciones_uso || '—'}</>;
+    }
+    if (clave === 'codigo_barras') {
+        if (!codigoBarras) {
+            return <span className="text-muted">Sin código de barras asignado</span>;
+        }
+        return (
+            <div
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '100%',
+                    height: '100%',
+                    background: '#fff',
+                }}
+            >
+                <CodigoBarras codigo={codigoBarras} altura={38} anchoBarra={1} />
+            </div>
+        );
     }
     if (clave === 'importador') {
         if (!datos.es_importado) return <span className="text-muted">Producto no importado</span>;

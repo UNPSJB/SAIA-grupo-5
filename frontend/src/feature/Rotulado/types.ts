@@ -111,13 +111,19 @@ export type BorradorRotuladoCAA = {
 export type ClaveElementoEmpaquetado =
     | "denominacion"
     | "contenido_neto"
+    | "descripcion"
     | "ingredientes"
+    | "alergenos"
     | "origen"
     | "lote_fecha"
+    | "conservacion"
     | "instrucciones"
-    | "tabla_nutricional"
+    | "porciones"
+    | "leyendas"
+    | "importador"
     | "sellos"
-    | "importador";
+    | "codigo_barras"
+    | "tabla_nutricional";
 
 export type ElementoEmpaquetado = {
     clave: ClaveElementoEmpaquetado;
@@ -155,6 +161,14 @@ export type EmpaquetadoProducto = {
     tabla_incompleta: boolean;
     sellos: string[];
     mensaje_sellos: string;
+    descripcion: string | null;
+    codigo_barras: string | null;
+    alergenos: string[];
+    conservacion: string | null;
+    porciones_por_envase: string | null;
+    leyendas_obligatorias: string[];
+    fecha_elaboracion: string | null;
+    fecha_vencimiento: string | null;
     leyenda: string;
     faltantes: string[];
 };
@@ -168,13 +182,19 @@ export const ETIQUETAS_FORMATO_DECLARACION: Record<FormatoDeclaracionAditivos, s
 export const ETIQUETAS_EMPAQUETADO: Record<ClaveElementoEmpaquetado, string> = {
     denominacion: "Denominación de venta",
     contenido_neto: "Contenido neto",
+    descripcion: "Descripción del producto",
     ingredientes: "Lista de ingredientes",
+    alergenos: "Leyendas de alérgenos y gluten",
     origen: "Origen con RNPA/RPPA",
-    lote_fecha: "Lote y fecha de duración",
+    lote_fecha: "Lote, elaboración y vencimiento",
+    conservacion: "Condiciones de conservación",
     instrucciones: "Instrucciones de uso",
-    tabla_nutricional: "Tabla nutricional",
-    sellos: "Octógonos / sellos",
+    porciones: "Porciones por envase",
+    leyendas: "Leyendas de edulcorantes y cafeína",
     importador: "Importador",
+    sellos: "Octógonos / sellos",
+    codigo_barras: "Código de barras",
+    tabla_nutricional: "Tabla nutricional",
 };
 
 export type CampoDeclaracion =

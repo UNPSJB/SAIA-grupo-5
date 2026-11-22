@@ -213,6 +213,14 @@ class EmpaquetadoProducto(BaseModel):
     tabla_incompleta: bool = False
     sellos: list[str] = []
     mensaje_sellos: str = ""
+    descripcion: str | None = None
+    codigo_barras: str | None = None
+    alergenos: list[str] = []
+    conservacion: str | None = None
+    porciones_por_envase: str | None = None
+    leyendas_obligatorias: list[str] = []
+    fecha_elaboracion: date | None = None
+    fecha_vencimiento: date | None = None
     leyenda: str
     faltantes: list[str] = []
 
