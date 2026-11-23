@@ -139,6 +139,7 @@ import { ListPage as LoteProduccionListPage } from './feature/LotesProduccion/pa
 import { NuevoLoteProduccionPage } from './feature/LotesProduccion/pages/NuevoLoteProduccionPage.tsx'
 import { EditarLoteProduccionPage } from './feature/LotesProduccion/pages/EditarLoteProduccionPage.tsx'
 import { VerLoteProduccionPage } from './feature/LotesProduccion/pages/VerLoteProduccionPage.tsx'
+import { TrazabilidadLoteProduccionPage } from './feature/LotesProduccion/pages/TrazabilidadLoteProduccionPage.tsx';
 
 import { ListPage as ProveedorListPage } from './feature/Proveedores/pages/ListPage.tsx'
 import { NuevoProveedorPage } from './feature/Proveedores/pages/NuevoProveedorPage.tsx'
@@ -489,6 +490,7 @@ const router = createBrowserRouter([
               { path: 'new', element: <NuevoLoteProduccionPage />},
               { path: ':id/edit', element: <EditarLoteProduccionPage />},
               { path: ':id', element: <VerLoteProduccionPage />},
+              { path: ':id/trazabilidad', element: <TrazabilidadLoteProduccionPage />},
             ],
           },
           {
