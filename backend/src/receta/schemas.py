@@ -1,10 +1,11 @@
 from datetime import datetime
 from typing import Annotated
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator, field_validator
 from src.etapa_receta.schemas import EtapaReceta, EtapaRecetaAnidadaCreate
 from src.unidad_medida.schemas import UnidadMedida
 from src.aditivo.schemas import AditivoResumen
 from src.receta.constants import ErrorCode, TipoRenglon
+
 
 
 class InsumoRecetaCreate(BaseModel):
@@ -56,6 +57,7 @@ class EvaluacionSellosCreate(BaseModel):
 class RecetaBase(BaseModel):
     porcion: Annotated[float | None, Field(gt=0)] = None
     porcion_unidad_medida_id: int | None = None
+    medida_casera: Annotated[str | None, Field(max_length=100)] = None
     etapas: Annotated[list[EtapaRecetaAnidadaCreate], Field(min_length=1)]
     insumos: Annotated[list[InsumoRecetaCreate], Field(min_length=1)]
 
@@ -90,8 +92,14 @@ class RecetaVersion(BaseModel):
 
 class Receta(RecetaVersion):
     porcion: float | None = None
+    medida_casera: str | None = None
     porcion_unidad_medida_id: int | None = None
     porcion_unidad_medida: UnidadMedida | None = None
     etapas: list[EtapaReceta]
     insumos: list[InsumoReceta] = []
     sellos: EvaluacionSellos
+
+@field_validator("medida_casera")
+@classmethod
+def limpiar_medida_casera(cls, valor):
+    return (valor or "").strip() or None

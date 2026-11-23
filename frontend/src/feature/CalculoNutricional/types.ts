@@ -45,3 +45,15 @@ export type InformacionNutricionalReceta = {
     tabla_nutricional: FilaNutrienteCalculado[];
     fecha_calculo: string;
 };
+
+export type TablaNutricionalRotulo = {
+    receta_id: number;
+    receta_version: number;
+    producto: string;
+    unidad: string;
+    porcion: number;
+    medida_casera: string | null;
+    tabla_nutricional: FilaNutrienteCalculado[];
+    fecha_calculo: string;
+    leyenda: string;
+};

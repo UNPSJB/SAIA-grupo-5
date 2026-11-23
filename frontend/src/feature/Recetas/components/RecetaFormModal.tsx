@@ -32,6 +32,7 @@ interface InsumoRecetaFormData {
 interface RecetaFormData {
     porcion: string;
     porcion_unidad_medida_id: string;
+    medida_casera: string;
     insumos: InsumoRecetaFormData[];
     etapas: NewEtapaReceta[];
 }
@@ -43,6 +44,7 @@ const renglonVacio = (tipo: TipoRenglon): InsumoRecetaFormData => ({ insumo_id: 
 const plantillaInicial = (): RecetaFormData => ({
     porcion: "",
     porcion_unidad_medida_id: "",
+    medida_casera: "",
     insumos: [renglonVacio("Ingrediente")],
     etapas: PLANTILLA_ETAPAS.map((etapa) => ({ ...etapa, pasos: etapa.pasos.map((paso) => ({ ...paso })) })),
 });
@@ -52,6 +54,7 @@ const aTexto = (valor: number | null) => (valor === null ? "" : String(valor));
 const valoresDeReceta = (receta: Receta): RecetaFormData => ({
     porcion: aTexto(receta.porcion),
     porcion_unidad_medida_id: aTexto(receta.porcion_unidad_medida_id),
+    medida_casera: receta.medida_casera ?? "",
     insumos: (receta.insumos ?? []).map((item) => ({
         insumo_id: String(item.insumo_id),
         cantidad: String(item.cantidad),
@@ -101,6 +104,7 @@ export function RecetaFormModal({ producto, receta, onHide, onSaved }: RecetaFor
             const datos: NewRecetaVersion = {
                 porcion: data.porcion.trim() ? Number(data.porcion) : null,
                 porcion_unidad_medida_id: data.porcion_unidad_medida_id ? Number(data.porcion_unidad_medida_id) : null,
+                medida_casera: data.medida_casera.trim() || null,
                 etapas: data.etapas.map((etapa) => ({
                     nombre: etapa.nombre.trim(),
                     pasos: etapa.pasos.map((paso) => ({ descripcion: paso.descripcion.trim() })),
@@ -269,6 +273,19 @@ function RendimientoReceta({ register, errors, receta }: RendimientoRecetaProps)
                                 {errors.porcion?.message ?? errors.porcion_unidad_medida_id?.message}
                             </Form.Control.Feedback>
                         </InputGroup>
+                    </Col>
+                    <Col sm={6}>
+                        <Form.Label className="p-1 fw-bold small mb-0">Medida casera</Form.Label>
+                        <Form.Control
+                            type="text"
+                            maxLength={100}
+                            placeholder="Ej: 1 cucharada sopera (15 g)"
+                            {...register("medida_casera", {
+                                maxLength: { value: 100, message: "La medida casera no puede superar los 100 caracteres." },
+                            })}
+                            isInvalid={!!errors.medida_casera}
+                        />
+                        <Form.Control.Feedback type="invalid">{errors.medida_casera?.message}</Form.Control.Feedback>
                     </Col>
                 </Row>
             )}

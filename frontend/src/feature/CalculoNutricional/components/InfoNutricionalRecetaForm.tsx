@@ -5,7 +5,7 @@ import { useApi } from "../../../hooks/useApi";
 import { useAuth } from "../../../hooks/useAuth";
 import { api } from "../../../libs/axios";
 import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
-import type { FilaNutrienteCalculado, InformacionNutricionalReceta } from "../types";
+import type { FilaNutrienteCalculado, InformacionNutricionalReceta, TablaNutricionalRotulo } from "../types";
 
 interface InfoNutricionalRecetaFormProps {
     recetaId: number;
@@ -23,12 +23,30 @@ export function InfoNutricionalReceta({ recetaId }: InfoNutricionalRecetaFormPro
     const endpoint = `/calculo-nutricional/recetas/${recetaId}`;
 
     const { data: infoReceta, isLoading } = useApi<InformacionNutricionalReceta>(endpoint);
+    const endpointTabla = `${endpoint}/tabla`;
+    const { data: tabla } = useApi<TablaNutricionalRotulo>(infoReceta ? endpointTabla : null);
+    const unidad = tabla?.unidad ?? "g";
     const [calculando, setCalculando] = useState(false);
     const [verExactos, setVerExactos] = useState(false);
     const [rendimiento, setRendimiento] = useState<string | null>(null);
     const rendimientoIngresado = rendimiento ?? (infoReceta ? String(infoReceta.rendimiento) : "");
     const rendimientoNumero = Number(rendimientoIngresado);
     const rendimientoValido = rendimientoIngresado.trim() !== "" && rendimientoNumero > 0;
+
+    const handleExportar = async () => {
+        try {
+            const { data: pdf } = await api.get(`${endpoint}/tabla.pdf`, { responseType: "blob" });
+            const url = URL.createObjectURL(pdf);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `tabla_nutricional_${recetaId}.pdf`;
+            a.click();
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            mostrarAlertaError("No se pudo exportar la tabla nutricional.");
+            console.error(error);
+        }
+    };
 
     const handleCalcular = async () => {
         if (!rendimientoValido) return;
@@ -39,6 +57,7 @@ export function InfoNutricionalReceta({ recetaId }: InfoNutricionalRecetaFormPro
                 { rendimiento: rendimientoNumero },
             );
             await mutate(endpoint, data, false);
+            await mutate(endpointTabla);
             mostrarAlertaExito("Información nutricional calculada correctamente.");
         } catch (error: any) {
             let mensajeFinal = "No se pudo calcular la información nutricional.";
@@ -52,6 +71,7 @@ export function InfoNutricionalReceta({ recetaId }: InfoNutricionalRecetaFormPro
             setCalculando(false);
         }
     };
+    
 
     const formatearCelda = (fila: FilaNutrienteCalculado, tipo: "100g" | "porcion") => {
         if (verExactos) {
@@ -77,9 +97,12 @@ export function InfoNutricionalReceta({ recetaId }: InfoNutricionalRecetaFormPro
                     </h5>
                     {infoReceta && (
                         <small className="text-muted">
-                            Rendimiento: <strong>{infoReceta.rendimiento} g</strong> | Porción:{" "}
-                            <strong>{infoReceta.porcion} g</strong> | Calculado el{" "}
-                            {new Date(infoReceta.fecha_calculo).toLocaleString("es-AR", {dateStyle: "short", timeStyle: "short"})}
+                            Rendimiento: <strong>{infoReceta.rendimiento} {unidad}</strong> | Porción:{" "}
+                            <strong>
+                                {infoReceta.porcion} {unidad}
+                                {tabla?.medida_casera ? ` (${tabla.medida_casera})` : ""}
+                            </strong>{" "}| Calculado el{" "}
+                            {new Date(infoReceta.fecha_calculo).toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" })}
                         </small>
                     )}
                 </div>
@@ -145,13 +168,18 @@ export function InfoNutricionalReceta({ recetaId }: InfoNutricionalRecetaFormPro
                     </Alert>
                 ) : (
                     <>
+                        <Alert variant="warning" className="py-2 small fw-semibold">
+                            {tabla?.leyenda ?? "Los valores se calcularon a partir de datos de referencia. Deben ser revisados por un/a profesional antes de usarse en un rótulo."}
+                        </Alert>
                         <div className="table-responsive">
                             <Table bordered hover size="sm" className="align-middle mb-2">
                                 <thead className="table-light">
                                     <tr>
                                         <th>Nutriente</th>
-                                        <th className="text-end">Cantidad cada 100 g</th>
-                                        <th className="text-end">Cantidad por porción ({infoReceta.porcion} g)</th>
+                                        <th className="text-end">Cantidad cada 100 {unidad}</th>
+                                        <th className="text-end">
+                                            Cantidad por porción ({infoReceta.porcion} {unidad}{tabla?.medida_casera ? ` · ${tabla.medida_casera}` : ""})
+                                        </th>
                                         <th className="text-center">% VD (*)</th>
                                     </tr>
                                 </thead>
@@ -188,6 +216,12 @@ export function InfoNutricionalReceta({ recetaId }: InfoNutricionalRecetaFormPro
                             </div>
                             <div>(**) Valor Diario no establecido.</div>
                         </div>
+
+                        {currentUser?.administrar && (
+                            <Button variant="outline-success" size="sm" className="mt-3" onClick={handleExportar}>
+                                <i className="bi bi-file-earmark-pdf me-1"></i> Exportar tabla (PDF)
+                            </Button>
+                        )}
                     </>
                 )}
             </Card.Body>

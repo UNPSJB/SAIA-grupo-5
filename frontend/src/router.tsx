@@ -157,14 +157,14 @@ import { NuevoPedidoProveedorPage } from './feature/PedidosProveedor/pages/Nuevo
 import { EditarPedidoProveedorPage } from './feature/PedidosProveedor/pages/EditarPedidoProveedorPage.tsx'
 import { VerPedidoProveedorPage } from './feature/PedidosProveedor/pages/VerPedidoProveedorPage.tsx'
 
-import { ListPage as FuenteNutricionalListPage } from './feature/FuenteNutricional/pages/Listpage.tsx'
+import { ListPage as FuenteNutricionalListPage } from './feature/FuenteNutricional/pages/ListPage.tsx'
 import { NuevaFuenteNutricionalPage } from './feature/FuenteNutricional/pages/NuevaFuenteNutricionalPage.tsx'
 import { EditarFuenteNutricionalPage } from './feature/FuenteNutricional/pages/EditarFuenteNutricionalPage.tsx'
 import { VerFuenteNutricionalPage } from './feature/FuenteNutricional/pages/VerFuenteNutricionalPage.tsx'
 
 import { ConfiguracionCalculoNutricionalPage } from './feature/CalculoNutricional/pages/ConfiguracionCalculoNutricionalPage.tsx'
 
-import { ListPage as AlergenosListPage } from './feature/Alergenos/pages/Listpage.tsx'
+import { ListPage as AlergenosListPage } from './feature/Alergenos/pages/ListPage.tsx'
 import { NuevoAlergenoPage } from './feature/Alergenos/pages/NuevoAlergenoPage.tsx'
 import { EditarAlergenoPage } from './feature/Alergenos/pages/EditarAlergenoPage.tsx'
 

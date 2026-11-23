@@ -25,3 +25,7 @@ PARAMETROS_NUTRIENTES_DEFAULT = (
     ("fibra_alimentaria", "Fibra alimentaria", "g", Decimal("25"), True, Decimal("0.5"), 9),
     ("sodio", "Sodio", "mg", Decimal("2400"), True, Decimal("5"), 10),
 )
+LEYENDA_TABLA_NUTRICIONAL = (
+    "Los valores se calcularon a partir de datos de referencia. "
+    "Deben ser revisados por un profesional antes de usarse en un rotulo."
+)
