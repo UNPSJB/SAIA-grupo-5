@@ -7,11 +7,11 @@ import { useAuth } from '../../../hooks/useAuth';
 import { PageHeader } from '../../../components/PageHeader';
 import { PageLoading } from '../../../components/PageLoading';
 import { Dato } from '../../../components/Dato';
+import { VencimientoBadge } from '../../../components/VencimientoBadge';
 import type { InsumoLote } from '../types';
 import { ActionButton } from '../../../components/ActionButton';
 import { ListaIncidentesVinculados } from '../../Incidentes/components/ListaIncidentesVinculados';
 import { CambiarAlmacenamientoModal } from '../../Equipos/components/CambiarAlmacenamientoModal';
-import './VerInsumoLotePage.css';
 
 export function VerInsumoLotePage() {
     const { id } = useParams();
@@ -43,23 +43,6 @@ export function VerInsumoLotePage() {
             </Row>
         </Container>
     );
-
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0);
-    const partes = item.fecha_vencimiento.split('-');
-    const fechaVenc = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
-    fechaVenc.setHours(0, 0, 0, 0);
-    const diasRestantes = Math.round((fechaVenc.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
-
-    const vencido = diasRestantes <= 0;
-    const proximo = diasRestantes > 0 && diasRestantes <= 15;
-    const badge = vencido ? '#fee2e2' : proximo ? '#fef3c7' : '#dcfce7';
-    const color = vencido ? '#991b1b' : proximo ? '#92400e' : '#166534';
-    const textoEstado = vencido
-        ? `Vencido (${Math.abs(diasRestantes)} días)`
-        : proximo
-        ? `Próximo a vencer (${diasRestantes} días)`
-        : `Vigente (${diasRestantes} días)`;
 
     const esBajoStock = item.cantidad_restante <= item.minimo_alerta;
 
@@ -98,19 +81,7 @@ export function VerInsumoLotePage() {
                             {item.fecha_vencimiento.split('-').reverse().join('/')}
                         </Dato>
                         <Dato etiqueta="Estado Actual" md={6} lg={3}>
-                            <span
-                                style={{
-                                    padding: '4px 12px',
-                                    borderRadius: '20px',
-                                    background: badge,
-                                    color: color,
-                                    fontWeight: 700,
-                                    display: 'inline-block',
-                                    fontSize: '0.875rem',
-                                }}
-                            >
-                                {textoEstado}
-                            </span>
+                            <VencimientoBadge fecha={item.fecha_vencimiento} diasAviso={15} />
                         </Dato>
                         <Dato etiqueta="Costo Unitario" md={6} lg={3}>
                             {item.costo_unitario != null

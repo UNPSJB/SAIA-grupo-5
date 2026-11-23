@@ -21,3 +21,14 @@
     font-size: 1rem;
     overflow-wrap: anywhere;
 }
+
+.detalle-seccion-titulo {
+    margin: 0 0 0.75rem;
+    padding: 0.45rem 0.75rem;
+    border-radius: 0.5rem;
+    background: #e8f6f0;
+    color: #123c29;
+    font-size: 1rem;
+    font-weight: 700;
+    text-align: start;
+}
