@@ -75,7 +75,7 @@ export function LoteProduccionForm({ textoBoton, onSubmit, valoresIniciales, mos
                     >
                         <option value="" disabled>Seleccione un Producto</option>
                         {isLoading && <option disabled>Cargando productos...</option>}
-                        {productos?.filter(p => p.activo).map((p) => (
+                        {productos?.filter(p => p.activo && (p.receta != null || p.id === valoresIniciales?.producto_id)).map((p) => (
                             <option key={p.id} value={p.id}>
                                 {p.nombre}
                             </option>

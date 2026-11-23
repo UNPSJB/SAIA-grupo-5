@@ -53,7 +53,7 @@ def read_lotes_por_producto(producto_id: int, db: Session = Depends(get_db)):
 def read_lote_produccion(lote_id: int, db: Session = Depends(get_db)):
     return services.leer_lote_produccion(db, lote_id)
 
-@router.patch("/{lote_id}/estado", response_model=schemas.LoteProduccion, dependencies=[Depends(tiene_permiso_operar)])
+@router.patch("/{lote_id}/estado", response_model=schemas.LoteProduccion, dependencies=[Depends(tiene_permiso_operar_o_supervisor)])
 def cambiar_estado_lote_produccion(lote_id: int, datos: schemas.AvanzarEstadoLote = schemas.AvanzarEstadoLote(), db: Session = Depends(get_db), persona_actual: personal_models.Persona = Depends(get_current_persona)):
     return services.cambiar_estado_lote_produccion(db, lote_id, usuario_id=persona_actual.id, observacion=datos.observacion, equipo_id=datos.equipo_id, sector_id=datos.sector_id)
 

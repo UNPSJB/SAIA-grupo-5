@@ -43,6 +43,7 @@ from src.rotulado.models import ReglasRotulado
 from src.insumos_lote.models import InsumoLote
 from src.proveedor.models import ProveedorInsumo
 from src.pedidos_proveedor.models import PedidoProveedor
+from src.supervision_lote.models import SupervisionOcurrencia
 
 from src.config import settings
 from src.settings import ROOT_PATH
@@ -100,6 +101,7 @@ from src.calculo_nutricional.router import router as calculo_nutricional_router
 from src.registro_temperatura.router import router as registro_temperatura_router
 from src.alergenos.router import router as alergenos_router
 from src.declaracion_alergenos.router import router as declaracion_alergenos_router
+from src.supervision_lote.router import router as supervision_lote_router
 
 
 
@@ -178,4 +180,5 @@ app.include_router(calculo_nutricional_router)
 
 app.include_router(alergenos_router)
 app.include_router(declaracion_alergenos_router)
+app.include_router(supervision_lote_router)
 

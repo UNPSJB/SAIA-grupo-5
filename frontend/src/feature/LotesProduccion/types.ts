@@ -32,6 +32,8 @@ export type LoteProduccion = {
     equipo?: EquipoAlmacenamientoResumen | null;
     sector?: SectorAlmacenamientoResumen | null;
     insumos_utilizados?: InsumoUtilizado[];
+    pasos_pendientes?: number;
+    checklist_completo?: boolean;
     receta_id?: number | null;
     receta?: RecetaVersion | null;
 }

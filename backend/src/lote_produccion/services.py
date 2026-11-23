@@ -18,6 +18,7 @@ from src.equipos.models import Equipo
 from src.notificaciones.services import generar_notificacion_alerta_stock_individual
 from src.sector import exceptions as sector_exceptions
 from src.sector.models import Sector
+from src.supervision_lote import services as supervision_services
 from src.lote_produccion.receta_lote import buscar_receta_para_lote
 
 logger = logging.getLogger(__name__)
@@ -54,6 +55,8 @@ def crear_lote_produccion(db: Session, lote: schemas.LoteProduccionCreate, usuar
     db.add(primer_hito)
     db.commit()
 
+    supervision_services.generar_checklist_elaboracion_lote(db, _lote)
+
     return leer_lote_produccion(db, _lote.id)
 
 
@@ -63,6 +66,7 @@ def listar_lotes_produccion(db: Session) -> List[schemas.LoteProduccionDetalle]:
                                                 joinedload(LoteProduccion.equipo).joinedload(Equipo.sector),
                                                 joinedload(LoteProduccion.sector),
                                                 joinedload(LoteProduccion.receta),
+                                                selectinload(LoteProduccion.supervisiones),
                                                 selectinload(LoteProduccion.insumos_utilizados).joinedload(InsumoUtilizado.insumo_lote).
                                                 joinedload(InsumoLote.insumo).
                                                 joinedload(Insumo.unidad_medida))).all()
@@ -75,6 +79,7 @@ def leer_lote_produccion(db: Session, lote_id: int) -> schemas.LoteProduccionDet
             joinedload(LoteProduccion.equipo).joinedload(Equipo.sector),
             joinedload(LoteProduccion.sector),
             joinedload(LoteProduccion.receta),
+            selectinload(LoteProduccion.supervisiones),
             selectinload(LoteProduccion.insumos_utilizados).joinedload(InsumoUtilizado.insumo_lote)
             .joinedload(InsumoLote.insumo).joinedload(Insumo.unidad_medida),
             selectinload(LoteProduccion.insumos_utilizados).joinedload(InsumoUtilizado.insumo_lote)
@@ -87,7 +92,8 @@ def leer_lote_produccion(db: Session, lote_id: int) -> schemas.LoteProduccionDet
 
 def listar_lotes_por_producto(db: Session, producto_id: int) -> List[schemas.LoteProduccion]:
     return db.scalars(select(LoteProduccion).where(LoteProduccion.producto_id == producto_id)
-                    .options(joinedload(LoteProduccion.producto).joinedload(Producto.unidad_medida))).all()
+                    .options(joinedload(LoteProduccion.producto).joinedload(Producto.unidad_medida),
+                             selectinload(LoteProduccion.supervisiones))).all()
 
 
 def cambiar_estado_lote_produccion(
@@ -106,10 +112,14 @@ def cambiar_estado_lote_produccion(
     if db_lote.estado not in SIGUIENTE_ESTADO:
         raise exceptions.LoteYaEnviado()
 
+    supervision_services.validar_checklist_fase_completo(db, db_lote.id, db_lote.estado)
+
     nuevo_estado = SIGUIENTE_ESTADO[db_lote.estado]
     db_lote.estado = nuevo_estado
 
-    if nuevo_estado == EstadoLote.TERMINADO.value:
+    if nuevo_estado == EstadoLote.EMPAQUETANDO.value:
+        supervision_services.generar_checklist_empaquetado_lote(db, db_lote)
+    elif nuevo_estado == EstadoLote.TERMINADO.value:
         if equipo_id is not None:
             equipo_db = db.get(Equipo, equipo_id)
             if not equipo_db or not equipo_db.estado:
@@ -210,7 +220,11 @@ def listar_lotes_historial(
     fecha_hasta: date | None = None,
 ) -> schemas.LoteProduccionHistorial:
 
-    consulta = (select(LoteProduccion).options(selectinload(LoteProduccion.producto), selectinload(LoteProduccion.receta)))
+   consulta = (select(LoteProduccion).options(
+        selectinload(LoteProduccion.producto),
+        selectinload(LoteProduccion.receta),
+        selectinload(LoteProduccion.supervisiones)
+    ))
 
     filtros = []
 
