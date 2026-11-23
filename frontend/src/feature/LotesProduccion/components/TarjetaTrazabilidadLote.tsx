@@ -8,6 +8,9 @@ import type {
     TrazabilidadLoteProduccionData,
     TrazabilidadLoteProveedorData,
 } from '../types';
+import './TarjetaTrazabilidadLote.css';
+
+const MAX_FILAS_SIN_SCROLL = 5;
 
 interface TarjetaTrazabilidadLoteProps {
     modo: 'lote_produccion' | 'insumo_lote' | 'lote_proveedor';
@@ -312,45 +315,49 @@ export function TarjetaTrazabilidadLote({
                                 {insumo.producciones.length === 0 ? (
                                     <p className="text-muted small mb-0 px-2">Aun no utilizado en lotes de produccion.</p>
                                 ) : (
-                                    <Table size="sm" responsive hover className="mb-0 align-middle">
-                                        <thead>
-                                            <tr>
-                                                <th>Lote Produccion</th>
-                                                <th>Estado</th>
-                                                <th>Envios a Clientes</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {insumo.producciones.map((produccion) => (
-                                                <tr key={produccion.lote_produccion_id}>
-                                                    <td>
-                                                        <Button
-                                                            variant="link"
-                                                            size="sm"
-                                                            className="p-0 fw-semibold text-decoration-none"
-                                                            onClick={() => navigate(`/lotes-produccion/${produccion.lote_produccion_id}`)}
-                                                        >
-                                                            Lote #{produccion.lote_produccion_id} ({produccion.producto_nombre})
-                                                        </Button>
-                                                    </td>
-                                                    <td>
-                                                        <Badge bg="secondary">{produccion.estado}</Badge>
-                                                    </td>
-                                                    <td className="small">
-                                                        {produccion.envios.length === 0 ? (
-                                                            <span className="text-muted">Sin envios registrados</span>
-                                                        ) : (
-                                                            produccion.envios.map((envio) => (
-                                                                <p key={envio.envio_id} className="mb-0">
-                                                                    <strong>{envio.cliente_razon_social}</strong> | Remito {envio.numero_remito} | {envio.cantidad} u. ({envio.estado})
-                                                                </p>
-                                                            ))
-                                                        )}
-                                                    </td>
+                                    <div
+                                        className={insumo.producciones.length > MAX_FILAS_SIN_SCROLL ? 'tabla-trazabilidad-scroll' : 'table-responsive'}
+                                    >
+                                        <Table size="sm" hover className="mb-0 align-middle">
+                                            <thead>
+                                                <tr>
+                                                    <th>Lote Produccion</th>
+                                                    <th>Estado</th>
+                                                    <th>Envios a Clientes</th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </Table>
+                                            </thead>
+                                            <tbody>
+                                                {insumo.producciones.map((produccion) => (
+                                                    <tr key={produccion.lote_produccion_id}>
+                                                        <td>
+                                                            <Button
+                                                                variant="link"
+                                                                size="sm"
+                                                                className="p-0 fw-semibold text-decoration-none"
+                                                                onClick={() => navigate(`/lotes-produccion/${produccion.lote_produccion_id}`)}
+                                                            >
+                                                                Lote #{produccion.lote_produccion_id} ({produccion.producto_nombre})
+                                                            </Button>
+                                                        </td>
+                                                        <td>
+                                                            <Badge bg="secondary">{produccion.estado}</Badge>
+                                                        </td>
+                                                        <td className="small">
+                                                            {produccion.envios.length === 0 ? (
+                                                                <span className="text-muted">Sin envios registrados</span>
+                                                            ) : (
+                                                                produccion.envios.map((envio) => (
+                                                                    <p key={envio.envio_id} className="mb-0">
+                                                                        <strong>{envio.cliente_razon_social}</strong> | Remito {envio.numero_remito} | {envio.cantidad} u. ({envio.estado})
+                                                                    </p>
+                                                                ))
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </Table>
+                                    </div>
                                 )}
                             </Card.Body>
                         </Card>
