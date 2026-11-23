@@ -130,6 +130,8 @@ import { NuevaRecetaPage } from './feature/Recetas/pages/NuevaRecetaPage.tsx';
 import { EditarRecetaPage } from './feature/Recetas/pages/EditarRecetaPage.tsx';
 import { VerRecetaPage } from './feature/Recetas/pages/VerRecetaPage.tsx';
 import { EscalarRecetaPage } from './feature/Recetas/pages/EscalarRecetaPage.tsx'
+import { RecetasVigentesPage } from './feature/Recetas/pages/RecetasVigentesPage.tsx';
+import { ConsultaRecetaPage } from './feature/Recetas/pages/ConsultaRecetaPage.tsx';
 import { ReglasRotuladoPage } from './feature/Rotulado/pages/ReglasRotuladoPage.tsx'
 
 import { LotesHistorialPage } from './feature/LoteProduccionHistorial/pages/ListPage.tsx'
@@ -356,6 +358,14 @@ const router = createBrowserRouter([
           },
           { path: 'tareas', element: <TareasPage /> },
           { path: 'checklist', element: <ChecklistListPage /> },
+          {
+            path: 'recetas',
+            children: [
+              { index: true, element: <RecetasVigentesPage /> },
+              { path: ':id', element: <ConsultaRecetaPage /> },
+              { path: ':id/escalar', element: <EscalarRecetaPage /> },
+            ],
+          },
           {
             path: 'incidentes',
             children: [

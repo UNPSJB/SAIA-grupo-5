@@ -109,7 +109,7 @@ export function EscalarRecetaPage() {
                 </Card.Body>
 
                 <Card.Footer className="bg-light d-flex justify-content-between gap-2">
-                    <Button variant="outline-secondary" onClick={() => navigate("/productos")}>
+                    <Button variant="outline-secondary" onClick={() => navigate(-1)}>
                         <i className="bi bi-arrow-left me-1"></i>Volver
                     </Button>
                     <Button
