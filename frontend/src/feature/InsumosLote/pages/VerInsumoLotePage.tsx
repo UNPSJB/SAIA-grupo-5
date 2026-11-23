@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Card, Button, Alert } from 'react-bootstrap';
 import { mutate } from 'swr';
@@ -10,6 +10,25 @@ import type { InsumoLote } from '../types';
 import { ActionButton } from '../../../components/ActionButton';
 import { ListaIncidentesVinculados } from '../../Incidentes/components/ListaIncidentesVinculados';
 import { CambiarAlmacenamientoModal } from '../../Equipos/components/CambiarAlmacenamientoModal';
+import './VerInsumoLotePage.css';
+
+interface DatoProps {
+    etiqueta: string;
+    md?: number;
+    lg?: number;
+    children: ReactNode;
+}
+
+function Dato({ etiqueta, md, lg, children }: DatoProps) {
+    return (
+        <Col xs={12} md={md} lg={lg}>
+            <div className="detalle-dato">
+                <span className="detalle-dato-etiqueta">{etiqueta}</span>
+                <div className="detalle-dato-valor">{children}</div>
+            </div>
+        </Col>
+    );
+}
 
 export function VerInsumoLotePage() {
     const { id } = useParams();
@@ -65,123 +84,94 @@ export function VerInsumoLotePage() {
         <Container>
             <PageHeader title={tituloPagina} />
 
-            <Row className="justify-content-center mt-3">
-                <Col md={8}>
-                    <Card className="shadow-sm border-0 rounded-3 mb-4">
-                        <Card.Body className="p-4">
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={5} className="fw-bold text-secondary">Insumo</Col>
-                                <Col sm={7} className="fs-6 fw-semibold">{item.insumo.nombre}</Col>
-                            </Row>
+            <Card className="shadow-sm border-0 rounded-3 mb-4 mt-3 text-start">
+                <Card.Body className="p-4">
+                    <h6 className="detalle-seccion-titulo">Identificación</h6>
+                    <Row className="g-3 mb-4">
+                        <Dato etiqueta="Insumo" md={6} lg={3}>
+                            <span className="fw-semibold">{item.insumo.nombre}</span>
+                        </Dato>
+                        <Dato etiqueta="Marca" md={6} lg={3}>{item.marca}</Dato>
+                        <Dato etiqueta="N° de Lote" md={6} lg={3}>
+                            <span className="fw-bold">{item.numero_lote}</span>
+                        </Dato>
+                        <Dato etiqueta="Unidad de Medida" md={6} lg={3}>
+                            {item.insumo.unidad_medida?.nombre || 'Unidades'}
+                        </Dato>
+                    </Row>
 
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={5} className="fw-bold text-secondary">Marca</Col>
-                                <Col sm={7} className="fs-6">{item.marca}</Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={5} className="fw-bold text-secondary">N° de Lote</Col>
-                                <Col sm={7} className="fs-6 fw-bold">{item.numero_lote}</Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={5} className="fw-bold text-secondary">Unidad de Medida</Col>
-                                <Col sm={7} className="fs-6">
-                                    {item.insumo.unidad_medida?.nombre || 'Unidades'}
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={5} className="fw-bold text-secondary">Stock / Cantidad Recibida</Col>
-                                <Col sm={7} className="fs-6">
-                                    <strong className={esBajoStock ? 'text-danger' : 'text-success'}>
-                                        {item.cantidad_restante}
-                                    </strong>{' '}
-                                    disponibles / {item.cantidad} recibidas
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={5} className="fw-bold text-secondary">Alerta de Stock Mínimo</Col>
-                                <Col sm={7} className="fs-6">{item.minimo_alerta} unidades</Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={5} className="fw-bold text-secondary">Fecha de Vencimiento</Col>
-                                <Col sm={7} className="fs-6">{item.fecha_vencimiento.split('-').reverse().join('/')}</Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={5} className="fw-bold text-secondary">Estado Actual</Col>
-                                <Col sm={7}>
-                                    <div
-                                        style={{
-                                            padding: '6px 16px',
-                                            borderRadius: '20px',
-                                            background: badge,
-                                            color: color,
-                                            fontWeight: 700,
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                        }}
+                    <h6 className="detalle-seccion-titulo">Stock y vencimiento</h6>
+                    <Row className="g-3 mb-4">
+                        <Dato etiqueta="Stock disponible / recibido" md={6} lg={3}>
+                            <strong className={esBajoStock ? 'text-danger' : 'text-success'}>
+                                {item.cantidad_restante}
+                            </strong>{' '}
+                            / {item.cantidad}
+                        </Dato>
+                        <Dato etiqueta="Alerta de Stock Mínimo" md={6} lg={3}>
+                            {item.minimo_alerta} unidades
+                        </Dato>
+                        <Dato etiqueta="Fecha de Vencimiento" md={6} lg={3}>
+                            {item.fecha_vencimiento.split('-').reverse().join('/')}
+                        </Dato>
+                        <Dato etiqueta="Estado Actual" md={6} lg={3}>
+                            <span
+                                style={{
+                                    padding: '4px 12px',
+                                    borderRadius: '20px',
+                                    background: badge,
+                                    color: color,
+                                    fontWeight: 700,
+                                    display: 'inline-block',
+                                    fontSize: '0.875rem',
+                                }}
+                            >
+                                {textoEstado}
+                            </span>
+                        </Dato>
+                        <Dato etiqueta="Costo Unitario" md={6} lg={3}>
+                            {item.costo_unitario != null
+                                ? `$${Number(item.costo_unitario).toFixed(2)}`
+                                : <span className="text-muted fst-italic">Sin costo especificado</span>}
+                        </Dato>
+                        <Dato etiqueta="Almacenamiento" md={6} lg={9}>
+                            <div className="d-flex align-items-center gap-2">
+                                {item.equipo ? (
+                                    <Button
+                                        variant="link"
+                                        className="p-0 fw-semibold text-decoration-none text-start"
+                                        onClick={() => navigate(`/equipos/${item.equipo?.id}`)}
                                     >
-                                        {textoEstado}
-                                    </div>
-                                </Col>
-                            </Row>
+                                        <i className="bi bi-thermometer-half me-1"></i>
+                                        {item.equipo.nombre}
+                                        {item.equipo.sector ? ` (${item.equipo.sector.nombre})` : ''}
+                                    </Button>
+                                ) : item.sector ? (
+                                    <span>
+                                        <i className="bi bi-geo-alt me-1 text-secondary"></i>
+                                        Sector: <strong>{item.sector.nombre}</strong>
+                                    </span>
+                                ) : (
+                                    <span className="text-muted">Sin ubicación asignada</span>
+                                )}
+                                {puedeCambiarAlmacenamiento && (
+                                    <ActionButton
+                                        variant="outline-primary"
+                                        size="sm"
+                                        tooltip="Cambiar almacenamiento"
+                                        icon="bi-pencil"
+                                        onClick={() => setMostrarModalAlmacenamiento(true)}
+                                    />
+                                )}
+                            </div>
+                        </Dato>
+                    </Row>
 
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={5} className="fw-bold text-secondary">Costo Unitario</Col>
-                                <Col sm={7} className="fs-6">
-                                    {item.costo_unitario != null
-                                        ? `$${Number(item.costo_unitario).toFixed(2)}`
-                                        : <span className="text-muted fst-italic">Sin costo especificado</span>}
-                                </Col>
-                            </Row>
-
-                            <Row className="align-items-center">
-                                <Col sm={5} className="fw-bold text-secondary">Almacenamiento</Col>
-                                <Col sm={7} className="fs-6 d-flex align-items-center gap-2">
-                                    {item.equipo ? (
-                                        <Button
-                                            variant="link"
-                                            className="p-0 fw-semibold text-decoration-none"
-                                            onClick={() => navigate(`/equipos/${item.equipo?.id}`)}
-                                        >
-                                            <i className="bi bi-thermometer-half me-1"></i>
-                                            {item.equipo.nombre}
-                                            {item.equipo.sector ? ` (${item.equipo.sector.nombre})` : ''}
-                                        </Button>
-                                    ) : item.sector ? (
-                                        <span>
-                                            <i className="bi bi-geo-alt me-1 text-secondary"></i>
-                                            Sector: <strong>{item.sector.nombre}</strong>
-                                        </span>
-                                    ) : (
-                                        <span className="text-muted">Sin ubicacion asignada</span>
-                                    )}
-                                    {puedeCambiarAlmacenamiento && (
-                                        <ActionButton
-                                            variant="outline-primary"
-                                            size="sm"
-                                            tooltip="Cambiar almacenamiento"
-                                            icon="bi-pencil"
-                                            onClick={() => setMostrarModalAlmacenamiento(true)}
-                                        />
-                                    )}
-                                </Col>
-                            </Row>
-
-                            <hr className="my-4" />
-
-                            <h5 className="mb-3">
-                                <i className="bi bi-box-seam me-2"></i>Origen de Recepcion y Proveedor
-                            </h5>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={5} className="fw-bold text-secondary">Recepcion / Remito</Col>
-                                <Col sm={7} className="fs-6">
+                    <Row className="g-4">
+                        <Col lg={6}>
+                            <h6 className="detalle-seccion-titulo">Origen de Recepción y Proveedor</h6>
+                            <Row className="g-3">
+                                <Dato etiqueta="Recepción / Remito" md={6}>
                                     {item.lote_proveedor ? (
                                         <Button
                                             variant="link"
@@ -196,63 +186,56 @@ export function VerInsumoLotePage() {
                                     ) : (
                                         <span className="text-muted">Recepción #{item.lote_proveedor_id}</span>
                                     )}
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={5} className="fw-bold text-secondary">Proveedor</Col>
-                                <Col sm={7} className="fs-6">
+                                </Dato>
+                                <Dato etiqueta="Proveedor" md={6}>
                                     <strong>{item.lote_proveedor?.proveedor?.nombre || 'No disponible'}</strong>
                                     {item.lote_proveedor?.proveedor?.cuit && (
-                                        <span className="text-muted small ms-2">
-                                            (CUIT: {item.lote_proveedor.proveedor.cuit})
-                                        </span>
+                                        <div className="text-muted small">CUIT: {item.lote_proveedor.proveedor.cuit}</div>
                                     )}
-                                </Col>
+                                </Dato>
                             </Row>
-
-                            <hr className="my-4" />
-
-                            <h5 className="mb-3">
-                                <i className="bi bi-diagram-3 me-2"></i>Trazabilidad
-                            </h5>
-                            <div className="d-flex flex-wrap gap-2">
+                        </Col>
+                        <Col lg={6}>
+                            <h6 className="detalle-seccion-titulo">Trazabilidad</h6>
+                            <div className="d-grid gap-2">
                                 <Button
                                     variant="outline-primary"
+                                    className="text-start"
                                     onClick={() => navigate(`/insumos-lote/${item.id}/producciones`)}
                                 >
-                                    <i className="bi bi-diagram-3 me-1"></i>Lotes de Producción Asociados
+                                    <i className="bi bi-diagram-3 me-2"></i>Lotes de Producción Asociados
                                 </Button>
                                 <Button
                                     variant="outline-primary"
+                                    className="text-start"
                                     onClick={() => navigate(`/insumos-lote/${item.id}/trazabilidad`)}
                                 >
-                                    <i className="bi bi-people me-1"></i>Cadena de Trazabilidad (Clientes Alcanzados)
+                                    <i className="bi bi-people me-2"></i>Cadena de Trazabilidad (Clientes Alcanzados)
                                 </Button>
                             </div>
-                        </Card.Body>
-                    </Card>
+                        </Col>
+                    </Row>
+                </Card.Body>
+            </Card>
 
-                    <div className="mb-4">
-                        <ListaIncidentesVinculados insumoLoteId={item.id} />
-                    </div>
+            <div className="mb-4">
+                <ListaIncidentesVinculados insumoLoteId={item.id} />
+            </div>
 
-                    <div className="d-flex justify-content-start gap-2 mb-4">
-                        <Button
-                            variant="outline-secondary"
-                            onClick={() => navigate('/insumos-lote')}
-                        >
-                            <i className="bi bi-arrow-left me-1"></i>Volver a la lista
-                        </Button>
-                        <Button
-                            variant="outline-primary"
-                            onClick={() => navigate(`/recepciones/${item.lote_proveedor?.id || item.lote_proveedor_id}`)}
-                        >
-                            <i className="bi bi-box-arrow-up-right me-1"></i>Ver Recepcion de Origen
-                        </Button>
-                    </div>
-                </Col>
-            </Row>
+            <div className="d-flex flex-wrap justify-content-start gap-2 mb-4">
+                <Button
+                    variant="outline-secondary"
+                    onClick={() => navigate('/insumos-lote')}
+                >
+                    <i className="bi bi-arrow-left me-1"></i>Volver a la lista
+                </Button>
+                <Button
+                    variant="outline-primary"
+                    onClick={() => navigate(`/recepciones/${item.lote_proveedor?.id || item.lote_proveedor_id}`)}
+                >
+                    <i className="bi bi-box-arrow-up-right me-1"></i>Ver Recepción de Origen
+                </Button>
+            </div>
 
             <CambiarAlmacenamientoModal
                 show={mostrarModalAlmacenamiento}
