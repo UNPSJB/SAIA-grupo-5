@@ -119,6 +119,27 @@ function VistaOperador() {
                         <Card.Body className="d-flex flex-column justify-content-between p-4">
                             <div>
                                 <div className="d-flex align-items-center gap-2 mb-2">
+                                    <i className={`bi bi-journal-text fs-4 text-primary`} aria-hidden="true" />
+                                    <h2 className="h5 mb-0">Recetas</h2>
+                                </div>
+                                <p className="text-muted small mb-3">Consultá la versión vigente de la receta antes de elaborar.</p>
+                            </div>
+                            <div>
+                                <Button variant="outline-primary" size="sm"
+                                    onClick={() => navigate("/recetas")}
+                                >
+                                    Ingresar <i className="bi bi-arrow-right ms-1" />
+                                </Button>
+                            </div>
+                        </Card.Body>
+                    </Card>
+                </Col>
+
+                <Col xs={12} md={6} xl={4}>
+                    <Card className="h-100 shadow-sm border-0">
+                        <Card.Body className="d-flex flex-column justify-content-between p-4">
+                            <div>
+                                <div className="d-flex align-items-center gap-2 mb-2">
                                     <i className={`bi bi-list-check fs-4 text-primary`} aria-hidden="true" />
                                     <h2 className="h5 mb-0">Tareas</h2>
                                 </div>
