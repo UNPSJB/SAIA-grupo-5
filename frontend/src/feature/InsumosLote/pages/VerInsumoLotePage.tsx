@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Row, Col, Card, Button, Alert, Table } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Alert } from 'react-bootstrap';
 import { mutate } from 'swr';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
@@ -8,7 +8,6 @@ import { PageHeader } from '../../../components/PageHeader';
 import { PageLoading } from '../../../components/PageLoading';
 import type { InsumoLote } from '../types';
 import { ActionButton } from '../../../components/ActionButton';
-import { TarjetaTrazabilidadLote } from '../../LotesProduccion/components/TarjetaTrazabilidadLote';
 import { ListaIncidentesVinculados } from '../../Incidentes/components/ListaIncidentesVinculados';
 import { CambiarAlmacenamientoModal } from '../../Equipos/components/CambiarAlmacenamientoModal';
 
@@ -215,52 +214,22 @@ export function VerInsumoLotePage() {
                             <hr className="my-4" />
 
                             <h5 className="mb-3">
-                                <i className="bi bi-diagram-3 me-2"></i>Lotes de Produccion Asociados
+                                <i className="bi bi-diagram-3 me-2"></i>Trazabilidad
                             </h5>
-                            {!item.producciones_asociadas || item.producciones_asociadas.length === 0 ? (
-                                <p className="text-muted mb-0">
-                                    Este insumo todavia no fue utilizado en ningun lote de produccion.
-                                </p>
-                            ) : (
-                                <Table responsive bordered hover size="sm" className="mb-0 align-middle">
-                                    <thead className="table-light">
-                                        <tr>
-                                            <th>Lote de Produccion</th>
-                                            <th>Fecha Fabricacion</th>
-                                            <th>Cantidad Utilizada</th>
-                                            <th>Estado del Lote</th>
-                                            <th className="text-center">Accion</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {item.producciones_asociadas.map((asoc) => (
-                                            <tr key={asoc.id}>
-                                                <td><strong>Lote #{asoc.lote_produccion.id}</strong></td>
-                                                <td>{asoc.lote_produccion.fecha_produccion.split('-').reverse().join('/')}</td>
-                                                <td>
-                                                    {Number(asoc.cantidad_utilizada).toLocaleString('es-AR')} {item.insumo.unidad_medida?.nombre || 'U'}
-                                                </td>
-                                                <td><span className="badge bg-secondary">{asoc.lote_produccion.estado}</span></td>
-                                                <td className="text-center">
-                                                    <ActionButton
-                                                        variant="outline-info"
-                                                        size="sm"
-                                                        onClick={() => navigate(`/lotes-produccion/${asoc.lote_produccion.id}`)}
-                                                        title="Ver lote de producción"
-                                                        tooltip="Ver lote de produccion"
-                                                        icon="bi bi-eye"
-                                                    >
-                                                    </ActionButton>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </Table>
-                            )}
-
-                            <hr className="my-4" />
-
-                            <TarjetaTrazabilidadLote modo="insumo_lote" entidadId={item.id} />
+                            <div className="d-flex flex-wrap gap-2">
+                                <Button
+                                    variant="outline-primary"
+                                    onClick={() => navigate(`/insumos-lote/${item.id}/producciones`)}
+                                >
+                                    <i className="bi bi-diagram-3 me-1"></i>Lotes de Producción Asociados
+                                </Button>
+                                <Button
+                                    variant="outline-primary"
+                                    onClick={() => navigate(`/insumos-lote/${item.id}/trazabilidad`)}
+                                >
+                                    <i className="bi bi-people me-1"></i>Cadena de Trazabilidad (Clientes Alcanzados)
+                                </Button>
+                            </div>
                         </Card.Body>
                     </Card>
 
