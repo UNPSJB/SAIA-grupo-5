@@ -10,7 +10,8 @@ from src.informacion_nutricional_insumo.constants import DATOS_NUTRICIONALES
 from src.receta.models import Receta, InsumoReceta
 from src.receta import constants as receta_constants
 from src.receta.sellos import gramos_de_insumo
-from src.calculo_nutricional.constants import ( ID_CONFIGURACION_CALCULO, PARAMETROS_NUTRIENTES_DEFAULT)
+from src.calculo_nutricional.constants import ( ID_CONFIGURACION_CALCULO, PARAMETROS_NUTRIENTES_DEFAULT, LEYENDA_TABLA_NUTRICIONAL)
+from src.calculo_nutricional.tabla_pdf import generar_pdf_tabla
 
 logger = logging.getLogger(__name__)
 
@@ -251,3 +252,29 @@ def actualizar_parametro(db: Session, parametro_id: int, datos: schemas.Parametr
     db.commit()
     db.refresh(parametro)
     return parametro
+
+def obtener_tabla_rotulo(db: Session, receta_id: int) -> schemas.TablaNutricionalRotulo:
+    receta = db.scalars(
+        select(Receta)
+        .options(joinedload(Receta.producto), joinedload(Receta.insumos).joinedload(InsumoReceta.insumo))
+        .where(Receta.id == receta_id)
+    ).first()
+    if receta is None:
+        raise exceptions.RecetaNoEncontrada()
+
+    info = leer_informacion_receta(db, receta_id)
+    return schemas.TablaNutricionalRotulo(
+        receta_id=receta.id,
+        receta_version=receta.version,
+        producto=receta.producto.nombre,
+        unidad="ml" if receta.sellos.es_liquido else "g",
+        porcion=info.porcion,
+        medida_casera=receta.medida_casera,
+        tabla_nutricional=info.tabla_nutricional,
+        fecha_calculo=info.fecha_calculo,
+        leyenda=LEYENDA_TABLA_NUTRICIONAL,
+    )
+
+
+def generar_tabla_pdf(db: Session, receta_id: int) -> bytes:
+    return generar_pdf_tabla(obtener_tabla_rotulo(db, receta_id))

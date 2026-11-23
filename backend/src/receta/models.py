@@ -36,9 +36,9 @@ class Receta(ModeloBase):
     fecha_hasta_vigencia: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     porcion: Mapped[float | None] = mapped_column(Float, nullable=True)
+    medida_casera: Mapped[str | None] = mapped_column(String(100), nullable=True)
     porcion_unidad_medida_id: Mapped[int | None] = mapped_column(ForeignKey("unidades_medida.id"), nullable=True)
     porcion_unidad_medida: Mapped["UnidadMedida | None"] = relationship(foreign_keys=[porcion_unidad_medida_id])
-
     etapas: Mapped[list["EtapaReceta"]] = relationship(
         back_populates="receta",
         cascade="all, delete-orphan", # si se borra una receta se borran las etapas

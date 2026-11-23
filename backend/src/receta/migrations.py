@@ -7,6 +7,7 @@ COLUMNAS_RECETAS = (
     ("fecha_hasta_vigencia", "DATETIME NULL"),
     ("porcion", "FLOAT NULL"),
     ("porcion_unidad_medida_id", "INTEGER NULL REFERENCES unidades_medida(id)"),
+    ("medida_casera", "VARCHAR(100) NULL"),
 )
 
 COLUMNAS_INSUMOS_RECETA = (

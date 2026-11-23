@@ -154,6 +154,12 @@ export function VerRecetaPage() {
                                                     : <span className="text-muted fst-italic">Sin indicar</span>}
                                             </div>
                                         </ListGroup.Item>
+                                        <ListGroup.Item className="flex-fill">
+                                            <div className="text-muted small">Medida casera</div>
+                                            <div className="fw-semibold">
+                                                {receta.medida_casera ?? <span className="text-muted fst-italic">Sin indicar</span>}
+                                            </div>
+                                        </ListGroup.Item>
                                     </ListGroup>
 
                                     <Tabs key={receta.id} defaultActiveKey="ingredientes" id="secciones-receta" className="mb-3 receta-tabs" mountOnEnter>

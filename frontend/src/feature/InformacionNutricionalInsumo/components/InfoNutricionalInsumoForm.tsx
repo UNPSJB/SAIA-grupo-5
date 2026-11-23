@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Alert, Button, Col, Form, InputGroup, ListGroup, Row } from "react-bootstrap";
 import { useApi } from "../../../hooks/useApi";
-import type { AlimentoReferencia, FuenteNutricional } from "../../FuentesNutricionales/types";
+import type { AlimentoReferencia, FuenteNutricional } from "../../FuenteNutricional/types";
 import { DATOS_NUTRICIONALES_CAA, nutrientesATexto, type DatoNutricional} from "../types";
 
 export type InfoNutricionalFormState = {
