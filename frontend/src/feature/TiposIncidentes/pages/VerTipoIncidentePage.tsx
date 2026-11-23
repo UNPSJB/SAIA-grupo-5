@@ -4,6 +4,8 @@ import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 import type { TipoIncidente } from "../types";
 import { PageLoading } from "../../../components/PageLoading";
+import { Dato } from "../../../components/Dato";
+import { EstadoBadge } from "../../../components/EstadoBadge";
 
 
 export function VerTipoIncidentePage() {
@@ -32,65 +34,40 @@ export function VerTipoIncidentePage() {
         <Container>
             <PageHeader title="Detalle del Tipo Incidente" />
 
-            <Row className="justify-content-center mt-3">
-                <Col md={8}>
-                    <Card className="shadow-sm border-0 rounded-3">
-                        <Card.Body className="p-4">
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Nombre</Col>
-                                <Col sm={8} className="fs-5">{tipoIncidente.nombre}</Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Descripcion</Col>
-                                <Col sm={8}>
-                                    {tipoIncidente.descripcion ? (
-                                        <span>{tipoIncidente.descripcion}</span>) : (<span className="text-muted fst-italic">Sin descripcion detallada</span>)}
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-2 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Estado Actual</Col>
-                                <Col sm={8}>
-                                    <div
-                                        style={{
-                                            padding: '6px 16px',
-                                            borderRadius: '20px',
-                                            background: tipoIncidente.activo ? '#dcfce7' : '#fee2e2',
-                                            color: tipoIncidente.activo ? '#166534' : '#991b1b',
-                                            fontWeight: 700,
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                        }}
-                                    >
-                                        <i className={`bi ${tipoIncidente.activo ? 'bi-check-circle-fill' : 'bi-x-circle-fill'} me-2`}></i>
-                                        {tipoIncidente.activo ? 'Activo' : 'Inactivo'}
-                                    </div>
-                                </Col>
-                            </Row>
-                        </Card.Body>
-
-                        <Card.Footer className="bg-light border-top p-3 d-flex justify-content-start gap-2">
-                            <Button 
-                                variant="outline-secondary" 
-                                onClick={() => navigate('/tipos-incidentes')}
+            <Card className="shadow-sm border-0 rounded-3 mb-4 mt-3 text-start">
+                <Card.Body className="p-4">
+                    <h6 className="detalle-seccion-titulo">Datos del tipo de incidente</h6>
+                    <Row className="g-3">
+                        <Dato etiqueta="Nombre" md={8}>
+                            <span className="fw-semibold">{tipoIncidente.nombre}</span>
+                        </Dato>
+                        <Dato etiqueta="Estado Actual" md={4}>
+                            <EstadoBadge
+                                tono={tipoIncidente.activo ? 'success' : 'danger'}
+                                icono={tipoIncidente.activo ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}
                             >
-                                <i className="bi bi-arrow-left me-1"></i>Volver a la lista
-                            </Button>
-                            
-                            <Button 
-                                variant="primary" 
-                                disabled={!tipoIncidente.activo}
-                                onClick={() => navigate(`/tipos-incidentes/${tipoIncidente.id}/edit`)}
-                            >
-                                <i className="bi bi-pencil me-1"></i>Editar Tipo Incidente  
+                                {tipoIncidente.activo ? 'Activo' : 'Inactivo'}
+                            </EstadoBadge>
+                        </Dato>
+                        <Dato etiqueta="Descripción">
+                            {tipoIncidente.descripcion || <span className="text-muted fst-italic">Sin descripción detallada</span>}
+                        </Dato>
+                    </Row>
+                </Card.Body>
+            </Card>
 
-                            </Button>
-                        </Card.Footer>
-                    </Card>
-                </Col>
-            </Row>
+            <div className="d-flex flex-wrap justify-content-start gap-2 mb-4">
+                <Button variant="outline-secondary" onClick={() => navigate('/tipos-incidentes')}>
+                    <i className="bi bi-arrow-left me-1"></i>Volver a la lista
+                </Button>
+                <Button
+                    variant="primary"
+                    disabled={!tipoIncidente.activo}
+                    onClick={() => navigate(`/tipos-incidentes/${tipoIncidente.id}/edit`)}
+                >
+                    <i className="bi bi-pencil me-1"></i>Editar Tipo Incidente
+                </Button>
+            </div>
         </Container>
     );
 }
