@@ -1,0 +1,160 @@
+.saia-login-wrapper,
+.saia-loading-wrapper {
+    min-height: 100vh;
+    width: 100%;
+    background: linear-gradient(135deg, var(--sb-seafoam-secondary, #0fa28b) 0%, var(--sb-seafoam-primary, #06794f) 100%);
+}
+
+.saia-login-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    padding: 0 1rem;
+    overflow-x: hidden;
+}
+
+.saia-loading-wrapper {
+    color: #ffffff;
+}
+
+.saia-login-card.card {
+    width: 100%;
+    max-width: 460px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 2.5rem 2.5rem;
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
+    position: relative;
+    color: #ffffff;
+}
+
+.saia-login-card.card::before,
+.saia-login-card.card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 48px;
+    pointer-events: none;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 12%, #000 38%, #000 62%, transparent 88%);
+    mask-image: linear-gradient(to bottom, transparent 12%, #000 38%, #000 62%, transparent 88%);
+}
+
+.saia-login-card.card::before {
+    right: 100%;
+    background: linear-gradient(to left, rgba(18, 60, 41, 0.5), rgba(18, 60, 41, 0));
+}
+
+.saia-login-card.card::after {
+    left: 100%;
+    background: linear-gradient(to right, rgba(18, 60, 41, 0.5), rgba(18, 60, 41, 0));
+}
+
+.saia-login-card .card-body {
+    flex: 0 0 auto;
+}
+
+.saia-avatar-circle {
+    width: 92px;
+    height: 92px;
+    margin: 0 auto 1.25rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 8px 20px rgba(18, 60, 41, 0.25);
+}
+
+.saia-avatar-circle i {
+    font-size: 2.6rem;
+    color: var(--sb-seafoam-primary, #06794f);
+}
+
+.saia-title {
+    margin-bottom: 0.25rem;
+    color: #ffffff;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.saia-subtitle {
+    margin-bottom: 1.75rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.85rem;
+}
+
+.saia-input-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.6rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1.5px solid rgba(255, 255, 255, 0.6);
+    transition: border-color 0.25s ease;
+}
+
+.saia-input-group:focus-within {
+    border-bottom-color: var(--sb-seafoam-success, #3ac97c);
+}
+
+.saia-input-icon {
+    margin-right: 0.85rem;
+    color: #ffffff;
+    font-size: 1.1rem;
+    opacity: 0.95;
+}
+
+.saia-input.form-control {
+    padding: 0.35rem 0;
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    color: #ffffff;
+    font-size: 0.95rem;
+}
+
+.saia-input.form-control:focus {
+    background-color: transparent;
+    box-shadow: none;
+    color: #ffffff;
+}
+
+.saia-input.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.saia-input.form-control:-webkit-autofill,
+.saia-input.form-control:-webkit-autofill:hover,
+.saia-input.form-control:-webkit-autofill:focus {
+    -webkit-text-fill-color: #ffffff;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+.saia-submit-btn.btn {
+    margin-top: 0.4rem;
+    padding: 0.8rem 1rem;
+    background-color: #123c29;
+    border: none;
+    border-radius: 0.25rem;
+    color: #ffffff;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.saia-submit-btn.btn:hover,
+.saia-submit-btn.btn:focus-visible {
+    background-color: #0b2a1c;
+    color: #ffffff;
+}
+
+.saia-submit-btn.btn:active {
+    background-color: #0b2a1c;
+    transform: scale(0.99);
+}
