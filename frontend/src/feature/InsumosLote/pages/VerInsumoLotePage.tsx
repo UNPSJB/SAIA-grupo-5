@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Card, Button, Alert } from 'react-bootstrap';
 import { mutate } from 'swr';
@@ -6,29 +6,12 @@ import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
 import { PageHeader } from '../../../components/PageHeader';
 import { PageLoading } from '../../../components/PageLoading';
+import { Dato } from '../../../components/Dato';
 import type { InsumoLote } from '../types';
 import { ActionButton } from '../../../components/ActionButton';
 import { ListaIncidentesVinculados } from '../../Incidentes/components/ListaIncidentesVinculados';
 import { CambiarAlmacenamientoModal } from '../../Equipos/components/CambiarAlmacenamientoModal';
 import './VerInsumoLotePage.css';
-
-interface DatoProps {
-    etiqueta: string;
-    md?: number;
-    lg?: number;
-    children: ReactNode;
-}
-
-function Dato({ etiqueta, md, lg, children }: DatoProps) {
-    return (
-        <Col xs={12} md={md} lg={lg}>
-            <div className="detalle-dato">
-                <span className="detalle-dato-etiqueta">{etiqueta}</span>
-                <div className="detalle-dato-valor">{children}</div>
-            </div>
-        </Col>
-    );
-}
 
 export function VerInsumoLotePage() {
     const { id } = useParams();
