@@ -1,15 +1,15 @@
-.receta-tabs {
+.app-tabs {
     --bs-nav-link-color: var(--sb-seafoam-primary);
     --bs-nav-link-hover-color: var(--sb-seafoam-secondary);
     --bs-nav-tabs-link-active-color: var(--sb-seafoam-primary);
     --bs-nav-tabs-link-active-bg: #e8f6f0; /* sombreado del tab seleccionado */
 }
 
-.receta-tabs .nav-link.active {
+.app-tabs .nav-link.active {
     font-weight: 600;
     box-shadow: 0 -2px 6px rgba(6, 121, 79, 0.15);
 }
 
-.receta-tabs .nav-link:focus-visible {
+.app-tabs .nav-link:focus-visible {
     box-shadow: 0 0 0 0.25rem rgba(6, 121, 79, 0.25);
 }
