@@ -8,6 +8,8 @@ import type { VersionDocumento } from "../types";
 import { MarcarVigenteModal } from "../components/MarcarVigenteModal";
 import { useAuth } from '../../../hooks';
 import { PageLoading } from "../../../components/PageLoading";
+import { Dato } from "../../../components/Dato";
+import { EstadoBadge, type TonoEstado } from "../../../components/EstadoBadge";
 
 
 const formatearFechaHora = (fecha?: string | null) =>
@@ -56,12 +58,11 @@ export function VerVersionDocumentoPage() {
         </Container>
     );
 
-    const estadoVigencia = version.vigente
-    ? { label: 'Vigente',      fondo: '#dcf2fc', texto: '#163b65', icono: 'bi-check-circle-fill' }
-    : version.fecha_hasta_vigencia
-        ? { label: 'Histórica',    fondo: '#e5e7eb', texto: '#374151', icono: 'bi-clock-history' }
-        : { label: 'Sin vigencia', fondo: '#fef3c7', texto: '#92400e', icono: 'bi-dash-circle-fill' };
-
+    const estadoVigencia: { label: string; tono: TonoEstado; icono: string } = version.vigente
+        ? { label: 'Vigente', tono: 'info', icono: 'bi-check-circle-fill' }
+        : version.fecha_hasta_vigencia
+            ? { label: 'Histórica', tono: 'secondary', icono: 'bi-clock-history' }
+            : { label: 'Sin vigencia', tono: 'warning', icono: 'bi-dash-circle-fill' };
 
     const recargar = () => Promise.all([
         mutate(`/versiones-documentos/${id}`),
@@ -72,161 +73,93 @@ export function VerVersionDocumentoPage() {
         <Container>
             <PageHeader title="Detalle de la Versión" />
 
-            <Row className="justify-content-center mt-3">
-                <Col md={8}>
-                    <Card className="shadow-sm border-0 rounded-3">
-                        <Card.Body className="p-4">
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Documento</Col>
-                                <Col sm={8} className="fs-5">{documento?.nombre || "Cargando..."}</Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Version</Col>
-                                <Col sm={8} className="fs-5">{version.version}</Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Observación</Col>
-                                <Col sm={8}>
-                                    {version.observacion ? (
-                                        <span>{version.observacion}</span>) : (<span className="text-muted fst-italic">Sin observacion detallada</span>)}
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Fecha de carga</Col>
-                                <Col sm={8}>{version.fecha_subida}</Col>
-                            </Row>
-
-                            <Row className="mb-2 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Vigencia</Col>
-                                <Col sm={8}>
-                                    <div
-                                        style={{
-                                            padding: '6px 16px',
-                                            borderRadius: '20px',
-                                            background: estadoVigencia.fondo,
-                                            color: estadoVigencia.texto,
-                                            fontWeight: 700,
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                        }}
-                                    >
-                                        <i className={`bi ${estadoVigencia.icono} me-2`}></i>
-                                        {estadoVigencia.label}
-                                    </div>
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-2 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Vigente desde</Col>
-                                <Col sm={8}>{formatearFechaHora(version.fecha_desde_vigencia)}</Col>
-                            </Row>
-
-                            {version.fecha_hasta_vigencia && (
-                                <Row className="mb-2 border-bottom pb-3 align-items-center">
-                                    <Col sm={4} className="fw-bold text-secondary">Vigente hasta</Col>
-                                    <Col sm={8}>{formatearFechaHora(version.fecha_hasta_vigencia)}</Col>
-                                </Row>
-                            )}
-
-                            <Row className="mb-2 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Marcada vigente por</Col>
-                                <Col sm={8}>
-                                    {version.aprobador
-                                        ? `${version.aprobador.nombre} ${version.aprobador.apellido}`
-                                        : <span className="text-muted fst-italic">-</span>}
-                                </Col>
-                            </Row>
-
-
-                            <Row className="mb-2 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Estado Actual</Col>
-                                <Col sm={8}>
-                                    <div
-                                        style={{
-                                            padding: '6px 16px',
-                                            borderRadius: '20px',
-                                            background: version.activo ? '#dcfce7' : '#fee2e2',
-                                            color: version.activo ? '#166534' : '#991b1b',
-                                            fontWeight: 700,
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                        }}
-                                    >
-                                        <i className={`bi ${version.activo ? 'bi-check-circle-fill' : 'bi-x-circle-fill'} me-2`}></i>
-                                        {version.activo ? 'Activo' : 'Inactivo'}
-                                    </div>
-                                </Col>
-                            </Row>
-                            <Row className="mb-2 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Archivo</Col>
-                                <Col sm={8}>
-                                    <div>
-                                        <div className="mb-2">
-                                            <span className="badge bg-light text-dark border p-2">
-                                                <i className="bi bi-file-earmark-text text-success me-1"></i>
-                                                {obtenerNombreArchivo(version.archivo)}
-                                            </span>
-                                        </div>
-                                        <a
-                                            href={version.archivo}
-                                            download={`documento_${documento?.nombre}_version_${version.version}`}
-                                            className="btn btn-outline-primary btn-sm"
-                                        >
-                                            <i className="bi bi-download me-1"></i>Descargar Archivo 
-                                        </a>
-                                    </div>
-                                </Col>
-                            </Row>
-                        </Card.Body>
-
-                        <Card.Footer className="bg-light border-top p-3 d-flex justify-content-start gap-2">
-                            {isAdmin && (
-                            <Button 
-                                variant="outline-secondary" 
-                                onClick={() => navigate(`/versiones-documentos/documento/${version.documento_id}`)}
+            <Card className="shadow-sm border-0 rounded-3 mb-4 mt-3 text-start">
+                <Card.Body className="p-4">
+                    <h6 className="detalle-seccion-titulo">Datos de la versión</h6>
+                    <Row className="g-3 mb-4">
+                        <Dato etiqueta="Documento" md={6} lg={3}>
+                            <span className="fw-semibold">{documento?.nombre || "Cargando..."}</span>
+                        </Dato>
+                        <Dato etiqueta="Versión" md={6} lg={3}>
+                            <span className="fw-bold">{version.version}</span>
+                        </Dato>
+                        <Dato etiqueta="Fecha de carga" md={6} lg={3}>{version.fecha_subida}</Dato>
+                        <Dato etiqueta="Estado Actual" md={6} lg={3}>
+                            <EstadoBadge
+                                tono={version.activo ? 'success' : 'danger'}
+                                icono={version.activo ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}
                             >
-                                <i className="bi bi-arrow-left me-1"></i>Volver a la lista
-                            </Button>
-                            )}
-                            {!isAdmin && (
-                            <Button 
-                                variant="outline-secondary" 
-                                onClick={() => navigate(`/documentos/`)}
-                            >
-                                <i className="bi bi-arrow-left me-1"></i>Volver a la lista
-                            </Button>
-                            )}
-                            {isAdmin && !version.fecha_hasta_vigencia &&(
-                                <Button 
-                                    variant="primary" 
-                                    disabled={!version.activo}
-                                    onClick={() => navigate(`/versiones-documentos/version/${version.id}/edit`)}
-                                >
-                                    <i className="bi bi-pencil me-1"></i>Editar Version   
+                                {version.activo ? 'Activo' : 'Inactivo'}
+                            </EstadoBadge>
+                        </Dato>
+                        <Dato etiqueta="Observación">
+                            {version.observacion || <span className="text-muted fst-italic">Sin observación detallada</span>}
+                        </Dato>
+                    </Row>
 
-                                </Button>
-                                
-                            )}
-                            {isAdmin && !version.vigente && !version.fecha_hasta_vigencia &&(
-                                <Button 
-                                    variant="success" 
-                                    disabled={!version.activo}
-                                    onClick={() => setVersionAMarcar(version)}
-                                >
-                                    <i className="bi bi-patch-check me-1"></i>Marcar Vigente  
+                    <h6 className="detalle-seccion-titulo">Vigencia</h6>
+                    <Row className="g-3 mb-4">
+                        <Dato etiqueta="Vigencia" md={6} lg={3}>
+                            <EstadoBadge tono={estadoVigencia.tono} icono={estadoVigencia.icono}>
+                                {estadoVigencia.label}
+                            </EstadoBadge>
+                        </Dato>
+                        <Dato etiqueta="Vigente desde" md={6} lg={3}>{formatearFechaHora(version.fecha_desde_vigencia)}</Dato>
+                        <Dato etiqueta="Vigente hasta" md={6} lg={3}>
+                            {version.fecha_hasta_vigencia
+                                ? formatearFechaHora(version.fecha_hasta_vigencia)
+                                : <span className="text-muted fst-italic">-</span>}
+                        </Dato>
+                        <Dato etiqueta="Marcada vigente por" md={6} lg={3}>
+                            {version.aprobador
+                                ? `${version.aprobador.nombre} ${version.aprobador.apellido}`
+                                : <span className="text-muted fst-italic">-</span>}
+                        </Dato>
+                    </Row>
 
-                                </Button>
-                                
-                            )}
-                        </Card.Footer>
-                    </Card>
-                </Col>
-            </Row>
+                    <h6 className="detalle-seccion-titulo">Archivo</h6>
+                    <div className="d-flex flex-wrap align-items-center gap-2">
+                        <span className="badge bg-light text-dark border p-2">
+                            <i className="bi bi-file-earmark-text text-success me-1"></i>
+                            {obtenerNombreArchivo(version.archivo)}
+                        </span>
+                        <a
+                            href={version.archivo}
+                            download={`documento_${documento?.nombre}_version_${version.version}`}
+                            className="btn btn-outline-primary btn-sm"
+                        >
+                            <i className="bi bi-download me-1"></i>Descargar Archivo
+                        </a>
+                    </div>
+                </Card.Body>
+            </Card>
+
+            <div className="d-flex flex-wrap justify-content-start gap-2 mb-4">
+                <Button
+                    variant="outline-secondary"
+                    onClick={() => navigate(isAdmin ? `/versiones-documentos/documento/${version.documento_id}` : '/documentos/')}
+                >
+                    <i className="bi bi-arrow-left me-1"></i>Volver a la lista
+                </Button>
+                {isAdmin && !version.fecha_hasta_vigencia && (
+                    <Button
+                        variant="primary"
+                        disabled={!version.activo}
+                        onClick={() => navigate(`/versiones-documentos/version/${version.id}/edit`)}
+                    >
+                        <i className="bi bi-pencil me-1"></i>Editar Versión
+                    </Button>
+                )}
+                {isAdmin && !version.vigente && !version.fecha_hasta_vigencia && (
+                    <Button
+                        variant="success"
+                        disabled={!version.activo}
+                        onClick={() => setVersionAMarcar(version)}
+                    >
+                        <i className="bi bi-patch-check me-1"></i>Marcar Vigente
+                    </Button>
+                )}
+            </div>
 
             <MarcarVigenteModal
                 version={versionAMarcar}
