@@ -1,10 +1,12 @@
-
 import { useState } from "react";
 import { mutate } from "swr";
-import { Container, Alert, Row, Col, Card, Button, Table, Badge } from "react-bootstrap";
+import { Container, Alert, Row, Col, Card, Button, Table, Tab } from "react-bootstrap";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { ActionButton } from "../../../components/ActionButton";
 import { PageHeader } from "../../../components/PageHeader";
+import { AppTabs } from "../../../components/AppTabs";
+import { Dato } from "../../../components/Dato";
+import { EstadoBadge, type TonoEstado } from "../../../components/EstadoBadge";
 import { useApi } from "../../../hooks/useApi";
 import { useAuth } from "../../../hooks/useAuth";
 import type { SupervisionOcurrencia } from "../../ChecklistSupervision/types";
@@ -20,12 +22,12 @@ import { RecepcionEnvioModal } from "../../EnviosLote/components/RecepcionEnvioL
 import { VerEnvioLoteModal } from "../../EnviosLote/components/VerEnvioLoteModal";
 import { LineaTemporalEstadosLoteProduccion } from "../components/LineaTemporalEstadosLoteProduccion";
 
-const ESTILOS_ESTADO: Record<EstadoLote, { bg: string; color: string; icon: string }> = {
-    "En produccion": { bg: "#fef9c3", color: "#854d0e", icon: "bi-gear-wide-connected" },
-    "Empaquetando": { bg: "#dbeafe", color: "#1e40af", icon: "bi-box-seam" },
-    "Terminado": { bg: "#dcfce7", color: "#166534", icon: "bi-check2-circle" },
-    "Parcialmente despachado": { bg: "#e0e7ff", color: "#3730a3", icon: "bi-truck" },
-    "Enviado": { bg: "#f3f4f6", color: "#374151", icon: "bi-truck" },
+const ESTADO: Record<EstadoLote, { tono: TonoEstado; icono: string }> = {
+    "En produccion": { tono: "warning", icono: "bi-gear-wide-connected" },
+    "Empaquetando": { tono: "info", icono: "bi-box-seam" },
+    "Terminado": { tono: "success", icono: "bi-check2-circle" },
+    "Parcialmente despachado": { tono: "info", icono: "bi-truck" },
+    "Enviado": { tono: "secondary", icono: "bi-truck" },
 };
 
 const formatearFechaReceta = (fecha: string | null) =>
@@ -74,7 +76,7 @@ export function VerLoteProduccionPage() {
         </Container>
     );
 
-    const estilo = ESTILOS_ESTADO[lote.estado] || ESTILOS_ESTADO["En produccion"];
+    const estado = ESTADO[lote.estado] ?? ESTADO["En produccion"];
     const fechaProdFormateada = lote.fecha_produccion.split("-").reverse().join("/");
     const fechaVencFormateada = lote.fecha_vencimiento.split("-").reverse().join("/");
     const insumosUtilizados = lote.insumos_utilizados ?? [];
@@ -109,64 +111,41 @@ export function VerLoteProduccionPage() {
         }
     };
 
+    const listaSupervisiones = supervisiones ?? [];
+    const enFaseProductiva = lote.estado === "En produccion" || lote.estado === "Empaquetando";
+    const pasosFase = enFaseProductiva
+        ? listaSupervisiones.filter((item) => item.fase_lote_snap === lote.estado)
+        : listaSupervisiones;
+    const pasosCompletados = pasosFase.filter((item) => item.estado === "Completada").length;
+
     return (
         <Container>
             <PageHeader title={tituloPagina} />
 
-            <Row className="justify-content-center mt-3">
-                <Col xs={12}>
-                    <Card className="shadow-sm border-0 rounded-3 mb-4">
+            <AppTabs defaultActiveKey="general" id="secciones-lote-produccion" className="mb-3 mt-3" mountOnEnter>
+                <Tab eventKey="general" title="Información general">
+                    <Card className="shadow-sm border-0 rounded-3 mb-4 text-start">
                         <Card.Body className="p-4">
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={5} className="fw-bold text-secondary">Producto</Col>
-                                <Col sm={7} className="fs-6 fw-semibold">{lote.producto.nombre}</Col>
-                            </Row>
-
-                            {lote.producto.foto_producto && (
-                                <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                    <Col sm={5} className="fw-bold text-secondary">Foto del Producto</Col>
-                                    <Col sm={7}>
-                                        <img
-                                            src={lote.producto.foto_producto}
-                                            alt={lote.producto.nombre}
-                                            style={{
-                                                maxHeight: '140px',
-                                                borderRadius: '8px',
-                                                objectFit: 'cover'
-                                            }}
-                                            className="border shadow-sm p-1 bg-white"
-                                        />
-                                    </Col>
-                                </Row>
-                            )}
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={5} className="fw-bold text-secondary">Stock / Cantidad Producida</Col>
-                                <Col sm={7} className="fs-6">
-                                    <strong className="text-success">{lote.cantidad_disponible ?? lote.cantidad_producida}</strong> disponibles / {lote.cantidad_producida} producidas
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={5} className="fw-bold text-secondary">Cantidad neta / Unidad de Medida</Col>
-                                <Col sm={7} className="fs-6">
-                                    {lote.producto.cantidad_neta} - {lote.producto.unidad_medida?.nombre}
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={5} className="fw-bold text-secondary">Receta utilizada</Col>
-                                <Col sm={7} className="fs-6">
+                            <h6 className="detalle-seccion-titulo">Producto</h6>
+                            <Row className="g-3 mb-4">
+                                <Dato etiqueta="Producto" md={6} lg={lote.producto.foto_producto ? 3 : 4}>
+                                    <span className="fw-semibold">{lote.producto.nombre}</span>
+                                </Dato>
+                                <Dato etiqueta="Cantidad neta" md={6} lg={lote.producto.foto_producto ? 3 : 4}>
+                                    {lote.producto.cantidad_neta} {lote.producto.unidad_medida?.nombre}
+                                </Dato>
+                                <Dato etiqueta="Receta utilizada" md={6} lg={lote.producto.foto_producto ? 3 : 4}>
                                     {lote.receta ? (
-                                        <div className="d-flex flex-wrap align-items-center gap-2">
-                                            <span>
-                                                Versión {lote.receta.version}
-                                                {lote.receta.vigente
-                                                    ? <span className="badge bg-success-subtle text-success-emphasis ms-2">Vigente</span>
-                                                    : <span className="text-muted small ms-2">
-                                                        ({formatearFechaReceta(lote.receta.fecha_desde_vigencia)} al {formatearFechaReceta(lote.receta.fecha_hasta_vigencia)})
-                                                      </span>}
-                                            </span>
+                                        <>
+                                            <div className="d-flex flex-wrap align-items-center gap-2">
+                                                <span className="fw-semibold">Versión {lote.receta.version}</span>
+                                                {lote.receta.vigente && <EstadoBadge tono="success">Vigente</EstadoBadge>}
+                                            </div>
+                                            {!lote.receta.vigente && (
+                                                <div className="text-muted small">
+                                                    {formatearFechaReceta(lote.receta.fecha_desde_vigencia)} al {formatearFechaReceta(lote.receta.fecha_hasta_vigencia)}
+                                                </div>
+                                            )}
                                             <Button
                                                 variant="link"
                                                 size="sm"
@@ -175,128 +154,103 @@ export function VerLoteProduccionPage() {
                                             >
                                                 <i className="bi bi-journal-text me-1"></i>Ver receta
                                             </Button>
-                                        </div>
+                                        </>
                                     ) : (
                                         <span className="text-muted fst-italic">Sin receta registrada</span>
                                     )}
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={5} className="fw-bold text-secondary">Fecha de Produccion</Col>
-                                <Col sm={7} className="fs-6">{fechaProdFormateada}</Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={5} className="fw-bold text-secondary">Fecha de Vencimiento</Col>
-                                <Col sm={7} className="fs-6">{fechaVencFormateada}</Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={5} className="fw-bold text-secondary">Estado Actual</Col>
-                                <Col sm={7}>
-                                    <div
-                                        style={{
-                                            padding: '6px 16px',
-                                            borderRadius: '20px',
-                                            background: estilo.bg,
-                                            color: estilo.color,
-                                            fontWeight: 700,
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                        }}
-                                    >
-                                        <i className={`bi ${estilo.icon} me-2`}></i>
-                                        {lote.estado}
-                                    </div>
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={5} className="fw-bold text-secondary">Almacenamiento</Col>
-                                <Col sm={7} className="fs-6 d-flex align-items-center gap-2">
-                                    {lote.equipo ? (
-                                        <Button
-                                            variant="link"
-                                            className="p-0 fw-semibold text-decoration-none"
-                                            onClick={() => navigate(`/equipos/${lote.equipo?.id}`)}
-                                        >
-                                            <i className="bi bi-thermometer-half me-1"></i>
-                                            {lote.equipo.nombre}
-                                            {lote.equipo.sector ? ` (${lote.equipo.sector.nombre})` : ''}
-                                        </Button>
-                                    ) : lote.sector ? (
-                                        <span>
-                                            <i className="bi bi-geo-alt me-1 text-secondary"></i>
-                                            Sector: <strong>{lote.sector.nombre}</strong>
-                                        </span>
-                                    ) : (
-                                        <span className="text-muted">Sin ubicacion asignada</span>
-                                    )}
-                                    {puedeCambiarAlmacenamiento && (
-                                        <ActionButton
-                                            variant="outline-primary"
-                                            size="sm"
-                                            tooltip="Cambiar almacenamiento"
-                                            icon="bi-pencil"
-                                            onClick={() => setMostrarModalAlmacenamiento(true)}
+                                </Dato>
+                                {lote.producto.foto_producto && (
+                                    <Dato etiqueta="Foto del producto" md={6} lg={3}>
+                                        <img
+                                            src={lote.producto.foto_producto}
+                                            alt={lote.producto.nombre}
+                                            style={{ maxHeight: '120px', maxWidth: '100%', borderRadius: '8px', objectFit: 'cover' }}
+                                            className="border shadow-sm p-1 bg-white"
                                         />
+                                    </Dato>
+                                )}
+                            </Row>
+
+                            <h6 className="detalle-seccion-titulo">Producción</h6>
+                            <Row className="g-3">
+                                <Dato etiqueta="Estado actual" md={6} lg={3}>
+                                    <EstadoBadge tono={estado.tono} icono={estado.icono}>{lote.estado}</EstadoBadge>
+                                </Dato>
+                                <Dato etiqueta="Stock disponible / producido" md={6} lg={3}>
+                                    <strong className="text-success">{stockActual}</strong> / {lote.cantidad_producida}
+                                </Dato>
+                                <Dato etiqueta="Fecha de producción" md={6} lg={3}>{fechaProdFormateada}</Dato>
+                                <Dato etiqueta="Fecha de vencimiento" md={6} lg={3}>{fechaVencFormateada}</Dato>
+                                <Dato etiqueta="Almacenamiento" md={6}>
+                                    <div className="d-flex align-items-center gap-2">
+                                        {lote.equipo ? (
+                                            <Button
+                                                variant="link"
+                                                className="p-0 fw-semibold text-decoration-none text-start"
+                                                onClick={() => navigate(`/equipos/${lote.equipo?.id}`)}
+                                            >
+                                                <i className="bi bi-thermometer-half me-1"></i>
+                                                {lote.equipo.nombre}
+                                                {lote.equipo.sector ? ` (${lote.equipo.sector.nombre})` : ''}
+                                            </Button>
+                                        ) : lote.sector ? (
+                                            <span>
+                                                <i className="bi bi-geo-alt me-1 text-secondary"></i>
+                                                Sector: <strong>{lote.sector.nombre}</strong>
+                                            </span>
+                                        ) : (
+                                            <span className="text-muted">Sin ubicación asignada</span>
+                                        )}
+                                        {puedeCambiarAlmacenamiento && (
+                                            <ActionButton
+                                                variant="outline-primary"
+                                                size="sm"
+                                                tooltip="Cambiar almacenamiento"
+                                                icon="bi-pencil"
+                                                onClick={() => setMostrarModalAlmacenamiento(true)}
+                                            />
+                                        )}
+                                    </div>
+                                </Dato>
+                                <Dato etiqueta="Checklist de supervisión" md={6}>
+                                    {pasosFase.length === 0 ? (
+                                        <span className="text-muted">Sin pasos registrados</span>
+                                    ) : (
+                                        <div className="d-flex flex-wrap align-items-center gap-2">
+                                            <EstadoBadge tono={pasosCompletados === pasosFase.length ? "success" : "warning"}>
+                                                {pasosCompletados} / {pasosFase.length} pasos completados
+                                                {enFaseProductiva ? ` (${lote.estado})` : ""}
+                                            </EstadoBadge>
+                                            {enFaseProductiva && (
+                                                <Button
+                                                    variant="outline-primary"
+                                                    size="sm"
+                                                    onClick={() => navigate(`/checklist-supervision?lote_id=${lote.id}`)}
+                                                >
+                                                    <i className="bi bi-check2-square me-1"></i>
+                                                    Ir al checklist
+                                                </Button>
+                                            )}
+                                        </div>
                                     )}
-                                </Col>
+                                </Dato>
                             </Row>
+                        </Card.Body>
+                    </Card>
+                </Tab>
 
-                            <Row className="mb-2 align-items-center">
-                                <Col sm={5} className="fw-bold text-secondary">Checklist de Supervision</Col>
-                                <Col sm={7} className="fs-6 d-flex flex-wrap align-items-center gap-2">
-                                    {(() => {
-                                        const lista = supervisiones ?? [];
-                                        const enFaseActual =
-                                            lote.estado === "En produccion" || lote.estado === "Empaquetando"
-                                                ? lista.filter((item) => item.fase_lote_snap === lote.estado)
-                                                : lista;
-                                        const totalPasos = enFaseActual.length;
-                                        const completados = enFaseActual.filter((item) => item.estado === "Completada").length;
-                                        if (totalPasos === 0) {
-                                            return <span className="text-muted">Sin pasos registrados</span>;
-                                        }
-                                        const todoCompleto = completados === totalPasos;
-                                        return (
-                                            <>
-                                                <Badge bg={todoCompleto ? "success" : "warning"} text={todoCompleto ? undefined : "dark"}>
-                                                    {completados} / {totalPasos} pasos completados
-                                                    {lote.estado === "En produccion" || lote.estado === "Empaquetando"
-                                                        ? ` (${lote.estado})`
-                                                        : ""}
-                                                </Badge>
-                                                {(lote.estado === "En produccion" || lote.estado === "Empaquetando") && (
-                                                    <Button
-                                                        variant="outline-primary"
-                                                        size="sm"
-                                                        onClick={() => navigate(`/checklist-supervision?lote_id=${lote.id}`)}
-                                                    >
-                                                        <i className="bi bi-check2-square me-1"></i>
-                                                        Ir al checklist
-                                                    </Button>
-                                                )}
-                                            </>
-                                        );
-                                    })()}
-                                </Col>
-                            </Row>
-
-                            <hr className="my-4" />
-
-                            <div className="d-flex justify-content-between align-items-center mb-3">
-                                <h5 className="mb-0">Insumos utilizados</h5>
+                <Tab eventKey="insumos" title="Insumos y línea de tiempo">
+                    <Card className="shadow-sm border-0 rounded-3 mb-4 text-start">
+                        <Card.Body className="p-4">
+                            <h6 className="detalle-seccion-titulo d-flex justify-content-between align-items-center gap-2">
+                                <span>Insumos utilizados</span>
                                 {puedeAsociar && (
                                     <Button variant="outline-primary" size="sm" onClick={() => setMostrarAsociarInsumos(true)}>
                                         <i className={`bi ${insumosUtilizados.length > 0 ? "bi-pencil" : "bi-plus-circle"} me-1`}></i>
                                         {insumosUtilizados.length > 0 ? "Modificar insumos" : "Asociar insumos"}
                                     </Button>
                                 )}
-                            </div>
-
+                            </h6>
                             {insumosUtilizados.length === 0 ? (
                                 <p className="text-muted mb-0">Este lote todavía no tiene insumos asociados.</p>
                             ) : (
@@ -359,13 +313,15 @@ export function VerLoteProduccionPage() {
                                     </tbody>
                                 </Table>
                             )}
+                        </Card.Body>
+                    </Card>
 
-                            <hr className="my-4" />
+                    <LineaTemporalEstadosLoteProduccion lote={lote} />
+                </Tab>
 
-                            <LineaTemporalEstadosLoteProduccion lote={lote} />
-
-                            <hr className="my-4" />
-
+                <Tab eventKey="trazabilidad" title="Trazabilidad">
+                    <Card className="shadow-sm border-0 rounded-3 mb-4 text-start">
+                        <Card.Body className="p-4">
                             <TarjetaTrazabilidadLote
                                 modo="lote_produccion"
                                 entidadId={lote.id}
@@ -376,31 +332,31 @@ export function VerLoteProduccionPage() {
                             />
                         </Card.Body>
                     </Card>
+                </Tab>
 
-                    <div className="mb-4">
-                        <ListaIncidentesVinculados loteProduccionId={lote.id} />
-                    </div>
+                <Tab eventKey="incidentes" title="Incidentes vinculados">
+                    <ListaIncidentesVinculados loteProduccionId={lote.id} />
+                </Tab>
+            </AppTabs>
 
-                    <div className="d-flex justify-content-start gap-2 mb-4">
-                        <Button
-                            variant="outline-secondary"
-                            onClick={() => navigate(volverA)}
-                        >
-                            <i className="bi bi-arrow-left me-1"></i>Volver a la lista
-                        </Button>
+            <div className="d-flex flex-wrap justify-content-start gap-2 mb-4">
+                <Button
+                    variant="outline-secondary"
+                    onClick={() => navigate(volverA)}
+                >
+                    <i className="bi bi-arrow-left me-1"></i>Volver a la lista
+                </Button>
 
-                        {currentUser?.operar && (
-                            <Button
-                                variant="primary"
-                                disabled={lote.estado === "Enviado" || lote.estado === "Parcialmente despachado"}
-                                onClick={() => navigate(`/lotes-produccion/${lote.id}/edit`)}
-                            >
-                                <i className="bi bi-pencil me-1"></i>Editar Lote
-                            </Button>
-                        )}
-                    </div>
-                </Col>
-            </Row>
+                {currentUser?.operar && (
+                    <Button
+                        variant="primary"
+                        disabled={lote.estado === "Enviado" || lote.estado === "Parcialmente despachado"}
+                        onClick={() => navigate(`/lotes-produccion/${lote.id}/edit`)}
+                    >
+                        <i className="bi bi-pencil me-1"></i>Editar Lote
+                    </Button>
+                )}
+            </div>
 
             {mostrarAsociarInsumos && (
                 <AsociarInsumosModal
