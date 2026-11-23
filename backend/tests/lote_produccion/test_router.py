@@ -174,4 +174,18 @@ def test_endpoint_listar_historial_estados_lote(client, auth_headers, db_session
     assert "estado" in ultimo_hito
     assert "fecha_hora" in ultimo_hito
     assert ultimo_hito["observacion"] == "Cambio registrado"
-    assert "usuario" in ultimo_hito 
+    assert "usuario" in ultimo_hito
+
+
+def test_endpoint_trazabilidad_lote_produccion(client, auth_headers, unico_lote_produccion):
+    response = client.get(f"/lotes-produccion/{unico_lote_produccion.id}/trazabilidad", headers=auth_headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["lote_id"] == unico_lote_produccion.id
+    assert "origenes" in data
+    assert "destinos" in data
+
+
+def test_endpoint_trazabilidad_lote_produccion_inexistente(client, auth_headers):
+    response = client.get("/lotes-produccion/99999/trazabilidad", headers=auth_headers)
+    assert response.status_code == 404

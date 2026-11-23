@@ -76,6 +76,7 @@ export function EquiposPage() {
             name: "Nombre",
             selector: row => row.nombre,
             sortable: true,
+            center: true,
             grow: 2,
         },
         {
@@ -134,42 +135,64 @@ export function EquiposPage() {
         },
     ];
 
-    const columns: TableColumn<Equipo>[] = currentUser?.administrar
-        ? [
-            ...baseColumns,
-            {
-                name: "Acciones",
-                center: true,
-                minWidth: "220px",
-                cell: (row) => (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        
-                        <ActionButton
-                            data-tour="btn-editar-equipo"
-                            variant="outline-primary"
-                            size="sm"
-                            tooltip="Editar"
-                            icon="bi-pencil"
-                            disabled={!row.estado}
-                            onClick={() => navigate(`/equipos/${row.id}/edit`)}
-                        />
+    const columns: TableColumn<Equipo>[] = [
+        ...baseColumns,
+        {
+            name: 'Control Termico',
+            center: true,
+            minWidth: '140px',
+            cell: (row) =>
+                row.controla_temperatura ? (
+                    <span className="badge text-bg-info text-dark">
+                        {row.temperatura_minima} C a {row.temperatura_maxima} C
+                    </span>
+                ) : (
+                    <span className="text-muted small">-</span>
+                ),
+        },
+        {
+            name: "Acciones",
+            center: true,
+            minWidth: "220px",
+            cell: (row) => (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <ActionButton
+                        variant="outline-info"
+                        size="sm"
+                        tooltip="Ver detalle y temperaturas"
+                        icon="bi-eye"
+                        onClick={() => navigate(`/equipos/${row.id}`)}
+                    />
 
-                        {row.estado && (
-                            <span data-tour="btn-baja-equipo">
-                                <ActionButton
-                                    variant="outline-danger"
-                                    size="sm"
-                                    tooltip="Dar de baja"
-                                    icon="bi-dash-circle"
-                                    onClick={() => setEquipoToDelete(row)}
-                                />
-                            </span>
-                        )}
-                    </div>
-                )
-            }
-        ]
-        : baseColumns;
+                    {currentUser?.administrar && (
+                        <>
+                            <ActionButton
+                                data-tour="btn-editar-equipo"
+                                variant="outline-primary"
+                                size="sm"
+                                tooltip="Editar"
+                                icon="bi-pencil"
+                                disabled={!row.estado}
+                                onClick={() => navigate(`/equipos/${row.id}/edit`)}
+                            />
+
+                            {row.estado && (
+                                <span data-tour="btn-baja-equipo">
+                                    <ActionButton
+                                        variant="outline-danger"
+                                        size="sm"
+                                        tooltip="Dar de baja"
+                                        icon="bi-dash-circle"
+                                        onClick={() => setEquipoToDelete(row)}
+                                    />
+                                </span>
+                            )}
+                        </>
+                    )}
+                </div>
+            ),
+        },
+    ];
 
     return (
         <Container>

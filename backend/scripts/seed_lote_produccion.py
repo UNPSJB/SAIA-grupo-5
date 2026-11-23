@@ -2,8 +2,11 @@
 Pobla la base de datos con lotes de producción de prueba, incluyendo:
   - estado según antigüedad (En produccion -> Empaquetando -> Terminado),
   - historial de estados (HistorialEstadoLote) con un hito por etapa,
+  - receta con la que se elaboró (la versión vigente en la fecha de producción),
   - insumos utilizados (InsumoUtilizado) tomados de los InsumoLote acomodados
-    que figuran en la receta vigente del producto, descontando stock.
+    que figuran en esa versión de la receta, descontando stock.
+Solo genera lotes de productos que tienen receta. A los lotes que ya existían
+sin receta les asigna la que corresponde a su fecha.
 Requiere: seed_productos, seed_recetas, seed_personal y, para la trazabilidad
 de insumos, seed_lotes_proveedor.
 Uso: python -m scripts.seed_lote_produccion
@@ -23,6 +26,7 @@ from src.lote_produccion.models import (
     InsumoUtilizado,
     LoteProduccion,
 )
+from src.lote_produccion.receta_lote import buscar_receta_para_lote
 from src.lote_proveedor.constants import EstadoLoteProveedor
 from src.lote_proveedor.models import LoteProveedor
 from src.personal.models import Persona
@@ -30,7 +34,7 @@ from src.producto.models import Producto
 from src.receta.models import InsumoReceta, Receta
 
 DIAS_HISTORICO = 30
-MAX_PRODUCTOS = 5
+MAX_PRODUCTOS = 6
 DIAS_MINIMOS_VENCIMIENTO_INSUMO = 15  # misma regla que validar_insumos_lote
 
 ETAPAS = [
@@ -47,17 +51,36 @@ def _usuario(db) -> Persona | None:
     )
 
 
-def _insumos_por_producto(db, productos) -> dict[int, list[int]]:
-    """producto_id -> ids de insumos de su receta vigente."""
-    filas = db.execute(
-        select(Receta.producto_id, InsumoReceta.insumo_id)
-        .join(InsumoReceta, InsumoReceta.receta_id == Receta.id)
-        .where(Receta.vigente == True, Receta.producto_id.in_([p.id for p in productos]))  # noqa: E712
+def _productos_con_receta(db) -> list[Producto]:
+    return db.scalars(
+        select(Producto)
+        .where(
+            Producto.activo == True,  # noqa: E712
+            select(Receta.id).where(Receta.producto_id == Producto.id, Receta.vigente == True).exists(),  # noqa: E712
+        )
+        .order_by(Producto.id)
+        .limit(MAX_PRODUCTOS)
     ).all()
+
+
+def _insumos_por_receta(db) -> dict[int, list[int]]:
+    """receta_id -> ids de insumos de esa versión de la receta."""
     resultado: dict[int, list[int]] = {}
-    for producto_id, insumo_id in filas:
-        resultado.setdefault(producto_id, []).append(insumo_id)
+    for receta_id, insumo_id in db.execute(select(InsumoReceta.receta_id, InsumoReceta.insumo_id)).all():
+        resultado.setdefault(receta_id, []).append(insumo_id)
     return resultado
+
+
+def asignar_recetas_a_lotes_existentes(db) -> int:
+    """Completa la receta de los lotes que se cargaron antes de registrarla."""
+    lotes = db.scalars(select(LoteProduccion).where(LoteProduccion.receta_id.is_(None))).all()
+    asignados = 0
+    for lote in lotes:
+        receta = buscar_receta_para_lote(db, lote.producto_id, lote.fecha_produccion)
+        if receta is not None:
+            lote.receta_id = receta.id
+            asignados += 1
+    return asignados
 
 
 def _stock_disponible(db) -> dict[int, list[tuple[InsumoLote, date]]]:
@@ -106,13 +129,11 @@ def generar_lotes_produccion(db) -> list[LoteProduccion]:
     hoy = date.today()
 
     usuario = _usuario(db)
-    productos = db.scalars(
-        select(Producto).where(Producto.activo == True).limit(MAX_PRODUCTOS)  # noqa: E712
-    ).all()
+    productos = _productos_con_receta(db)
     if not productos:
         return []
 
-    insumos_receta = _insumos_por_producto(db, productos)
+    insumos_receta = _insumos_por_receta(db)
     stock = _stock_disponible(db)
 
     lotes = []
@@ -135,12 +156,14 @@ def generar_lotes_produccion(db) -> list[LoteProduccion]:
             if existe is not None:
                 continue
 
+            receta = buscar_receta_para_lote(db, producto.id, fecha)
             for numero in range(rnd.randint(1, 3)):
                 cantidad = rnd.randint(20, 150)
                 inicio = datetime.combine(fecha, time(6 + numero * 3, 0))
 
                 lote = LoteProduccion(
                     producto_id=producto.id,
+                    receta_id=receta.id,
                     fecha_produccion=fecha,
                     fecha_vencimiento=fecha + timedelta(days=30),
                     cantidad_producida=cantidad,
@@ -148,7 +171,7 @@ def generar_lotes_produccion(db) -> list[LoteProduccion]:
                     estado=etapas[-1][0],
                     activo=not (dias_atras % 11 == 0 and numero == 0),
                     insumos_utilizados=_consumir_insumos(
-                        rnd, insumos_receta.get(producto.id, []), stock, fecha
+                        rnd, insumos_receta.get(receta.id, []), stock, fecha
                     ),
                 )
                 if usuario is not None:
@@ -169,9 +192,13 @@ def generar_lotes_produccion(db) -> list[LoteProduccion]:
 def main():
     db = SessionLocal()
     try:
+        asignados = asignar_recetas_a_lotes_existentes(db)
         lotes = generar_lotes_produccion(db)
         db.add_all(lotes)
         db.commit()
+
+        if asignados:
+            print(f"Se asignó la receta a {asignados} lotes de producción existentes.")
 
         inactivos = sum(1 for lote in lotes if not lote.activo)
         terminados = sum(1 for lote in lotes if lote.estado == EstadoLote.TERMINADO.value)
@@ -181,7 +208,7 @@ def main():
             f"{inactivos} inactivos, {con_trazabilidad} con insumos utilizados)."
         )
         if not lotes:
-            print("No se generaron lotes nuevos. Verificá que existan productos activos.")
+            print("No se generaron lotes nuevos (ya existen para esas fechas o no hay productos activos con receta).")
     except Exception:
         db.rollback()
         raise

@@ -24,6 +24,9 @@ def migrar_esquema_incidentes(engine: Engine) -> None:
     for columna, definicion in (
         ("operario_id", "INTEGER NULL REFERENCES personal(id)"),
         ("sector_id", "INTEGER NULL REFERENCES sectores(id)"),
+        ("lote_produccion_id", "INTEGER NULL REFERENCES lotes_produccion(id)"),
+        ("lote_proveedor_id", "INTEGER NULL REFERENCES lotes_proveedor(id)"),
+        ("insumo_lote_id", "INTEGER NULL REFERENCES insumos_lote(id)"),
     ):
         if columna not in columnas:
             with engine.begin() as connection:

@@ -74,7 +74,15 @@ export function EditarEquipoPage(){
             <Container>
                 <EquipoForm textoBoton="Editar Equipo"
                     onSubmit={actualizarEquipo}
-                    valoresIniciales={{ nombre: equipo.nombre, categoria: equipo.categoria, ubicacion: equipo.ubicacion, sector_id: equipo.sector.id }}/>
+                    valoresIniciales={{
+                        nombre: equipo.nombre,
+                        categoria: equipo.categoria,
+                        ubicacion: equipo.ubicacion,
+                        sector_id: equipo.sector.id,
+                        controla_temperatura: equipo.controla_temperatura,
+                        temperatura_minima: equipo.temperatura_minima,
+                        temperatura_maxima: equipo.temperatura_maxima,
+                    }}/>
             </Container>
         </>
     )

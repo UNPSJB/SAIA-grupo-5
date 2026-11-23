@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Card, Form, Button, Alert, Container, Spinner } from 'react-bootstrap';
+import { Card, Form, Button, Alert, Spinner } from 'react-bootstrap';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../hooks';
+import './Login.css';
 
 export const Login: React.FC = () => {
     const [username, setUsername] = useState('');
@@ -15,11 +16,11 @@ export const Login: React.FC = () => {
 
     if (isLoading) {
         return (
-            <div className="d-flex flex-column justify-content-center align-items-center vh-100">
-                <Spinner animation="border" role="status" variant="primary">
+            <div className="saia-loading-wrapper d-flex flex-column justify-content-center align-items-center">
+                <Spinner animation="border" role="status" variant="light">
                     <span className="visually-hidden">Cargando...</span>
                 </Spinner>
-                <p className="mt-3 text-muted">Cargando datos del usuario...</p>
+                <p className="mt-3 text-white-50">Cargando datos del usuario...</p>
             </div>
         );
     }
@@ -29,54 +30,65 @@ export const Login: React.FC = () => {
     }
 
     return (
-        <Container className="d-flex justify-content-center align-items-center vh-100">
-            <Card style={{ width: '420px' }} className="shadow-sm border-0">
-                <Card.Body className="p-4">
-                    <div className="text-center mb-4">
-                        <h3 className="fw-bold text-primary">SAIA</h3>
-                        <p className="text-muted">Sistema de Apoyo a la Inocuidad Alimentaria</p>
+        <div className="saia-login-wrapper">
+            <Card className="saia-login-card">
+                <Card.Body className="p-0">
+                    <div className="saia-avatar-circle">
+                        <i className="bi bi-shield-check"></i>
                     </div>
 
-                    <h5 className="mb-3">Iniciar sesión</h5>
+                    <div className="text-center">
+                        <h3 className="saia-title">SAIA</h3>
+                        <p className="saia-subtitle">Sistema de Apoyo a la Inocuidad Alimentaria</p>
+                    </div>
 
                     {error && (
-                        <Alert variant="danger" className="py-2 small">
+                        <Alert variant="danger" className="py-2 small border-0">
                             <i className="bi bi-exclamation-triangle-fill me-2"></i>
                             {error}
                         </Alert>
                     )}
 
                     <Form onSubmit={handleSubmit}>
-                        <Form.Group className="mb-3 text-start" controlId="formUsername">
-                            <Form.Label className="fw-semibold">Nombre de usuario</Form.Label>
-                            <Form.Control
-                                type="text"
-                                placeholder="Ingrese su usuario"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                required
-                                autoFocus
-                            />
+                        <Form.Group controlId="formUsername">
+                            <Form.Label className="visually-hidden">Nombre de usuario</Form.Label>
+                            <div className="saia-input-group">
+                                <i className="bi bi-person-fill saia-input-icon" aria-hidden="true"></i>
+                                <Form.Control
+                                    type="text"
+                                    placeholder="Nombre de usuario"
+                                    autoComplete="username"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    className="saia-input"
+                                    required
+                                    autoFocus
+                                />
+                            </div>
                         </Form.Group>
 
-                        <Form.Group className="mb-4 text-start" controlId="formPassword">
-                            <Form.Label className="fw-semibold">Contraseña</Form.Label>
-                            <Form.Control
-                                type="password"
-                                placeholder="Ingrese su contraseña"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                            />
+                        <Form.Group controlId="formPassword">
+                            <Form.Label className="visually-hidden">Contraseña</Form.Label>
+                            <div className="saia-input-group">
+                                <i className="bi bi-lock-fill saia-input-icon" aria-hidden="true"></i>
+                                <Form.Control
+                                    type="password"
+                                    placeholder="Contraseña"
+                                    autoComplete="current-password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="saia-input"
+                                    required
+                                />
+                            </div>
                         </Form.Group>
 
-                        <Button variant="primary" type="submit" className="w-100 py-2 fw-semibold">
-                            <i className="bi bi-box-arrow-in-right me-2"></i>
+                        <Button type="submit" className="w-100 saia-submit-btn">
                             Ingresar
                         </Button>
                     </Form>
                 </Card.Body>
             </Card>
-        </Container>
+        </div>
     );
 };

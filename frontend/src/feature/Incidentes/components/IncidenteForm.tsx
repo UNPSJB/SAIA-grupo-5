@@ -13,6 +13,9 @@ interface IncidenteFormProps {
         descripcion: string,
         tipo_id: number,
         sector_id: number | null,
+        lote_produccion_id?: number | null,
+        lote_proveedor_id?: number | null,
+        insumo_lote_id?: number | null,
         foto_opcional: string | null
     }) => void;
     valoresIniciales?: {
@@ -20,6 +23,9 @@ interface IncidenteFormProps {
         descripcion: string,
         tipo_id: number,
         sector_id: number | null,
+        lote_produccion_id?: number | null,
+        lote_proveedor_id?: number | null,
+        insumo_lote_id?: number | null,
         foto_opcional: string | null,
         fecha_abierto: string,
         fecha_cierre: string | null
@@ -56,6 +62,12 @@ export function IncidenteForm({ textoBoton, onSubmit, valoresIniciales, soloLect
     const [tipoIncidenteId, setTipoIncidenteId] = useState(valoresIniciales?.tipo_id?.toString() || "");
     const { data: sectores } = useApi<Sector[]>('/sectores/');
     const [sectorId, setSectorId] = useState(valoresIniciales?.sector_id?.toString() || "");
+    const { data: lotesProduccion } = useApi<any[]>('/lotes-produccion/');
+    const [loteProduccionId, setLoteProduccionId] = useState(valoresIniciales?.lote_produccion_id?.toString() || "");
+    const { data: lotesProveedor } = useApi<any[]>('/lotes-proveedor/');
+    const [loteProveedorId, setLoteProveedorId] = useState(valoresIniciales?.lote_proveedor_id?.toString() || "");
+    const { data: insumosLote } = useApi<any[]>('/insumos-lote/');
+    const [insumoLoteId, setInsumoLoteId] = useState(valoresIniciales?.insumo_lote_id?.toString() || "");
 
 
     const { register, handleSubmit, formState: { errors }, } = useForm<IncidenteFormData>({
@@ -93,6 +105,9 @@ export function IncidenteForm({ textoBoton, onSubmit, valoresIniciales, soloLect
             descripcion: data.descripcion.trim(),
             tipo_id: Number(tipoIncidenteId),
             sector_id: sectorId ? Number(sectorId) : null,
+            lote_produccion_id: loteProduccionId ? Number(loteProduccionId) : null,
+            lote_proveedor_id: loteProveedorId ? Number(loteProveedorId) : null,
+            insumo_lote_id: insumoLoteId ? Number(insumoLoteId) : null,
             foto_opcional: fotoFinal,
         });
     };
@@ -195,6 +210,78 @@ export function IncidenteForm({ textoBoton, onSubmit, valoresIniciales, soloLect
                         ))}
                     </Form.Select>
                 </Form.Group>
+
+                {!valoresIniciales?.lote_proveedor_id && !valoresIniciales?.insumo_lote_id && loteProveedorId === "" && insumoLoteId === "" && (
+                    <Form.Group className="mb-3 text-start" controlId="formLoteProduccion">
+                        <Form.Label className="p-1 fw-bold">Lote de Produccion</Form.Label>
+                        <Form.Select
+                            value={loteProduccionId}
+                            onChange={(e) => {
+                                setLoteProduccionId(e.target.value);
+                                if (e.target.value) {
+                                    setLoteProveedorId("");
+                                    setInsumoLoteId("");
+                                }
+                            }}
+                            disabled={soloLectura || Boolean(valoresIniciales?.lote_produccion_id)}
+                        >
+                            <option value="">Sin lote de produccion asociado</option>
+                            {lotesProduccion?.filter((l) => l.activo).map((lote) => (
+                                <option key={lote.id} value={lote.id}>
+                                    Lote #{lote.id} - {lote.producto?.nombre || 'Producto'} ({lote.estado})
+                                </option>
+                            ))}
+                        </Form.Select>
+                    </Form.Group>
+                )}
+
+                {!valoresIniciales?.lote_produccion_id && !valoresIniciales?.insumo_lote_id && loteProduccionId === "" && insumoLoteId === "" && (
+                    <Form.Group className="mb-3 text-start" controlId="formLoteProveedor">
+                        <Form.Label className="p-1 fw-bold">Recepcion / Lote Proveedor</Form.Label>
+                        <Form.Select
+                            value={loteProveedorId}
+                            onChange={(e) => {
+                                setLoteProveedorId(e.target.value);
+                                if (e.target.value) {
+                                    setLoteProduccionId("");
+                                    setInsumoLoteId("");
+                                }
+                            }}
+                            disabled={soloLectura || Boolean(valoresIniciales?.lote_proveedor_id)}
+                        >
+                            <option value="">Sin recepcion asociada</option>
+                            {lotesProveedor?.filter((r) => r.activo).map((rec) => (
+                                <option key={rec.id} value={rec.id}>
+                                    Remito {rec.numero_remito || `#${rec.id}`} - {rec.proveedor?.nombre || 'Proveedor'}
+                                </option>
+                            ))}
+                        </Form.Select>
+                    </Form.Group>
+                )}
+
+                {!valoresIniciales?.lote_produccion_id && !valoresIniciales?.lote_proveedor_id && loteProduccionId === "" && loteProveedorId === "" && (
+                    <Form.Group className="mb-3 text-start" controlId="formInsumoLote">
+                        <Form.Label className="p-1 fw-bold">Insumo Alimenticio</Form.Label>
+                        <Form.Select
+                            value={insumoLoteId}
+                            onChange={(e) => {
+                                setInsumoLoteId(e.target.value);
+                                if (e.target.value) {
+                                    setLoteProduccionId("");
+                                    setLoteProveedorId("");
+                                }
+                            }}
+                            disabled={soloLectura || Boolean(valoresIniciales?.insumo_lote_id)}
+                        >
+                            <option value="">Sin insumo alimenticio asociado</option>
+                            {insumosLote?.filter((il) => il.activo).map((il) => (
+                                <option key={il.id} value={il.id}>
+                                    {il.insumo?.nombre || 'Insumo'} - Lote {il.numero_lote} ({il.marca})
+                                </option>
+                            ))}
+                        </Form.Select>
+                    </Form.Group>
+                )}
 
                 <Form.Group className="mb-3 text-start">
                     <Form.Label className="p-1 fw-bold">Foto (Opcional)</Form.Label>

@@ -25,6 +25,11 @@ def read_equipo(equipo_id: int, db: Session = Depends(get_db)):
     return services.leer_equipo(db, equipo_id)
 
 
+@router.get("/{equipo_id}/almacenamiento", response_model=schemas.AlmacenamientoEquipoResponse)
+def read_almacenamiento_equipo(equipo_id: int, db: Session = Depends(get_db)):
+    return services.obtener_almacenamiento_equipo(db, equipo_id)
+
+
 @router.put("/{equipo_id}", response_model=schemas.Equipo)
 def update_equipo(equipo_id: int, equipo: schemas.EquipoUpdate, db: Session = Depends(get_db)):
     return services.modificar_equipo(db, equipo_id, equipo)

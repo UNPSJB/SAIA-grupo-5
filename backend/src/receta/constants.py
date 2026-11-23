@@ -14,7 +14,6 @@ class ErrorCode:
     INSUMO_REPETIDO = "Un insumo no puede repetirse en el listado de ingredientes de la receta."
     INSUMO_NO_ALIMENTARIO = "Solo se pueden agregar a la receta insumos generales activos."
 
-
 class TipoRenglon(str, Enum):
     INGREDIENTE = "Ingrediente"
     ADITIVO = "Aditivo"

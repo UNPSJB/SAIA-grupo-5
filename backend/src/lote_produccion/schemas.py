@@ -3,9 +3,14 @@ from decimal import Decimal
 from typing import Annotated, Optional
 from pydantic import BaseModel, ConfigDict, Field
 from src.producto.schemas import Producto
-from src.insumos_lote.schemas import InsumoLote
+from src.insumos_lote.schemas import (
+    EquipoAlmacenamientoResumen,
+    InsumoLote,
+    SectorAlmacenamientoResumen,
+)
 from src.lote_produccion.models import EstadoLote
 from src.personal.schemas import Persona
+from src.receta.schemas import RecetaVersion
 
 
 class LoteProduccionBase(BaseModel):
@@ -13,6 +18,8 @@ class LoteProduccionBase(BaseModel):
     fecha_produccion: date
     fecha_vencimiento: date
     cantidad_producida: Annotated[int, Field(gt=0)]
+    equipo_id: Optional[int] = None
+    sector_id: Optional[int] = None
 
 
 class LoteProduccionCreate(LoteProduccionBase):
@@ -29,6 +36,12 @@ class LoteProduccion(LoteProduccionBase):
     activo: bool
     producto: Producto
     cantidad_disponible: int
+    equipo: Optional[EquipoAlmacenamientoResumen] = None
+    sector: Optional[SectorAlmacenamientoResumen] = None
+    pasos_pendientes: int = 0
+    checklist_completo: bool = True
+    receta_id: Optional[int] = None
+    receta: Optional[RecetaVersion] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -74,6 +87,13 @@ class LoteProduccionDetalle(LoteProduccion):
 
 class AvanzarEstadoLote(BaseModel):
     observacion: Annotated[Optional[str], Field(max_length=200)] = None
+    equipo_id: Optional[int] = None
+    sector_id: Optional[int] = None
+
+
+class ActualizarAlmacenamiento(BaseModel):
+    equipo_id: Optional[int] = None
+    sector_id: Optional[int] = None
 
 class HistorialEstadoLoteResponse(BaseModel):
     id: int
@@ -85,3 +105,46 @@ class HistorialEstadoLoteResponse(BaseModel):
     observacion: Annotated[Optional[str], Field(max_length=200)] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class TrazabilidadOrigenInsumo(BaseModel):
+    insumo_lote_id: int
+    insumo_nombre: str
+    marca: str
+    numero_lote_insumo: str
+    fecha_vencimiento: date
+    cantidad_utilizada: Decimal
+    unidad_medida: str
+    lote_proveedor_id: Optional[int] = None
+    numero_remito: Optional[str] = None
+    fecha_recepcion: Optional[date] = None
+    proveedor_id: Optional[int] = None
+    proveedor_nombre: Optional[str] = None
+    proveedor_cuit: Optional[str] = None
+
+
+class TrazabilidadDestinoEnvio(BaseModel):
+    envio_id: int
+    numero_remito: str
+    fecha_envio: date
+    fecha_entrega: Optional[date] = None
+    estado: str
+    cantidad: int
+    transportista: str
+    cliente_id: int
+    cliente_razon_social: str
+    cliente_cuit: str
+    direccion: str
+
+
+class TrazabilidadLoteProduccion(BaseModel):
+    lote_id: int
+    producto_nombre: str
+    fecha_produccion: date
+    fecha_vencimiento: date
+    cantidad_producida: int
+    cantidad_disponible: int
+    estado: str
+    receta: Optional[RecetaVersion] = None
+    origenes: list[TrazabilidadOrigenInsumo] = Field(default_factory=list)
+    destinos: list[TrazabilidadDestinoEnvio] = Field(default_factory=list)

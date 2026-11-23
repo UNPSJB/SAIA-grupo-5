@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import { ButtonGroup, Card, Form, Spinner, ToggleButton } from "react-bootstrap";
 import {
     CartesianGrid,
@@ -15,6 +15,7 @@ import type { TareaOcurrencia } from "../../TareasOcurrencias/types";
 import { getEstadoHistorial, type EstadoHistorial } from "../../Historial/types";
 import { toDateKey, dateFromKey } from "../../../libs/date";
 import { SEAFOAM } from "../constants";
+import { ExportarGraficoButton } from "./ExportarGraficoButton";
 
 type Agrupacion = "dia" | "semana";
 
@@ -46,6 +47,7 @@ export function CumplimientoChart() {
     });
     const [agrupacion, setAgrupacion] = useState<Agrupacion>("dia");
 
+    const graficoCumplimientoRef = useRef<HTMLDivElement>(null);
     const rangoValido = Boolean(fechaDesde) && Boolean(fechaHasta) && fechaDesde <= fechaHasta;
     const { data, error, isLoading } = useApi<TareaOcurrencia[]>(
         rangoValido ? `/tareas-ocurrencia/historial?fecha_desde=${fechaDesde}&fecha_hasta=${fechaHasta}` : null,
@@ -95,6 +97,11 @@ export function CumplimientoChart() {
 
     const hayDatos = puntos.some((punto) => punto.cumplimiento !== null);
 
+    const formatearFechaArg = (fechaIso: string) => {
+        const [anio, mes, dia] = fechaIso.split("-");
+        return `${dia}-${mes}-${anio}`;
+    };
+
     return (
         <Card className="dashboard-chart-card h-100">
             <Card.Body>
@@ -103,9 +110,18 @@ export function CumplimientoChart() {
                         <h2>Cumplimiento de checklists</h2>
                         <p>Porcentaje de tareas completadas sobre resueltas por {agrupacion === "dia" ? "día" : "semana"}</p>
                     </div>
-                    <span className="dashboard-chart-icon">
-                        <i className="bi bi-graph-up" />
-                    </span>
+                    <div className="d-flex align-items-center gap-2">
+                    <ExportarGraficoButton
+                        contenedorRef={graficoCumplimientoRef}
+                        titulo="Cumplimiento de checklists"
+                        subtitulo={`Por ${agrupacion === "dia" ? "día" : "semana"}`}
+                        periodo={`${formatearFechaArg(fechaDesde)} al ${formatearFechaArg(fechaHasta)}`}
+                        disabled={!rangoValido || isLoading || Boolean(error) || !hayDatos}
+                    />
+                        <span className="dashboard-chart-icon">
+                            <i className="bi bi-graph-up" />
+                        </span>
+                    </div>
                 </div>
 
                 <div className="dashboard-chart-filters">
@@ -147,7 +163,9 @@ export function CumplimientoChart() {
                     </ButtonGroup>
                 </div>
 
-                <div className="dashboard-chart-area"
+                <div
+                    ref={graficoCumplimientoRef}
+                    className="dashboard-chart-area"
                     role="img"
                     aria-label={`Gráfico de porcentaje de cumplimiento de checklists por ${agrupacion === "dia" ? "día" : "semana"}`}
                 >

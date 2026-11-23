@@ -7,6 +7,7 @@ class InsumoBase(BaseModel):
     nombre: Annotated[str, Field(min_length=3, max_length=40)]      # Esto hace que como minimo el nombre debe tener 1 caracter para cumplir con el criterio de aceptacion
     marca: Annotated[str, Field(default=None, max_length=60)]
     unidad_medida_id: int
+    denominacion_rotulo: Annotated[str | None, Field(max_length=120)] = None
 
 class InformacionNutricional(BaseModel):
     valor_energetico: Annotated[float | None, Field(ge=0, le=900)] = None

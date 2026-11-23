@@ -1,0 +1,140 @@
+.consulta-receta {
+    max-width: 720px;
+    padding-bottom: 5.5rem; /* lugar para la barra de acciones fija */
+}
+
+.consulta-receta-lista .list-group-item {
+    padding: 0.85rem 1rem;
+}
+
+.consulta-receta-icono {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex-shrink: 0;
+    border-radius: 0.6rem;
+    background: #e8f6f0;
+    color: var(--sb-seafoam-primary);
+    font-size: 1.2rem;
+}
+
+.consulta-receta-resumen {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.consulta-receta-resumen > div {
+    display: flex;
+    flex-direction: column;
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    background: linear-gradient(135deg, var(--sb-seafoam-primary), var(--sb-seafoam-secondary));
+    color: #fff;
+    text-align: start;
+}
+
+.consulta-receta-resumen span {
+    font-size: 0.8rem;
+    opacity: 0.85;
+}
+
+.consulta-receta-resumen strong {
+    font-size: 1.15rem;
+}
+
+.consulta-receta-seccion {
+    margin-bottom: 1.5rem;
+}
+
+.consulta-receta-titulo {
+    margin: 0 0 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    background: #e8f6f0;
+    color: #123c29;
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-align: start;
+}
+
+.consulta-receta-renglones {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.consulta-receta-renglones li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.7rem 0.75rem;
+    border-bottom: 1px solid rgba(6, 121, 79, 0.15);
+    font-size: 1.05rem;
+}
+
+.consulta-receta-nombre {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    text-align: start;
+}
+
+.consulta-receta-cantidad {
+    flex-shrink: 0;
+    font-weight: 700;
+    color: var(--sb-seafoam-primary);
+}
+
+.consulta-receta-cantidad small {
+    font-weight: 500;
+    color: #6c757d;
+}
+
+/* Barra de acciones fija abajo, al alcance del pulgar */
+.consulta-receta-acciones {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1020;
+    display: flex;
+    gap: 0.5rem;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+    background: #fff;
+    border-top: 1px solid rgba(6, 121, 79, 0.2);
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.consulta-receta-historial.offcanvas-bottom {
+    height: auto;
+    max-height: 70vh;
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+}
+
+.consulta-receta-historial .list-group-item.active {
+    background-color: var(--sb-seafoam-secondary);
+    border-color: var(--sb-seafoam-secondary);
+}
+
+/* En PC la barra queda en el flujo normal para no tapar el menú lateral */
+@media (min-width: 992px) {
+    .consulta-receta {
+        padding-bottom: 2rem;
+    }
+
+    .consulta-receta-acciones {
+        position: static;
+        max-width: none;
+        padding: 0;
+        background: transparent;
+        border-top: 0;
+        box-shadow: none;
+    }
+}

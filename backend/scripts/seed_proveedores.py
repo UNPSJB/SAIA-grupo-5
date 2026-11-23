@@ -1,6 +1,9 @@
 """
 Pobla la base de datos con proveedores y su catálogo de insumos (ProveedorInsumo).
-Requiere: seed_insumos.
+Cada proveedor habilitado tiene un catálogo fijo con los insumos de las recetas de su
+rubro (CATALOGO_FIJO), así seed_lotes_proveedor genera stock de todo lo que consumen
+los lotes de producción, y se completa con insumos al azar.
+Requiere: seed_insumos (y seed_recetas para los insumos que agrega).
 Uso: python -m scripts.seed_proveedores
 """
 from datetime import date, timedelta
@@ -24,6 +27,23 @@ PROVEEDORES = [
     ("Insumos Gastronómicos Sur", "30-71555444-5", "0280-4412233", "info@igsur.com.ar", -20),  # vencida
     ("Granja La Esperanza", "20-30111222-6", "0280-4455667", None, None),  # sin habilitación
 ]
+
+# Insumos de las recetas que provee siempre cada proveedor habilitado (por nombre).
+CATALOGO_FIJO = {
+    "Lácteos del Valle S.A.": [
+        "Leche entera", "Crema de leche", "Manteca", "Dulce de leche", "Fermento láctico", "Cuajo",
+    ],
+    "Molinos Patagónicos S.R.L.": [
+        "Harina 000", "Harina 0000", "Almidón de maíz", "Avena", "Levadura fresca",
+    ],
+    "Distribuidora Chubut": [
+        "Azúcar", "Sal fina", "Bicarbonato de sodio", "Polvo de hornear", "Esencia de vainilla",
+        "Nuez moscada", "Ácido cítrico", "Sorbato de potasio", "Huevo",
+    ],
+    "Frutas y Verduras Don José": [
+        "Zanahoria", "Cebolla", "Jugo de limón", "Almendras", "Nueces", "Pasas de uva",
+    ],
+}
 
 
 def generar_proveedores(db) -> list[Proveedor]:
@@ -53,9 +73,11 @@ def generar_proveedores(db) -> list[Proveedor]:
             activo=True,
         )
 
-        cantidad = min(len(insumos), rnd.randint(*INSUMOS_POR_PROVEEDOR))
+        fijos = [insumo for insumo in insumos if insumo.nombre in CATALOGO_FIJO.get(nombre, [])]
+        resto = [insumo for insumo in insumos if insumo not in fijos]
+        cantidad = min(len(resto), rnd.randint(*INSUMOS_POR_PROVEEDOR))
         proveedor.insumos_asociados = [
-            ProveedorInsumo(insumo_id=insumo.id) for insumo in rnd.sample(insumos, cantidad)
+            ProveedorInsumo(insumo_id=insumo.id) for insumo in fijos + rnd.sample(resto, cantidad)
         ]
         proveedores.append(proveedor)
 

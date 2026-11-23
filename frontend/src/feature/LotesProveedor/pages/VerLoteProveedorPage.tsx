@@ -12,8 +12,12 @@ import type { InsumoLote } from '../../InsumosLote/types';
 import { AgregarInsumoLoteModal } from '../../InsumosLote/components/AgregarInsumoLoteModal';
 import { DeleteInsumoLoteModal } from '../../InsumosLote/components/DeleteInsumoLoteModal';
 import { ActionButton } from '../../../components/ActionButton';
+import { TarjetaTrazabilidadLote } from '../../LotesProduccion/components/TarjetaTrazabilidadLote';
+import { ListaIncidentesVinculados } from '../../Incidentes/components/ListaIncidentesVinculados';
+import '../../LotesProduccion/components/TarjetaTrazabilidadLote.css';
 
 const PASOS_FIJOS = ["Llegada", "Desempaque", "Acomodado"];
+const MAX_INSUMOS_SIN_SCROLL = 10;
 
 const INDICE_ESTADO: Record<EstadoLoteProveedor, number> = {
     llegada: 0,
@@ -220,68 +224,77 @@ export function VerLoteProveedorPage() {
                     ) : !insumosLote || insumosLote.length === 0 ? (
                         <p className="text-muted small p-4 mb-0">No hay insumos registrados en esta recepcion todavia.</p>
                     ) : (
-                        <Table responsive hover className="mb-0 align-middle">
-                            <thead className="table-light">
-                                <tr>
-                                    <th>Insumo</th>
-                                    <th>N° Lote</th>
-                                    <th>Marca</th>
-                                    <th>Recibido</th>
-                                    <th>Restante</th>
-                                    <th>Vencimiento</th>
-                                    <th>Mín. Alerta</th>
-                                    <th>Costo Unit.</th>
-                                    {currentUser?.operar && lote.activo && lote.estado === 'desempaque' && (
-                                        <th className="text-end pe-4">Acciones</th>
-                                    )}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {insumosLote.map((item) => (
-                                    <tr key={item.id}>
-                                        <td className="fw-semibold">
-                                            {item.insumo.nombre}{' '}
-                                            <span className="text-muted small">
-                                                ({item.insumo.unidad_medida?.nombre || 'U'})
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <Badge bg="light" text="dark" className="border">
-                                                {item.numero_lote}
-                                            </Badge>
-                                        </td>
-                                        <td>{item.marca}</td>
-                                        <td>
-                                            <Badge bg="secondary">{item.cantidad}</Badge>
-                                        </td>
-                                        <td>
-                                            <Badge bg={item.cantidad_restante <= item.minimo_alerta ? 'danger' : 'success'}>
-                                                {item.cantidad_restante}
-                                            </Badge>
-                                        </td>
-                                        <td>{item.fecha_vencimiento.split("-").reverse().join("/")}</td>
-                                        <td>{item.minimo_alerta}</td>
-                                        <td>
-                                            {item.costo_unitario != null
-                                                ? `$${Number(item.costo_unitario).toFixed(2)}`
-                                                : '-'}
-                                        </td>
+                        <div className={insumosLote.length > MAX_INSUMOS_SIN_SCROLL
+                            ? 'tabla-trazabilidad-scroll tabla-insumos-recibidos-scroll'
+                            : 'table-responsive'}>
+                            <Table hover className="mb-0 align-middle">
+                                <thead className="table-light">
+                                    <tr>
+                                        <th>Insumo</th>
+                                        <th>N° Lote</th>
+                                        <th>Marca</th>
+                                        <th>Recibido</th>
+                                        <th>Restante</th>
+                                        <th>Vencimiento</th>
+                                        <th>Mín. Alerta</th>
+                                        <th>Costo Unit.</th>
                                         {currentUser?.operar && lote.activo && lote.estado === 'desempaque' && (
-                                            <td className="text-end pe-4">
-                                                <ActionButton
-                                                    variant="outline-danger"
-                                                    size="sm"
-                                                    onClick={() => setInsumoAEliminar(item)}
-                                                    icon="bi bi-trash"
-                                                    tooltip="Eliminar insumo"
-                                                >
-                                                </ActionButton>
-                                            </td>
+                                            <th className="text-end pe-4">Acciones</th>
                                         )}
                                     </tr>
-                                ))}
-                            </tbody>
-                        </Table>
+                                </thead>
+                                <tbody>
+                                    {insumosLote.map((item) => (
+                                        <tr key={item.id}>
+                                            <td className="fw-semibold">
+                                                {item.insumo.nombre}{' '}
+                                                <span className="text-muted small">
+                                                    ({item.insumo.unidad_medida?.nombre || 'Unidades'})
+                                                </span>
+                                                {item.cantidad_restante === 0 ? (
+                                                    <Badge bg="secondary" className="ms-2">Agotado</Badge>
+                                                ) : !item.activo ? (
+                                                    <Badge bg="danger" className="ms-2">Inactivo</Badge>
+                                                ) : null}
+                                            </td>
+                                            <td>
+                                                <Badge bg="light" text="dark" className="border">
+                                                    {item.numero_lote}
+                                                </Badge>
+                                            </td>
+                                            <td>{item.marca}</td>
+                                            <td>
+                                                <Badge bg="secondary">{item.cantidad}</Badge>
+                                            </td>
+                                            <td>
+                                                <Badge bg={item.cantidad_restante <= item.minimo_alerta ? 'danger' : 'success'}>
+                                                    {item.cantidad_restante}
+                                                </Badge>
+                                            </td>
+                                            <td>{item.fecha_vencimiento.split("-").reverse().join("/")}</td>
+                                            <td>{item.minimo_alerta}</td>
+                                            <td>
+                                                {item.costo_unitario != null
+                                                    ? `$${Number(item.costo_unitario).toFixed(2)}`
+                                                    : '-'}
+                                            </td>
+                                            {currentUser?.operar && lote.activo && lote.estado === 'desempaque' && (
+                                                <td className="text-end pe-4">
+                                                    <ActionButton
+                                                        variant="outline-danger"
+                                                        size="sm"
+                                                        onClick={() => setInsumoAEliminar(item)}
+                                                        icon="bi bi-trash"
+                                                        tooltip="Eliminar insumo"
+                                                    >
+                                                    </ActionButton>
+                                                </td>
+                                            )}
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </Table>
+                        </div>
                     )}
                 </Card.Body>
             </Card>
@@ -318,6 +331,10 @@ export function VerLoteProveedorPage() {
                     )}
                 </Card.Footer>
             </Card>
+
+            <TarjetaTrazabilidadLote modo="lote_proveedor" entidadId={lote.id} />
+
+            <ListaIncidentesVinculados loteProveedorId={lote.id} />
 
             <AvanzarEtapaLoteProveedorModal
                 lote={modalAvanzar ? lote : null}

@@ -12,6 +12,7 @@ COLUMNAS_INSUMOS = (
     ("aporta_sodio", "BOOLEAN NOT NULL DEFAULT 0"),
     ("aporta_edulcorantes", "BOOLEAN NOT NULL DEFAULT 0"),
     ("aporta_cafeina", "BOOLEAN NOT NULL DEFAULT 0"),
+    ("denominacion_rotulo", "VARCHAR(120) NULL"),
     ("contiene_gluten", "BOOLEAN NOT NULL DEFAULT 0"),
 )
 

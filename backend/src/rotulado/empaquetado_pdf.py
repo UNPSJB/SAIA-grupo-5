@@ -6,6 +6,7 @@ dibuja siempre, al pie, y no forma parte de los elementos movibles.
 """
 import base64
 from dataclasses import dataclass, field
+from datetime import date
 from io import BytesIO
 from typing import TYPE_CHECKING
 
@@ -41,6 +42,14 @@ class DatosEmpaquetado:
     tabla_nutricional: list[dict] | None = None
     sellos: list[str] = field(default_factory=list)
     mensaje_sellos: str = ""
+    descripcion: str | None = None
+    codigo_barras: str | None = None
+    alergenos: list[str] = field(default_factory=list)
+    conservacion: str | None = None
+    porciones_por_envase: str | None = None
+    leyendas_obligatorias: list[str] = field(default_factory=list)
+    fecha_elaboracion: date | None = None
+    fecha_vencimiento: date | None = None
     unidad: str = "g"
     porcion: float | None = None
     leyenda: str = ""
@@ -116,12 +125,27 @@ def _lineas_de(elemento: "ElementoEmpaquetado", datos: DatosEmpaquetado) -> list
         lineas = []
         if caa.identificacion_lote:
             lineas.append(f"Lote: {caa.identificacion_lote}")
-        if caa.fecha_duracion:
+        if datos.fecha_elaboracion:
+            lineas.append(f"Elaborado el: {datos.fecha_elaboracion.strftime('%d/%m/%Y')}")
+        vencimiento = datos.fecha_vencimiento or caa.fecha_duracion
+        if vencimiento:
             lineas.append(
                 "Consumir preferentemente antes del: "
-                f"{caa.fecha_duracion.strftime('%d/%m/%Y')}"
+                f"{vencimiento.strftime('%d/%m/%Y')}"
             )
         return lineas
+    if clave == "descripcion":
+        return [datos.descripcion] if datos.descripcion else []
+    if clave == "alergenos":
+        return list(datos.alergenos)
+    if clave == "conservacion":
+        return [f"Conservación: {datos.conservacion}"] if datos.conservacion else []
+    if clave == "porciones":
+        if not datos.porciones_por_envase:
+            return []
+        return [f"Porciones por envase: {datos.porciones_por_envase}"]
+    if clave == "leyendas":
+        return list(datos.leyendas_obligatorias)
     if clave == "importador":
         if not caa.es_importado:
             return []
@@ -176,6 +200,35 @@ def _texto_ajustado(
     for linea in envueltas:
         c.drawString(x + relleno, y_texto, linea)
         y_texto -= tamano * 1.25
+
+
+def _dibujar_codigo_barras(c, codigo: str, x: float, y: float, ancho: float, alto: float) -> None:
+    """Dibuja el EAN-13 con su número, escalado al bloque reservado."""
+    relleno = 0.8 * mm
+    try:
+        from reportlab.graphics.barcode import createBarcodeDrawing
+
+        dibujo = createBarcodeDrawing(
+            "EAN13", value=codigo, barHeight=10 * mm, barWidth=0.6,
+            humanReadable=True, fontSize=6.5,
+        )
+        ancho_dibujo, alto_dibujo = float(dibujo.width), float(dibujo.height)
+        escala = min(
+            (ancho - 2 * relleno) / ancho_dibujo,
+            (alto - 2 * relleno) / alto_dibujo,
+        )
+        if escala <= 0:
+            raise ValueError("El bloque del código de barras es demasiado pequeño.")
+        c.saveState()
+        c.translate(
+            x + (ancho - ancho_dibujo * escala) / 2,
+            y + (alto - alto_dibujo * escala) / 2,
+        )
+        c.scale(escala, escala)
+        dibujo.drawOn(c, 0, 0)
+        c.restoreState()
+    except Exception:
+        _texto_ajustado(c, [f"Código de barras: {codigo}"], x, y, ancho, alto)
 
 
 def _dibujar_tabla_nutricional(c, datos: DatosEmpaquetado, x: float, y: float,
@@ -384,6 +437,12 @@ def generar_pdf_empaquetado(datos: DatosEmpaquetado) -> bytes:
             continue
         if elemento.clave == "sellos":
             _dibujar_sellos(documento, datos, x, y, ancho, alto)
+            continue
+        if elemento.clave == "codigo_barras":
+            if not datos.codigo_barras:
+                continue
+            _caja(documento, x, y, ancho, alto)
+            _dibujar_codigo_barras(documento, datos.codigo_barras, x, y, ancho, alto)
             continue
 
         lineas = _lineas_de(elemento, datos)

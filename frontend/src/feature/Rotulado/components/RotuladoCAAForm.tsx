@@ -6,7 +6,7 @@ import { api } from '../../../libs/axios';
 import { useApi } from '../../../hooks/useApi';
 import { mostrarAlertaError, mostrarAlertaExito } from '../../../libs/alertas';
 import type { Producto } from '../../Productos/types';
-import type { BorradorRotuladoCAA, CampoCompletitud, DatosRotuladoCAA } from '../types';
+import type { BorradorRotuladoCAA, CampoCompletitud, DatosRotuladoCAA, ListaIngredientesRotulo } from '../types';
 
 interface RotuladoCAAFormProps {
     producto: Producto;
@@ -39,7 +39,95 @@ export function RotuladoCAAForm({ producto, puedeEditar }: RotuladoCAAFormProps)
         />
     );
 }
+interface OrdenIngredientesProps {
+    lista: ListaIngredientesRotulo;
+    producto: Producto;
+    claveBorrador: string;
+    puedeEditar: boolean;
+    sinGuardar: boolean;
+    textoEditado: boolean;
+}
 
+function OrdenIngredientes({ lista, producto, claveBorrador, puedeEditar, sinGuardar, textoEditado }: OrdenIngredientesProps) {
+    const [moviendo, setMoviendo] = useState(false);
+    const { ingredientes } = lista;
+
+    const enviar = async (orden: number[]) => {
+        if (textoEditado && !window.confirm(
+            'Reordenar vuelve a generar la lista de ingredientes y reemplaza el texto que editaste a mano. ¿Continuar?',
+        )) return;
+        setMoviendo(true);
+        try {
+            const { data } = await api.put<BorradorRotuladoCAA>(
+                `/rotulado/productos/${producto.id}/ingredientes/orden`, { orden },
+            );
+            await mutate(claveBorrador, data, false);
+        } catch (error) {
+            const detail = isAxiosError(error) ? error.response?.data?.detail : undefined;
+            mostrarAlertaError(typeof detail === 'string' ? detail : 'No se pudo cambiar el orden de los ingredientes.');
+        } finally {
+            setMoviendo(false);
+        }
+    };
+
+    const mover = (indice: number, delta: number) => {
+        const ids = ingredientes.map((i) => i.insumo_id);
+        [ids[indice], ids[indice + delta]] = [ids[indice + delta], ids[indice]];
+        enviar(ids);
+    };
+
+    const puedeMover = (indice: number, delta: number) => {
+        const otro = ingredientes[indice + delta];
+        const actual = ingredientes[indice];
+        return puedeEditar && !sinGuardar && !moviendo && !!otro
+            && actual.porcentaje !== null && actual.porcentaje === otro.porcentaje;
+    };
+
+    return (
+        <div className="mb-3">
+            <div className="d-flex align-items-center mb-1">
+                <span className="fw-semibold me-2">Orden de los ingredientes</span>
+                {lista.orden_manual && <Badge bg="warning" text="dark">Orden ajustado a mano</Badge>}
+                {lista.orden_manual && puedeEditar && (
+                    <Button size="sm" variant="link" disabled={sinGuardar || moviendo} onClick={() => enviar([])}>
+                        Volver al orden automático
+                    </Button>
+                )}
+            </div>
+            <Table size="sm" bordered className="mb-1">
+                <tbody>
+                    {ingredientes.map((ing, indice) => (
+                        <tr key={ing.insumo_id}>
+                            <td style={{ width: '2.5rem' }}>{indice + 1}</td>
+                            <td>{ing.texto}</td>
+                            <td style={{ width: '6rem' }}>{ing.porcentaje !== null ? `${ing.porcentaje} %` : 'sin %'}</td>
+                            <td style={{ width: '6rem' }} className="text-end">
+                                <Button size="sm" variant="outline-secondary" className="me-1"
+                                    disabled={!puedeMover(indice, -1)} onClick={() => mover(indice, -1)}>
+                                    <i className="bi bi-arrow-up" />
+                                </Button>
+                                <Button size="sm" variant="outline-secondary"
+                                    disabled={!puedeMover(indice, 1)} onClick={() => mover(indice, 1)}>
+                                    <i className="bi bi-arrow-down" />
+                                </Button>
+                            </td>
+                        </tr>
+                    ))}
+                    {lista.aditivos.map((ad) => (
+                        <tr key={ad.texto} className="text-muted">
+                            <td>·</td>
+                            <td colSpan={3}>{ad.texto}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </Table>
+            <Form.Text className="text-muted">
+                Solo se pueden intercambiar ingredientes con el mismo porcentaje.
+                {sinGuardar && ' Guardá el borrador antes de reordenar.'}
+            </Form.Text>
+        </div>
+    );
+}
 interface FormularioCAAProps {
     producto: Producto;
     borrador: BorradorRotuladoCAA;
@@ -313,7 +401,16 @@ function FormularioCAA({ producto, borrador, clave, puedeEditar }: FormularioCAA
                     {textoAyuda('lista_ingredientes')} Si lo editás, el cambio queda registrado en el historial.
                 </Form.Text>
             </Form.Group>
-
+            {borrador.lista_ordenada && (
+                <OrdenIngredientes
+                    lista={borrador.lista_ordenada}
+                    producto={producto}
+                    claveBorrador={clave}
+                    puedeEditar={puedeEditar}
+                    sinGuardar={JSON.stringify(datos) !== JSON.stringify(borrador.datos)}
+                    textoEditado={campo('lista_ingredientes')?.origen === 'manual'}
+                />
+            )}
             <h6 className="fw-bold">Preparación e instrucciones de uso</h6>
             <Form.Group className="mb-3" controlId="caa-instrucciones">
                 <Form.Label className="mb-1">Instrucciones de uso (cuando corresponda)</Form.Label>

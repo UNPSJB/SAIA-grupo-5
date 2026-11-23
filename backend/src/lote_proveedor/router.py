@@ -44,3 +44,8 @@ def avanzar_etapa_lote(lote_proveedor_id: int, datos: schemas.AvanzarEtapaLote, 
 @router.get("/{lote_proveedor_id}/historial-estados", response_model=list[schemas.HistorialEstadoLoteProveedorResponse])
 def read_historial_estados_lote(lote_proveedor_id: int, db: Session = Depends(get_db)):
     return services.listar_historial_lote(db, lote_proveedor_id)
+
+
+@router.get("/{lote_proveedor_id}/trazabilidad", response_model=schemas.TrazabilidadLoteProveedor)
+def read_trazabilidad_lote_proveedor(lote_proveedor_id: int, db: Session = Depends(get_db)):
+    return services.obtener_trazabilidad_lote_proveedor(db, lote_proveedor_id)
