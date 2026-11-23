@@ -220,7 +220,7 @@ def listar_lotes_historial(
     fecha_hasta: date | None = None,
 ) -> schemas.LoteProduccionHistorial:
 
-   consulta = (select(LoteProduccion).options(
+    consulta = (select(LoteProduccion).options(
         selectinload(LoteProduccion.producto),
         selectinload(LoteProduccion.receta),
         selectinload(LoteProduccion.supervisiones)
