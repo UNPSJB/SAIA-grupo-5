@@ -4,6 +4,7 @@ import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 import { ACTIVO_ESTILOS, ESTADO_INCIDENTE_ESTILOS, type Incidente } from "../types";
 import { EstadoBadge } from "../../../components/EstadoBadge";
+import { Dato } from "../../../components/Dato";
 import { useAuth } from '../../../hooks';
 import { PageLoading } from "../../../components/PageLoading";
 
@@ -51,187 +52,141 @@ export function VerIncidentePage() {
         </Container>
     );
 
+    const tieneRelaciones = Boolean(incidente.lote_produccion_id || incidente.lote_proveedor_id || incidente.insumo_lote_id);
+    const formatearFechaHora = (fecha: string) => new Date(fecha).toLocaleString("es-AR", { hour12: false });
+
     return (
         <Container>
             <PageHeader title="Detalle del Incidente" />
 
-            <Row className="justify-content-center mt-3">
-                <Col md={8}>
-                    <Card className="shadow-sm border-0 rounded-3">
-                        <Card.Body className="p-4">
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Incidente</Col>
-                                <Col sm={8} className="fs-5">{incidente?.nombre || "Cargando..."}</Col>
-                            </Row>
+            <Card className="shadow-sm border-0 rounded-3 mb-4 mt-3 text-start">
+                <Card.Body className="p-4">
+                    <h6 className="detalle-seccion-titulo">Datos del incidente</h6>
+                    <Row className="g-3 mb-4">
+                        <Dato etiqueta="Incidente" md={6} lg={4}>
+                            <span className="fw-semibold">{incidente.nombre}</span>
+                        </Dato>
+                        <Dato etiqueta="Tipo de Incidente" md={6} lg={4}>{incidente.tipo?.nombre || "-"}</Dato>
+                        <Dato etiqueta="Sector" md={6} lg={4}>
+                            {incidente.sector?.nombre || <span className="text-muted fst-italic">Sin sector asignado</span>}
+                        </Dato>
+                        <Dato etiqueta="Reportado por" md={6} lg={4}>
+                            {incidente.operario?.nombre || <span className="text-muted fst-italic">Sin datos del reportante</span>}
+                        </Dato>
+                        <Dato etiqueta="Descripción" md={12} lg={8}>{incidente.descripcion}</Dato>
+                    </Row>
 
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Tipo Incidente</Col>
-                                <Col sm={8}>{incidente?.tipo?.nombre || "Cargando..."}</Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Reportado por</Col>
-                                <Col sm={8}>
-                                    {incidente.operario?.nombre || "Sin datos del reportante"}
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Descripción</Col>
-                                <Col sm={8}>{incidente.descripcion}</Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Sector</Col>
-                                <Col sm={8}>
-                                    {incidente.sector?.nombre || "Sin sector asignado"}
-                                </Col>
-                            </Row>
-
-                            {incidente.lote_produccion_id && (
-                                <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                    <Col sm={4} className="fw-bold text-secondary">Lote de Produccion</Col>
-                                    <Col sm={8}>
+                    {tieneRelaciones && (
+                        <>
+                            <h6 className="detalle-seccion-titulo">Relacionado con</h6>
+                            <Row className="g-3 mb-4">
+                                {incidente.lote_produccion_id && (
+                                    <Dato etiqueta="Lote de Producción" md={6} lg={4}>
                                         <Button
                                             variant="link"
-                                            className="p-0 fw-semibold text-decoration-none"
+                                            className="p-0 fw-semibold text-decoration-none text-start"
                                             onClick={() => navigate(`/lotes-produccion/${incidente.lote_produccion_id}`)}
                                         >
                                             Lote #{incidente.lote_produccion_id}
                                             {incidente.lote_produccion?.estado ? ` (${incidente.lote_produccion.estado})` : ""}
                                         </Button>
-                                    </Col>
-                                </Row>
-                            )}
-
-                            {incidente.lote_proveedor_id && (
-                                <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                    <Col sm={4} className="fw-bold text-secondary">Recepcion / Lote Proveedor</Col>
-                                    <Col sm={8}>
+                                    </Dato>
+                                )}
+                                {incidente.lote_proveedor_id && (
+                                    <Dato etiqueta="Recepción / Lote Proveedor" md={6} lg={4}>
                                         <Button
                                             variant="link"
-                                            className="p-0 fw-semibold text-decoration-none"
+                                            className="p-0 fw-semibold text-decoration-none text-start"
                                             onClick={() => navigate(`/recepciones/${incidente.lote_proveedor_id}`)}
                                         >
                                             {incidente.lote_proveedor?.numero_remito
                                                 ? `Remito ${incidente.lote_proveedor.numero_remito}`
-                                                : `Recepcion #${incidente.lote_proveedor_id}`}
+                                                : `Recepción #${incidente.lote_proveedor_id}`}
                                         </Button>
-                                    </Col>
-                                </Row>
-                            )}
-
-                            {incidente.insumo_lote_id && (
-                                <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                    <Col sm={4} className="fw-bold text-secondary">Insumo Alimenticio</Col>
-                                    <Col sm={8}>
+                                    </Dato>
+                                )}
+                                {incidente.insumo_lote_id && (
+                                    <Dato etiqueta="Insumo Alimenticio" md={6} lg={4}>
                                         <Button
                                             variant="link"
-                                            className="p-0 fw-semibold text-decoration-none"
+                                            className="p-0 fw-semibold text-decoration-none text-start"
                                             onClick={() => navigate(`/insumos-lote/${incidente.insumo_lote_id}`)}
                                         >
                                             {incidente.insumo_lote
                                                 ? `Lote ${incidente.insumo_lote.numero_lote} (${incidente.insumo_lote.marca})`
                                                 : `Insumo Lote #${incidente.insumo_lote_id}`}
                                         </Button>
-                                    </Col>
-                                </Row>
+                                    </Dato>
+                                )}
+                            </Row>
+                        </>
+                    )}
+
+                    <h6 className="detalle-seccion-titulo">Seguimiento</h6>
+                    <Row className="g-3">
+                        <Dato etiqueta="Fecha de apertura" md={6} lg={3}>
+                            {incidente.fecha_abierto ? formatearFechaHora(incidente.fecha_abierto) : "-"}
+                        </Dato>
+                        <Dato etiqueta="Fecha de cierre" md={6} lg={3}>
+                            {incidente.fecha_cierre
+                                ? formatearFechaHora(incidente.fecha_cierre)
+                                : <span className="text-muted fst-italic">Sin cerrar</span>}
+                        </Dato>
+                        <Dato etiqueta="Estado del incidente" md={6} lg={3}>
+                            <EstadoBadge tono={ESTADO_INCIDENTE_ESTILOS[incidente.estado].tono} icono={ESTADO_INCIDENTE_ESTILOS[incidente.estado].icono}>
+                                {incidente.estado}
+                            </EstadoBadge>
+                        </Dato>
+                        <Dato etiqueta="Estado actual" md={6} lg={3}>
+                            <EstadoBadge tono={ACTIVO_ESTILOS[incidente.activo ? 'Activo' : 'Inactivo'].tono} icono={ACTIVO_ESTILOS[incidente.activo ? 'Activo' : 'Inactivo'].icono}>
+                                {incidente.activo ? 'Activo' : 'Inactivo'}
+                            </EstadoBadge>
+                        </Dato>
+                        <Dato etiqueta="Foto">
+                            {incidente.foto_opcional ? (
+                                <div>
+                                    <img
+                                        src={incidente.foto_opcional}
+                                        alt="Foto"
+                                        style={{ maxWidth: '100%', maxHeight: '250px', borderRadius: '8px' }}
+                                        className="border shadow-sm"
+                                    />
+                                    <div className="small text-muted mt-1 mb-2">
+                                        {obtenerNombreArchivo(incidente.foto_opcional)}
+                                    </div>
+                                    <a
+                                        href={incidente.foto_opcional}
+                                        download={`incidente_${incidente.nombre}`}
+                                        className="btn btn-outline-primary btn-sm"
+                                    >
+                                        <i className="bi bi-download me-1"></i>Descargar Foto Adjunta
+                                    </a>
+                                </div>
+                            ) : (
+                                <span className="text-muted fst-italic">Sin foto adjunta</span>
                             )}
+                        </Dato>
+                    </Row>
+                </Card.Body>
+            </Card>
 
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Fecha de apertura</Col>
-                                <Col sm={8}>
-                                    {incidente.fecha_abierto
-                                        ? new Date(incidente.fecha_abierto).toLocaleString("es-AR", {
-                                            hour12: false,
-                                        })
-                                        : ""}
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Fecha de cierre</Col>
-                                <Col sm={8}>
-                                    {incidente.fecha_cierre
-                                        ? new Date(incidente.fecha_cierre).toLocaleString("es-AR", {
-                                            hour12: false,
-                                        })
-                                        : "Sin cerrar"}
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-2 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">
-                                    Estado del incidente
-                                </Col>
-                                <Col sm={8}>
-                                    <EstadoBadge grande tono={ESTADO_INCIDENTE_ESTILOS[incidente.estado].tono} icono={ESTADO_INCIDENTE_ESTILOS[incidente.estado].icono}>
-                                        {incidente.estado}
-                                    </EstadoBadge>
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-2 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Estado Actual</Col>
-                                <Col sm={8}>
-                                    <EstadoBadge grande tono={ACTIVO_ESTILOS[incidente.activo ? 'Activo' : 'Inactivo'].tono} icono={ACTIVO_ESTILOS[incidente.activo ? 'Activo' : 'Inactivo'].icono}>
-                                        {incidente.activo ? 'Activo' : 'Inactivo'}
-                                    </EstadoBadge>
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-2 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary"> Foto </Col>
-                                <Col sm={8}>
-                                    {incidente.foto_opcional ? (
-                                        <div>
-                                            <div className="mb-2">
-                                                <img
-                                                    src={incidente.foto_opcional}
-                                                    alt="Foto"
-                                                    style={{ maxWidth: '100%', maxHeight: '250px', borderRadius: '8px' }}
-                                                    className="border shadow-sm"
-                                                />
-                                                <div className="small text-muted mt-1">
-                                                    {obtenerNombreArchivo(incidente.foto_opcional)}
-                                                </div>
-                                            </div>
-                                            <a
-                                                href={incidente.foto_opcional}
-                                                download={`incidente_${incidente.nombre}`}
-                                                className="btn btn-outline-primary btn-sm"
-                                            >
-                                                <i className="bi bi-download me-1"></i>Descargar Foto Adjunta
-                                            </a>
-                                        </div>
-                                    ) : (
-                                        <span className="text-muted fst-italic">Sin foto adjunta</span>
-                                    )}
-                                </Col>
-                            </Row>
-                        </Card.Body>
-
-                        <Card.Footer className="bg-light border-top p-3 d-flex justify-content-start gap-2">
-                            <Button 
-                                variant="outline-secondary" 
-                                onClick={() => navigate(volverA)}
-                            >
-                                <i className="bi bi-arrow-left me-1"></i>Volver a la lista
-                            </Button>
-                            {isAdmin && (
-                                <Button 
-                                    variant="primary" 
-                                    disabled={!incidente.activo}
-                                    onClick={() => navigate(`/incidentes/${incidente.id}/edit`)}
-                                >
-                                    <i className="bi bi-pencil me-1"></i>Editar Incidente   
-
-                                </Button>
-                            )}
-                        </Card.Footer>
-                    </Card>
-                </Col>
-            </Row>
+            <div className="d-flex flex-wrap justify-content-start gap-2 mb-4">
+                <Button
+                    variant="outline-secondary"
+                    onClick={() => navigate(volverA)}
+                >
+                    <i className="bi bi-arrow-left me-1"></i>Volver a la lista
+                </Button>
+                {isAdmin && (
+                    <Button
+                        variant="primary"
+                        disabled={!incidente.activo}
+                        onClick={() => navigate(`/incidentes/${incidente.id}/edit`)}
+                    >
+                        <i className="bi bi-pencil me-1"></i>Editar Incidente
+                    </Button>
+                )}
+            </div>
         </Container>
     );
-}
+}

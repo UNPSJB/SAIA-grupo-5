@@ -1,5 +1,6 @@
-import { Alert, Badge, Button, Card, Col, Container, Row, Spinner } from 'react-bootstrap';
+import { Alert, Button, Card, Col, Container, Row, Spinner } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Dato } from '../../../components/Dato';
 import { EstadoBadge } from '../../../components/EstadoBadge';
 import { PageHeader } from '../../../components/PageHeader';
 import { useApi } from '../../../hooks/useApi';
@@ -45,138 +46,92 @@ export function VerDetalleSupervisionOcurrenciaPage() {
 
     return (
         <Container>
-            <PageHeader title="Detalle del Paso de Supervision" />
+            <PageHeader title="Detalle del Paso de Supervisión" />
 
-            <Row className="justify-content-center mt-3 mb-5">
-                <Col md={8}>
-                    <Card className="shadow-sm border-0 rounded-3">
-                        <Card.Body className="p-4">
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Lote de Produccion</Col>
-                                <Col sm={8} className="fs-6">
-                                    <Button
-                                        variant="link"
-                                        className="p-0 fw-bold text-decoration-none"
-                                        onClick={() => navigate(`/lotes-produccion/${ocurrencia.lote_produccion_id}`)}
-                                    >
-                                        <i className="bi bi-box-arrow-up-right me-1"></i>
-                                        Lote #{ocurrencia.lote_produccion_id}
-                                    </Button>
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Producto y Cantidad</Col>
-                                <Col sm={8} className="fs-6">
-                                    <strong>{ocurrencia.producto_nombre_snap}</strong> ({ocurrencia.cantidad_lote_snap})
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Fase del Lote</Col>
-                                <Col sm={8}>
-                                    <Badge bg={ocurrencia.fase_lote_snap === 'En produccion' ? 'warning' : 'info'} text="dark">
-                                        {ocurrencia.fase_lote_snap}
-                                    </Badge>
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Receta (Snapshot)</Col>
-                                <Col sm={8}>
-                                    {ocurrencia.receta_version_snap
-                                        ? `Receta version v${ocurrencia.receta_version_snap}`
-                                        : 'Verificacion estandar de empaquetado'}
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Etapa</Col>
-                                <Col sm={8} className="fs-6 fw-semibold">
-                                    {ocurrencia.etapa_orden_snap}. {ocurrencia.etapa_nombre_snap}
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Paso Supervisado</Col>
-                                <Col sm={8}>
-                                    {ocurrencia.paso_orden_snap}. {ocurrencia.paso_descripcion_snap}
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-4 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Estado</Col>
-                                <Col sm={8}>
-                                    <EstadoBadge
-                                        grande
-                                        tono={ESTADO_HISTORIAL_ESTILOS[claveEstado].tono}
-                                        icono={ESTADO_HISTORIAL_ESTILOS[claveEstado].icono}
-                                    >
-                                        {ocurrencia.estado}
-                                    </EstadoBadge>
-                                </Col>
-                            </Row>
-
-                            <h6 className="fw-bold text-primary mb-3 mt-4">
-                                <i className="bi bi-clock-history me-2"></i>Auditoria de la Supervision
-                            </h6>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Supervisado por</Col>
-                                <Col sm={8}>
-                                    {ocurrencia.supervisor_id && ocurrencia.supervisor ? (
-                                        `${ocurrencia.supervisor.nombre}, ${ocurrencia.supervisor.apellido}`
-                                    ) : (
-                                        <span className="text-muted fst-italic">Pendiente</span>
-                                    )}
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Fecha de Completado</Col>
-                                <Col sm={8}>
-                                    {ocurrencia.fecha_completado ? (
-                                        new Date(ocurrencia.fecha_completado).toLocaleString('es-AR')
-                                    ) : (
-                                        <span className="text-muted fst-italic">-</span>
-                                    )}
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Editada</Col>
-                                <Col sm={8}>
-                                    {ocurrencia.fue_editada ? (
-                                        <span className="text-warning fw-bold">
-                                            Si (Ultima edicion:{' '}
-                                            {ocurrencia.fecha_edicion
-                                                ? new Date(ocurrencia.fecha_edicion).toLocaleString('es-AR')
-                                                : ''}
-                                            )
-                                        </span>
-                                    ) : (
-                                        <span>No</span>
-                                    )}
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Observaciones</Col>
-                                <Col sm={8}>
-                                    {ocurrencia.observacion || (
-                                        <span className="text-muted fst-italic">Sin observaciones</span>
-                                    )}
-                                </Col>
-                            </Row>
-                        </Card.Body>
-                        <Card.Footer className="bg-light border-top p-3 d-flex justify-content-end gap-2">
-                            <Button variant="outline-secondary" onClick={() => navigate('/historial-supervision')}>
-                                <i className="bi bi-arrow-left me-1"></i>Volver al Historial
+            <Card className="shadow-sm border-0 rounded-3 mb-4 mt-3 text-start">
+                <Card.Body className="p-4">
+                    <h6 className="detalle-seccion-titulo">Lote supervisado</h6>
+                    <Row className="g-3 mb-4">
+                        <Dato etiqueta="Lote de Producción" md={6} lg={3}>
+                            <Button
+                                variant="link"
+                                className="p-0 fw-bold text-decoration-none"
+                                onClick={() => navigate(`/lotes-produccion/${ocurrencia.lote_produccion_id}`)}
+                            >
+                                <i className="bi bi-box-arrow-up-right me-1"></i>
+                                Lote #{ocurrencia.lote_produccion_id}
                             </Button>
-                        </Card.Footer>
-                    </Card>
-                </Col>
-            </Row>
+                        </Dato>
+                        <Dato etiqueta="Producto y Cantidad" md={6} lg={3}>
+                            <strong>{ocurrencia.producto_nombre_snap}</strong> ({ocurrencia.cantidad_lote_snap})
+                        </Dato>
+                        <Dato etiqueta="Fase del Lote" md={6} lg={3}>
+                            <EstadoBadge tono={ocurrencia.fase_lote_snap === 'En produccion' ? 'warning' : 'info'}>
+                                {ocurrencia.fase_lote_snap}
+                            </EstadoBadge>
+                        </Dato>
+                        <Dato etiqueta="Receta (Snapshot)" md={6} lg={3}>
+                            {ocurrencia.receta_version_snap
+                                ? `Versión v${ocurrencia.receta_version_snap}`
+                                : 'Verificación estándar de empaquetado'}
+                        </Dato>
+                    </Row>
+
+                    <h6 className="detalle-seccion-titulo">Paso supervisado</h6>
+                    <Row className="g-3 mb-4">
+                        <Dato etiqueta="Etapa" md={6} lg={4}>
+                            <span className="fw-semibold">{ocurrencia.etapa_orden_snap}. {ocurrencia.etapa_nombre_snap}</span>
+                        </Dato>
+                        <Dato etiqueta="Paso" md={6} lg={5}>
+                            {ocurrencia.paso_orden_snap}. {ocurrencia.paso_descripcion_snap}
+                        </Dato>
+                        <Dato etiqueta="Estado" md={6} lg={3}>
+                            <EstadoBadge
+                                tono={ESTADO_HISTORIAL_ESTILOS[claveEstado].tono}
+                                icono={ESTADO_HISTORIAL_ESTILOS[claveEstado].icono}
+                            >
+                                {ocurrencia.estado}
+                            </EstadoBadge>
+                        </Dato>
+                    </Row>
+
+                    <h6 className="detalle-seccion-titulo">Auditoría de la supervisión</h6>
+                    <Row className="g-3">
+                        <Dato etiqueta="Supervisado por" md={6} lg={4}>
+                            {ocurrencia.supervisor_id && ocurrencia.supervisor
+                                ? `${ocurrencia.supervisor.nombre}, ${ocurrencia.supervisor.apellido}`
+                                : <span className="text-muted fst-italic">Pendiente</span>}
+                        </Dato>
+                        <Dato etiqueta="Fecha de Completado" md={6} lg={4}>
+                            {ocurrencia.fecha_completado
+                                ? new Date(ocurrencia.fecha_completado).toLocaleString('es-AR')
+                                : <span className="text-muted fst-italic">-</span>}
+                        </Dato>
+                        <Dato etiqueta="Editada" md={6} lg={4}>
+                            {ocurrencia.fue_editada ? (
+                                <span className="text-warning-emphasis fw-semibold">
+                                    Sí (última edición:{' '}
+                                    {ocurrencia.fecha_edicion
+                                        ? new Date(ocurrencia.fecha_edicion).toLocaleString('es-AR')
+                                        : ''}
+                                    )
+                                </span>
+                            ) : (
+                                <span>No</span>
+                            )}
+                        </Dato>
+                        <Dato etiqueta="Observaciones">
+                            {ocurrencia.observacion || <span className="text-muted fst-italic">Sin observaciones</span>}
+                        </Dato>
+                    </Row>
+                </Card.Body>
+            </Card>
+
+            <div className="d-flex flex-wrap justify-content-start gap-2 mb-4">
+                <Button variant="outline-secondary" onClick={() => navigate('/historial-supervision')}>
+                    <i className="bi bi-arrow-left me-1"></i>Volver al Historial
+                </Button>
+            </div>
         </Container>
     );
 }
