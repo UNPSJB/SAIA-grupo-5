@@ -37,6 +37,8 @@ class LoteProduccion(LoteProduccionBase):
     cantidad_disponible: int
     equipo: Optional[EquipoAlmacenamientoResumen] = None
     sector: Optional[SectorAlmacenamientoResumen] = None
+    pasos_pendientes: int = 0
+    checklist_completo: bool = True
 
     model_config = ConfigDict(from_attributes=True)
 

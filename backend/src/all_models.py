@@ -62,3 +62,4 @@ from src.registro_temperatura.models import RegistroTemperatura
 
 from src.alergenos.models import Alergeno, InsumoAlergeno
 from src.declaracion_alergenos.models import DeclaracionAlergenosReceta
+from src.supervision_lote.models import SupervisionOcurrencia

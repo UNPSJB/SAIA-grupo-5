@@ -174,7 +174,12 @@ export function ListPage() {
             cell: (row) => {
                 const config = CONFIG_BOTON[row.estado] || CONFIG_BOTON["En produccion"];
                 const stockActual = row.cantidad_disponible ?? row.cantidad_producida;
-                const puedeAvanzar = row.estado === "En produccion" || row.estado === "Empaquetando";
+                const checklistCompleto = row.checklist_completo ?? true;
+                const pasosPendientes = row.pasos_pendientes ?? 0;
+                const puedeAvanzar = (row.estado === "En produccion" || row.estado === "Empaquetando") && checklistCompleto;
+                const tooltipAvanzar = !checklistCompleto
+                    ? `Checklist incompleto (${pasosPendientes} ${pasosPendientes === 1 ? "paso pendiente" : "pasos pendientes"})`
+                    : config.tooltip;
                 const puedeModificarInsumos = row.activo && row.estado === "En produccion";
                 const tieneInsumos = (row.insumos_utilizados?.length ?? 0) > 0;
                 const mostrarBotonAvanzar = row.estado === "En produccion" || row.estado === "Empaquetando";
@@ -214,18 +219,6 @@ export function ListPage() {
                                         onClick={() => setLoteInsumos(row)}
                                     />
                                 </span>
-                                {mostrarBotonAvanzar && (
-                                    <span data-tour="btn-avanzar-lote">
-                                        <ActionButton
-                                            variant={config.variant}
-                                            size="sm"
-                                            tooltip={config.tooltip}
-                                            icon={config.icon}
-                                            disabled={!puedeAvanzar}
-                                            onClick={() => setLoteToChange(row)}
-                                        />
-                                    </span>
-                                )}
                                 {mostrarBotonDespacho && (
                                     <span data-tour="btn-despachar-lote">
                                         <ActionButton
@@ -239,6 +232,18 @@ export function ListPage() {
                                     </span>
                                 )}
                             </>
+                        )}
+                        {(currentUser?.operar || currentUser?.supervisor) && mostrarBotonAvanzar && (
+                            <span data-tour="btn-avanzar-lote">
+                                <ActionButton
+                                    variant={config.variant}
+                                    size="sm"
+                                    tooltip={tooltipAvanzar}
+                                    icon={config.icon}
+                                    disabled={!puedeAvanzar}
+                                    onClick={() => setLoteToChange(row)}
+                                />
+                            </span>
                         )}
                     </div>
                 );

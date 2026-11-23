@@ -1,12 +1,13 @@
 
 import { useState } from "react";
 import { mutate } from "swr";
-import { Container, Alert, Row, Col, Card, Button, Table } from "react-bootstrap";
+import { Container, Alert, Row, Col, Card, Button, Table, Badge } from "react-bootstrap";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { ActionButton } from "../../../components/ActionButton";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 import { useAuth } from "../../../hooks/useAuth";
+import type { SupervisionOcurrencia } from "../../ChecklistSupervision/types";
 import type { LoteProduccion, EstadoLote } from "../types";
 import { PageLoading } from "../../../components/PageLoading";
 import { AsociarInsumosModal } from "../components/AsociarInsumosModal";
@@ -39,6 +40,7 @@ export function VerLoteProduccionPage() {
 
     const { data: envios } = useApi<EnvioLote[]>(id ? `/envios-lote/lote/${id}` : null);
     const { data: lote, isLoading, error } = useApi<LoteProduccion>(`/lotes-produccion/${id}`);
+    const { data: supervisiones } = useApi<SupervisionOcurrencia[]>(id ? `/supervision-lotes/lote/${id}` : null);
     const puedeCambiarAlmacenamiento = Boolean(
         (currentUser?.operar || currentUser?.supervisor) &&
         lote?.activo &&
@@ -180,7 +182,7 @@ export function VerLoteProduccionPage() {
                                 </Col>
                             </Row>
 
-                            <Row className="mb-2 align-items-center">
+                            <Row className="mb-3 border-bottom pb-3 align-items-center">
                                 <Col sm={5} className="fw-bold text-secondary">Almacenamiento</Col>
                                 <Col sm={7} className="fs-6 d-flex align-items-center gap-2">
                                     {lote.equipo ? (
@@ -210,6 +212,45 @@ export function VerLoteProduccionPage() {
                                             onClick={() => setMostrarModalAlmacenamiento(true)}
                                         />
                                     )}
+                                </Col>
+                            </Row>
+
+                            <Row className="mb-2 align-items-center">
+                                <Col sm={5} className="fw-bold text-secondary">Checklist de Supervision</Col>
+                                <Col sm={7} className="fs-6 d-flex flex-wrap align-items-center gap-2">
+                                    {(() => {
+                                        const lista = supervisiones ?? [];
+                                        const enFaseActual =
+                                            lote.estado === "En produccion" || lote.estado === "Empaquetando"
+                                                ? lista.filter((item) => item.fase_lote_snap === lote.estado)
+                                                : lista;
+                                        const totalPasos = enFaseActual.length;
+                                        const completados = enFaseActual.filter((item) => item.estado === "Completada").length;
+                                        if (totalPasos === 0) {
+                                            return <span className="text-muted">Sin pasos registrados</span>;
+                                        }
+                                        const todoCompleto = completados === totalPasos;
+                                        return (
+                                            <>
+                                                <Badge bg={todoCompleto ? "success" : "warning"} text={todoCompleto ? undefined : "dark"}>
+                                                    {completados} / {totalPasos} pasos completados
+                                                    {lote.estado === "En produccion" || lote.estado === "Empaquetando"
+                                                        ? ` (${lote.estado})`
+                                                        : ""}
+                                                </Badge>
+                                                {(lote.estado === "En produccion" || lote.estado === "Empaquetando") && (
+                                                    <Button
+                                                        variant="outline-primary"
+                                                        size="sm"
+                                                        onClick={() => navigate(`/checklist-supervision?lote_id=${lote.id}`)}
+                                                    >
+                                                        <i className="bi bi-check2-square me-1"></i>
+                                                        Ir al checklist
+                                                    </Button>
+                                                )}
+                                            </>
+                                        );
+                                    })()}
                                 </Col>
                             </Row>
 

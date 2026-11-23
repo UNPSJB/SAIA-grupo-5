@@ -169,6 +169,10 @@ import { ListPage as AlergenosListPage } from './feature/Alergenos/pages/Listpag
 import { NuevoAlergenoPage } from './feature/Alergenos/pages/NuevoAlergenoPage.tsx'
 import { EditarAlergenoPage } from './feature/Alergenos/pages/EditarAlergenoPage.tsx'
 
+import { ListPage as ChecklistSupervisionListPage } from './feature/ChecklistSupervision/pages/ListPage.tsx'
+import { HistorialSupervisionPage } from './feature/HistorialSupervision/pages/ListPage.tsx'
+import { VerDetalleSupervisionOcurrenciaPage } from './feature/HistorialSupervision/pages/VerDetalleSupervisionOcurrenciaPage.tsx'
+
 import { Login, NoAutorizado } from './feature/auth'
 import AuthLayout from './layouts/AuthLayout.tsx'
 import { ProtectedRoute } from './components/ProtectedRoute.tsx'
@@ -616,6 +620,26 @@ const router = createBrowserRouter([
               { index: true, element: <AlergenosListPage /> },
               { path: 'new', element: <NuevoAlergenoPage /> },
               { path: ':id/edit', element: <EditarAlergenoPage /> },
+            ],
+          },
+          {
+            path: 'checklist-supervision',
+            children: [
+              { index: true, element: <ChecklistSupervisionListPage /> },
+            ],
+          },
+          {
+            path: 'historial-supervision',
+            element: <ProtectedRoute requireAdminOrSupervisor />,
+            children: [
+              { index: true, element: <HistorialSupervisionPage /> },
+            ],
+          },
+          {
+            path: 'supervision-lotes',
+            element: <ProtectedRoute requireAdminOrSupervisor />,
+            children: [
+              { path: ':id', element: <VerDetalleSupervisionOcurrenciaPage /> },
             ],
           },
           { path: '*', element: <Page404 /> }

@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, String, Numeric, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.models import ModeloBase
+from src.supervision_lote.constants import EstadoSupervisionOcurrencia
 import enum
 
 if TYPE_CHECKING:
@@ -13,6 +14,7 @@ if TYPE_CHECKING:
     from src.personal.models import Persona
     from src.equipos.models import Equipo
     from src.sector.models import Sector
+    from src.supervision_lote.models import SupervisionOcurrencia
 
 class EstadoLote(str, enum.Enum):
     EN_PRODUCCION = "En produccion"
@@ -49,6 +51,19 @@ class LoteProduccion(ModeloBase):
     envios: Mapped[list["EnvioLote"]] = relationship(back_populates="lote")
 
     historial_estados: Mapped[list["HistorialEstadoLote"]] = relationship(cascade="all, delete-orphan", order_by="HistorialEstadoLote.fecha_hora.asc()")
+    supervisiones: Mapped[list["SupervisionOcurrencia"]] = relationship(viewonly=True)
+
+    @property
+    def pasos_pendientes(self) -> int:
+        return sum(
+            1
+            for s in self.supervisiones
+            if s.fase_lote_snap == self.estado and s.estado == EstadoSupervisionOcurrencia.PENDIENTE
+        )
+
+    @property
+    def checklist_completo(self) -> bool:
+        return self.pasos_pendientes == 0
 
 
 class InsumoUtilizado(ModeloBase):

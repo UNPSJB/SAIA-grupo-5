@@ -3,6 +3,7 @@ export interface NavItem {
     to: string;
     icon: string;
     adminOnly?: boolean;
+    adminOrSupervisorOnly?: boolean;
 }
 
 export interface NavGroup {
@@ -11,6 +12,7 @@ export interface NavGroup {
     icon: string;
     items: NavItem[];
     adminOnly?: boolean;
+    adminOrSupervisorOnly?: boolean;
 }
 
 export const navGroups: NavGroup[] = [
@@ -62,7 +64,8 @@ export const navGroups: NavGroup[] = [
         items: [
             { label: 'Insumos', to: '/insumos', icon: 'bi-box-seam' },
             { label: 'Productos', to: '/productos', icon: 'bi bi-fork-knife'},
-            { label: 'Lotes de Produccion', to: '/lotes-produccion', icon: 'bi bi-box2-fill'}
+            { label: 'Lotes de Produccion', to: '/lotes-produccion', icon: 'bi bi-box2-fill'},
+            { label: 'Checklist Supervision', to: '/checklist-supervision', icon: 'bi-check2-square' }
         ],
     },
     {
@@ -80,9 +83,10 @@ export const navGroups: NavGroup[] = [
         id: 'historiales',
         label: 'Historiales',
         icon: 'bi-clock-history',
-        adminOnly: true,
+        adminOrSupervisorOnly: true,
         items: [
             { label: 'Checklist', to: '/historial', icon: 'bi-check2-square', adminOnly: true },
+            { label: 'Supervision', to: '/historial-supervision', icon: 'bi-clipboard2-check', adminOrSupervisorOnly: true },
             { label: 'Incidentes', to: '/incidentes-historial', icon: 'bi-exclamation-diamond', adminOnly: true },
             { label: 'Lotes', to: '/lotes-historial', icon: 'bi-boxes', adminOnly: true }
         ],

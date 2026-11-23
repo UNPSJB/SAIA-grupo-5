@@ -5,12 +5,17 @@ import { useAuth } from '../hooks';
 interface ProtectedRouteProps {
     allowedRoles?: Array<string>;
     requireAdmin?: boolean;
+    requireAdminOrSupervisor?: boolean;
 }
 
-export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles, requireAdmin }: ProtectedRouteProps) => {
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles, requireAdmin, requireAdminOrSupervisor }: ProtectedRouteProps) => {
     const { currentUser } = useAuth();
 
     if (requireAdmin && !currentUser?.administrar) {
+        return <Navigate to="/no-autorizado" replace />;
+    }
+
+    if (requireAdminOrSupervisor && !currentUser?.administrar && !currentUser?.supervisor) {
         return <Navigate to="/no-autorizado" replace />;
     }
 
