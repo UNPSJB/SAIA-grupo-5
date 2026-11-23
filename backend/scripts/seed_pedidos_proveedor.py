@@ -1,6 +1,8 @@
 """
 Pobla la base de datos con pedidos a proveedores (PedidoProveedor + items).
 Solo genera pedidos para proveedores con habilitación vigente, igual que el service.
+Los pedidos de DIAS_PEDIDOS_CATALOGO_FIJO incluyen todo el catálogo fijo del proveedor
+(los insumos de las recetas), para que haya stock durante el histórico de producción.
 Los pedidos quedan en PENDIENTE; seed_lotes_proveedor marca como RECIBIDOS los
 que tengan un lote de proveedor asociado.
 Requiere: seed_personal, seed_proveedores.
@@ -17,9 +19,12 @@ from src.personal.models import Persona
 from src.proveedor.models import Proveedor
 from src.pedidos_proveedor.models import PedidoProveedor, PedidoProveedorItem
 from src.pedidos_proveedor.constants import EstadoPedidoProveedor
+from scripts.seed_proveedores import CATALOGO_FIJO
 
 # Días hacia atrás en que se realizó cada pedido de un proveedor.
 DIAS_PEDIDOS = [55, 40, 25, 12, 6, 2]
+DIAS_PEDIDOS_CATALOGO_FIJO = {55, 25}
+CANTIDAD_CATALOGO_FIJO = 800
 
 
 def usuario_registrador(db) -> Persona | None:
@@ -53,9 +58,16 @@ def generar_pedidos(db) -> list[PedidoProveedor]:
             continue
 
         catalogo = [asoc.insumo_id for asoc in proveedor.insumos_asociados]
+        fijos = [
+            asoc.insumo_id for asoc in proveedor.insumos_asociados
+            if asoc.insumo.nombre in CATALOGO_FIJO.get(proveedor.nombre, [])
+        ]
         for dias in DIAS_PEDIDOS:
             fecha = hoy - timedelta(days=dias)
             cantidad_items = rnd.randint(2, min(4, len(catalogo))) if len(catalogo) >= 2 else 1
+            items = rnd.sample(catalogo, cantidad_items)
+            if dias in DIAS_PEDIDOS_CATALOGO_FIJO:
+                items += [insumo_id for insumo_id in fijos if insumo_id not in items]
             pedidos.append(
                 PedidoProveedor(
                     proveedor_id=proveedor.id,
@@ -69,9 +81,12 @@ def generar_pedidos(db) -> list[PedidoProveedor]:
                     items=[
                         PedidoProveedorItem(
                             insumo_id=insumo_id,
-                            cantidad_pedida=float(rnd.choice([50, 100, 200, 300, 500])),
+                            cantidad_pedida=float(
+                                CANTIDAD_CATALOGO_FIJO if dias in DIAS_PEDIDOS_CATALOGO_FIJO and insumo_id in fijos
+                                else rnd.choice([50, 100, 200, 300, 500])
+                            ),
                         )
-                        for insumo_id in rnd.sample(catalogo, cantidad_items)
+                        for insumo_id in items
                     ],
                 )
             )

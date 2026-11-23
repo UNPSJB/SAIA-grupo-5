@@ -155,6 +155,8 @@ import { VerClientePage } from './feature/Clientes/pages/VerClientePage.tsx'
 
 import { ListPage as InsumoLoteListPage } from './feature/InsumosLote/pages/ListPage.tsx'
 import { VerInsumoLotePage } from './feature/InsumosLote/pages/VerInsumoLotePage.tsx'
+import { ProduccionesInsumoLotePage } from './feature/InsumosLote/pages/ProduccionesInsumoLotePage.tsx'
+import { TrazabilidadInsumoLotePage } from './feature/InsumosLote/pages/TrazabilidadInsumoLotePage.tsx'
 
 import { ListPage as PedidosProveedorListPage } from './feature/PedidosProveedor/pages/Listpage.tsx'
 import { NuevoPedidoProveedorPage } from './feature/PedidosProveedor/pages/NuevoPedidoProveedorPage.tsx'
@@ -337,7 +339,9 @@ const router = createBrowserRouter([
             path: 'insumos-lote',
             children: [
               { index: true, element: <InsumoLoteListPage />},
-              { path: ':id', element: <VerInsumoLotePage />}
+              { path: ':id', element: <VerInsumoLotePage />},
+              { path: ':id/producciones', element: <ProduccionesInsumoLotePage />},
+              { path: ':id/trazabilidad', element: <TrazabilidadInsumoLotePage />},
             ]
           },
           {

@@ -18,6 +18,7 @@ from src.equipos.models import Equipo
 from src.notificaciones.services import generar_notificacion_alerta_stock_individual
 from src.sector import exceptions as sector_exceptions
 from src.sector.models import Sector
+from src.lote_produccion.receta_lote import buscar_receta_para_lote
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +36,9 @@ def crear_lote_produccion(db: Session, lote: schemas.LoteProduccionCreate, usuar
     datos = lote.model_dump()
     if "cantidad_disponible" not in datos or datos["cantidad_disponible"] is None:
         datos["cantidad_disponible"] = lote.cantidad_producida
+
+    receta = buscar_receta_para_lote(db, lote.producto_id, lote.fecha_produccion)
+    datos["receta_id"] = receta.id if receta else None
 
     _lote = LoteProduccion(**datos)
     db.add(_lote)
@@ -58,6 +62,7 @@ def listar_lotes_produccion(db: Session) -> List[schemas.LoteProduccionDetalle]:
                                                 joinedload(Producto.unidad_medida),
                                                 joinedload(LoteProduccion.equipo).joinedload(Equipo.sector),
                                                 joinedload(LoteProduccion.sector),
+                                                joinedload(LoteProduccion.receta),
                                                 selectinload(LoteProduccion.insumos_utilizados).joinedload(InsumoUtilizado.insumo_lote).
                                                 joinedload(InsumoLote.insumo).
                                                 joinedload(Insumo.unidad_medida))).all()
@@ -69,6 +74,7 @@ def leer_lote_produccion(db: Session, lote_id: int) -> schemas.LoteProduccionDet
             joinedload(LoteProduccion.producto).joinedload(Producto.unidad_medida),
             joinedload(LoteProduccion.equipo).joinedload(Equipo.sector),
             joinedload(LoteProduccion.sector),
+            joinedload(LoteProduccion.receta),
             selectinload(LoteProduccion.insumos_utilizados).joinedload(InsumoUtilizado.insumo_lote)
             .joinedload(InsumoLote.insumo).joinedload(Insumo.unidad_medida),
             selectinload(LoteProduccion.insumos_utilizados).joinedload(InsumoUtilizado.insumo_lote)
@@ -154,8 +160,17 @@ def modificar_lote_produccion(db: Session, lote_id: int, lote: schemas.LoteProdu
                 raise sector_exceptions.SectorNoEncontrado()
             lote_actualizado["equipo_id"] = None
 
+    cambia_receta = (
+        lote_actualizado.get("producto_id", db_lote.producto_id) != db_lote.producto_id
+        or lote_actualizado.get("fecha_produccion", db_lote.fecha_produccion) != db_lote.fecha_produccion
+    )
+
     for key, value in lote_actualizado.items():
         setattr(db_lote, key, value)
+
+    if cambia_receta:
+        receta = buscar_receta_para_lote(db, db_lote.producto_id, db_lote.fecha_produccion)
+        db_lote.receta_id = receta.id if receta else None
 
     db.commit()
     db.refresh(db_lote)
@@ -195,7 +210,7 @@ def listar_lotes_historial(
     fecha_hasta: date | None = None,
 ) -> schemas.LoteProduccionHistorial:
 
-    consulta = (select(LoteProduccion).options(selectinload(LoteProduccion.producto)))
+    consulta = (select(LoteProduccion).options(selectinload(LoteProduccion.producto), selectinload(LoteProduccion.receta)))
 
     filtros = []
 
@@ -390,6 +405,7 @@ def obtener_trazabilidad_lote_produccion(db: Session, lote_id: int) -> schemas.T
         .where(LoteProduccion.id == lote_id)
         .options(
             joinedload(LoteProduccion.producto),
+            joinedload(LoteProduccion.receta),
             selectinload(LoteProduccion.insumos_utilizados)
             .joinedload(InsumoUtilizado.insumo_lote)
             .joinedload(InsumoLote.insumo)
@@ -463,6 +479,7 @@ def obtener_trazabilidad_lote_produccion(db: Session, lote_id: int) -> schemas.T
         cantidad_producida=db_lote.cantidad_producida,
         cantidad_disponible=db_lote.cantidad_disponible,
         estado=db_lote.estado,
+        receta=db_lote.receta,
         origenes=origenes,
         destinos=destinos,
     )

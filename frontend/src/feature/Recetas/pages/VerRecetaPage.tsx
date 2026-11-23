@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Accordion, Alert, Button, Card, Container, Form, ListGroup, Spinner } from 'react-bootstrap';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
 import { EstadoBadge } from '../../../components/EstadoBadge';
@@ -29,7 +29,10 @@ export function VerRecetaPage() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { currentUser } = useAuth();
-    const [recetaSeleccionadaId, setRecetaSeleccionadaId] = useState<number | null>(null);
+    const location = useLocation();
+    const [recetaSeleccionadaId, setRecetaSeleccionadaId] = useState<number | null>(
+        (location.state as { recetaId?: number } | null)?.recetaId ?? null
+    );
 
     const productoId = Number(id);
     const { data: producto, isLoading: cargandoProducto, error: errorProducto } = useApi<Producto>(

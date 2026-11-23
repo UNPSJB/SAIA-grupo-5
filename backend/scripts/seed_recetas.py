@@ -31,6 +31,13 @@ INSUMOS_ADICIONALES = {
     "Sorbato de potasio": ("Gramo", (None, None, None, None, None, None)),
 }
 
+# Las recetas quedan vigentes desde antes del histórico de lotes de producción
+# (seed_lote_produccion genera 30 días), así cada lote encuentra la versión con la
+# que se elaboró. Las que tienen "version_anterior" cambian de versión a mitad del
+# histórico, para que haya lotes elaborados con cada versión.
+DIAS_VIGENCIA = 60
+DIAS_CAMBIO_VERSION = 10
+
 ETAPA_RECEPCION = ("Recepción de materias primas", [
     "Verificar remitos y facturas de la mercadería recibida",
     "Controlar la temperatura y el estado de las materias primas",
@@ -76,6 +83,15 @@ RECETAS = {
             "Mezclar la leche con el azúcar y el bicarbonato",
             "Cocinar revolviendo hasta alcanzar 68 °Brix",
             "Agregar la esencia de vainilla y enfriar",
+        ],
+    },
+    "Leche entera": {
+        "porcion": (200, "Mililitro"),
+        "insumos": [("Leche entera", 1.0)],
+        "elaboracion": [
+            "Estandarizar el contenido graso de la leche",
+            "Pasteurizar a 72 °C durante 15 segundos",
+            "Enfriar rápidamente a 4 °C",
         ],
     },
     "Manteca": {
@@ -287,18 +303,19 @@ def generar_recetas(db) -> list[Receta]:
             continue
 
         ahora = datetime.now()
+        desde = ahora - timedelta(days=DIAS_VIGENCIA)
         version = 1
         if "version_anterior" in datos:
             anterior = construir_receta(producto, datos, datos["version_anterior"], insumos, aditivos, unidades, version)
             anterior.vigente = False
-            anterior.fecha_desde_vigencia = ahora - timedelta(days=30)
-            anterior.fecha_hasta_vigencia = ahora
+            anterior.fecha_desde_vigencia = desde
+            anterior.fecha_hasta_vigencia = desde = ahora - timedelta(days=DIAS_CAMBIO_VERSION)
             recetas.append(anterior)
             version += 1
 
         receta = construir_receta(producto, datos, datos["insumos"], insumos, aditivos, unidades, version)
         receta.vigente = True
-        receta.fecha_desde_vigencia = ahora
+        receta.fecha_desde_vigencia = desde
         recetas.append(receta)
     return recetas
 
