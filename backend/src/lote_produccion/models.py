@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from src.equipos.models import Equipo
     from src.sector.models import Sector
     from src.supervision_lote.models import SupervisionOcurrencia
+    from src.receta.models import Receta
 
 class EstadoLote(str, enum.Enum):
     EN_PRODUCCION = "En produccion"
@@ -30,6 +31,9 @@ class LoteProduccion(ModeloBase):
 
     producto_id: Mapped[int] = mapped_column(ForeignKey("productos.id"), nullable=False)
     producto: Mapped["Producto"] = relationship(back_populates="lotes_produccion")
+
+    receta_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("recetas.id"), nullable=True, index=True)
+    receta: Mapped["Receta | None"] = relationship()
 
     fecha_produccion: Mapped[date] = mapped_column(Date, nullable=False)
     fecha_vencimiento: Mapped[date] = mapped_column(Date, nullable=False)

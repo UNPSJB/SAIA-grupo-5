@@ -1,4 +1,5 @@
 import type { Producto } from "../Productos/types";
+import type { RecetaVersion } from "../Recetas/types";
 import type {EquipoAlmacenamientoResumen, InsumoLote, SectorAlmacenamientoResumen} from "../InsumosLote/types";
 
 export type EstadoLote = "En produccion" | "Empaquetando" | "Terminado" | "Parcialmente despachado" | "Enviado";
@@ -33,6 +34,8 @@ export type LoteProduccion = {
     insumos_utilizados?: InsumoUtilizado[];
     pasos_pendientes?: number;
     checklist_completo?: boolean;
+    receta_id?: number | null;
+    receta?: RecetaVersion | null;
 }
 
 export type NewLoteProduccion = {
@@ -96,6 +99,7 @@ export interface TrazabilidadLoteProduccionData {
     cantidad_producida: number;
     cantidad_disponible: number;
     estado: string;
+    receta?: RecetaVersion | null;
     origenes: TrazabilidadOrigenInsumo[];
     destinos: TrazabilidadDestinoEnvio[];
 }

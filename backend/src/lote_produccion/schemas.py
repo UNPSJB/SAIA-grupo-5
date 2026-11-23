@@ -10,6 +10,7 @@ from src.insumos_lote.schemas import (
 )
 from src.lote_produccion.models import EstadoLote
 from src.personal.schemas import Persona
+from src.receta.schemas import RecetaVersion
 
 
 class LoteProduccionBase(BaseModel):
@@ -39,6 +40,8 @@ class LoteProduccion(LoteProduccionBase):
     sector: Optional[SectorAlmacenamientoResumen] = None
     pasos_pendientes: int = 0
     checklist_completo: bool = True
+    receta_id: Optional[int] = None
+    receta: Optional[RecetaVersion] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -142,5 +145,6 @@ class TrazabilidadLoteProduccion(BaseModel):
     cantidad_producida: int
     cantidad_disponible: int
     estado: str
+    receta: Optional[RecetaVersion] = None
     origenes: list[TrazabilidadOrigenInsumo] = Field(default_factory=list)
     destinos: list[TrazabilidadDestinoEnvio] = Field(default_factory=list)

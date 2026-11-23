@@ -1,5 +1,5 @@
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import { Alert, Card, Col, Form, Row, Spinner } from "react-bootstrap";
 import {Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
 import { SelectorConBusqueda} from "../../../components/SelectorConBusqueda";
@@ -9,6 +9,7 @@ import { toDateKey } from "../../../libs/date";
 import { SEAFOAM } from "../../Home/constants";
 import type { Producto } from "../../Productos/types";
 import type { EstadisticaProduccion as Estadistica } from "../types";
+import { ExportarGraficoButton } from "../../Home/components/ExportarGraficoButton";
 
 const COLORES = [
     SEAFOAM.primary,
@@ -29,6 +30,8 @@ export function EstadisticasLotes() {
     const [fechaHasta, setFechaHasta] = useState(() => toDateKey(new Date()));
     const [productoId, setProductoId] = useState("");
     const hoy = toDateKey(new Date());
+
+    const graficoLotesRef = useRef<HTMLDivElement>(null);
 
     const rangoValido = Boolean(
     fechaDesde && fechaHasta && fechaDesde <= fechaHasta && fechaDesde <= hoy && fechaHasta <= hoy
@@ -99,6 +102,10 @@ export function EstadisticasLotes() {
         void anio;
         return `${dia}/${mes}`;
     };
+    const formatearFechaArg = (fechaIso: string) => {
+        const [anio, mes, dia] = fechaIso.split("-");
+        return `${dia}-${mes}-${anio}`;
+    };
 
     return (
         <section aria-label="Estadísticas de producción" className="mb-4">
@@ -110,9 +117,22 @@ export function EstadisticasLotes() {
                             <h2>Producción por producto</h2>
                             <p>Cantidad producida en el período seleccionado</p>
                         </div>
-                        <span className="dashboard-chart-icon">
-                            <i className="bi bi-bar-chart-line" />
-                        </span>
+                        <div className="d-flex align-items-center gap-2">
+                            <ExportarGraficoButton
+                                contenedorRef={graficoLotesRef}
+                                titulo="Producción por producto"
+                                subtitulo={
+                                    productoId
+                                        ? `Producto: ${productos?.find((p) => String(p.id) === productoId)?.nombre ?? ""}`
+                                        : "Todos los productos"
+                                }
+                                periodo={`${formatearFechaArg(fechaDesde)} al ${formatearFechaArg(fechaHasta)}`}
+                                disabled={!rangoValido || isLoading || Boolean(error) || datosGrafico.length === 0}
+                            />
+                            <span className="dashboard-chart-icon">
+                                <i className="bi bi-bar-chart-line" />
+                            </span>
+                        </div>
                     </div>
 
                     <Row className="g-3 align-items-end mb-3">
@@ -174,7 +194,7 @@ export function EstadisticasLotes() {
                     )}
 
                     {rangoValido && (
-                        <>
+                        <div ref={graficoLotesRef}>
                             {!error && !isLoading && (
                                 <div className="mb-2 text-muted small">
                                     <strong className="text-dark">
@@ -255,7 +275,7 @@ export function EstadisticasLotes() {
                                     </ResponsiveContainer>
                                 )}
                             </div>
-                        </>
+                        </div>
                     )}
                 </Card.Body>
             </Card>

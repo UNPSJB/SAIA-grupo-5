@@ -6,18 +6,21 @@ import './SellosFrontales.css';
 interface SellosFrontalesProps {
     evaluacion?: EvaluacionSellos | null;
     cargando?: boolean;
+    mostrarTitulo?: boolean;
 }
 
 const formatear = (valor: number | null) => (valor ?? 0).toLocaleString('es-AR', { maximumFractionDigits: 1 });
 
-export function SellosFrontales({ evaluacion, cargando = false }: SellosFrontalesProps) {
+export function SellosFrontales({ evaluacion, cargando = false, mostrarTitulo = true }: SellosFrontalesProps) {
     const unidadBase = evaluacion?.es_liquido ? 'ml' : 'g';
 
     return (
         <div className="sellos-frontales">
-            <div className="fw-bold mb-2">
-                <i className="bi bi-octagon-fill me-2"></i>Sellos de advertencia (etiquetado frontal)
-            </div>
+            {mostrarTitulo && (
+                <div className="fw-bold mb-2">
+                    <i className="bi bi-octagon-fill me-2"></i>Sellos de advertencia (etiquetado frontal)
+                </div>
+            )}
 
             {cargando ? (
                 <div className="d-flex align-items-center gap-2 text-muted small">

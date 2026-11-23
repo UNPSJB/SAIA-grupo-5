@@ -170,7 +170,7 @@ export function ListPage() {
         {
             name: "Acciones",
             center: true,
-            minWidth: '190px',
+            minWidth: '230px',
             cell: (row) => {
                 const config = CONFIG_BOTON[row.estado] || CONFIG_BOTON["En produccion"];
                 const stockActual = row.cantidad_disponible ?? row.cantidad_producida;
@@ -195,6 +195,15 @@ export function ListPage() {
                                 tooltip="Ver"
                                 icon="bi bi-eye"
                                 onClick={() => navigate(`/lotes-produccion/${row.id}`, { state: { origen: "lista" }})}
+                            />
+                        </span>
+                        <span data-tour="btn-trazabilidad-lote">
+                            <ActionButton
+                                variant="outline-secondary"
+                                size="sm"
+                                tooltip="Trazabilidad"
+                                icon="bi bi-diagram-3"
+                                onClick={() => navigate(`/lotes-produccion/${row.id}/trazabilidad`)}
                             />
                         </span>
                         {currentUser?.operar && (

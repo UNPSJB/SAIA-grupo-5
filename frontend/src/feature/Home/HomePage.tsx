@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { Alert, Button, Card, Col, Container, Row, Spinner } from "react-bootstrap";
 import {Bar,BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
 import { useApi } from "../../hooks/useApi";
@@ -14,6 +14,7 @@ import { clasificarPorDiasRestantes } from "../VencimientosConsolidados/utils/es
 import { toDateKey, dateFromKey } from "../../libs/date";
 import { MetricCard } from "./components/MetricCard";
 import { CumplimientoChart } from "./components/CumplimientoChart";
+import { ExportarGraficoButton } from "./components/ExportarGraficoButton";
 import { SEAFOAM } from "./constants";
 import "./HomePage.css";
 import { useAuth } from "../../hooks";
@@ -113,6 +114,26 @@ function VistaOperador() {
                     </Card>
                 </Col>
 
+                <Col xs={12} md={6} xl={4}>
+                    <Card className="h-100 shadow-sm border-0">
+                        <Card.Body className="d-flex flex-column justify-content-between p-4">
+                            <div>
+                                <div className="d-flex align-items-center gap-2 mb-2">
+                                    <i className={`bi bi-journal-text fs-4 text-primary`} aria-hidden="true" />
+                                    <h2 className="h5 mb-0">Recetas</h2>
+                                </div>
+                                <p className="text-muted small mb-3">Consultá la versión vigente de la receta antes de elaborar.</p>
+                            </div>
+                            <div>
+                                <Button variant="outline-primary" size="sm"
+                                    onClick={() => navigate("/recetas")}
+                                >
+                                    Ingresar <i className="bi bi-arrow-right ms-1" />
+                                </Button>
+                            </div>
+                        </Card.Body>
+                    </Card>
+                </Col>
 
                 <Col xs={12} md={6} xl={4}>
                     <Card className="h-100 shadow-sm border-0">
@@ -378,6 +399,10 @@ function VistaAdmin() {
     const formatMetric = (loading: boolean, error: boolean, value: number | string) =>
         loading ? "…" : error ? "—" : value;
 
+    const graficoActividadRef = useRef<HTMLDivElement>(null);
+    const graficoRecambiosRef = useRef<HTMLDivElement>(null);
+    const graficoIncidentesRef = useRef<HTMLDivElement>(null);
+
     return (
         <Container fluid className="dashboard-page">
             <div className="dashboard-heading">
@@ -532,7 +557,7 @@ function VistaAdmin() {
                 </Row>
             </section>}
 
-            <Row className="g-3 dashboard-charts">
+                <Row className="g-3 mb-4 dashboard-charts">
                 {!esOperador && <Col xl={7}>
                     <Card className="dashboard-chart-card h-100" data-tour="grafico-actividad">
                         <Card.Body>
@@ -541,11 +566,24 @@ function VistaAdmin() {
                                     <h2>Actividad de tareas</h2>
                                     <p>Resultado diario de los últimos 7 días</p>
                                 </div>
-                                <span className="dashboard-chart-icon">
-                                    <i className="bi bi-bar-chart-line" />
-                                </span>
+
+                                <div className="d-flex align-items-center gap-2">
+                                    <ExportarGraficoButton
+                                        periodo="Últimos 7 días"
+                                        contenedorRef={graficoActividadRef}
+                                        titulo="Actividad de tareas"
+                                        subtitulo="Resultado diario de los últimos 7 días"
+                                        disabled={historyLoading || historyHasError || occurrences.length === 0}
+                                    />
+                                    <span className="dashboard-chart-icon">
+                                        <i className="bi bi-bar-chart-line" />
+                                    </span>
+                                </div>
                             </div>
-                            <div className="dashboard-chart-area"
+
+                            <div
+                                ref={graficoActividadRef}
+                                className="dashboard-chart-area"
                                 role="img"
                                 aria-label="Gráfico de tareas completadas, incumplidas y pendientes por día"
                             >
@@ -603,6 +641,7 @@ function VistaAdmin() {
                         </Card.Body>
                     </Card>
                 </Col>}
+
                 <Col xl={esOperador ? 12 : 5}>
                     {!esOperador && 
                     <Card className="dashboard-chart-card h-100" data-tour="grafico-recambios">
@@ -612,66 +651,77 @@ function VistaAdmin() {
                                     <h2>Estado de recambios</h2>
                                     <p>Estado de los elementos activos</p>
                                 </div>
-                                <span className="dashboard-chart-icon">
-                                    <i className="bi bi-arrow-repeat" />
-                                </span>
-                            </div>
-                            <div
-                                className="dashboard-donut-area"
-                                role="img"
-                                aria-label="Distribución de elementos al día, por vencer, vencidos y sin frecuencia"
-                            >
-                                {elementsLoading ?
-                                    <div className="dashboard-chart-message">
-                                        <Spinner animation="border" size="sm" />
-                                        Cargando recambios…
-                                    </div> : elementsError ?
-                                        <div className="dashboard-chart-message">
-                                            No se pudo cargar el estado de recambios.
-                                        </div> : activeElements.length === 0 ?
-                                            <div className="dashboard-chart-message">
-                                                No hay elementos activos para mostrar.
-                                            </div> : (
-                                                <>
-                                                    <ResponsiveContainer width="100%" height="100%">
-                                                        <PieChart>
-                                                            <Pie
-                                                                data={replacementStatus}
-                                                                dataKey="value"
-                                                                nameKey="name"
-                                                                innerRadius={64}
-                                                                outerRadius={91}
-                                                                paddingAngle={3}
-                                                                stroke="none"
-                                                            >
-                                                                {replacementStatus.map((item) => <Cell key={item.name} fill={item.color} />)}
-                                                            </Pie>
-                                                            <Tooltip
-                                                                contentStyle={{
-                                                                    border: "1px solid #e7ecef",
-                                                                    borderRadius: 10,
-                                                                    boxShadow: "0 8px 24px rgba(35, 50, 60, .12)"
-                                                                }}
-                                                            />
-                                                        </PieChart>
-                                                    </ResponsiveContainer>
-                                                    <div className="dashboard-donut-center">
-                                                        <strong>{activeElements.length}</strong>
-                                                        <span>activos</span>
-                                                    </div>
-                                                </>
-                                            )}
-                            </div>
-                            <div className="dashboard-chart-legend">
-                                {replacementStatus.map((item) => (
-                                    <span key={item.name}>
-                                        <i style={{ backgroundColor: item.color }} />
-                                        {item.name}
-                                        <strong>
-                                            {item.value}
-                                        </strong>
+                                <div className="d-flex align-items-center gap-2">
+                                    <ExportarGraficoButton
+                                    periodo={`Al ${new Date().toLocaleDateString("es-AR")}`}
+                                    contenedorRef={graficoRecambiosRef}
+                                    titulo="Estado de recambios"
+                                    subtitulo="Estado de los elementos activos"
+                                    disabled={elementsLoading || Boolean(elementsError) || activeElements.length === 0}
+                                />
+                                    <span className="dashboard-chart-icon">
+                                        <i className="bi bi-arrow-repeat" />
                                     </span>
-                                ))}
+                                </div>
+                            </div>
+                            <div ref={graficoRecambiosRef}>
+                                <div
+                                    className="dashboard-donut-area"
+                                    role="img"
+                                    aria-label="Distribución de elementos al día, por vencer, vencidos y sin frecuencia"
+                                >
+                                    {elementsLoading ?
+                                        <div className="dashboard-chart-message">
+                                            <Spinner animation="border" size="sm" />
+                                            Cargando recambios…
+                                        </div> : elementsError ?
+                                            <div className="dashboard-chart-message">
+                                                No se pudo cargar el estado de recambios.
+                                            </div> : activeElements.length === 0 ?
+                                                <div className="dashboard-chart-message">
+                                                    No hay elementos activos para mostrar.
+                                                </div> : (
+                                                    <>
+                                                        <ResponsiveContainer width="100%" height="100%">
+                                                            <PieChart>
+                                                                <Pie
+                                                                    data={replacementStatus}
+                                                                    dataKey="value"
+                                                                    nameKey="name"
+                                                                    innerRadius={64}
+                                                                    outerRadius={91}
+                                                                    paddingAngle={3}
+                                                                    stroke="none"
+                                                                >
+                                                                    {replacementStatus.map((item) => <Cell key={item.name} fill={item.color} />)}
+                                                                </Pie>
+                                                                <Tooltip
+                                                                    contentStyle={{
+                                                                        border: "1px solid #e7ecef",
+                                                                        borderRadius: 10,
+                                                                        boxShadow: "0 8px 24px rgba(35, 50, 60, .12)"
+                                                                    }}
+                                                                />
+                                                            </PieChart>
+                                                        </ResponsiveContainer>
+                                                        <div className="dashboard-donut-center">
+                                                            <strong>{activeElements.length}</strong>
+                                                            <span>activos</span>
+                                                        </div>
+                                                    </>
+                                                )}
+                                </div>
+                                <div className="dashboard-chart-legend">
+                                    {replacementStatus.map((item) => (
+                                        <span key={item.name}>
+                                            <i style={{ backgroundColor: item.color }} />
+                                            {item.name}
+                                            <strong>
+                                                {item.value}
+                                            </strong>
+                                        </span>
+                                    ))}
+                                </div>
                             </div>
                         </Card.Body>
                     </Card>}
@@ -686,9 +736,25 @@ function VistaAdmin() {
                                     <h2>Incidentes por tipo</h2>
                                     <p>Cantidad registrada en los últimos 30 días</p>
                                 </div>
-                                <span className="dashboard-chart-icon"><i className="bi bi-bar-chart-line" /></span>
+                                <div className="d-flex align-items-center gap-2">
+                                    <ExportarGraficoButton
+                                        periodo="Últimos 30 días"
+                                        contenedorRef={graficoIncidentesRef}
+                                        titulo="Incidentes por tipo"
+                                        subtitulo="Cantidad registrada en los últimos 30 días"
+                                        disabled={incidentsLoading || Boolean(incidentsError) || incidentes.length === 0}
+                                    />
+                                    <span className="dashboard-chart-icon">
+                                        <i className="bi bi-bar-chart-line" />
+                                    </span>
+                                </div>
                             </div>
-                            <div className="dashboard-chart-area" role="img" aria-label="Cantidad de incidentes agrupados por tipo" >
+                            <div
+                                ref={graficoIncidentesRef}
+                                className="dashboard-chart-area" 
+                                role="img" 
+                                aria-label="Cantidad de incidentes agrupados por tipo" 
+                            >
                                 {incidentsLoading ? (<div className="dashboard-chart-message"> <Spinner animation="border" size="sm" /> {" "}Cargando incidentes…</div>
                                 ) : incidentsError ? (
                                     <div className="dashboard-chart-message"> No se pudieron cargar los incidentes. </div>
@@ -710,10 +776,11 @@ function VistaAdmin() {
                     </Card>
                 </Col>}
             </Row>
+
             {currentUser?.administrar && (
                 <>
                     <EstadisticasLotes />
-                    <Row className="g-3 dashboard-charts mt-0">
+                    <Row className="g-3 mb-4 dashboard-charts">
                         <Col xs={12}>
                             <CumplimientoChart />
                         </Col>

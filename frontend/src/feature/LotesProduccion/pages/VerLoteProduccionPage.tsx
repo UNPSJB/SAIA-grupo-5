@@ -28,6 +28,9 @@ const ESTILOS_ESTADO: Record<EstadoLote, { bg: string; color: string; icon: stri
     "Enviado": { bg: "#f3f4f6", color: "#374151", icon: "bi-truck" },
 };
 
+const formatearFechaReceta = (fecha: string | null) =>
+    fecha ? new Date(fecha).toLocaleDateString("es-AR") : "—";
+
 export function VerLoteProduccionPage() {
     const navigate = useNavigate();
     const { id } = useParams();
@@ -148,6 +151,34 @@ export function VerLoteProduccionPage() {
                                 <Col sm={5} className="fw-bold text-secondary">Cantidad neta / Unidad de Medida</Col>
                                 <Col sm={7} className="fs-6">
                                     {lote.producto.cantidad_neta} - {lote.producto.unidad_medida?.nombre}
+                                </Col>
+                            </Row>
+
+                            <Row className="mb-3 border-bottom pb-3 align-items-center">
+                                <Col sm={5} className="fw-bold text-secondary">Receta utilizada</Col>
+                                <Col sm={7} className="fs-6">
+                                    {lote.receta ? (
+                                        <div className="d-flex flex-wrap align-items-center gap-2">
+                                            <span>
+                                                Versión {lote.receta.version}
+                                                {lote.receta.vigente
+                                                    ? <span className="badge bg-success-subtle text-success-emphasis ms-2">Vigente</span>
+                                                    : <span className="text-muted small ms-2">
+                                                        ({formatearFechaReceta(lote.receta.fecha_desde_vigencia)} al {formatearFechaReceta(lote.receta.fecha_hasta_vigencia)})
+                                                      </span>}
+                                            </span>
+                                            <Button
+                                                variant="link"
+                                                size="sm"
+                                                className="p-0"
+                                                onClick={() => navigate(`/productos/${lote.producto_id}/receta`, { state: { recetaId: lote.receta?.id } })}
+                                            >
+                                                <i className="bi bi-journal-text me-1"></i>Ver receta
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <span className="text-muted fst-italic">Sin receta registrada</span>
+                                    )}
                                 </Col>
                             </Row>
 
