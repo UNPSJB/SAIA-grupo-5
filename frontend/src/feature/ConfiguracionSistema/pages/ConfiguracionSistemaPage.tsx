@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
-import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
+import { Button, Card, Col, Container, Form, Row, Tab } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { mutate } from "swr";
 import { PageHeader } from "../../../components/PageHeader";
 import { PageLoading } from "../../../components/PageLoading";
 import { PageError } from "../../../components/PageError";
 import { Dato } from "../../../components/Dato";
+import { AppTabs } from "../../../components/AppTabs";
+import { AppSwitch } from "../../../components/AppSwitch";
 import { useApi } from "../../../hooks/useApi";
 import { api } from "../../../libs/axios";
 import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
@@ -207,7 +209,7 @@ export function ConfiguracionSistemaPage() {
             <PageHeader
                 eyebrow="CONFIGURACIÓN"
                 title="Configuración del Sistema"
-                subtitle="Datos de la PyME, parámetros de alertas y checklists, códigos de barras y preferencias."
+                subtitle="Parámetros de alertas y checklists, datos de la PyME y del elaborador, códigos de barras y preferencias."
                 actions={
                     <Button variant="outline-success" onClick={() => navigate("/configuracion-sistema/vista-publica")}>
                         <i className="bi bi-qr-code me-2" />Vista pública
@@ -215,9 +217,46 @@ export function ConfiguracionSistemaPage() {
                 }
             />
 
-            <Row className="g-3 mb-3">
-                <Col xs={12}>
-                    <Card className="shadow-sm border-0 rounded-3 text-start">
+            <AppTabs defaultActiveKey="parametros" id="secciones-configuracion" className="mb-3">
+                <Tab eventKey="parametros" title="Parámetros generales">
+                    <Card className="shadow-sm border-0 rounded-3 mb-4 text-start">
+                        <Card.Body className="p-4">
+                            <Form onSubmit={handleSubmit} data-tour="form-configuracion">
+                                <h6 className="detalle-seccion-titulo">Parámetros generales</h6>
+                                <Row className="g-3 mb-3">
+                                    <Dato etiqueta="Alerta de vencimientos de personal (días antes)" md={4}>
+                                        <Form.Group controlId="formDiasAntelacion" data-tour="antelacion-personal">
+                                            <Form.Label className="visually-hidden">Antelación de alerta de vencimientos de personal en días</Form.Label>
+                                            <Form.Control required type="number" min={0} value={diasAntelacion} onChange={(e) => setDiasAntelacion(Number(e.target.value))} />
+                                            <Form.Text className="text-muted">Con cuántos días de anticipación se avisa que un vencimiento de personal está por vencer.</Form.Text>
+                                        </Form.Group>
+                                    </Dato>
+                                    <Dato etiqueta="Alerta de vencimientos de elementos de limpieza (días antes)" md={4}>
+                                        <Form.Group controlId="formDiasAntelacionElementos" data-tour="antelacion-elementos">
+                                            <Form.Label className="visually-hidden">Antelación de alerta de vencimientos de elementos en días</Form.Label>
+                                            <Form.Control required type="number" min={0} value={diasAntelacionElementos} onChange={(e) => setDiasAntelacionElementos(Number(e.target.value))} />
+                                            <Form.Text className="text-muted">Con cuántos días de anticipación se avisa que un elemento está por vencer.</Form.Text>
+                                        </Form.Group>
+                                    </Dato>
+                                    <Dato etiqueta="Hora de generación de checklists" md={4}>
+                                        <Form.Group controlId="formHoraGeneracion" data-tour="hora-generacion-checklists">
+                                            <Form.Label className="visually-hidden">Hora de generación de checklists</Form.Label>
+                                            <Form.Control required type="time" value={horaGeneracion} onChange={(e) => setHoraGeneracion(e.target.value)} />
+                                            <Form.Text className="text-muted">Hora en la que se generan las tareas pendientes del checklist diario.</Form.Text>
+                                        </Form.Group>
+                                    </Dato>
+                                </Row>
+                                <div className="d-flex justify-content-end">
+                                    <Button variant="primary" type="submit" disabled={guardando}>
+                                        <i className="bi bi-floppy me-1"></i> {guardando ? "Guardando..." : "Guardar cambios"}
+                                    </Button>
+                                </div>
+                            </Form>
+                        </Card.Body>
+                    </Card>
+                </Tab>
+                <Tab eventKey="pyme" title="Datos de la PyME">
+                    <Card className="shadow-sm border-0 rounded-3 mb-4 text-start">
                         <Card.Body className="p-4">
                             <Form onSubmit={handleSubmitPyme}>
                                 <h6 className="detalle-seccion-titulo">Datos de la PyME</h6>
@@ -247,7 +286,7 @@ export function ConfiguracionSistemaPage() {
                                                     <i className="bi bi-trash me-1"></i>Quitar logo
                                                 </Button>
                                             )}
-                                            <Form.Check type="switch" id="mostrarLogoPdf" label="Incluir logo en los PDF" checked={mostrarLogoPdf} onChange={(e) => setMostrarLogoPdf(e.target.checked)} disabled={!logoBase64 || guardandoPyme} className="align-self-start" />
+                                            <AppSwitch id="mostrarLogoPdf" label="Incluir logo en los PDF" checked={mostrarLogoPdf} onChange={(e) => setMostrarLogoPdf(e.target.checked)} disabled={!logoBase64 || guardandoPyme} className="align-self-start" />
                                         </div>
                                     </Dato>
                                     <Col md={8}>
@@ -287,12 +326,46 @@ export function ConfiguracionSistemaPage() {
                             </Form>
                         </Card.Body>
                     </Card>
-                </Col>
-
-                <Col lg={6}>
-                    <Card className="shadow-sm border-0 rounded-3 h-100 text-start">
+                </Tab>
+                <Tab eventKey="elaborador" title="Datos del elaborador">
+                    <Card className="shadow-sm border-0 rounded-3 mb-4 text-start">
                         <Card.Body className="p-4">
-                            <Form onSubmit={handleSubmitPrefijos} className="d-flex flex-column h-100">
+                            <Form onSubmit={handleSubmitElaborador}>
+                                <h6 className="detalle-seccion-titulo">Datos del elaborador para el rótulo</h6>
+                                <p className="text-muted small mb-3">Se precargan en la pestaña "Datos del rótulo (CAA)" de cada producto.</p>
+                                <Row className="g-3 mb-3">
+                                    <Dato etiqueta="Razón social del elaborador" md={8}>
+                                        <Form.Group controlId="formRazonSocialElaborador">
+                                            <Form.Label className="visually-hidden">Razón social del elaborador</Form.Label>
+                                            <Form.Control maxLength={150} value={razonSocialElaborador} onChange={(e) => setRazonSocialElaborador(e.target.value)} />
+                                        </Form.Group>
+                                    </Dato>
+                                    <Dato etiqueta="Número de RNPA/RPPA" md={4}>
+                                        <Form.Group controlId="formNumeroRnpaRppa">
+                                            <Form.Label className="visually-hidden">Número de RNPA/RPPA</Form.Label>
+                                            <Form.Control maxLength={30} placeholder="RNPA 1234567" value={numeroRnpaRppa} onChange={(e) => setNumeroRnpaRppa(e.target.value)} />
+                                        </Form.Group>
+                                    </Dato>
+                                    <Dato etiqueta="Domicilio del elaborador">
+                                        <Form.Group controlId="formDomicilioElaborador">
+                                            <Form.Label className="visually-hidden">Domicilio del elaborador</Form.Label>
+                                            <Form.Control maxLength={200} value={domicilioElaborador} onChange={(e) => setDomicilioElaborador(e.target.value)} />
+                                        </Form.Group>
+                                    </Dato>
+                                </Row>
+                                <div className="d-flex justify-content-end">
+                                    <Button variant="primary" type="submit" disabled={guardandoElaborador}>
+                                        <i className="bi bi-floppy me-1"></i> {guardandoElaborador ? "Guardando..." : "Guardar datos del elaborador"}
+                                    </Button>
+                                </div>
+                            </Form>
+                        </Card.Body>
+                    </Card>
+                </Tab>
+                <Tab eventKey="codigos" title="Códigos de barras">
+                    <Card className="shadow-sm border-0 rounded-3 mb-4 text-start">
+                        <Card.Body className="p-4">
+                            <Form onSubmit={handleSubmitPrefijos}>
                                 <h6 className="detalle-seccion-titulo">Códigos de barras</h6>
                                 <Row className="g-3 mb-2">
                                     <Dato etiqueta="Prefijo GS1 (*)" md={6}>
@@ -315,7 +388,7 @@ export function ConfiguracionSistemaPage() {
                                     Al guardar, los productos con código de producto que todavía no tienen código de barras lo reciben.
                                     Modificar los prefijos no cambia los códigos ya guardados.
                                 </Form.Text>
-                                <div className="d-flex justify-content-end mt-auto">
+                                <div className="d-flex justify-content-end">
                                     <Button variant="primary" type="submit" disabled={guardandoPrefijos}>
                                         <i className="bi bi-floppy me-1"></i> {guardandoPrefijos ? "Guardando..." : "Guardar prefijos"}
                                     </Button>
@@ -323,88 +396,13 @@ export function ConfiguracionSistemaPage() {
                             </Form>
                         </Card.Body>
                     </Card>
-                </Col>
-
-                <Col lg={6}>
-                    <Card className="shadow-sm border-0 rounded-3 h-100 text-start">
-                        <Card.Body className="p-4">
-                            <Form onSubmit={handleSubmitElaborador} className="d-flex flex-column h-100">
-                                <h6 className="detalle-seccion-titulo">Datos del elaborador para el rótulo</h6>
-                                <p className="text-muted small mb-3">Se precargan en la pestaña "Datos del rótulo (CAA)" de cada producto.</p>
-                                <Row className="g-3 mb-3">
-                                    <Dato etiqueta="Razón social del elaborador">
-                                        <Form.Group controlId="formRazonSocialElaborador">
-                                            <Form.Label className="visually-hidden">Razón social del elaborador</Form.Label>
-                                            <Form.Control maxLength={150} value={razonSocialElaborador} onChange={(e) => setRazonSocialElaborador(e.target.value)} />
-                                        </Form.Group>
-                                    </Dato>
-                                    <Dato etiqueta="Número de RNPA/RPPA">
-                                        <Form.Group controlId="formNumeroRnpaRppa">
-                                            <Form.Label className="visually-hidden">Número de RNPA/RPPA</Form.Label>
-                                            <Form.Control maxLength={30} placeholder="RNPA 1234567" value={numeroRnpaRppa} onChange={(e) => setNumeroRnpaRppa(e.target.value)} />
-                                        </Form.Group>
-                                    </Dato>
-                                    <Dato etiqueta="Domicilio del elaborador">
-                                        <Form.Group controlId="formDomicilioElaborador">
-                                            <Form.Label className="visually-hidden">Domicilio del elaborador</Form.Label>
-                                            <Form.Control maxLength={200} value={domicilioElaborador} onChange={(e) => setDomicilioElaborador(e.target.value)} />
-                                        </Form.Group>
-                                    </Dato>
-                                </Row>
-                                <div className="d-flex justify-content-end mt-auto">
-                                    <Button variant="primary" type="submit" disabled={guardandoElaborador}>
-                                        <i className="bi bi-floppy me-1"></i> {guardandoElaborador ? "Guardando..." : "Guardar datos del elaborador"}
-                                    </Button>
-                                </div>
-                            </Form>
-                        </Card.Body>
-                    </Card>
-                </Col>
-
-                <Col lg={6}>
-                    <Card className="shadow-sm border-0 rounded-3 h-100 text-start">
-                        <Card.Body className="p-4">
-                            <Form onSubmit={handleSubmit} className="d-flex flex-column h-100" data-tour="form-configuracion">
-                                <h6 className="detalle-seccion-titulo">Parámetros generales</h6>
-                                <Row className="g-3 mb-3">
-                                    <Dato etiqueta="Alerta de vencimientos de personal (días antes)">
-                                        <Form.Group controlId="formDiasAntelacion" data-tour="antelacion-personal">
-                                            <Form.Label className="visually-hidden">Antelación de alerta de vencimientos de personal en días</Form.Label>
-                                            <Form.Control required type="number" min={0} value={diasAntelacion} onChange={(e) => setDiasAntelacion(Number(e.target.value))} />
-                                            <Form.Text className="text-muted">Con cuántos días de anticipación se avisa que un vencimiento de personal está por vencer.</Form.Text>
-                                        </Form.Group>
-                                    </Dato>
-                                    <Dato etiqueta="Alerta de vencimientos de elementos de limpieza (días antes)">
-                                        <Form.Group controlId="formDiasAntelacionElementos" data-tour="antelacion-elementos">
-                                            <Form.Label className="visually-hidden">Antelación de alerta de vencimientos de elementos en días</Form.Label>
-                                            <Form.Control required type="number" min={0} value={diasAntelacionElementos} onChange={(e) => setDiasAntelacionElementos(Number(e.target.value))} />
-                                            <Form.Text className="text-muted">Con cuántos días de anticipación se avisa que un elemento está por vencer.</Form.Text>
-                                        </Form.Group>
-                                    </Dato>
-                                    <Dato etiqueta="Hora de generación de checklists">
-                                        <Form.Group controlId="formHoraGeneracion" data-tour="hora-generacion-checklists">
-                                            <Form.Label className="visually-hidden">Hora de generación de checklists</Form.Label>
-                                            <Form.Control required type="time" value={horaGeneracion} onChange={(e) => setHoraGeneracion(e.target.value)} />
-                                            <Form.Text className="text-muted">Hora en la que se generan las tareas pendientes del checklist diario.</Form.Text>
-                                        </Form.Group>
-                                    </Dato>
-                                </Row>
-                                <div className="d-flex justify-content-end mt-auto">
-                                    <Button variant="primary" type="submit" disabled={guardando}>
-                                        <i className="bi bi-floppy me-1"></i> {guardando ? "Guardando..." : "Guardar cambios"}
-                                    </Button>
-                                </div>
-                            </Form>
-                        </Card.Body>
-                    </Card>
-                </Col>
-
-                <Col lg={6}>
-                    <Card className="shadow-sm border-0 rounded-3 h-100 text-start" data-tour="tamanio-tutorial">
+                </Tab>
+                <Tab eventKey="preferencias" title="Preferencias">
+                    <Card className="shadow-sm border-0 rounded-3 mb-4 text-start" data-tour="tamanio-tutorial">
                         <Card.Body className="p-4">
                             <h6 className="detalle-seccion-titulo">Preferencias del tutorial</h6>
                             <Row className="g-3">
-                                <Dato etiqueta="Tamaño de letra del tutorial">
+                                <Dato etiqueta="Tamaño de letra del tutorial" md={6} lg={4}>
                                     <Form.Group controlId="formTamanioTutorial">
                                         <Form.Label className="visually-hidden">Tamaño de letra del tutorial</Form.Label>
                                         <Form.Select value={tamanioTutorial} onChange={(e) => cambiarTamanioTutorial(Number(e.target.value))}>
@@ -419,8 +417,8 @@ export function ConfiguracionSistemaPage() {
                             </Row>
                         </Card.Body>
                     </Card>
-                </Col>
-            </Row>
+                </Tab>
+            </AppTabs>
         </Container>
     );
 }

@@ -222,7 +222,6 @@ function VistaOperador() {
 
 function VistaAdmin() {
     const { currentUser } = useAuth();
-    const esOperador = currentUser?.operar === true;
 
     const today = useMemo(() => new Date(), []);
     const fromDate = useMemo(() => {
@@ -232,9 +231,7 @@ function VistaAdmin() {
     }, []);
 
     const historyUrl = `/tareas-ocurrencia/historial?fecha_desde=${toDateKey(fromDate)}&fecha_hasta=${toDateKey(today)}`;
-    const { data: history, error: historyError, isLoading: historyLoading } = useApi<TareaOcurrencia[]>(
-        esOperador ? null : historyUrl,
-    );
+    const { data: history, error: historyError, isLoading: historyLoading } = useApi<TareaOcurrencia[]>(historyUrl);
     const occurrences = useMemo(() => history ?? [], [history]);
 
     //estadistica incidente
@@ -420,7 +417,7 @@ function VistaAdmin() {
                 </Alert>
             )}
 
-            {!esOperador && <section aria-label="Indicadores de checklists" className="mb-4" data-tour="seccion-checklists">
+            <section aria-label="Indicadores de checklists" className="mb-4" data-tour="seccion-checklists">
                 <div className="dashboard-section-heading">
                     <div>
                         <h2>Checklists</h2>
@@ -434,10 +431,10 @@ function VistaAdmin() {
                     <Col xs={6} xl={3}><MetricCard label="Incumplidas" value={formatMetric(historyLoading, historyHasError, overdueTasks)} icon="bi-exclamation-circle" tone={SEAFOAM.danger} detail={`${pendingTasks} pendientes`} /></Col>
                     <Col xs={6} xl={3}><MetricCard label="Cumplimiento" value={historyLoading ? "…" : historyHasError || compliance === null ? "—" : `${compliance}%`} icon="bi-speedometer2" tone={SEAFOAM.secondary} detail="Sobre tareas resueltas" /></Col>
                 </Row>
-            </section>}
+            </section>
 
 
-            {!esOperador && <section aria-label="Indicadores de incidentes" className="mb-4">
+            <section aria-label="Indicadores de incidentes" className="mb-4">
                 <div className="dashboard-section-heading">
                     <div>
                         <h2>Incidentes</h2>
@@ -463,9 +460,9 @@ function VistaAdmin() {
                         icon="bi-speedometer2" tone={SEAFOAM.secondary} detail="Sobre el total del período" />
                     </Col>
                 </Row>
-            </section>}
+            </section>
 
-            {!esOperador && <section aria-label="Indicadores de inventario" className="mb-4" data-tour="seccion-inventario">
+            <section aria-label="Indicadores de inventario" className="mb-4" data-tour="seccion-inventario">
                 <div className="dashboard-section-heading">
                     <div>
                         <h2>Inventario, recambios y vencimientos</h2>
@@ -493,7 +490,7 @@ function VistaAdmin() {
                             to="/vencimientos?default=elementos"
                         />
                     </Col>
-                    {!esOperador && <Col xs={6} md={4} xl={3} data-tour="card-personal-vencidos">
+                    <Col xs={6} md={4} xl={3} data-tour="card-personal-vencidos">
                         <MetricCard
                             label="Personal vencidos"
                             value={currentUser?.administrar ? formatMetric(vencimientosPersonalLoading,
@@ -503,8 +500,8 @@ function VistaAdmin() {
                             detail={currentUser?.administrar ? "Vencimientos de personal" : "Solo administración"}
                             to={currentUser?.administrar ? "/vencimientos?default=personal" : undefined}
                         />
-                    </Col>}
-                    {!esOperador && <Col xs={6} md={4} xl={3} data-tour="card-personal-por-vencer">
+                    </Col>
+                    <Col xs={6} md={4} xl={3} data-tour="card-personal-por-vencer">
                         <MetricCard
                             label="Personal por vencer"
                             value={currentUser?.administrar ? formatMetric(vencimientosPersonalLoading, Boolean(vencimientosPersonalError), vencimientosPersonalProximos.length) : "—"}
@@ -513,8 +510,8 @@ function VistaAdmin() {
                             detail={currentUser?.administrar ? "Dentro de la antelación configurada" : "Solo administración"}
                             to={currentUser?.administrar ? "/vencimientos?default=personal" : undefined}
                         />
-                    </Col>}
-                    {!esOperador && <Col xs={6} md={4} xl={3} data-tour="card-vencimientos-consolidados">
+                    </Col>
+                    <Col xs={6} md={4} xl={3} data-tour="card-vencimientos-consolidados">
                         <MetricCard
                             label="Vencimientos consolidados"
                             value={currentUser?.administrar ? formatMetric(vencimientosConsolidadosLoading, vencimientosConsolidadosError, vencimientosConsolidadosTotal) : "—"}
@@ -523,7 +520,7 @@ function VistaAdmin() {
                             detail={currentUser?.administrar ? "Personal, elementos y equipos" : "Solo administración"}
                             to={currentUser?.administrar ? "/vencimientos" : undefined}
                         />
-                    </Col>}
+                    </Col>
                     {currentUser?.administrar && <Col xs={6} md={4} xl={3}>
                         <MetricCard
                             label="Insumos lote en riesgo"
@@ -555,10 +552,10 @@ function VistaAdmin() {
                         />
                     </Col>}
                 </Row>
-            </section>}
+            </section>
 
                 <Row className="g-3 mb-4 dashboard-charts">
-                {!esOperador && <Col xl={7}>
+                <Col xl={7}>
                     <Card className="dashboard-chart-card h-100" data-tour="grafico-actividad">
                         <Card.Body>
                             <div className="dashboard-chart-heading">
@@ -640,10 +637,9 @@ function VistaAdmin() {
                             </div>
                         </Card.Body>
                     </Card>
-                </Col>}
+                </Col>
 
-                <Col xl={esOperador ? 12 : 5}>
-                    {!esOperador && 
+                <Col xl={5}>
                     <Card className="dashboard-chart-card h-100" data-tour="grafico-recambios">
                         <Card.Body>
                             <div className="dashboard-chart-heading">
@@ -724,11 +720,11 @@ function VistaAdmin() {
                                 </div>
                             </div>
                         </Card.Body>
-                    </Card>}
+                    </Card>
                 </Col>
             </Row>
             <Row className="g-3 mb-4 dashboard-charts">
-                {!esOperador && <Col xs={12}>
+                <Col xs={12}>
                     <Card className="dashboard-chart-card">
                         <Card.Body>
                             <div className="dashboard-chart-heading">
@@ -774,7 +770,7 @@ function VistaAdmin() {
                             </div>
                         </Card.Body>
                     </Card>
-                </Col>}
+                </Col>
             </Row>
 
             {currentUser?.administrar && (
