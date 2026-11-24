@@ -265,7 +265,7 @@ function FormularioCAA({ producto, borrador, clave, puedeEditar }: FormularioCAA
 
             <h6 className="detalle-seccion-titulo">Identificación del origen</h6>
             <Row className="g-3 mb-4">
-                <Dato etiqueta={etiqueta('razon_social', 'Razón social del elaborador')} md={6}>
+                <Dato etiqueta={etiqueta('razon_social', 'Razón social del elaborador')} accion={<OrigenBadge campo={campo('razon_social')} />} md={6}>
                     <Form.Group controlId="caa-razon-social">
                         <Form.Label className="visually-hidden">Razón social del elaborador</Form.Label>
                         <Form.Control
@@ -274,9 +274,10 @@ function FormularioCAA({ producto, borrador, clave, puedeEditar }: FormularioCAA
                             disabled={!puedeEditar}
                             onChange={(e) => cambiar('razon_social', e.target.value)}
                         />
+                        <Form.Text className="text-muted">{textoAyuda('razon_social')}</Form.Text>
                     </Form.Group>
                 </Dato>
-                <Dato etiqueta={etiqueta('domicilio', 'Domicilio del elaborador')} md={6}>
+                <Dato etiqueta={etiqueta('domicilio', 'Domicilio del elaborador')} accion={<OrigenBadge campo={campo('domicilio')} />} md={6}>
                     <Form.Group controlId="caa-domicilio">
                         <Form.Label className="visually-hidden">Domicilio del elaborador</Form.Label>
                         <Form.Control
@@ -285,9 +286,10 @@ function FormularioCAA({ producto, borrador, clave, puedeEditar }: FormularioCAA
                             disabled={!puedeEditar}
                             onChange={(e) => cambiar('domicilio', e.target.value)}
                         />
+                        <Form.Text className="text-muted">{textoAyuda('domicilio')}</Form.Text>
                     </Form.Group>
                 </Dato>
-                <Dato etiqueta={etiqueta('numero_registro', 'Número de RNPA/RPPA')} md={6}>
+                <Dato etiqueta={etiqueta('numero_registro', 'Número de RNPA/RPPA')} accion={<OrigenBadge campo={campo('numero_registro')} />} md={6}>
                     <Form.Group controlId="caa-registro">
                         <Form.Label className="visually-hidden">Número de RNPA/RPPA</Form.Label>
                         <Form.Control
@@ -298,7 +300,7 @@ function FormularioCAA({ producto, borrador, clave, puedeEditar }: FormularioCAA
                             onChange={(e) => cambiar('numero_registro', e.target.value)}
                         />
                         <Form.Text className="text-muted">
-                            Dato declarado por el elaborador; el sistema no lo verifica contra registros oficiales.
+                            {textoAyuda('numero_registro')} Dato declarado por el elaborador; el sistema no lo verifica contra registros oficiales.
                         </Form.Text>
                     </Form.Group>
                 </Dato>

@@ -14,6 +14,9 @@ class DatosPymeBase(BaseModel):
     telefono_pyme: Annotated[str | None, Field(max_length=30)] = None
     email_pyme: Annotated[str | None, Field(max_length=150)] = None
     direccion_pyme: Annotated[str | None, Field(max_length=200)] = None
+    razon_social_elaborador: Annotated[str | None, Field(max_length=150)] = None
+    domicilio_elaborador: Annotated[str | None, Field(max_length=200)] = None
+    numero_rnpa_rppa: Annotated[str | None, Field(max_length=30)] = None
 
     @field_validator("nombre_pyme")
     @classmethod
@@ -69,6 +72,9 @@ class ConfiguracionSistemaUpdate(BaseModel):
     telefono_pyme: Annotated[str | None, Field(max_length=30)] = None
     email_pyme: Annotated[str | None, Field(max_length=150)] = None
     direccion_pyme: Annotated[str | None, Field(max_length=200)] = None
+    razon_social_elaborador: Annotated[str | None, Field(max_length=150)] = None
+    domicilio_elaborador: Annotated[str | None, Field(max_length=200)] = None
+    numero_rnpa_rppa: Annotated[str | None, Field(max_length=30)] = None
 
     prefijo_gs1: Annotated[str | None, Field(pattern=r"^[0-9]{3}$")] = None
     prefijo_empresa: Annotated[str | None, Field(pattern=r"^[0-9]{4}$")] = None

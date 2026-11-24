@@ -28,6 +28,8 @@ from src.informacion_nutricional_insumo.models import InformacionNutricionalInsu
 from src.calculo_nutricional.models import InformacionNutricionalReceta
 from src.calculo_nutricional.services import obtener_o_crear_configuracion
 from src.producto.services import leer_producto
+from src.configuracion_sistema.constants import ID_CONFIGURACION_SISTEMA
+from src.configuracion_sistema.models import ConfiguracionSistema
 
 if TYPE_CHECKING:
     from src.producto.models import Producto
@@ -314,7 +316,11 @@ def _sugeridos(db: Session, producto: "Producto") -> dict[str, str]:
     """Valores que el sistema ya conoce y completa solo en el formulario."""
     lista = _lista_ordenada(db, producto.id)
     ultimo_lote = _ultimo_lote(db, producto.id)
+    pyme = db.get(ConfiguracionSistema, ID_CONFIGURACION_SISTEMA)
     return {
+        "razon_social": (pyme.razon_social_elaborador or "") if pyme else "",
+        "domicilio": (pyme.domicilio_elaborador or "") if pyme else "",
+        "numero_registro": (pyme.numero_rnpa_rppa or "") if pyme else "",
         "denominacion_venta": producto.nombre,
         "contenido_neto": _contenido_neto_sugerido(producto),
         "lista_ingredientes": lista.texto if lista else "",

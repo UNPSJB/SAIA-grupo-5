@@ -18,6 +18,7 @@ from src.unidad_medida.migrations import migrar_esquema_unidades_medida
 from scripts.seed_insumos import asegurar_columna_marca
 from scripts import (
     # Catálogos base
+    seed_datos_pyme,
     seed_unidad_medida,
     seed_insumos,
     seed_personal,
@@ -27,6 +28,7 @@ from scripts import (
     seed_alergenos,
     seed_declaracion_alergenos,
     seed_informacion_nutricional,
+    seed_insumos_tabla_composicion,
     # Limpieza / instalaciones
     seed_planes_limpieza,
     seed_sectores,
@@ -50,6 +52,7 @@ from scripts import (
 )
 
 ORDEN = [
+    seed_datos_pyme,
     seed_unidad_medida,
     seed_insumos,
     seed_personal,
@@ -59,6 +62,7 @@ ORDEN = [
     seed_alergenos,
     seed_declaracion_alergenos,
     seed_informacion_nutricional,
+    seed_insumos_tabla_composicion,
     seed_planes_limpieza,
     seed_sectores,
     seed_superficies,

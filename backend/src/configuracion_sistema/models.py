@@ -16,6 +16,9 @@ class ConfiguracionSistema(ModeloBase):
     telefono_pyme: Mapped[str | None] = mapped_column(String(30), nullable=True)
     email_pyme: Mapped[str | None] = mapped_column(String(150), nullable=True)
     direccion_pyme: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    razon_social_elaborador: Mapped[str | None] = mapped_column(String(150), nullable=True)
+    domicilio_elaborador: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    numero_rnpa_rppa: Mapped[str | None] = mapped_column(String(30), nullable=True)
 
     # Prefijos para armar el código de barras
     prefijo_gs1: Mapped[str] = mapped_column(String(3), nullable=False, default="779") # Dejo en predeterminado el de Argentina
