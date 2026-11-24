@@ -64,7 +64,7 @@ export function VerEquipoPage() {
                     <Card className="shadow-sm border-0 rounded-3 mb-4 text-start">
                         <Card.Body className="p-4">
                             <h6 className="detalle-seccion-titulo">Datos del equipo</h6>
-                            <Row className="g-3 mb-4">
+                            <Row className="g-3">
                                 <Dato etiqueta="Nombre del Equipo" md={6} lg={4}>
                                     <span className="fw-semibold">{equipo.nombre}</span>
                                 </Dato>
@@ -74,41 +74,43 @@ export function VerEquipoPage() {
                                         {equipo.estado ? 'Activo' : 'Inactivo'}
                                     </EstadoBadge>
                                 </Dato>
-                                <Dato etiqueta="Categoría" md={6}>{equipo.categoria || '-'}</Dato>
-                                <Dato etiqueta="Ubicación" md={6}>{equipo.ubicacion || '-'}</Dato>
+                                <Dato etiqueta="Categoría" md={6} lg={4}>{equipo.categoria || '-'}</Dato>
+                                <Dato etiqueta="Ubicación" md={6} lg={4}>{equipo.ubicacion || '-'}</Dato>
+                                <Dato etiqueta="Control de temperatura" md={6} lg={4}>
+                                    {equipo.controla_temperatura
+                                        ? <EstadoBadge tono="info" icono="bi-thermometer-half">Control activo</EstadoBadge>
+                                        : <span className="text-muted">No requiere control de temperatura</span>}
+                                </Dato>
                             </Row>
 
-                            <h6 className="detalle-seccion-titulo">Control de temperatura</h6>
-                            <Row className="g-3">
-                                {equipo.controla_temperatura ? (
-                                    <>
-                                        <Dato etiqueta="Control" md={4}>
-                                            <EstadoBadge tono="info" icono="bi-thermometer-half">Control activo</EstadoBadge>
-                                        </Dato>
-                                        <Dato etiqueta="Rango permitido" md={puedeRegistrarTemperatura && equipo.estado ? 4 : 8}>
-                                            <strong>{equipo.temperatura_minima} °C</strong> a <strong>{equipo.temperatura_maxima} °C</strong>
-                                        </Dato>
-                                        {puedeRegistrarTemperatura && equipo.estado && (
-                                            <Dato etiqueta="Nueva medición" md={4}>
-                                                <Button variant="primary" size="sm" onClick={() => setMostrarModalTemp(true)}>
-                                                    <i className="bi bi-thermometer-half me-1"></i>
-                                                    Registrar temperatura
-                                                </Button>
-                                            </Dato>
-                                        )}
-                                    </>
-                                ) : (
-                                    <Dato etiqueta="Control">
-                                        <span className="text-muted">No requiere control de temperatura</span>
-                                    </Dato>
-                                )}
-                            </Row>
                         </Card.Body>
                     </Card>
                 </Tab>
 
                 {equipo.controla_temperatura && (
                     <Tab eventKey="temperatura" title="Control de temperatura">
+                        <Card className="shadow-sm border-0 rounded-3 mb-4 text-start">
+                            <Card.Body className="p-4">
+                                <h6 className="detalle-seccion-titulo">Control de temperatura</h6>
+                                <Row className="g-3">
+                                    <Dato etiqueta="Control" md={4}>
+                                        <EstadoBadge tono="info" icono="bi-thermometer-half">Control activo</EstadoBadge>
+                                    </Dato>
+                                    <Dato etiqueta="Rango permitido" md={puedeRegistrarTemperatura && equipo.estado ? 4 : 8}>
+                                        <strong>{equipo.temperatura_minima} °C</strong> a <strong>{equipo.temperatura_maxima} °C</strong>
+                                    </Dato>
+                                    {puedeRegistrarTemperatura && equipo.estado && (
+                                        <Dato etiqueta="Nueva medición" md={4}>
+                                            <Button variant="primary" size="sm" onClick={() => setMostrarModalTemp(true)}>
+                                                <i className="bi bi-thermometer-half me-1"></i>
+                                                Registrar temperatura
+                                            </Button>
+                                        </Dato>
+                                    )}
+                                </Row>
+                            </Card.Body>
+                        </Card>
+
                         <Card className="shadow-sm border-0 rounded-3 mb-4 text-start">
                             <Card.Header className="bg-white p-4 border-bottom">
                                 <h5 className="fw-bold mb-1">Evolución térmica</h5>
