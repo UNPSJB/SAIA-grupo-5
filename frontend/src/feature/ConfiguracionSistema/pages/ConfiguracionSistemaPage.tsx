@@ -36,6 +36,9 @@ export function ConfiguracionSistemaPage() {
     const [telefonoPyme, setTelefonoPyme] = useState("");
     const [emailPyme, setEmailPyme] = useState("");
     const [direccionPyme, setDireccionPyme] = useState("");
+    const [razonSocialElaborador, setRazonSocialElaborador] = useState("");
+    const [domicilioElaborador, setDomicilioElaborador] = useState("");
+    const [numeroRnpaRppa, setNumeroRnpaRppa] = useState("");
     const [logoBase64, setLogoBase64] = useState<string | null>(null);
     const [logoError, setLogoError] = useState<string | null>(null);
     const [guardandoPyme, setGuardandoPyme] = useState(false);
@@ -54,6 +57,9 @@ export function ConfiguracionSistemaPage() {
         setTelefonoPyme(configuracion.telefono_pyme ?? "");
         setEmailPyme(configuracion.email_pyme ?? "");
         setDireccionPyme(configuracion.direccion_pyme ?? "");
+        setRazonSocialElaborador(configuracion.razon_social_elaborador ?? "");
+        setDomicilioElaborador(configuracion.domicilio_elaborador ?? "");
+        setNumeroRnpaRppa(configuracion.numero_rnpa_rppa ?? "");
         setLogoBase64(configuracion.logo_pyme);
         setPrefijoGs1(configuracion.prefijo_gs1);
         setPrefijoEmpresa(configuracion.prefijo_empresa ?? "");
@@ -105,6 +111,9 @@ export function ConfiguracionSistemaPage() {
                 telefono_pyme: telefonoPyme.trim(),
                 email_pyme: emailPyme.trim(),
                 direccion_pyme: direccionPyme.trim(),
+                razon_social_elaborador: razonSocialElaborador.trim(),
+                domicilio_elaborador: domicilioElaborador.trim(),
+                numero_rnpa_rppa: numeroRnpaRppa.trim(),
             });
             await mutate(CONFIGURACION_URL);
             mostrarAlertaExito("Los datos de la PyME se guardaron correctamente.");
@@ -299,6 +308,31 @@ export function ConfiguracionSistemaPage() {
                                             </Dato>
                                         </Row>
                                     </Col>
+                                </Row>
+
+                                <h6 className="detalle-seccion-titulo">Datos del elaborador para el rótulo</h6>
+                                <p className="text-muted small mb-3">
+                                    Se precargan en la pestaña "Datos del rótulo (CAA)" de cada producto.
+                                </p>
+                                <Row className="g-3 mb-3">
+                                    <Dato etiqueta="Razón social del elaborador" md={6}>
+                                        <Form.Group controlId="formRazonSocialElaborador">
+                                            <Form.Label className="visually-hidden">Razón social del elaborador</Form.Label>
+                                            <Form.Control maxLength={150} value={razonSocialElaborador} onChange={(e) => setRazonSocialElaborador(e.target.value)} />
+                                        </Form.Group>
+                                    </Dato>
+                                    <Dato etiqueta="Número de RNPA/RPPA" md={6}>
+                                        <Form.Group controlId="formNumeroRnpaRppa">
+                                            <Form.Label className="visually-hidden">Número de RNPA/RPPA</Form.Label>
+                                            <Form.Control maxLength={30} placeholder="RNPA 1234567" value={numeroRnpaRppa} onChange={(e) => setNumeroRnpaRppa(e.target.value)} />
+                                        </Form.Group>
+                                    </Dato>
+                                    <Dato etiqueta="Domicilio del elaborador">
+                                        <Form.Group controlId="formDomicilioElaborador">
+                                            <Form.Label className="visually-hidden">Domicilio del elaborador</Form.Label>
+                                            <Form.Control maxLength={200} value={domicilioElaborador} onChange={(e) => setDomicilioElaborador(e.target.value)} />
+                                        </Form.Group>
+                                    </Dato>
                                 </Row>
                                 <div className="d-flex justify-content-end">
                                     <Button variant="primary" type="submit" disabled={guardandoPyme || leyendoLogo || !!logoError}>
