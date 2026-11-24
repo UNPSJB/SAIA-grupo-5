@@ -34,6 +34,7 @@ export type LoteProduccion = {
     insumos_utilizados?: InsumoUtilizado[];
     pasos_pendientes?: number;
     checklist_completo?: boolean;
+    insumos_completos?: boolean;
     receta_id?: number | null;
     receta?: RecetaVersion | null;
 }

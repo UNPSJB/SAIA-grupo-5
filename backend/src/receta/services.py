@@ -106,6 +106,7 @@ def _construir_version(
         fecha_desde_vigencia=datetime.now(),
         porcion=receta.porcion,
         porcion_unidad_medida_id=receta.porcion_unidad_medida_id,
+        medida_casera=receta.medida_casera,
     )
     for etapa in receta.etapas:
         orden.insertar(db_receta.etapas, construir_etapa(etapa.nombre, etapa.pasos))

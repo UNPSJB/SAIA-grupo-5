@@ -56,6 +56,7 @@ export type Receta = RecetaVersion & {
     porcion: number | null;
     porcion_unidad_medida_id: number | null;
     porcion_unidad_medida: UnidadMedida | null;
+    medida_casera: string | null;
     etapas: EtapaReceta[];
     insumos: InsumoReceta[];
     sellos: EvaluacionSellos;
@@ -81,6 +82,7 @@ export type NewInsumoReceta = {
 export type NewRecetaVersion = {
     porcion: number | null;
     porcion_unidad_medida_id: number | null;
+    medida_casera: string | null;
     etapas: NewEtapaReceta[];
     insumos: NewInsumoReceta[];
 }

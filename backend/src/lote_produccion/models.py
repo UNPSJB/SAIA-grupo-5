@@ -1,3 +1,4 @@
+import math
 from datetime import date, datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING
@@ -68,6 +69,21 @@ class LoteProduccion(ModeloBase):
     @property
     def checklist_completo(self) -> bool:
         return self.pasos_pendientes == 0
+
+    @property
+    def insumos_completos(self) -> bool:
+        if self.receta is None or not self.receta.insumos:
+            return False
+        asociados_por_insumo: dict[int, int] = {}
+        for usado in self.insumos_utilizados:
+            if usado.insumo_lote:
+                ins_id = usado.insumo_lote.insumo_id
+                asociados_por_insumo[ins_id] = asociados_por_insumo.get(ins_id, 0) + int(usado.cantidad_utilizada)
+        for item in self.receta.insumos:
+            requerido = math.ceil(item.cantidad * self.cantidad_producida)
+            if asociados_por_insumo.get(item.insumo_id, 0) < requerido:
+                return False
+        return True
 
 
 class InsumoUtilizado(ModeloBase):

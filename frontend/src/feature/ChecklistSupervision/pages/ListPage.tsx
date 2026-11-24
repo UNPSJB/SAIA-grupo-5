@@ -373,29 +373,39 @@ export function ListPage() {
             </Row>
 
             {(currentUser?.supervisor || currentUser?.operar) &&
-                lotesListosParaAvanzar.map((loteListo) => (
-                    <Alert
-                        key={loteListo.id}
-                        variant="success"
-                        className="d-flex flex-wrap justify-content-between align-items-center gap-2 py-2 px-3 mb-3"
-                    >
-                        <div>
-                            <i className="bi bi-check2-all me-2"></i>
-                            <strong>Lote #{loteListo.id} ({loteListo.producto.nombre}):</strong> Todos los pasos de la fase{' '}
-                            <strong>{loteListo.estado}</strong> estan completados.
-                        </div>
-                        <Button
-                            variant="success"
-                            size="sm"
-                            onClick={() => setLoteParaAvanzar(loteListo)}
+                lotesListosParaAvanzar.map((loteListo) => {
+                    const faltanInsumos =
+                        loteListo.estado === 'En produccion' && loteListo.insumos_completos === false;
+                    return (
+                        <Alert
+                            key={loteListo.id}
+                            variant={faltanInsumos ? 'warning' : 'success'}
+                            className="d-flex flex-wrap justify-content-between align-items-center gap-2 py-2 px-3 mb-3"
                         >
-                            <i className="bi bi-arrow-right-circle me-1"></i>
-                            {loteListo.estado === 'En produccion'
-                                ? 'Pasar a Empaquetando'
-                                : 'Marcar como Terminado'}
-                        </Button>
-                    </Alert>
-                ))}
+                            <div>
+                                <i className={`bi ${faltanInsumos ? 'bi-exclamation-triangle' : 'bi-check2-all'} me-2`}></i>
+                                <strong>Lote #{loteListo.id} ({loteListo.producto.nombre}):</strong> Todos los pasos de la fase{' '}
+                                <strong>{loteListo.estado}</strong> estan completados.
+                                {faltanInsumos && (
+                                    <span className="ms-1">
+                                        Faltan asociar los insumos requeridos por la receta para pasar a Empaquetando.
+                                    </span>
+                                )}
+                            </div>
+                            <Button
+                                variant={faltanInsumos ? 'secondary' : 'success'}
+                                size="sm"
+                                disabled={faltanInsumos}
+                                onClick={() => setLoteParaAvanzar(loteListo)}
+                            >
+                                <i className="bi bi-arrow-right-circle me-1"></i>
+                                {loteListo.estado === 'En produccion'
+                                    ? 'Pasar a Empaquetando'
+                                    : 'Marcar como Terminado'}
+                            </Button>
+                        </Alert>
+                    );
+                })}
 
             <div className="d-none d-lg-block">
                 <AppTable columns={columns} data={filteredOcurrencias} />

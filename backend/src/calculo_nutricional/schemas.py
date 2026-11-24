@@ -69,3 +69,14 @@ class InformacionNutricionalReceta(BaseModel):
     fecha_calculo: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+class TablaNutricionalRotulo(BaseModel):
+    receta_id: int
+    receta_version: int
+    producto: str
+    unidad: str
+    porcion: Decimal
+    medida_casera: str | None = None
+    tabla_nutricional: list[FilaNutrienteCalculado]
+    fecha_calculo: datetime
+    leyenda: str

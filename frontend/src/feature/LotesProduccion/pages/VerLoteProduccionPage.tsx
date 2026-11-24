@@ -360,6 +360,7 @@ export function VerLoteProduccionPage() {
 
             {mostrarAsociarInsumos && (
                 <AsociarInsumosModal
+                    lote={lote}
                     loteId={lote.id}
                     insumosAsociados={insumosUtilizados}
                     onHide={() => setMostrarAsociarInsumos(false)}
