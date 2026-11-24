@@ -40,6 +40,11 @@ def modificar_configuracion(db: Session, configuracion: schemas.ConfiguracionSis
         if not clave.startswith("vista_publica_") and (valor is not None or clave in ("logo_pyme", "prefijo_empresa")):
             setattr(db_configuracion, clave, valor)
 
+    if any(clave in cambios for clave in ("prefijo_gs1", "prefijo_empresa")):
+        from src.producto.services import completar_codigos_barras
+
+        completar_codigos_barras(db, db_configuracion)
+
     db.commit()
     db.refresh(db_configuracion)
 

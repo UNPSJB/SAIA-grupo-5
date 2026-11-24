@@ -9,7 +9,7 @@ import src.all_models  # noqa: F401
 from src.database import SessionLocal
 from src.producto.models import Producto
 from src.unidad_medida.models import UnidadMedida
-from src.producto.services import generar_codigo_barras
+from src.producto.services import completar_codigos_barras
 from src.configuracion_sistema.models import ConfiguracionSistema
 from src.configuracion_sistema.constants import ID_CONFIGURACION_SISTEMA
 
@@ -93,21 +93,15 @@ def main():
             codigos_utilizados.add(producto.codigo_producto)
             siguiente_codigo += 1
 
-        if configuracion and configuracion.prefijo_empresa:
-            productos_sin_barras = db.scalars(
-                select(Producto).where(Producto.codigo_barras.is_(None))
-            ).all()
-
-            for producto in productos_sin_barras:
-                producto.codigo_barras = generar_codigo_barras(
-                    configuracion.prefijo_gs1,
-                    configuracion.prefijo_empresa,
-                    producto.codigo_producto
-                )
+        con_barras = completar_codigos_barras(db, configuracion)
 
         db.commit()
         print(f"Se insertaron {len(productos)} productos.")
         print(f"Se asignaron códigos a {len(productos_sin_codigo)} productos.")
+        if configuracion and configuracion.prefijo_empresa:
+            print(f"Se generó el código de barras de {con_barras} productos.")
+        else:
+            print("No se generaron códigos de barras: falta el prefijo de empresa (corré seed_datos_pyme).")
     except Exception:
         db.rollback()
         raise
