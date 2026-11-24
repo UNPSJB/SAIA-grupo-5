@@ -4,6 +4,9 @@ import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 import type { Proveedor } from "../types";
 import { PageLoading } from "../../../components/PageLoading";
+import { Dato } from "../../../components/Dato";
+import { EstadoBadge } from "../../../components/EstadoBadge";
+import { VencimientoBadge } from "../../../components/VencimientoBadge";
 import { useState } from "react";
 import { mutate } from "swr";
 import { useAuth } from "../../../hooks/useAuth";
@@ -55,233 +58,141 @@ export function VerProveedorPage() {
         <Container>
             <PageHeader title={tituloPagina} />
 
-            <Row className="justify-content-center mt-3">
-                <Col md={8}>
-                    <Card className="shadow-sm border-0 rounded-3">
-                        <Card.Body className="p-4">
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Razon Social</Col>
-                                <Col sm={8} className="fs-6">{proveedor.nombre}</Col>
-                            </Row>
+            <Card className="shadow-sm border-0 rounded-3 mb-4 mt-3 text-start">
+                <Card.Body className="p-4">
+                    <h6 className="detalle-seccion-titulo">Datos generales</h6>
+                    <Row className="g-3 mb-4">
+                        <Dato etiqueta="Razón Social" lg={6}>
+                            <span className="fw-semibold">{proveedor.nombre}</span>
+                        </Dato>
+                        <Dato etiqueta="CUIT" md={6} lg={3}>{proveedor.cuit}</Dato>
+                        <Dato etiqueta="Estado Actual" md={6} lg={3}>
+                            <EstadoBadge tono={proveedor.activo ? 'success' : 'danger'} icono={proveedor.activo ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}>
+                                {proveedor.activo ? 'Activo' : 'Inactivo'}
+                                </EstadoBadge>
+                        </Dato>
+                        <Dato etiqueta="Teléfono" md={6}>
+                            {proveedor.telefono || <span className="text-muted fst-italic">Sin teléfono</span>}
+                        </Dato>
+                        <Dato etiqueta="Email" md={6}>
+                            {proveedor.email || <span className="text-muted fst-italic">Sin email</span>}
+                        </Dato>
+                    </Row>
 
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">CUIT</Col>
-                                <Col sm={8}>{proveedor.cuit}</Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Telefono</Col>
-                                <Col sm={8}>{proveedor.telefono || <span className="text-muted fst-italic">Sin telefono</span>}</Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Email</Col>
-                                <Col sm={8}>{proveedor.email || <span className="text-muted fst-italic">Sin email</span>}</Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Estado Actual</Col>
-                                <Col sm={8}>
-                                    <div
-                                        style={{
-                                            padding: '6px 16px',
-                                            borderRadius: '20px',
-                                            background: proveedor.activo ? '#dcfce7' : '#fee2e2',
-                                            color: proveedor.activo ? '#166534' : '#991b1b',
-                                            fontWeight: 700,
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                        }}
-                                    >
-                                        <i className={`bi ${proveedor.activo ? 'bi-check-circle-fill' : 'bi-x-circle-fill'} me-2`}></i>
-                                        {proveedor.activo ? 'Activo' : 'Inactivo'}
+                    <h6 className="detalle-seccion-titulo d-flex justify-content-between align-items-center gap-2">
+                        Habilitación Sanitaria
+                        {!proveedor.numero_habilitacion && (
+                            <span className="badge bg-warning text-dark">Pendiente de registro</span>
+                        )}
+                    </h6>
+                    <Row className="g-3 mb-4">
+                        <Dato etiqueta="Número de Habilitación" md={4}>
+                            {proveedor.numero_habilitacion
+                                ? <span className="fw-bold">{proveedor.numero_habilitacion}</span>
+                                : <span className="text-muted fst-italic">Sin registrar</span>}
+                        </Dato>
+                        <Dato etiqueta="Fecha de Vencimiento" md={4}>
+                            {proveedor.vencimiento_habilitacion
+                                ? proveedor.vencimiento_habilitacion.split("-").reverse().join("/")
+                                : <span className="text-muted fst-italic">Sin fecha de vencimiento</span>}
+                        </Dato>
+                        <Dato etiqueta="Estado Habilitación" md={4}>
+                            <VencimientoBadge fecha={proveedor.vencimiento_habilitacion} femenino sinFecha="Sin habilitación registrada" />
+                        </Dato>
+                        {proveedor.observacion_habilitacion && (
+                            <Dato etiqueta="Observaciones" lg={proveedor.archivo_adjunto ? 6 : 12}>
+                                <span className="text-muted">{proveedor.observacion_habilitacion}</span>
+                            </Dato>
+                        )}
+                        {proveedor.archivo_adjunto && (
+                            <Dato etiqueta="Comprobante Adjunto" lg={proveedor.observacion_habilitacion ? 6 : 12}>
+                                {esImagen ? (
+                                    <div>
+                                        <img
+                                            src={proveedor.archivo_adjunto}
+                                            alt="Comprobante"
+                                            style={{ maxHeight: '160px', maxWidth: '100%', borderRadius: '8px', objectFit: 'contain' }}
+                                            className="border shadow-sm p-1"
+                                        />
+                                        <div className="small text-muted mt-1">{obtenerNombreArchivo(proveedor.archivo_adjunto)}</div>
                                     </div>
-                                </Col>
-                            </Row>
-
-                            <div className="p-3 rounded border mt-4 bg-white shadow-sm border-secondary-subtle">
-                                <div className="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
-                                    <h6 className="fw-bold text-primary mb-0">
-                                        <i className="bi bi-shield-check me-2"></i>Habilitacion Sanitaria
-                                    </h6>
-                                    {!proveedor.numero_habilitacion && (
-                                        <span className="badge bg-warning text-dark">Pendiente de registro</span>
-                                    )}
-                                </div>
-
-                                <Row className="mb-2 align-items-center">
-                                    <Col sm={4} className="fw-bold text-secondary">Numero de Habilitacion</Col>
-                                    <Col sm={8}>
-                                        {proveedor.numero_habilitacion ? (
-                                            <span className="fw-bold">{proveedor.numero_habilitacion}</span>
-                                        ) : (
-                                            <span className="text-muted fst-italic">Sin registrar</span>
-                                        )}
-                                    </Col>
-                                </Row>
-
-                                <Row className="mb-2 align-items-center">
-                                    <Col sm={4} className="fw-bold text-secondary">Fecha de Vencimiento</Col>
-                                    <Col sm={8}>
-                                        {proveedor.vencimiento_habilitacion ? (
-                                            <span>{proveedor.vencimiento_habilitacion.split("-").reverse().join("/")}</span>
-                                        ) : (
-                                            <span className="text-muted fst-italic">Sin fecha de vencimiento</span>
-                                        )}
-                                    </Col>
-                                </Row>
-
-                                <Row className="mb-2 align-items-center">
-                                    <Col sm={4} className="fw-bold text-secondary">Estado Habilitacion</Col>
-                                    <Col sm={8}>
-                                        {(() => {
-                                            if (!proveedor.vencimiento_habilitacion) {
-                                                return <span className="text-muted fst-italic">Sin habilitacion registrada</span>;
-                                            }
-
-                                            const hoy = new Date();
-                                            hoy.setHours(0, 0, 0, 0);
-                                            const [anio, mes, dia] = proveedor.vencimiento_habilitacion.split("-").map(Number);
-                                            const fechaVenc = new Date(anio, mes - 1, dia);
-                                            const diasRestantes = Math.round((fechaVenc.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
-
-                                            const vencido = diasRestantes <= 0;
-                                            const proximo = diasRestantes > 0 && diasRestantes <= 30;
-                                            const badge = vencido ? '#fee2e2' : proximo ? '#fef3c7' : '#dcfce7';
-                                            const color = vencido ? '#991b1b' : proximo ? '#92400e' : '#166534';
-                                            const texto = vencido
-                                                ? `Vencida (${Math.abs(diasRestantes)} días)`
-                                                : proximo
-                                                ? `Proxima a vencer (${diasRestantes} días)`
-                                                : `Vigente (${diasRestantes} días)`;
-
-                                            return (
-                                                <div
-                                                    style={{
-                                                        padding: '4px 14px',
-                                                        borderRadius: '16px',
-                                                        background: badge,
-                                                        color: color,
-                                                        fontWeight: 700,
-                                                        display: 'inline-flex',
-                                                        alignItems: 'center',
-                                                        whiteSpace: 'nowrap',
-                                                    }}
-                                                >
-                                                    {texto}
-                                                </div>
-                                            );
-                                        })()}
-                                    </Col>
-                                </Row>
-
-                                {proveedor.observacion_habilitacion && (
-                                    <Row className="mb-2 align-items-start pt-2 border-top">
-                                        <Col sm={4} className="fw-bold text-secondary">Observaciones</Col>
-                                        <Col sm={8} className="text-muted">{proveedor.observacion_habilitacion}</Col>
-                                    </Row>
-                                )}
-
-                                {proveedor.archivo_adjunto && (
-                                    <Row className="align-items-center pt-2 border-top mt-2">
-                                        <Col sm={4} className="fw-bold text-secondary">Comprobante Adjunto</Col>
-                                        <Col sm={8}>
-                                            {esImagen ? (
-                                                <div>
-                                                    <img
-                                                        src={proveedor.archivo_adjunto}
-                                                        alt="Comprobante"
-                                                        style={{ maxHeight: '160px', borderRadius: '8px', objectFit: 'contain' }}
-                                                        className="border shadow-sm p-1"
-                                                    />
-                                                    <div className="small text-muted mt-1">{obtenerNombreArchivo(proveedor.archivo_adjunto)}</div>
-                                                </div>
-                                            ) : (
-                                                <div className="p-2 px-3 border rounded bg-light d-inline-flex align-items-center gap-2">
-                                                    <i className="bi bi-file-earmark-pdf-fill text-danger fs-4"></i>
-                                                    <span className="fw-semibold">{obtenerNombreArchivo(proveedor.archivo_adjunto)}</span>
-                                                    <a
-                                                        href={proveedor.archivo_adjunto}
-                                                        download={obtenerNombreArchivo(proveedor.archivo_adjunto)}
-                                                        className="btn btn-outline-primary btn-sm ms-2"
-                                                    >
-                                                        <i className="bi bi-download me-1"></i>Descargar
-                                                    </a>
-                                                </div>
-                                            )}
-                                        </Col>
-                                    </Row>
-                                )}
-                            </div>
-
-                            <hr className="my-4" />
-
-                                <div className="d-flex justify-content-between align-items-center mb-3">
-                                    <h5 className="mb-0">
-                                        <i className="bi bi-box-seam me-2"></i>Insumos que provee
-                                    </h5>
-                                    {puedeAsociar && (
-                                        <Button
-                                            variant="outline-primary"
-                                            size="sm"
-                                            onClick={() => setMostrarModalInsumos(true)}
-                                        >
-                                            <i className={`bi ${insumosSuministrados.length > 0 ? "bi-pencil" : "bi-plus-circle"} me-1`}></i>
-                                            {insumosSuministrados.length > 0 ? "Modificar insumos" : "Asociar insumos"}
-                                        </Button>
-                                    )}
-                                </div>
-
-                                {insumosSuministrados.length === 0 ? (
-                                    <p className="text-muted mb-0">
-                                        Este proveedor todavia no tiene insumos asociados del catalogo.
-                                    </p>
                                 ) : (
-                                    <Table responsive bordered hover size="sm" className="mb-0">
-                                        <thead className="table-light">
-                                            <tr>
-                                                <th>Insumo</th>
-                                                <th>Unidad de medida</th>
-                                                <th>Estado en catalogo</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {insumosSuministrados.map((registro) => (
-                                                <tr key={registro.id}>
-                                                    <td className="fw-semibold">{registro.insumo.nombre}</td>
-                                                    <td>{registro.insumo.unidad_medida?.nombre || "U"}</td>
-                                                    <td>
-                                                        <span className={`badge ${registro.insumo.activo ? "bg-success" : "bg-secondary"}`}>
-                                                            {registro.insumo.activo ? "Activo" : "Inactivo"}
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </Table>
+                                    <div className="d-flex flex-wrap align-items-center gap-2">
+                                        <i className="bi bi-file-earmark-pdf-fill text-danger fs-4"></i>
+                                        <span className="fw-semibold">{obtenerNombreArchivo(proveedor.archivo_adjunto)}</span>
+                                        <a
+                                            href={proveedor.archivo_adjunto}
+                                            download={obtenerNombreArchivo(proveedor.archivo_adjunto)}
+                                            className="btn btn-outline-primary btn-sm"
+                                        >
+                                            <i className="bi bi-download me-1"></i>Descargar
+                                        </a>
+                                    </div>
                                 )}
-                        </Card.Body>
+                            </Dato>
+                        )}
+                    </Row>
 
-                        <Card.Footer className="bg-light border-top p-3 d-flex justify-content-start gap-2">
-                            <Button 
-                                variant="outline-secondary" 
-                                onClick={() => navigate('/proveedores')}
+                    <h6 className="detalle-seccion-titulo d-flex justify-content-between align-items-center gap-2">
+                        Insumos que provee
+                        {puedeAsociar && (
+                            <Button
+                                variant="outline-primary"
+                                size="sm"
+                                onClick={() => setMostrarModalInsumos(true)}
                             >
-                                <i className="bi bi-arrow-left me-1"></i>Volver a la lista
+                                <i className={`bi ${insumosSuministrados.length > 0 ? "bi-pencil" : "bi-plus-circle"} me-1`}></i>
+                                {insumosSuministrados.length > 0 ? "Modificar insumos" : "Asociar insumos"}
                             </Button>
-                            
-                            <Button 
-                                variant="primary" 
-                                disabled={!proveedor.activo}
-                                onClick={() => navigate(`/proveedores/${proveedor.id}/edit`)}
-                            >
-                                <i className="bi bi-pencil me-1"></i>Editar Proveedor
-                            </Button>
-                        </Card.Footer>
-                    </Card>
-                </Col>
-            </Row>
+                        )}
+                    </h6>
+                    {insumosSuministrados.length === 0 ? (
+                        <p className="text-muted mb-0">
+                            Este proveedor todavía no tiene insumos asociados del catálogo.
+                        </p>
+                    ) : (
+                        <Table responsive bordered hover size="sm" className="mb-0">
+                            <thead className="table-light">
+                                <tr>
+                                    <th>Insumo</th>
+                                    <th>Unidad de medida</th>
+                                    <th>Estado en catálogo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {insumosSuministrados.map((registro) => (
+                                    <tr key={registro.id}>
+                                        <td className="fw-semibold">{registro.insumo.nombre}</td>
+                                        <td>{registro.insumo.unidad_medida?.nombre || "U"}</td>
+                                        <td>
+                                            <span className={`badge ${registro.insumo.activo ? "bg-success" : "bg-secondary"}`}>
+                                                {registro.insumo.activo ? "Activo" : "Inactivo"}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </Table>
+                    )}
+                </Card.Body>
+            </Card>
+
+            <div className="d-flex flex-wrap justify-content-start gap-2 mb-4">
+                <Button
+                    variant="outline-secondary"
+                    onClick={() => navigate('/proveedores')}
+                >
+                    <i className="bi bi-arrow-left me-1"></i>Volver a la lista
+                </Button>
+                <Button
+                    variant="primary"
+                    disabled={!proveedor.activo}
+                    onClick={() => navigate(`/proveedores/${proveedor.id}/edit`)}
+                >
+                    <i className="bi bi-pencil me-1"></i>Editar Proveedor
+                </Button>
+            </div>
+
             {mostrarModalInsumos && (
                 <AsociarInsumosProveedorModal
                     proveedor={proveedor}

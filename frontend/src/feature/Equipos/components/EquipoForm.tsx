@@ -1,38 +1,67 @@
-import { Alert, Button, Form } from 'react-bootstrap';
+import { Alert, Button, Col, Form, Row } from 'react-bootstrap';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Sector } from '../../Sectores/types';
 import { useApi } from '../../../hooks/useApi';
+import type { NewEquipo } from '../types';
+import { AppSwitch } from '../../../components/AppSwitch';
 
 interface EquipoFormProps {
   textoBoton: string;
-  onSubmit: (datos: { nombre: string; categoria: string; ubicacion: string; sector_id: number }) => void;
-  valoresIniciales?: { nombre: string; categoria: string; ubicacion: string; sector_id?: number }
+  onSubmit: (datos: NewEquipo) => void;
+  valoresIniciales?: {
+    nombre: string;
+    categoria: string;
+    ubicacion: string;
+    sector_id?: number;
+    controla_temperatura?: boolean;
+    temperatura_minima?: number | null;
+    temperatura_maxima?: number | null;
+  };
 }
 
 export function EquipoForm({ textoBoton, onSubmit, valoresIniciales }: EquipoFormProps) {
   const [validated, setValidated] = useState(false);
   const navigate = useNavigate();
-  const { data: sectores, error, isLoading } = useApi<Sector[]>("/sectores/")
+  const { data: sectores, error, isLoading } = useApi<Sector[]>('/sectores/');
 
-  // Usamos useState y definimos que los valores pueden ser vacios por si se crea un nuevo equipo o que tengan un valor anterior para mostrarlos en caso de editar el insumo
-  const [nombre, setNombre] = useState(valoresIniciales?.nombre || "");
-  const [categoria, setCategoria] = useState(valoresIniciales?.categoria || "");
-  const [ubicacion, setUbicacion] = useState(valoresIniciales?.ubicacion || "");
-  const [sector, setSector] = useState(valoresIniciales?.sector_id?.toString() || "");
+  const [nombre, setNombre] = useState(valoresIniciales?.nombre || '');
+  const [categoria, setCategoria] = useState(valoresIniciales?.categoria || '');
+  const [ubicacion, setUbicacion] = useState(valoresIniciales?.ubicacion || '');
+  const [sector, setSector] = useState(valoresIniciales?.sector_id?.toString() || '');
+  const [controlaTemperatura, setControlaTemperatura] = useState(Boolean(valoresIniciales?.controla_temperatura));
+  
+  const [temperaturaMinima, setTemperaturaMinima] = useState(
+    valoresIniciales?.temperatura_minima !== null && valoresIniciales?.temperatura_minima !== undefined
+      ? String(valoresIniciales.temperatura_minima)
+      : ''
+  );
+  const [temperaturaMaxima, setTemperaturaMaxima] = useState(
+    valoresIniciales?.temperatura_maxima !== null && valoresIniciales?.temperatura_maxima !== undefined
+      ? String(valoresIniciales.temperatura_maxima)
+      : ''
+  );
 
-  // El handleSubmit se usa para que no actualice la pagina al apretar el boton y envia a la pagina que lo utilice los datos
-  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
+  const minNum = temperaturaMinima === '' ? NaN : Number(temperaturaMinima);
+  const maxNum = temperaturaMaxima === '' ? NaN : Number(temperaturaMaxima);
+  const rangoInvalido = controlaTemperatura && (isNaN(minNum) || isNaN(maxNum) || minNum >= maxNum);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setValidated(true);
     if (!nombre.trim() || !sector) return;
+    if (rangoInvalido) return;
+
     onSubmit({
       nombre: nombre.trim(),
       categoria,
       ubicacion,
       sector_id: Number(sector),
+      controla_temperatura: controlaTemperatura,
+      temperatura_minima: controlaTemperatura ? minNum : null,
+      temperatura_maxima: controlaTemperatura ? maxNum : null,
     });
-  }
+  };
 
   return (
     <div className="col-md-6 mx-auto">
@@ -43,7 +72,8 @@ export function EquipoForm({ textoBoton, onSubmit, valoresIniciales }: EquipoFor
             required
             type="text"
             placeholder="Ingrese el nombre"
-            value={nombre} onChange={(e) => setNombre(e.target.value)}
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
             isInvalid={validated && !nombre.trim()}
           />
           <Form.Control.Feedback type="invalid">
@@ -56,8 +86,10 @@ export function EquipoForm({ textoBoton, onSubmit, valoresIniciales }: EquipoFor
           <Form.Control
             required
             type="text"
-            placeholder="Ingrese la categoria"
-            value={categoria} onChange={(e) => setCategoria(e.target.value)} />
+            placeholder="Ej: Camara frigorifica, Freezer, Horno"
+            value={categoria}
+            onChange={(e) => setCategoria(e.target.value)}
+          />
         </Form.Group>
 
         <Form.Group className="mb-3 text-start" controlId="formUbicacion">
@@ -66,7 +98,9 @@ export function EquipoForm({ textoBoton, onSubmit, valoresIniciales }: EquipoFor
             required
             type="text"
             placeholder="Ingrese la ubicacion"
-            value={ubicacion} onChange={(e) => setUbicacion(e.target.value)} />
+            value={ubicacion}
+            onChange={(e) => setUbicacion(e.target.value)}
+          />
         </Form.Group>
 
         <Form.Group className="mb-3 text-start" controlId="formSector">
@@ -95,14 +129,59 @@ export function EquipoForm({ textoBoton, onSubmit, valoresIniciales }: EquipoFor
           )}
         </Form.Group>
 
-        <Button variant="secondary" type="button"
-          onClick={() => navigate('/equipos')}>
+        <div className="p-3 mb-3 border rounded bg-light-subtle text-start">
+          <AppSwitch
+            id="switch-controla-temperatura"
+            label={<strong>Controla temperatura (Cadena de frio / termica)</strong>}
+            checked={controlaTemperatura}
+            onChange={(e) => setControlaTemperatura(e.target.checked)}
+          />
+
+          {controlaTemperatura && (
+            <Row className="mt-3 g-2">
+              <Col sm={6}>
+                <Form.Group controlId="formTempMin">
+                  <Form.Label className="small fw-bold">Temperatura minima (C) *</Form.Label>
+                  <Form.Control
+                    type="number"
+                    step="0.1"
+                    placeholder="Ej: 0"
+                    value={temperaturaMinima}
+                    onChange={(e) => setTemperaturaMinima(e.target.value)}
+                    isInvalid={validated && (isNaN(minNum) || (!isNaN(maxNum) && minNum >= maxNum))}
+                  />
+                </Form.Group>
+              </Col>
+              <Col sm={6}>
+                <Form.Group controlId="formTempMax">
+                  <Form.Label className="small fw-bold">Temperatura maxima (C) *</Form.Label>
+                  <Form.Control
+                    type="number"
+                    step="0.1"
+                    placeholder="Ej: 5"
+                    value={temperaturaMaxima}
+                    onChange={(e) => setTemperaturaMaxima(e.target.value)}
+                    isInvalid={validated && (isNaN(maxNum) || (!isNaN(minNum) && minNum >= maxNum))}
+                  />
+                </Form.Group>
+              </Col>
+              {validated && rangoInvalido && (
+                <Col xs={12}>
+                  <p className="text-danger small mb-0 mt-1">
+                    Debe definir ambas temperaturas y la minima debe ser menor que la maxima.
+                  </p>
+                </Col>
+              )}
+            </Row>
+          )}
+        </div>
+
+        <Button variant="secondary" type="button" onClick={() => navigate('/equipos')}>
           <i className="bi bi-x-circle me-1"></i>Cancelar
         </Button>
         <Button className="ms-2" variant="primary" type="submit">
           <i className="bi bi-floppy me-1"></i> {textoBoton}
         </Button>
-
       </Form>
     </div>
   );

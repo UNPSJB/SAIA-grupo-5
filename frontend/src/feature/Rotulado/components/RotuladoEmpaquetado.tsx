@@ -4,8 +4,10 @@ import { mutate } from 'swr';
 import { isAxiosError } from 'axios';
 import { api } from '../../../libs/axios';
 import { useApi } from '../../../hooks/useApi';
+import { PanelCapasEmpaquetado } from './PanelCapasEmpaquetado';
 import { mostrarAlertaError, mostrarAlertaExito } from '../../../libs/alertas';
 import type { Producto } from '../../Productos/types';
+import { CodigoBarras } from '../../Productos/components/CodigoBarras';
 import { SelloOctogono } from '../../Recetas/components/SelloOctogono';
 import {
     ETIQUETAS_EMPAQUETADO,
@@ -23,7 +25,6 @@ interface RotuladoEmpaquetadoProps {
 type Esquina = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w';
 type ModoArrastre = 'mover' | Esquina;
 
-const ALTO_LEYENDA = 34;
 
 // Vértices para estirar en ambos sentidos y manijas de borde para estirar solo en vertical u horizontal.
 const MANIJAS: { esquina: Esquina; estilo: React.CSSProperties }[] = [
@@ -43,6 +44,8 @@ const limpiar = (valor: number, minimo: number, maximo: number) =>
 export function RotuladoEmpaquetado({ producto, puedeEditar }: RotuladoEmpaquetadoProps) {
     const clave = `/rotulado/productos/${producto.id}/empaquetado`;
     const { data, error, isLoading } = useApi<EmpaquetadoProducto>(clave);
+    // El aviso de borrador va arriba del editor y se puede cerrar (queda cerrado aunque se guarde una versión)
+    const [mostrarAviso, setMostrarAviso] = useState(true);
 
     if (isLoading) {
         return (
@@ -57,13 +60,21 @@ export function RotuladoEmpaquetado({ producto, puedeEditar }: RotuladoEmpaqueta
     }
 
     return (
-        <EditorEmpaquetado
-            key={`${producto.id}-${data.vigente?.id ?? 'inicial'}`}
-            producto={producto}
-            empaquetado={data}
-            clave={clave}
-            puedeEditar={puedeEditar}
-        />
+        <>
+            {mostrarAviso && (
+                <Alert variant="danger" className="py-2" dismissible onClose={() => setMostrarAviso(false)}>
+                    <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>{data.leyenda}</strong>
+                </Alert>
+            )}
+            <EditorEmpaquetado
+                key={`${producto.id}-${data.vigente?.id ?? 'inicial'}`}
+                producto={producto}
+                empaquetado={data}
+                clave={clave}
+                puedeEditar={puedeEditar}
+            />
+        </>
     );
 }
 
@@ -88,6 +99,21 @@ function EditorEmpaquetado({ producto, empaquetado, clave, puedeEditar }: Editor
     const [zoom, setZoom] = useState(1);
     const [resolucion, setResolucion] = useState<{ ancho: number; alto: number } | null>(null);
     const [desplazando, setDesplazando] = useState(false);
+    const [maximizado, setMaximizado] = useState(false);
+
+    useEffect(() => {
+        if (!maximizado) return;
+        const overflowPrevio = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        const alPresionar = (evento: KeyboardEvent) => {
+            if (evento.key === 'Escape') setMaximizado(false);
+        };
+        window.addEventListener('keydown', alPresionar);
+        return () => {
+            document.body.style.overflow = overflowPrevio;
+            window.removeEventListener('keydown', alPresionar);
+        };
+    }, [maximizado]);
 
     const areaRef = useRef<HTMLDivElement>(null);
     const lienzoRef = useRef<HTMLDivElement>(null);
@@ -152,7 +178,7 @@ function EditorEmpaquetado({ producto, empaquetado, clave, puedeEditar }: Editor
     }, []);
 
     const anchoDisponible = disponible.ancho || 640;
-    const altoDisponible = Math.max((disponible.alto || 720) - ALTO_LEYENDA, 200);
+    const altoDisponible = Math.max(disponible.alto || 720, 200);
     const anchoAjustado = Math.max(180, Math.min(anchoDisponible, altoDisponible / relacion));
     // Con foto, el 100 % del zoom es la resolución real de la imagen (1:1); sin foto, el lienzo ajustado.
     const anchoLienzo = Math.max(120, (resolucion?.ancho ?? anchoAjustado) * zoom);
@@ -176,8 +202,6 @@ function EditorEmpaquetado({ producto, empaquetado, clave, puedeEditar }: Editor
         setResolucion({ ancho, alto });
         setRelacion(alto / ancho);
     };
-
-    const elementoSeleccionado = elementos.find((item) => item.clave === seleccionado) ?? null;
 
     const cambiarElemento = (claveElemento: ClaveElementoEmpaquetado, cambios: Partial<ElementoEmpaquetado>) =>
         setElementos((previos) =>
@@ -350,13 +374,6 @@ function EditorEmpaquetado({ producto, empaquetado, clave, puedeEditar }: Editor
 
     return (
         <>
-            <Alert variant="danger" className="py-2">
-                <strong>
-                    <i className="bi bi-exclamation-triangle-fill me-2"></i>
-                    {empaquetado.leyenda}
-                </strong>
-            </Alert>
-
             {(empaquetado.faltantes.length > 0 || empaquetado.tabla_incompleta) && (
                 <Alert variant="warning" className="py-2">
                     <div className="fw-bold mb-1">La vista previa está incompleta:</div>
@@ -441,154 +458,145 @@ function EditorEmpaquetado({ producto, empaquetado, clave, puedeEditar }: Editor
                 </Button>
             </div>
 
-            <div
-                className="d-flex flex-column gap-2"
-                style={{ height: 'calc(100vh - 330px)', minHeight: '420px' }}
-            >
-                <div className="border rounded p-2 bg-light">
-                    <div className="small fw-semibold mb-1">Elementos del empaquetado</div>
-                    <div className="d-flex flex-wrap gap-3">
-                        {elementos.map((elemento) => (
-                            <Form.Check
-                                key={elemento.clave}
-                                type="checkbox"
-                                id={`empaquetado-visible-${elemento.clave}`}
-                                label={ETIQUETAS_EMPAQUETADO[elemento.clave]}
-                                checked={elemento.visible}
-                                disabled={!puedeEditar}
-                                onChange={(evento) => cambiarElemento(elemento.clave, { visible: evento.target.checked })}
-                            />
-                        ))}
-                    </div>
-                    {puedeEditar && !elementoSeleccionado && (
-                        <div className="small text-muted mt-1">
-                            Arrastrá un bloque para moverlo. Usá los vértices para estirarlo en ambos sentidos y las
-                            manijas de los bordes (arriba/abajo o a los lados) para estirarlo solo en vertical u
-                            horizontal, por ejemplo la tabla nutricional. La leyenda de borrador queda fija al pie.
-                        </div>
-                    )}
-                </div>
+            <div className={`empaquetado-editor${maximizado ? ' empaquetado-editor-maximizado' : ''}`}>
+                {!maximizado && (
+                    <PanelCapasEmpaquetado
+                        elementos={elementos}
+                        seleccionado={seleccionado}
+                        puedeEditar={puedeEditar}
+                        onCambiar={cambiarElemento}
+                    />
+                )}
 
-                {puedeEditar && elementoSeleccionado && (
-                    <div className="border rounded p-2 bg-white">
-                        <div className="small fw-semibold mb-2">
-                            {ETIQUETAS_EMPAQUETADO[elementoSeleccionado.clave]} · posición y tamaño (porcentaje del lienzo)
-                        </div>
-                        <div className="d-flex flex-wrap gap-2">
-                            {([
-                                ['x', 'X', 0, 100 - elementoSeleccionado.ancho],
-                                ['y', 'Y', 0, 100 - elementoSeleccionado.alto],
-                                ['ancho', 'Ancho', 6, 100 - elementoSeleccionado.x],
-                                ['alto', 'Alto', 4, 100 - elementoSeleccionado.y],
-                            ] as const).map(([campo, etiqueta, minimo, maximo]) => (
-                                <Form.Group key={campo} controlId={`empaquetado-${campo}`} className="mb-0" style={{ width: '96px' }}>
-                                    <Form.Label className="small mb-1">{etiqueta} (%)</Form.Label>
-                                    <Form.Control
-                                        type="number"
-                                        size="sm"
-                                        min={minimo}
-                                        max={maximo}
-                                        step={1}
-                                        value={Math.round(elementoSeleccionado[campo])}
-                                        onChange={(evento) => {
-                                            const valor = Number(evento.target.value);
-                                            if (Number.isNaN(valor)) return;
-                                            cambiarElemento(elementoSeleccionado.clave, {
-                                                [campo]: limpiar(valor, minimo, maximo),
-                                            });
-                                        }}
-                                    />
-                                </Form.Group>
-                            ))}
+                <div className="empaquetado-lienzo">
+                    {maximizado && (
+                        <div className="empaquetado-restaurar shadow">
                             <Button
                                 variant="outline-secondary"
                                 size="sm"
-                                className="align-self-end"
-                                onClick={() => setSeleccionado(null)}
+                                onClick={() => cambiarZoom(1 / 1.25)}
+                                aria-label="Alejar"
+                                title="Alejar"
                             >
-                                Cerrar
+                                <i className="bi bi-zoom-out"></i>
+                            </Button>
+                            <span className="small text-muted text-center" style={{ minWidth: '48px' }}>
+                                {Math.round(zoom * 100)} %
+                            </span>
+                            <Button
+                                variant="outline-secondary"
+                                size="sm"
+                                onClick={() => cambiarZoom(1.25)}
+                                aria-label="Acercar"
+                                title="Acercar"
+                            >
+                                <i className="bi bi-zoom-in"></i>
+                            </Button>
+                            <Button variant="outline-secondary" size="sm" onClick={ajustarZoom}>
+                                Ajustar
+                            </Button>
+                            <Button variant="outline-secondary" size="sm" onClick={() => setZoom(1)}>
+                                100 %
+                            </Button>
+                            <Button
+                                variant="primary"
+                                size="sm"
+                                onClick={() => setMaximizado(false)}
+                                title="Restaurar (Esc)"
+                            >
+                                <i className="bi bi-fullscreen-exit me-1"></i>
+                                Restaurar
                             </Button>
                         </div>
-                    </div>
-                )}
-
-                <div className="d-flex flex-wrap align-items-center gap-2 small text-muted">
-                    <span className="fw-semibold">Zoom</span>
-                    <Button
-                        variant="outline-secondary"
-                        size="sm"
-                        onClick={() => cambiarZoom(1 / 1.25)}
-                        aria-label="Alejar"
-                        title="Alejar"
-                    >
-                        <i className="bi bi-zoom-out"></i>
-                    </Button>
-                    <span className="text-center" style={{ minWidth: '52px' }}>
-                        {Math.round(zoom * 100)} %
-                    </span>
-                    <Button
-                        variant="outline-secondary"
-                        size="sm"
-                        onClick={() => cambiarZoom(1.25)}
-                        aria-label="Acercar"
-                        title="Acercar"
-                    >
-                        <i className="bi bi-zoom-in"></i>
-                    </Button>
-                    <Button variant="outline-secondary" size="sm" onClick={ajustarZoom}>
-                        Ajustar
-                    </Button>
-                    <Button variant="outline-secondary" size="sm" onClick={() => setZoom(1)}>
-                        100 %
-                    </Button>
-                    <span>
-                        {resolucion
-                            ? `Foto a resolución real: ${resolucion.ancho} × ${resolucion.alto} px (100 % = 1:1)`
-                            : 'Sin foto: el 100 % es el lienzo ajustado'}
-                        {' · '}Ruedita sobre la foto para acercar o alejar donde apuntás y arrastrá el fondo para
-                        desplazarla.
-                    </span>
-                </div>
-
-                <div
-                    ref={lienzoRef}
-                    className="flex-grow-1 border rounded bg-light"
-                    style={{ minHeight: '240px', overflow: 'auto', padding: '8px' }}
-                >
+                    )}
                     <div
-                        className="d-flex align-items-center justify-content-center"
-                        style={{ width: 'max-content', height: 'max-content', minWidth: '100%', minHeight: '100%' }}
+                        ref={lienzoRef}
+                        className="flex-grow-1 border rounded bg-light"
+                        style={{ minHeight: '240px', overflow: 'auto', padding: '8px' }}
                     >
                         <div
-                            className="position-relative border rounded overflow-hidden bg-white flex-shrink-0"
-                            style={{ width: anchoLienzo, height: altoFoto + ALTO_LEYENDA }}
+                            className="d-flex align-items-center justify-content-center"
+                            style={{ width: 'max-content', height: 'max-content', minWidth: '100%', minHeight: '100%' }}
                         >
                             <div
-                                ref={areaRef}
-                                className="position-absolute"
-                                style={{
-                                    top: 0,
-                                    left: 0,
-                                    width: '100%',
-                                    height: altoFoto,
-                                    cursor: desplazando ? 'grabbing' : 'grab',
-                                    touchAction: 'none',
-                                }}
-                                onPointerDown={iniciarDesplazamiento}
+                                className="position-relative border rounded overflow-hidden bg-white flex-shrink-0"
+                                style={{ width: anchoLienzo, height: altoFoto }}
                             >
-                                <FondoEmpaquetado foto={foto} onCargada={cargarFoto} />
-                                <CapaElementos
-                                    empaquetado={empaquetado}
-                                    elementos={elementos}
-                                    modo="edicion"
-                                    seleccionado={seleccionado}
-                                    onMover={iniciarArrastre}
-                                    onRedimensionar={iniciarArrastre}
-                                />
+                                <div
+                                    ref={areaRef}
+                                    className="position-absolute"
+                                    style={{
+                                        top: 0,
+                                        left: 0,
+                                        width: '100%',
+                                        height: altoFoto,
+                                        cursor: desplazando ? 'grabbing' : 'grab',
+                                        touchAction: 'none',
+                                    }}
+                                    onPointerDown={iniciarDesplazamiento}
+                                >
+                                    <FondoEmpaquetado foto={foto} onCargada={cargarFoto} />
+                                    <CapaElementos
+                                        empaquetado={empaquetado}
+                                        elementos={elementos}
+                                        modo="edicion"
+                                        seleccionado={seleccionado}
+                                        onMover={iniciarArrastre}
+                                        onRedimensionar={iniciarArrastre}
+                                    />
+                                </div>
                             </div>
-                            <LeyendaEmpaquetado texto={empaquetado.leyenda} />
                         </div>
                     </div>
+
+                    {!maximizado && (
+                        <div className="d-flex flex-wrap align-items-center gap-2 small text-muted">
+                            <span className="fw-semibold">Zoom</span>
+                            <Button
+                                variant="outline-secondary"
+                                size="sm"
+                                onClick={() => cambiarZoom(1 / 1.25)}
+                                aria-label="Alejar"
+                                title="Alejar"
+                            >
+                                <i className="bi bi-zoom-out"></i>
+                            </Button>
+                            <span className="text-center" style={{ minWidth: '52px' }}>
+                                {Math.round(zoom * 100)} %
+                            </span>
+                            <Button
+                                variant="outline-secondary"
+                                size="sm"
+                                onClick={() => cambiarZoom(1.25)}
+                                aria-label="Acercar"
+                                title="Acercar"
+                            >
+                                <i className="bi bi-zoom-in"></i>
+                            </Button>
+                            <Button variant="outline-secondary" size="sm" onClick={ajustarZoom}>
+                                Ajustar
+                            </Button>
+                            <Button variant="outline-secondary" size="sm" onClick={() => setZoom(1)}>
+                                100 %
+                            </Button>
+                            <Button
+                                variant="outline-primary"
+                                size="sm"
+                                onClick={() => setMaximizado(true)}
+                                title="Maximizar el editor"
+                            >
+                                <i className="bi bi-arrows-fullscreen me-1"></i>
+                                Maximizar
+                            </Button>
+                            <span>
+                                {resolucion
+                                    ? `Foto a resolución real: ${resolucion.ancho} × ${resolucion.alto} px (100 % = 1:1)`
+                                    : 'Sin foto: el 100 % es el lienzo ajustado'}
+                                {' · '}Ruedita sobre la foto para acercar o alejar donde apuntás y arrastrá el fondo para
+                                desplazarla.
+                            </span>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -667,8 +675,7 @@ function EditorEmpaquetado({ producto, empaquetado, clave, puedeEditar }: Editor
                         relacion={relacion}
                     />
                     <p className="small text-muted text-center mt-2 mb-0">
-                        Así se vería el rótulo sobre el envase, sin los fondos de los bloques. La leyenda de borrador se
-                        mantiene.
+                        Así se vería el rótulo sobre el envase, sin los fondos de los bloques.
                     </p>
                 </Modal.Body>
             </Modal>
@@ -705,31 +712,6 @@ function FondoEmpaquetado({ foto, onCargada }: FondoProps) {
             style={{ background: 'repeating-linear-gradient(45deg, #fafafa, #fafafa 10px, #f2f2f2 10px, #f2f2f2 20px)' }}
         >
             Sin foto del paquete
-        </div>
-    );
-}
-
-function LeyendaEmpaquetado({ texto }: { texto: string }) {
-    return (
-        <div
-            className="position-absolute w-100 text-center fw-bold"
-            style={{
-                bottom: 0,
-                left: 0,
-                height: `${ALTO_LEYENDA}px`,
-                padding: '3px 8px',
-                color: '#C0392B',
-                borderTop: '2px solid #C0392B',
-                background: '#fff',
-                fontSize: '10px',
-                lineHeight: 1.15,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                overflow: 'hidden',
-            }}
-        >
-            {texto}
         </div>
     );
 }
@@ -860,7 +842,7 @@ function LienzoPrevisualizacion({
     }, []);
 
     const anchoMaximo = disponible.ancho || 800;
-    const altoMaximo = (disponible.alto || 640) - ALTO_LEYENDA;
+    const altoMaximo = disponible.alto || 640;
     const anchoLienzo = Math.max(200, Math.min(anchoMaximo, Math.max(altoMaximo, 200) / relacion));
     const altoFoto = anchoLienzo * relacion;
 
@@ -872,13 +854,12 @@ function LienzoPrevisualizacion({
         >
             <div
                 className="position-relative border rounded overflow-hidden bg-white shadow-sm"
-                style={{ width: anchoLienzo, height: altoFoto + ALTO_LEYENDA }}
+                style={{ width: anchoLienzo, height: altoFoto }}
             >
                 <div className="position-absolute" style={{ top: 0, left: 0, width: '100%', height: altoFoto }}>
                     <FondoEmpaquetado foto={foto} />
                     <CapaElementos empaquetado={empaquetado} elementos={elementos} modo="limpio" />
                 </div>
-                <LeyendaEmpaquetado texto={empaquetado.leyenda} />
             </div>
         </div>
     );
@@ -893,7 +874,20 @@ function ContenidoEmpaquetado({
     empaquetado: EmpaquetadoProducto;
     sinFondo?: boolean;
 }) {
-    const { datos, tabla_nutricional: tabla, sellos, mensaje_sellos: mensajeSellos } = empaquetado;
+    const {
+        datos,
+        tabla_nutricional: tabla,
+        sellos,
+        mensaje_sellos: mensajeSellos,
+        descripcion,
+        codigo_barras: codigoBarras,
+        alergenos,
+        conservacion,
+        porciones_por_envase: porciones,
+        leyendas_obligatorias: leyendas,
+        fecha_elaboracion: fechaElaboracion,
+        fecha_vencimiento: fechaVencimiento,
+    } = empaquetado;
 
     if (clave === 'denominacion') {
         return <strong>{datos.denominacion_venta || 'Denominación de venta pendiente'}</strong>;
@@ -901,8 +895,25 @@ function ContenidoEmpaquetado({
     if (clave === 'contenido_neto') {
         return <>Contenido neto: {datos.contenido_neto || '—'}</>;
     }
+    if (clave === 'descripcion') {
+        return descripcion
+            ? <>{descripcion}</>
+            : <span className="text-muted">Sin descripción del producto</span>;
+    }
     if (clave === 'ingredientes') {
         return <>Ingredientes: {datos.lista_ingredientes || '—'}</>;
+    }
+    if (clave === 'alergenos') {
+        if (!alergenos.length) {
+            return <span className="text-muted">Sin leyendas de alérgenos declaradas</span>;
+        }
+        return (
+            <>
+                {alergenos.map((leyenda) => (
+                    <div key={leyenda} className="fw-bold">{leyenda}</div>
+                ))}
+            </>
+        );
     }
     if (clave === 'origen') {
         const elaborador = [datos.razon_social, datos.domicilio].filter(Boolean).join(' - ');
@@ -914,17 +925,58 @@ function ContenidoEmpaquetado({
         );
     }
     if (clave === 'lote_fecha') {
+        const comoFecha = (valor: string) =>
+            new Date(`${valor}T00:00:00`).toLocaleDateString('es-AR');
+        const vencimiento = fechaVencimiento ?? datos.fecha_duracion;
         return (
             <>
                 {datos.identificacion_lote ? <>Lote: {datos.identificacion_lote}<br /></> : null}
-                {datos.fecha_duracion
-                    ? `Consumir preferentemente antes del: ${new Date(`${datos.fecha_duracion}T00:00:00`).toLocaleDateString('es-AR')}`
+                {fechaElaboracion ? <>Elaborado el: {comoFecha(fechaElaboracion)}<br /></> : null}
+                {vencimiento
+                    ? `Consumir preferentemente antes del: ${comoFecha(vencimiento)}`
                     : 'Fecha de duración: —'}
+            </>
+        );
+    }
+    if (clave === 'conservacion') {
+        return <>Conservación: {conservacion || '—'}</>;
+    }
+    if (clave === 'porciones') {
+        return <>Porciones por envase: {porciones || '—'}</>;
+    }
+    if (clave === 'leyendas') {
+        if (!leyendas.length) {
+            return <span className="text-muted">Sin leyendas de edulcorantes ni cafeína</span>;
+        }
+        return (
+            <>
+                {leyendas.map((leyenda) => (
+                    <div key={leyenda} className="fw-bold">{leyenda}</div>
+                ))}
             </>
         );
     }
     if (clave === 'instrucciones') {
         return <>Preparación e instrucciones de uso: {datos.instrucciones_uso || '—'}</>;
+    }
+    if (clave === 'codigo_barras') {
+        if (!codigoBarras) {
+            return <span className="text-muted">Sin código de barras asignado</span>;
+        }
+        return (
+            <div
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '100%',
+                    height: '100%',
+                    background: '#fff',
+                }}
+            >
+                <CodigoBarras codigo={codigoBarras} altura={38} anchoBarra={1} />
+            </div>
+        );
     }
     if (clave === 'importador') {
         if (!datos.es_importado) return <span className="text-muted">Producto no importado</span>;

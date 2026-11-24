@@ -84,6 +84,7 @@ export function ListPage() {
 
     const handleInsumosAsociados = () => {
         mutate("/lotes-produccion/");
+        mutate("/insumos-lote/");
         if (loteInsumos) mutate(`/lotes-produccion/${loteInsumos.id}`);
         setLoteInsumos(null);
     };
@@ -170,11 +171,25 @@ export function ListPage() {
         {
             name: "Acciones",
             center: true,
-            minWidth: '190px',
+            minWidth: '230px',
             cell: (row) => {
                 const config = CONFIG_BOTON[row.estado] || CONFIG_BOTON["En produccion"];
                 const stockActual = row.cantidad_disponible ?? row.cantidad_producida;
-                const puedeAvanzar = row.estado === "En produccion" || row.estado === "Empaquetando";
+                const checklistCompleto = row.checklist_completo ?? true;
+                const insumosCompletos = row.insumos_completos ?? true;
+                const pasosPendientes = row.pasos_pendientes ?? 0;
+                const puedeAvanzarEnProd = row.estado === "En produccion" && checklistCompleto && insumosCompletos;
+                const puedeAvanzarEmp = row.estado === "Empaquetando" && checklistCompleto;
+                const puedeAvanzar = puedeAvanzarEnProd || puedeAvanzarEmp;
+
+                let tooltipAvanzar = config.tooltip;
+                if (row.estado === "En produccion" && !insumosCompletos && !checklistCompleto) {
+                    tooltipAvanzar = `Faltan insumos de la receta y ${pasosPendientes} ${pasosPendientes === 1 ? "paso" : "pasos"} del checklist`;
+                } else if (row.estado === "En produccion" && !insumosCompletos) {
+                    tooltipAvanzar = "Faltan asociar los insumos requeridos por la receta";
+                } else if (!checklistCompleto) {
+                    tooltipAvanzar = `Checklist incompleto (${pasosPendientes} ${pasosPendientes === 1 ? "paso pendiente" : "pasos pendientes"})`;
+                }
                 const puedeModificarInsumos = row.activo && row.estado === "En produccion";
                 const tieneInsumos = (row.insumos_utilizados?.length ?? 0) > 0;
                 const mostrarBotonAvanzar = row.estado === "En produccion" || row.estado === "Empaquetando";
@@ -190,6 +205,15 @@ export function ListPage() {
                                 tooltip="Ver"
                                 icon="bi bi-eye"
                                 onClick={() => navigate(`/lotes-produccion/${row.id}`, { state: { origen: "lista" }})}
+                            />
+                        </span>
+                        <span data-tour="btn-trazabilidad-lote">
+                            <ActionButton
+                                variant="outline-secondary"
+                                size="sm"
+                                tooltip="Trazabilidad"
+                                icon="bi bi-diagram-3"
+                                onClick={() => navigate(`/lotes-produccion/${row.id}/trazabilidad`)}
                             />
                         </span>
                         {currentUser?.operar && (
@@ -214,18 +238,6 @@ export function ListPage() {
                                         onClick={() => setLoteInsumos(row)}
                                     />
                                 </span>
-                                {mostrarBotonAvanzar && (
-                                    <span data-tour="btn-avanzar-lote">
-                                        <ActionButton
-                                            variant={config.variant}
-                                            size="sm"
-                                            tooltip={config.tooltip}
-                                            icon={config.icon}
-                                            disabled={!puedeAvanzar}
-                                            onClick={() => setLoteToChange(row)}
-                                        />
-                                    </span>
-                                )}
                                 {mostrarBotonDespacho && (
                                     <span data-tour="btn-despachar-lote">
                                         <ActionButton
@@ -239,6 +251,18 @@ export function ListPage() {
                                     </span>
                                 )}
                             </>
+                        )}
+                        {(currentUser?.operar || currentUser?.supervisor) && mostrarBotonAvanzar && (
+                            <span data-tour="btn-avanzar-lote">
+                                <ActionButton
+                                    variant={config.variant}
+                                    size="sm"
+                                    tooltip={tooltipAvanzar}
+                                    icon={config.icon}
+                                    disabled={!puedeAvanzar}
+                                    onClick={() => setLoteToChange(row)}
+                                />
+                            </span>
                         )}
                     </div>
                 );
@@ -301,10 +325,14 @@ export function ListPage() {
             <CambiarEstadoLoteModal
                 lote={loteToChange}
                 onHide={() => setLoteToChange(null)}
-                onChanged={() => mutate("/lotes-produccion/")}
+                onChanged={() => {
+                    mutate("/lotes-produccion/");
+                    mutate("/supervision-lotes/");
+                }}
             />
             {loteInsumos && (
                 <AsociarInsumosModal
+                    lote={loteInsumos}
                     loteId={loteInsumos.id}
                     insumosAsociados={loteInsumos.insumos_utilizados ?? []}
                     onHide={() => setLoteInsumos(null)}

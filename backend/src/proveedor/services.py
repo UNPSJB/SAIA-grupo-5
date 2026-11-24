@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session, selectinload
 from src.proveedor.models import Proveedor, ProveedorInsumo
 from src.proveedor import exceptions, schemas
 from src.insumos.models import Insumo
+from src.notificaciones.services import generar_notificaciones_habilitacion_proveedor
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +35,8 @@ def crear_proveedor(db: Session, proveedor: schemas.ProveedorCreate) -> schemas.
     db.add(_proveedor)
     db.commit()
     db.refresh(_proveedor)
+    if _proveedor.vencimiento_habilitacion:
+        generar_notificaciones_habilitacion_proveedor(db)
     return _proveedor
 
 
@@ -50,6 +53,8 @@ def modificar_proveedor(db: Session, proveedor_id: int, proveedor: schemas.Prove
 
     db.commit()
     db.refresh(db_proveedor)
+    if db_proveedor.vencimiento_habilitacion:
+        generar_notificaciones_habilitacion_proveedor(db)
     return db_proveedor
 
 
@@ -59,6 +64,7 @@ def cambiar_estado_proveedor(db: Session, proveedor_id: int) -> schemas.Proveedo
     db_proveedor.activo = not db_proveedor.activo
     db.commit()
     db.refresh(db_proveedor)
+    generar_notificaciones_habilitacion_proveedor(db)
     return db_proveedor
 
 
@@ -76,6 +82,7 @@ def renovar_habilitacion_proveedor(db: Session, proveedor_id: int, datos: schema
 
     db.commit()
     db.refresh(db_proveedor)
+    generar_notificaciones_habilitacion_proveedor(db)
     return db_proveedor
 
 

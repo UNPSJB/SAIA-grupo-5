@@ -2,13 +2,18 @@ import logging
 from datetime import date, datetime
 from typing import List
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload, selectinload
 from src.lote_proveedor.models import LoteProveedor, HistorialEstadoLoteProveedor
 from src.lote_proveedor import exceptions, schemas
 from src.proveedor.models import Proveedor
 from src.lote_proveedor.constants import EstadoLoteProveedor
 from src.pedidos_proveedor.models import PedidoProveedor
 from src.pedidos_proveedor.constants import EstadoPedidoProveedor
+from src.insumos_lote.models import InsumoLote
+from src.insumos_lote.schemas import TrazabilidadEnvioAfectado, TrazabilidadProduccionAfectada
+from src.insumos.models import Insumo
+from src.lote_produccion.models import InsumoUtilizado, LoteProduccion
+from src.envios_lote.models import EnvioLote
 
 logger = logging.getLogger(__name__)
 
@@ -146,3 +151,102 @@ def listar_historial_lote(db: Session, lote_id: int) -> list[HistorialEstadoLote
         .where(HistorialEstadoLoteProveedor.lote_id == lote_id)
         .order_by(HistorialEstadoLoteProveedor.fecha_hora.asc())
     ).all()
+
+
+def obtener_trazabilidad_lote_proveedor(db: Session, lote_id: int) -> schemas.TrazabilidadLoteProveedor:
+    db_lote = db.scalar(
+        select(LoteProveedor)
+        .where(LoteProveedor.id == lote_id)
+        .options(
+            joinedload(LoteProveedor.proveedor),
+            selectinload(LoteProveedor.insumos)
+            .joinedload(InsumoLote.insumo)
+            .joinedload(Insumo.unidad_medida),
+            selectinload(LoteProveedor.insumos)
+            .selectinload(InsumoLote.producciones_asociadas)
+            .joinedload(InsumoUtilizado.lote_produccion)
+            .joinedload(LoteProduccion.producto),
+            selectinload(LoteProveedor.insumos)
+            .selectinload(InsumoLote.producciones_asociadas)
+            .joinedload(InsumoUtilizado.lote_produccion)
+            .selectinload(LoteProduccion.envios)
+            .joinedload(EnvioLote.cliente),
+            selectinload(LoteProveedor.insumos)
+            .selectinload(InsumoLote.producciones_asociadas)
+            .joinedload(InsumoUtilizado.lote_produccion)
+            .selectinload(LoteProduccion.envios)
+            .joinedload(EnvioLote.direccion),
+        )
+    )
+    if not db_lote:
+        raise exceptions.LoteProveedorNoEncontrado()
+
+    insumos_trazabilidad = []
+    for insumo_lote in db_lote.insumos:
+        unidad_medida = "Unidades"
+        if insumo_lote.insumo and insumo_lote.insumo.unidad_medida:
+            unidad_medida = insumo_lote.insumo.unidad_medida.nombre
+
+        producciones = []
+        for asociacion in insumo_lote.producciones_asociadas:
+            lote_produccion = asociacion.lote_produccion
+            if not lote_produccion:
+                continue
+            envios = []
+            for envio in lote_produccion.envios:
+                direccion_completa = ""
+                if envio.direccion:
+                    direccion_completa = (
+                        f"{envio.direccion.calle_altura}, {envio.direccion.localidad} ({envio.direccion.provincia})"
+                    )
+                envios.append(
+                    TrazabilidadEnvioAfectado(
+                        envio_id=envio.id,
+                        numero_remito=envio.numero_remito,
+                        fecha_envio=envio.fecha_envio,
+                        estado=envio.estado,
+                        cantidad=envio.cantidad,
+                        cliente_id=envio.cliente_id,
+                        cliente_razon_social=envio.cliente.razon_social if envio.cliente else "Cliente",
+                        cliente_cuit=envio.cliente.cuit if envio.cliente else "",
+                        direccion=direccion_completa,
+                    )
+                )
+            producciones.append(
+                TrazabilidadProduccionAfectada(
+                    lote_produccion_id=lote_produccion.id,
+                    producto_nombre=lote_produccion.producto.nombre if lote_produccion.producto else "Producto",
+                    fecha_produccion=lote_produccion.fecha_produccion,
+                    fecha_vencimiento=lote_produccion.fecha_vencimiento,
+                    estado=lote_produccion.estado,
+                    cantidad_producida=lote_produccion.cantidad_producida,
+                    cantidad_utilizada=asociacion.cantidad_utilizada,
+                    unidad_medida=unidad_medida,
+                    envios=envios,
+                )
+            )
+
+        insumos_trazabilidad.append(
+            schemas.TrazabilidadInsumoRecepcion(
+                insumo_lote_id=insumo_lote.id,
+                insumo_nombre=insumo_lote.insumo.nombre if insumo_lote.insumo else "Insumo",
+                marca=insumo_lote.marca,
+                numero_lote_insumo=insumo_lote.numero_lote,
+                fecha_vencimiento=insumo_lote.fecha_vencimiento,
+                cantidad=insumo_lote.cantidad,
+                cantidad_restante=insumo_lote.cantidad_restante,
+                unidad_medida=unidad_medida,
+                producciones=producciones,
+            )
+        )
+
+    return schemas.TrazabilidadLoteProveedor(
+        lote_proveedor_id=db_lote.id,
+        numero_remito=db_lote.numero_remito,
+        fecha_recepcion=db_lote.fecha_recepcion,
+        estado=db_lote.estado.value if hasattr(db_lote.estado, "value") else str(db_lote.estado),
+        proveedor_id=db_lote.proveedor.id if db_lote.proveedor else None,
+        proveedor_nombre=db_lote.proveedor.nombre if db_lote.proveedor else None,
+        proveedor_cuit=db_lote.proveedor.cuit if db_lote.proveedor else None,
+        insumos=insumos_trazabilidad,
+    )

@@ -1,6 +1,8 @@
-import { Alert, Button, Card, Spinner, Table } from "react-bootstrap";
+import { Alert, Button, Card, Row, Spinner, Table } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
+import { Dato } from "../../../components/Dato";
+import { EstadoBadge } from "../../../components/EstadoBadge";
 import { useApi } from "../../../hooks/useApi";
 import type { Receta } from "../types";
 
@@ -8,6 +10,9 @@ interface ResumenRecetaProductoProps {
     productoId: number;
     tieneReceta: boolean;
 }
+
+const formatearFecha = (fecha: string | null) =>
+    fecha ? new Date(fecha).toLocaleDateString("es-AR") : "-";
 
 export function ResumenRecetaProducto({
     productoId,
@@ -24,13 +29,10 @@ export function ResumenRecetaProducto({
     );
 
     return (
-        <Card className="shadow-sm border-0 rounded-3 mt-3">
-            <Card.Header className="bg-white fw-semibold py-3">
-                <i className="bi bi-journal-text me-2" />
-                Receta del producto
-            </Card.Header>
-
+        <Card className="shadow-sm border-0 rounded-3 text-start">
             <Card.Body className="p-4">
+                <h6 className="detalle-seccion-titulo">Receta del producto</h6>
+
                 {!tieneReceta ? (
                     <Alert variant="secondary" className="mb-0">
                         Este producto no tiene una receta asociada.
@@ -48,53 +50,65 @@ export function ResumenRecetaProducto({
                     </Alert>
                 ) : (
                     <>
-                        <div className="d-flex flex-wrap justify-content-between gap-2 mb-3">
-                            <div>
-                                <strong>Versión vigente</strong>
-                                <div className="text-muted small">
-                                    Versión {receta.version}
-                                </div>
-                            </div>
+                        <Row className="g-3 mb-4">
+                            <Dato etiqueta="Versión" md={6} lg={3}>
+                                <span className="fw-semibold me-2">Versión {receta.version}</span>
+                                {receta.vigente && (
+                                    <EstadoBadge tono="success" icono="bi-check-circle-fill">Vigente</EstadoBadge>
+                                )}
+                            </Dato>
+                            <Dato etiqueta="Vigente desde" md={6} lg={3}>
+                                {formatearFecha(receta.fecha_desde_vigencia ?? receta.fecha_creacion)}
+                            </Dato>
+                            <Dato etiqueta="Porción" md={6} lg={3}>
+                                {receta.porcion !== null
+                                    ? `${receta.porcion} ${receta.porcion_unidad_medida?.nombre ?? ""}`
+                                    : <span className="text-muted fst-italic">Sin indicar</span>}
+                            </Dato>
+                            <Dato etiqueta="Ingredientes y aditivos" md={6} lg={3}>
+                                {receta.insumos.length}
+                            </Dato>
+                        </Row>
 
-                            <div className="text-muted small">
-                                {receta.insumos.length} ingredientes y aditivos
-                            </div>
-                        </div>
-
-                        <Table responsive striped hover size="sm">
-                            <thead>
-                                <tr>
-                                    <th>Insumo</th>
-                                    <th>Tipo</th>
-                                    <th className="text-end">
-                                        Cantidad
-                                    </th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                {receta.insumos.map((insumo) => (
-                                    <tr key={insumo.id}>
-                                        <td>
-                                            {insumo.tipo === "Aditivo"
-                                                ? insumo.aditivo?.nombre ??
-                                                insumo.nombre
-                                                : insumo.nombre}
-                                        </td>
-                                        <td>{insumo.tipo}</td>
-                                        <td className="text-end">
-                                            {insumo.cantidad}{" "}
-                                            {insumo.unidad_medida.codigo || insumo.unidad_medida.nombre}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </Table>
-
-                        {receta.insumos.length === 0 && (
+                        <h6 className="detalle-seccion-titulo">Ingredientes y aditivos</h6>
+                        {receta.insumos.length === 0 ? (
                             <p className="text-muted">
                                 No hay ingredientes asociados.
                             </p>
+                        ) : (
+                            <Table responsive bordered hover size="sm">
+                                <thead className="table-light">
+                                    <tr>
+                                        <th>Insumo</th>
+                                        <th>Tipo</th>
+                                        <th className="text-end">
+                                            Cantidad
+                                        </th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {receta.insumos.map((insumo) => (
+                                        <tr key={insumo.id}>
+                                            <td className="fw-semibold">
+                                                {insumo.tipo === "Aditivo"
+                                                    ? insumo.aditivo?.nombre ??
+                                                    insumo.nombre
+                                                    : insumo.nombre}
+                                            </td>
+                                            <td>
+                                                <EstadoBadge tono={insumo.tipo === "Aditivo" ? "info" : "success"}>
+                                                    {insumo.tipo}
+                                                </EstadoBadge>
+                                            </td>
+                                            <td className="text-end">
+                                                {insumo.cantidad}{" "}
+                                                {insumo.unidad_medida.codigo || insumo.unidad_medida.nombre}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </Table>
                         )}
 
                         <Button

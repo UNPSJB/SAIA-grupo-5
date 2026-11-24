@@ -39,11 +39,9 @@ def lotes_estadistica(db_session, multiples_productos):
 
 @pytest.fixture
 def insumos_para_lote(db_session, unica_unidad_medida, unico_lote_proveedor):
-    # Un lote de producción ya no consume "insumos" sino lotes de insumo (InsumoLote)
-    # recibidos de un proveedor: así se traza qué lote de materia prima se usó.
     insumos = [
-        Insumo(nombre="Harina", unidad_medida_id=unica_unidad_medida.id, activo=True),
-        Insumo(nombre="Sal", unidad_medida_id=unica_unidad_medida.id, activo=True),
+        Insumo(nombre="Harina", marca="Generica", unidad_medida_id=unica_unidad_medida.id, activo=True),
+        Insumo(nombre="Sal", marca="Generica", unidad_medida_id=unica_unidad_medida.id, activo=True),
     ]
     db_session.add_all(insumos)
     db_session.flush()
@@ -56,7 +54,6 @@ def insumos_para_lote(db_session, unica_unidad_medida, unico_lote_proveedor):
             marca="Marca de prueba",
             cantidad=500,
             cantidad_restante=500,
-            # Más de 15 días de vida útil: si no, el service lo rechaza por próximo a vencer.
             fecha_vencimiento=date.today() + timedelta(days=90),
             minimo_alerta=10,
             activo=True,

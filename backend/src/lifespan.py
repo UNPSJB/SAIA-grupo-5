@@ -32,9 +32,13 @@ async def db_creation_lifespan(app: FastAPI):
         migraciones_configuracion = {
             "nombre_pyme": "VARCHAR(100) NOT NULL DEFAULT 'Mi establecimiento'",
             "logo_pyme": "TEXT",
+            "mostrar_logo_pdf": "BOOLEAN NOT NULL DEFAULT 1",
             "telefono_pyme": "VARCHAR(30)",
             "email_pyme": "VARCHAR(150)",
             "direccion_pyme": "VARCHAR(200)",
+            "razon_social_elaborador": "VARCHAR(150)",
+            "domicilio_elaborador": "VARCHAR(200)",
+            "numero_rnpa_rppa": "VARCHAR(30)",
             "prefijo_gs1": "VARCHAR(3) NOT NULL DEFAULT '779'",
             "prefijo_empresa": "VARCHAR(4)",
             "vista_publica_activa": "BOOLEAN NOT NULL DEFAULT 0",

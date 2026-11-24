@@ -97,6 +97,12 @@ def test_cambiar_estado_secuencial_lote_produccion(db_session, unico_lote_produc
     lote = services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id, usuario_id=1)
     assert lote.estado == "Empaquetando"
 
+    for item in db_session.query(services.supervision_services.SupervisionOcurrencia).filter_by(
+        lote_produccion_id=unico_lote_produccion.id
+    ).all():
+        item.estado = services.supervision_services.EstadoSupervisionOcurrencia.COMPLETADA
+    db_session.commit()
+
     lote = services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id, usuario_id=1)
     assert lote.estado == "Terminado"
 
@@ -106,6 +112,13 @@ def test_cambiar_estado_secuencial_lote_produccion(db_session, unico_lote_produc
 
 def test_modificar_lote_produccion_enviado(db_session, unico_lote_produccion, unico_producto):
     services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id, usuario_id=1)
+
+    for item in db_session.query(services.supervision_services.SupervisionOcurrencia).filter_by(
+        lote_produccion_id=unico_lote_produccion.id
+    ).all():
+        item.estado = services.supervision_services.EstadoSupervisionOcurrencia.COMPLETADA
+    db_session.commit()
+
     services.cambiar_estado_lote_produccion(db=db_session, lote_id=unico_lote_produccion.id, usuario_id=1)
     
     unico_lote_produccion.estado = "Enviado"
@@ -179,19 +192,17 @@ def test_asociar_insumos_correctamente(db_session, unico_lote_produccion, insumo
 
     datos = schemas.InsumosUtilizadosCreate(insumos=[
         schemas.InsumoUtilizadoCreate(insumo_lote_id=insumo_lote1.id, cantidad_utilizada=100),
-        schemas.InsumoUtilizadoCreate(insumo_lote_id=insumo_lote2.id, cantidad_utilizada=2.5)
+        schemas.InsumoUtilizadoCreate(insumo_lote_id=insumo_lote2.id, cantidad_utilizada=3)
     ])
 
     resultado = services.asociar_insumos_lote(db=db_session, lote_id=unico_lote_produccion.id, datos=datos)
 
-    assert len(resultado) == 2
-    assert resultado[0].insumo_lote_id == insumo_lote1.id
-    assert resultado[0].cantidad_utilizada == 100
-    assert resultado[1].insumo_lote_id == insumo_lote2.id
-    assert resultado[1].cantidad_utilizada == 2.5
+    ids_asociados = {item.insumo_lote_id: item.cantidad_utilizada for item in resultado}
+    assert ids_asociados[insumo_lote1.id] == 100
+    assert ids_asociados[insumo_lote2.id] == 3
 
     asociados = services.listar_insumos_lote(db=db_session, lote_id=unico_lote_produccion.id)
-    assert len(asociados) == 2
+    assert len(asociados) == 3
 
     # Al asociar se descuenta el stock del lote de insumo
     db_session.refresh(insumo_lote1)
@@ -210,7 +221,7 @@ def test_asociar_insumo_duplicado(db_session, unico_lote_produccion, insumos_par
         services.asociar_insumos_lote(db=db_session, lote_id=unico_lote_produccion.id, datos=datos)
 
     asociados = services.listar_insumos_lote(db=db_session, lote_id=unico_lote_produccion.id)
-    assert len(asociados) == 0
+    assert len(asociados) == 1
 
 
 def test_modificar_insumos_asociados(db_session, unico_lote_produccion, insumos_para_lote):
@@ -249,3 +260,79 @@ def test_historial_estados_lote_service(db_session, unico_lote_produccion):
     assert ultimo.observacion == "Paso a empaquetado sin errores."
     assert ultimo.usuario_id == 1
     assert ultimo.fecha_hora is not None
+
+
+def test_asociar_insumo_decimal_lanza_error(db_session, unico_lote_produccion, insumos_para_lote):
+    insumo_lote = insumos_para_lote[0]
+    datos = schemas.InsumosUtilizadosCreate(insumos=[
+        schemas.InsumoUtilizadoCreate(insumo_lote_id=insumo_lote.id, cantidad_utilizada=2.5)
+    ])
+    with pytest.raises(exceptions.CantidadInsumoNoEntera):
+        services.asociar_insumos_lote(db=db_session, lote_id=unico_lote_produccion.id, datos=datos)
+
+
+def test_bloqueo_avance_sin_receta_lote(db_session, unico_producto):
+    lote_sin_receta = services.crear_lote_produccion(
+        db=db_session,
+        lote=schemas.LoteProduccionCreate(
+            producto_id=unico_producto.id,
+            fecha_produccion=date(2026, 10, 1),
+            fecha_vencimiento=date(2027, 10, 1),
+            cantidad_producida=5,
+        ),
+        usuario_id=1,
+    )
+    with pytest.raises(exceptions.LoteSinRecetaParaAvanzar):
+        services.cambiar_estado_lote_produccion(db=db_session, lote_id=lote_sin_receta.id, usuario_id=1)
+
+
+def test_bloqueo_avance_insumos_insuficientes_y_redondeo_ceil(db_session, unico_producto, unica_receta, unico_insumo_lote):
+    lote = services.crear_lote_produccion(
+        db=db_session,
+        lote=schemas.LoteProduccionCreate(
+            producto_id=unico_producto.id,
+            fecha_produccion=date(2026, 10, 1),
+            fecha_vencimiento=date(2027, 10, 1),
+            cantidad_producida=5,
+        ),
+        usuario_id=1,
+    )
+    for item in db_session.query(services.supervision_services.SupervisionOcurrencia).filter_by(
+        lote_produccion_id=lote.id
+    ).all():
+        item.estado = services.supervision_services.EstadoSupervisionOcurrencia.COMPLETADA
+    db_session.commit()
+
+    with pytest.raises(exceptions.InsumosInsuficientesParaProduccion):
+        services.cambiar_estado_lote_produccion(db=db_session, lote_id=lote.id, usuario_id=1)
+
+    services.asociar_insumos_lote(
+        db=db_session,
+        lote_id=lote.id,
+        datos=schemas.InsumosUtilizadosCreate(insumos=[
+            schemas.InsumoUtilizadoCreate(insumo_lote_id=unico_insumo_lote.id, cantidad_utilizada=1)
+        ]),
+    )
+    avanzado = services.cambiar_estado_lote_produccion(db=db_session, lote_id=lote.id, usuario_id=1)
+    assert avanzado.estado == "Empaquetando"
+
+
+def test_asociar_insumo_excede_receta_lanza_error(db_session, unico_producto, unica_receta, unico_insumo_lote):
+    lote = services.crear_lote_produccion(
+        db=db_session,
+        lote=schemas.LoteProduccionCreate(
+            producto_id=unico_producto.id,
+            fecha_produccion=date(2026, 10, 1),
+            fecha_vencimiento=date(2027, 10, 1),
+            cantidad_producida=5,
+        ),
+        usuario_id=1,
+    )
+    with pytest.raises(exceptions.CantidadInsumoExcedeReceta):
+        services.asociar_insumos_lote(
+            db=db_session,
+            lote_id=lote.id,
+            datos=schemas.InsumosUtilizadosCreate(insumos=[
+                schemas.InsumoUtilizadoCreate(insumo_lote_id=unico_insumo_lote.id, cantidad_utilizada=2)
+            ]),
+        )

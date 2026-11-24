@@ -11,9 +11,13 @@ from src.configuracion_sistema.constants import (
 class DatosPymeBase(BaseModel):
     nombre_pyme: Annotated[str, Field(min_length=1, max_length=100)] = "Mi establecimiento"
     logo_pyme: str | None = None
+    mostrar_logo_pdf: bool = True
     telefono_pyme: Annotated[str | None, Field(max_length=30)] = None
     email_pyme: Annotated[str | None, Field(max_length=150)] = None
     direccion_pyme: Annotated[str | None, Field(max_length=200)] = None
+    razon_social_elaborador: Annotated[str | None, Field(max_length=150)] = None
+    domicilio_elaborador: Annotated[str | None, Field(max_length=200)] = None
+    numero_rnpa_rppa: Annotated[str | None, Field(max_length=30)] = None
 
     @field_validator("nombre_pyme")
     @classmethod
@@ -66,9 +70,13 @@ class ConfiguracionSistemaBase(DatosPymeBase):
 class ConfiguracionSistemaUpdate(BaseModel):
     nombre_pyme: Annotated[str | None, Field(min_length=1, max_length=100)] = None
     logo_pyme: str | None = None
+    mostrar_logo_pdf: bool | None = None
     telefono_pyme: Annotated[str | None, Field(max_length=30)] = None
     email_pyme: Annotated[str | None, Field(max_length=150)] = None
     direccion_pyme: Annotated[str | None, Field(max_length=200)] = None
+    razon_social_elaborador: Annotated[str | None, Field(max_length=150)] = None
+    domicilio_elaborador: Annotated[str | None, Field(max_length=200)] = None
+    numero_rnpa_rppa: Annotated[str | None, Field(max_length=30)] = None
 
     prefijo_gs1: Annotated[str | None, Field(pattern=r"^[0-9]{3}$")] = None
     prefijo_empresa: Annotated[str | None, Field(pattern=r"^[0-9]{4}$")] = None

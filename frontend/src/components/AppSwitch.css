@@ -1,0 +1,22 @@
+.app-switch .form-check-input {
+    cursor: pointer;
+}
+
+.app-switch .form-check-input:checked {
+    background-color: var(--sb-seafoam-secondary, #0fa28b);
+    border-color: var(--sb-seafoam-secondary, #0fa28b);
+}
+
+.app-switch .form-check-input:focus {
+    border-color: var(--sb-seafoam-secondary, #0fa28b);
+    box-shadow: 0 0 0 0.25rem rgba(15, 162, 139, 0.25);
+}
+
+/* Perilla del switch apagado al recibir foco: verde en lugar de azul */
+.app-switch .form-check-input:focus:not(:checked) {
+    --bs-form-switch-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%230fa28b'/%3e%3c/svg%3e");
+}
+
+.app-switch .form-check-input:disabled {
+    cursor: default;
+}

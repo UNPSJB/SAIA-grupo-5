@@ -77,6 +77,13 @@ export function ListPage() {
             minWidth: '200px',
         },
         {
+            name: 'Descripción',
+            selector: row => row.descripcion || '-',
+            sortable: true,
+            wrap: true,
+            grow: 2,
+        },
+        {
             name: 'Estado',
             selector: row => row.activo ? 'Activo' : 'Inactivo',
             sortable: true,
@@ -102,47 +109,33 @@ export function ListPage() {
                 </div>
             )
         },
-        {
+        ...(currentUser?.administrar ? [{
             name: "Acciones",
             center: true,
-            cell: (row) => (
+            cell: (row: TipoQuimico) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span data-tour="btn-ver-tipo-quimico">
+                    <span data-tour="btn-editar-tipo-quimico">
                         <ActionButton
-                            variant="outline-info"
+                            variant="outline-primary"
                             size="sm"
-                            tooltip="Ver"
-                            icon="bi-eye"
-                            onClick={() => navigate(`/tipos-quimicos/${row.id}`)}
+                            tooltip="Editar"
+                            icon="bi-pencil"
+                            disabled={!row.activo}      // Si no esta activo se muestra en gris y no se puede editar
+                            onClick={() => navigate(`/tipos-quimicos/${row.id}/edit`)}
                         />
                     </span>
-
-                    {currentUser?.administrar && (
-                        <>
-                            <span data-tour="btn-editar-tipo-quimico">
-                                <ActionButton
-                                    variant="outline-primary"
-                                    size="sm"
-                                    tooltip="Editar"
-                                    icon="bi-pencil"
-                                    disabled={!row.activo}      // Si no esta activo se muestra en gris y no se puede editar
-                                    onClick={() => navigate(`/tipos-quimicos/${row.id}/edit`)}
-                                />
-                            </span>
-                            <span data-tour="btn-baja-tipo-quimico">
-                                <ActionButton
-                                    variant={row.activo ? 'outline-danger' : 'outline-success'}
-                                    size="sm"
-                                    tooltip={row.activo ? 'Dar de baja' : 'Dar de alta'}
-                                    icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
-                                    onClick={() => setTipoQuimicoToDelete(row)}
-                                />
-                            </span>
-                        </>
-                    )}
+                    <span data-tour="btn-baja-tipo-quimico">
+                        <ActionButton
+                            variant={row.activo ? 'outline-danger' : 'outline-success'}
+                            size="sm"
+                            tooltip={row.activo ? 'Dar de baja' : 'Dar de alta'}
+                            icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
+                            onClick={() => setTipoQuimicoToDelete(row)}
+                        />
+                    </span>
                 </div>
             )
-        },
+        }] : []),
     ];
 
     return (

@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Accordion, Alert, Button, Card, Container, Form, ListGroup, Spinner } from 'react-bootstrap';
 import Tab from 'react-bootstrap/Tab';
-import Tabs from 'react-bootstrap/Tabs';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
 import { EstadoBadge } from '../../../components/EstadoBadge';
@@ -15,6 +14,7 @@ import { IngredientesComposicion } from '../components/IngredientesComposicion';
 import { AlergenosReceta } from '../../Alergenos/components/AlergenosRecetaForm';
 import type { UnidadMedida } from '../../UnidadMedida/types';
 import { exportarRecetaPdf } from '../ExportRecetapdf';
+import { AppTabs } from '../../../components/AppTabs';
 
 const formatearFecha = (fecha: string | null) =>
     fecha ? new Date(fecha).toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" }) : "-";
@@ -28,8 +28,11 @@ export function VerRecetaPage() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { currentUser } = useAuth();
-    const [recetaSeleccionadaId, setRecetaSeleccionadaId] = useState<number | null>(null);
-    
+    const location = useLocation();
+    const [recetaSeleccionadaId, setRecetaSeleccionadaId] = useState<number | null>(
+        (location.state as { recetaId?: number } | null)?.recetaId ?? null
+    );
+
     const productoId = Number(id);
     const { data: producto, isLoading: cargandoProducto, error: errorProducto } = useApi<Producto>(
         id && Number.isInteger(productoId) && productoId > 0 ? `/productos/${productoId}` : null
@@ -92,7 +95,10 @@ export function VerRecetaPage() {
                         <Alert variant="danger">No se pudo cargar el producto.</Alert>
                     ) : (
                         <>
-                            <p className="mb-2"><strong>Producto:</strong> {producto.nombre}</p>
+                            <p className="mb-2">
+                                <strong>Producto:</strong>
+                                {producto.nombre}
+                            </p>
 
                             {versiones && versiones.length > 1 && (
                                 <Form.Group className="mb-3 text-start" controlId="versionReceta">
@@ -147,9 +153,15 @@ export function VerRecetaPage() {
                                                     : <span className="text-muted fst-italic">Sin indicar</span>}
                                             </div>
                                         </ListGroup.Item>
+                                        <ListGroup.Item className="flex-fill">
+                                            <div className="text-muted small">Medida casera</div>
+                                            <div className="fw-semibold">
+                                                {receta.medida_casera ?? <span className="text-muted fst-italic">Sin indicar</span>}
+                                            </div>
+                                        </ListGroup.Item>
                                     </ListGroup>
 
-                                    <Tabs key={receta.id} defaultActiveKey="ingredientes" id="secciones-receta" className="mb-3 receta-tabs" mountOnEnter>
+                                    <AppTabs key={receta.id} defaultActiveKey="ingredientes" id="secciones-receta" className="mb-3" mountOnEnter>
                                         <Tab eventKey="ingredientes" title="Ingredientes y composición">
                                             <IngredientesComposicion insumos={receta.insumos} mostrarComposicion={!!currentUser?.administrar} />
                                         </Tab>
@@ -183,9 +195,11 @@ export function VerRecetaPage() {
                                             <AlergenosReceta recetaId={receta.id} recetaVigente={receta.vigente} />
                                         </Tab>
                                         <Tab eventKey="informacion_nutricional" title="Información Nutricional">
-                                            <div className="text-start"><InfoNutricionalReceta recetaId={receta.id} /></div>
+                                            <div className="text-start">
+                                                <InfoNutricionalReceta recetaId={receta.id} />
+                                            </div>
                                         </Tab>
-                                    </Tabs>
+                                    </AppTabs>
                                 </>
                             )}
                         </>

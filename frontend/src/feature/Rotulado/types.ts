@@ -71,6 +71,29 @@ export type FilaNutricional = {
     kj_100g?: number | null;
 };
 
+export type FormatoDeclaracionAditivos = "nombre" | "ins" | "nombre_e_ins";
+
+export type IngredienteRotulo = {
+    insumo_id: number;
+    texto: string;
+    porcentaje: number | null;
+    empata: boolean;
+};
+
+export type AditivoRotulo = {
+    funcion: string | null;
+    texto: string;
+    aditivos: string[];
+};
+
+export type ListaIngredientesRotulo = {
+    ingredientes: IngredienteRotulo[];
+    aditivos: AditivoRotulo[];
+    texto: string;
+    orden_manual: boolean;
+    formato: FormatoDeclaracionAditivos;
+};
+
 export type BorradorRotuladoCAA = {
     producto_id: number;
     datos: DatosRotuladoCAA;
@@ -82,18 +105,25 @@ export type BorradorRotuladoCAA = {
     tabla_nutricional: FilaNutricional[] | null;
     sellos: string[];
     fecha_actualizacion: string | null;
+    lista_ordenada: ListaIngredientesRotulo | null;
 };
 
 export type ClaveElementoEmpaquetado =
     | "denominacion"
     | "contenido_neto"
+    | "descripcion"
     | "ingredientes"
+    | "alergenos"
     | "origen"
     | "lote_fecha"
+    | "conservacion"
     | "instrucciones"
-    | "tabla_nutricional"
+    | "porciones"
+    | "leyendas"
+    | "importador"
     | "sellos"
-    | "importador";
+    | "codigo_barras"
+    | "tabla_nutricional";
 
 export type ElementoEmpaquetado = {
     clave: ClaveElementoEmpaquetado;
@@ -131,20 +161,40 @@ export type EmpaquetadoProducto = {
     tabla_incompleta: boolean;
     sellos: string[];
     mensaje_sellos: string;
+    descripcion: string | null;
+    codigo_barras: string | null;
+    alergenos: string[];
+    conservacion: string | null;
+    porciones_por_envase: string | null;
+    leyendas_obligatorias: string[];
+    fecha_elaboracion: string | null;
+    fecha_vencimiento: string | null;
     leyenda: string;
     faltantes: string[];
+};
+
+export const ETIQUETAS_FORMATO_DECLARACION: Record<FormatoDeclaracionAditivos, string> = {
+    nombre: "Nombre completo",
+    ins: "Número INS",
+    nombre_e_ins: "Nombre completo e INS",
 };
 
 export const ETIQUETAS_EMPAQUETADO: Record<ClaveElementoEmpaquetado, string> = {
     denominacion: "Denominación de venta",
     contenido_neto: "Contenido neto",
+    descripcion: "Descripción del producto",
     ingredientes: "Lista de ingredientes",
+    alergenos: "Leyendas de alérgenos y gluten",
     origen: "Origen con RNPA/RPPA",
-    lote_fecha: "Lote y fecha de duración",
+    lote_fecha: "Lote, elaboración y vencimiento",
+    conservacion: "Condiciones de conservación",
     instrucciones: "Instrucciones de uso",
-    tabla_nutricional: "Tabla nutricional",
-    sellos: "Octógonos / sellos",
+    porciones: "Porciones por envase",
+    leyendas: "Leyendas de edulcorantes y cafeína",
     importador: "Importador",
+    sellos: "Octógonos / sellos",
+    codigo_barras: "Código de barras",
+    tabla_nutricional: "Tabla nutricional",
 };
 
 export type CampoDeclaracion =
@@ -165,6 +215,7 @@ export type ReglasRotuladoBase = {
     aplica_por_sodio: boolean;
     aplica_por_edulcorantes: boolean;
     aplica_por_cafeina: boolean;
+    formato_declaracion_aditivos: FormatoDeclaracionAditivos;
     mensaje_no_corresponde: string;
     mensaje_exceptuado: string;
 }

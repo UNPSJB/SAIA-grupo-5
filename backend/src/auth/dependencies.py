@@ -132,3 +132,19 @@ async def tiene_permiso_supervisor(
     if not persona.supervisor:
         raise PermissionDenied()
     return persona
+
+
+async def tiene_permiso_operar_o_supervisor(
+    persona: personal_models.Persona = Depends(get_current_persona),
+) -> personal_models.Persona:
+    if not (persona.operar or persona.supervisor):
+        raise PermissionDenied()
+    return persona
+
+
+async def tiene_permiso_supervisor_o_administrar(
+    persona: personal_models.Persona = Depends(get_current_persona),
+) -> personal_models.Persona:
+    if not (persona.supervisor or persona.administrar):
+        raise PermissionDenied()
+    return persona

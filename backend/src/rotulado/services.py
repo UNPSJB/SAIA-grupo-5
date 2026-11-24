@@ -11,26 +11,52 @@ from src.rotulado.constants import (
     CAMPOS_TEXTO, ELEMENTOS_EMPAQUETADO, LEYENDA_BORRADOR, MARCAS, MENSAJE_APLICA,
     MENSAJE_PENDIENTE, NOMBRE_CAMPO, OBSERVACION_INICIAL, REGLAS_INICIALES, EstadoRotulado,
 )
-from src.rotulado.ingredientes import texto_ingredientes
+from src.rotulado.ingredientes import armar_lista
 from src.rotulado.models import (
     HistorialRotuladoProducto, ReglasRotulado, RotuladoProducto, VersionEmpaquetado,
 )
+from src.declaracion_alergenos.models import DeclaracionAlergenosReceta
+from src.declaracion_alergenos.services import _calcular_desde_insumos
 from src.lote_produccion.models import LoteProduccion
 from src.personal.models import Persona
 from src.receta.models import Receta, InsumoReceta
 from src.receta.schemas import EvaluacionSellosCreate
 from src.receta.sellos import evaluar_sellos
+from src.receta.constants import TipoRenglon
 from src.insumos.models import Insumo
 from src.informacion_nutricional_insumo.models import InformacionNutricionalInsumo
 from src.calculo_nutricional.models import InformacionNutricionalReceta
 from src.calculo_nutricional.services import obtener_o_crear_configuracion
 from src.producto.services import leer_producto
+from src.configuracion_sistema.constants import ID_CONFIGURACION_SISTEMA
+from src.configuracion_sistema.models import ConfiguracionSistema
 
 if TYPE_CHECKING:
     from src.producto.models import Producto
+    from src.rotulado.ingredientes import ListaIngredientes
 
 logger = logging.getLogger(__name__)
 
+
+def _registro(db: Session, producto_id: int) -> RotuladoProducto | None:
+    return db.scalars(select(RotuladoProducto).where(RotuladoProducto.producto_id == producto_id)).first()
+
+def _lista_ordenada(db: Session, producto_id: int) -> "ListaIngredientes | None":
+    receta = _receta_vigente(db, producto_id)
+    if receta is None:
+        return None
+    registro = _registro(db, producto_id)
+    formato = obtener_reglas_vigentes(db).formato_declaracion_aditivos
+    return armar_lista(receta, formato, registro.orden_ingredientes_manual if registro else None)
+
+
+def obtener_lista_ingredientes(db: Session, producto_id: int) -> schemas.ListaIngredientesRotulo:
+    """Resultado ordenado para el rotulado (E13)."""
+    leer_producto(db, producto_id)
+    lista = _lista_ordenada(db, producto_id)
+    if lista is None:
+        raise exceptions.ProductoSinReceta()
+    return schemas.ListaIngredientesRotulo.model_validate(lista, from_attributes=True)
 
 def obtener_reglas_vigentes(db: Session) -> schemas.ReglasRotulado:
     reglas = db.scalar(select(ReglasRotulado).where(ReglasRotulado.vigente.is_(True)))
@@ -41,6 +67,63 @@ def obtener_reglas_vigentes(db: Session) -> schemas.ReglasRotulado:
         db.commit()
         db.refresh(reglas)
     return reglas
+
+
+def _nombres(lista) -> str:
+    return " > ".join(i.texto for i in lista.ingredientes)
+
+def guardar_orden_ingredientes(
+    db: Session, producto_id: int, datos: schemas.OrdenIngredientesUpdate, usuario: Persona | None = None,
+) -> schemas.BorradorRotuladoCAA:
+    producto = leer_producto(db, producto_id)
+    receta = _receta_vigente(db, producto_id)
+    if receta is None:
+        raise exceptions.ProductoSinReceta()
+
+    formato = obtener_reglas_vigentes(db).formato_declaracion_aditivos
+    registro = _registro(db, producto_id)
+    previa = armar_lista(receta, formato, registro.orden_ingredientes_manual if registro else None)
+
+    ids = {i.insumo_id for i in receta.insumos if i.tipo == TipoRenglon.INGREDIENTE.value}
+    if datos.orden:
+        if len(set(datos.orden)) != len(datos.orden) or set(datos.orden) != ids:
+            raise exceptions.OrdenIngredientesInvalido()
+        # El pedido debe coincidir con lo que da el orden decreciente más el desempate pedido.
+        if [i.insumo_id for i in armar_lista(receta, formato, datos.orden).ingredientes] != datos.orden:
+            raise exceptions.OrdenIngredientesInvalido()
+
+    nueva = armar_lista(receta, formato, datos.orden or None)
+    if registro is None:
+        registro = RotuladoProducto(producto_id=producto_id)
+        db.add(registro)
+
+    ahora = datetime.now()
+    usuario_id = usuario.id if usuario else None
+    registro.orden_ingredientes_manual = datos.orden if nueva.orden_manual else None
+
+    if _nombres(previa) != _nombres(nueva) or previa.orden_manual != nueva.orden_manual:
+        db.add(HistorialRotuladoProducto(
+            rotulado=registro, campo="orden_ingredientes",
+            valor_anterior=f"{'Manual' if previa.orden_manual else 'Automático'}: {_nombres(previa)}",
+            valor_nuevo=f"{'Manual' if nueva.orden_manual else 'Automático'}: {_nombres(nueva)}",
+            usuario_id=usuario_id, fecha_hora=ahora,
+        ))
+
+    if registro.lista_ingredientes and registro.lista_ingredientes.strip() != nueva.texto:
+        db.add(HistorialRotuladoProducto(
+            rotulado=registro, campo="lista_ingredientes",
+            valor_anterior=registro.lista_ingredientes, valor_nuevo=nueva.texto,
+            usuario_id=usuario_id, fecha_hora=ahora,
+        ))
+        registro.lista_ingredientes = nueva.texto
+
+    registro.actualizado_por_id = usuario_id
+    registro.fecha_actualizacion = ahora
+    db.commit()
+    db.refresh(registro)
+
+    sugeridos = _sugeridos(db, producto)
+    return _armar_borrador(db, producto, registro, sugeridos, _datos_del_borrador(registro, sugeridos))
 
 def listar_versiones_reglas(db: Session) -> list[schemas.ReglasRotulado]:
     obtener_reglas_vigentes(db)
@@ -221,18 +304,26 @@ def _receta_vigente(db: Session, producto_id: int) -> "Receta | None":
     ).first()
 
 
-def _sugeridos(db: Session, producto: "Producto") -> dict[str, str]:
-    """Valores que el sistema ya conoce y completa solo en el formulario."""
-    receta = _receta_vigente(db, producto.id)
-    ultimo_lote = db.scalars(
+def _ultimo_lote(db: Session, producto_id: int) -> LoteProduccion | None:
+    return db.scalars(
         select(LoteProduccion)
-        .where(LoteProduccion.producto_id == producto.id)
+        .where(LoteProduccion.producto_id == producto_id)
         .order_by(LoteProduccion.id.desc())
     ).first()
+
+
+def _sugeridos(db: Session, producto: "Producto") -> dict[str, str]:
+    """Valores que el sistema ya conoce y completa solo en el formulario."""
+    lista = _lista_ordenada(db, producto.id)
+    ultimo_lote = _ultimo_lote(db, producto.id)
+    pyme = db.get(ConfiguracionSistema, ID_CONFIGURACION_SISTEMA)
     return {
+        "razon_social": (pyme.razon_social_elaborador or "") if pyme else "",
+        "domicilio": (pyme.domicilio_elaborador or "") if pyme else "",
+        "numero_registro": (pyme.numero_rnpa_rppa or "") if pyme else "",
         "denominacion_venta": producto.nombre,
         "contenido_neto": _contenido_neto_sugerido(producto),
-        "lista_ingredientes": texto_ingredientes(receta) if receta else "",
+        "lista_ingredientes": lista.texto if lista else "",
         "identificacion_lote": (
             f"{ultimo_lote.id:06d} · {ultimo_lote.fecha_produccion:%d/%m/%Y}" if ultimo_lote else ""
         ),
@@ -349,16 +440,16 @@ def _campos_completitud(
     return campos
 
 
-def _armar_borrador(
-    db: Session,
-    producto: "Producto",
-    registro: RotuladoProducto | None,
-    sugeridos: dict[str, str],
-    datos: schemas.DatosRotuladoCAA,
-) -> schemas.BorradorRotuladoCAA:
+def _armar_borrador(db, producto, registro, sugeridos, datos):
+    lista = _lista_ordenada(db, producto.id)
+    lista_ordenada = (
+        schemas.ListaIngredientesRotulo.model_validate(lista, from_attributes=True)
+        if lista else None
+    )
     tabla = _tabla_nutricional(db, producto.id)
     evaluacion = evaluar_rotulado(db, producto, _insumos_de_receta(db, producto.id))
     campos = _campos_completitud(datos, sugeridos, tabla, evaluacion)
+    
 
     obligatorios = [campo for campo in campos if campo.obligatorio]
     completos = [campo for campo in obligatorios if campo.completo]
@@ -374,6 +465,7 @@ def _armar_borrador(
         tabla_nutricional=tabla,
         sellos=evaluacion.sellos.sellos if evaluacion.sellos else [],
         fecha_actualizacion=registro.fecha_actualizacion if registro else None,
+        lista_ordenada=lista_ordenada,
     )
 
 
@@ -395,10 +487,7 @@ def guardar_borrador_caa(
     """Guarda el borrador aunque falten datos; cada cambio sobre un dato automático queda registrado."""
     producto = leer_producto(db, producto_id)
     sugeridos = _sugeridos(db, producto)
-    registro = db.scalars(
-        select(RotuladoProducto).where(RotuladoProducto.producto_id == producto_id)
-    ).first()
-    es_nuevo = registro is None
+    registro = _registro(db, producto_id)
     if registro is None:
         registro = RotuladoProducto(producto_id=producto_id)
         db.add(registro)
@@ -420,10 +509,9 @@ def guardar_borrador_caa(
 
     for clave in CAMPOS_TEXTO:
         nuevo = (getattr(datos, clave) or "").strip()
-        if es_nuevo:
+        anterior = (getattr(registro, clave) or "").strip()
+        if not anterior and clave in CAMPOS_AUTOMATICOS:
             anterior = (sugeridos.get(clave) or "").strip()
-        else:
-            anterior = (getattr(registro, clave) or "").strip()
         setattr(registro, clave, nuevo or None)
         registrar(clave, anterior, nuevo)
 
@@ -443,7 +531,6 @@ def guardar_borrador_caa(
     db.refresh(registro)
 
     return _armar_borrador(db, producto, registro, sugeridos, _datos_del_borrador(registro, sugeridos))
-
 
 # --- Empaquetado: foto del envase y ubicación de los elementos del rótulo ---
 
@@ -530,6 +617,99 @@ def _unidad_empaquetado(producto: "Producto", evaluacion: schemas.EvaluacionRotu
     )
 
 
+def _declaracion_alergenos(
+    db: Session, receta: "Receta | None"
+) -> DeclaracionAlergenosReceta | None:
+    if receta is None:
+        return None
+    return db.scalars(
+        select(DeclaracionAlergenosReceta).where(DeclaracionAlergenosReceta.receta_id == receta.id)
+    ).first()
+
+
+def _leyendas_alergenos(
+    declaracion: DeclaracionAlergenosReceta | None, receta: "Receta | None"
+) -> list[str]:
+    """Leyendas de alérgenos, gluten y contaminación cruzada que van al rótulo."""
+    if declaracion is None:
+        if receta is None:
+            return []
+        # Sin declaración guardada se usa la propuesta que el sistema calcula desde los insumos.
+        _, texto_alergenos, contiene_gluten, texto_gluten = _calcular_desde_insumos(receta)
+        contaminacion = None
+    else:
+        texto_alergenos = declaracion.texto_alergenos
+        contiene_gluten = declaracion.contiene_gluten
+        texto_gluten = declaracion.texto_gluten
+        contaminacion = declaracion.texto_contaminacion_cruzada
+
+    leyendas = [texto_alergenos] if texto_alergenos else []
+    # "LIBRE DE GLUTEN / SIN TACC (sugerido…)" es un texto interno: al rótulo solo va la leyenda positiva.
+    if contiene_gluten and texto_gluten:
+        leyendas.append(texto_gluten)
+    if contaminacion:
+        leyendas.append(contaminacion)
+    return leyendas
+
+
+def _leyendas_obligatorias(evaluacion: schemas.EvaluacionRotulado) -> list[str]:
+    """Leyendas de edulcorantes y cafeína (Ley 27.642) según lo declarado o sugerido."""
+    valores = {marca.clave: marca.valor for marca in evaluacion.marcas}
+    leyendas = []
+    if valores.get("edulcorantes"):
+        leyendas.append("CONTIENE EDULCORANTES. NO RECOMENDABLE EN NIÑOS/AS.")
+    if valores.get("cafeina"):
+        leyendas.append("CONTIENE CAFEÍNA. EVITAR EN NIÑOS/AS.")
+    return leyendas
+
+
+FACTOR_UNIDAD_BASE = {
+    "gramo": 1.0, "g": 1.0, "kilogramo": 1000.0, "kg": 1000.0,
+    "mililitro": 1.0, "ml": 1.0, "litro": 1000.0, "l": 1000.0,
+}
+
+FAMILIA_UNIDAD = {
+    "gramo": "masa", "g": "masa", "kilogramo": "masa", "kg": "masa",
+    "mililitro": "volumen", "ml": "volumen", "litro": "volumen", "l": "volumen",
+}
+
+
+def _porcion_declarada(
+    receta: "Receta | None", info, unidad: str
+) -> float | None:
+    """Porción en la unidad de la tabla nutricional: la calculada o la declarada en la receta."""
+    if info is not None and info.porcion and float(info.porcion) > 0:
+        return float(info.porcion)
+    if receta is None or not receta.porcion or float(receta.porcion) <= 0:
+        return None
+
+    nombre = (
+        receta.porcion_unidad_medida.nombre.strip().lower()
+        if receta.porcion_unidad_medida else ""
+    )
+    factor = FACTOR_UNIDAD_BASE.get(nombre)
+    if factor is None or FAMILIA_UNIDAD.get(nombre) != FAMILIA_UNIDAD.get(unidad):
+        return None
+    return float(receta.porcion) * factor
+
+
+def _porciones_por_envase(
+    producto: "Producto", porcion: float | None, unidad: str
+) -> str | None:
+    """Cantidad de porciones que rinde el envase, comparando unidades compatibles."""
+    if not porcion or float(porcion) <= 0:
+        return None
+    nombre = producto.unidad_medida.nombre.strip().lower()
+    factor = FACTOR_UNIDAD_BASE.get(nombre)
+    if factor is None or FAMILIA_UNIDAD.get(nombre) != FAMILIA_UNIDAD.get(unidad):
+        return None
+
+    porciones = producto.cantidad_neta * factor / float(porcion)
+    if porciones <= 0:
+        return None
+    return f"{round(porciones, 1):g} × {float(porcion):g} {unidad}"
+
+
 def _info_nutricional_vigente(db: Session, producto_id: int):
     receta = _receta_vigente(db, producto_id)
     if receta is None:
@@ -557,6 +737,12 @@ def obtener_empaquetado(db: Session, producto_id: int) -> schemas.EmpaquetadoPro
     vigente = next((version for version in versiones if version.vigente), None)
     campos = _campos_completitud(datos, sugeridos, tabla, evaluacion)
 
+    receta = _receta_vigente(db, producto_id)
+    declaracion = _declaracion_alergenos(db, receta)
+    info = _info_nutricional_vigente(db, producto_id)
+    lote = _ultimo_lote(db, producto_id)
+    unidad = _unidad_empaquetado(producto, evaluacion)
+
     return schemas.EmpaquetadoProducto(
         producto_id=producto_id,
         vigente=_version_empaquetado_esquema(vigente, datos.es_importado),
@@ -572,6 +758,16 @@ def obtener_empaquetado(db: Session, producto_id: int) -> schemas.EmpaquetadoPro
         ),
         sellos=evaluacion.sellos.sellos if evaluacion.sellos else [],
         mensaje_sellos=_mensaje_sellos(evaluacion),
+        descripcion=producto.descripcion,
+        codigo_barras=producto.codigo_barras,
+        alergenos=_leyendas_alergenos(declaracion, receta),
+        conservacion=declaracion.condiciones_conservacion if declaracion else None,
+        porciones_por_envase=_porciones_por_envase(
+            producto, _porcion_declarada(receta, info, unidad), unidad
+        ),
+        leyendas_obligatorias=_leyendas_obligatorias(evaluacion),
+        fecha_elaboracion=lote.fecha_produccion if lote else None,
+        fecha_vencimiento=lote.fecha_vencimiento if lote else None,
         leyenda=LEYENDA_BORRADOR,
         faltantes=[campo.nombre for campo in campos if campo.obligatorio and not campo.completo],
     )
@@ -653,6 +849,14 @@ def generar_pdf_empaquetado(db: Session, producto_id: int) -> bytes:
         tabla_nutricional=empaquetado.tabla_nutricional,
         sellos=empaquetado.sellos,
         mensaje_sellos=empaquetado.mensaje_sellos,
+        descripcion=empaquetado.descripcion,
+        codigo_barras=empaquetado.codigo_barras,
+        alergenos=empaquetado.alergenos,
+        conservacion=empaquetado.conservacion,
+        porciones_por_envase=empaquetado.porciones_por_envase,
+        leyendas_obligatorias=empaquetado.leyendas_obligatorias,
+        fecha_elaboracion=empaquetado.fecha_elaboracion,
+        fecha_vencimiento=empaquetado.fecha_vencimiento,
         unidad=_unidad_empaquetado(producto, evaluacion),
         porcion=info.porcion if info else None,
         leyenda=empaquetado.leyenda,

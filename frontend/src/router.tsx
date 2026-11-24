@@ -12,6 +12,7 @@ import { VerInsumoPage } from './feature/Insumos/pages/VerInsumoPage.tsx'
 import { EquiposPage } from './feature/Equipos/pages/ListPage.tsx'
 import { EditarEquipoPage } from './feature/Equipos/pages/EditarEquipoPage.tsx'
 import { NuevoEquipoPage } from './feature/Equipos/pages/NuevoEquipoPage.tsx'
+import { VerEquipoPage } from './feature/Equipos/pages/VerEquipoPage.tsx'
 
 import { ListPage as SectoresPage } from './feature/Sectores/pages/ListPage.tsx';
 import { EditarSectorPage } from './feature/Sectores/pages/EditarSectorPage.tsx';
@@ -56,7 +57,6 @@ import { VerInsumoQuimicoPage } from './feature/InsumosQuimicos/pages/VerInsumoQ
 import { ListPage as TipoQuimicoListPage } from './feature/TiposQuimicos/pages/ListPage.tsx'
 import { NuevoTipoQuimicoPage } from './feature/TiposQuimicos/pages/NuevoTipoQuimicoPage.tsx'
 import { EditarTipoQuimicoPage } from './feature/TiposQuimicos/pages/EditarTipoQuimicoPage.tsx'
-import { VerTipoQuimicoPage } from './feature/TiposQuimicos/pages/VerTipoQuimicoPage.tsx'
 
 import { ListPage as ConsumoProductoListPage } from './feature/ConsumoProducto/pages/ListPage.tsx'
 import { EditarConsumoProductoPage } from './feature/ConsumoProducto/pages/EditarConsumoProductoPage.tsx'
@@ -119,7 +119,6 @@ import { EditarPlanCalibracionPage } from './feature/PlanesCalibracion/pages/Edi
 import { ListPage as UnidadMedidaListPage } from './feature/UnidadMedida/pages/ListPage.tsx'
 import { NuevaUnidadMedidaPage } from './feature/UnidadMedida/pages/NuevaUnidadMedidaPage.tsx'
 import { EditarUnidadMedidaPage } from './feature/UnidadMedida/pages/EditarUnidadMedidaPage.tsx'
-import { VerUnidadMedidaPage } from './feature/UnidadMedida/pages/VerUnidadMedidaPage.tsx'
 
 import { ListPage as ProductoListPage } from './feature/Productos/pages/ListPage.tsx'
 import { NuevoProductoPage } from './feature/Productos/pages/NuevoProductoPage.tsx'
@@ -129,13 +128,17 @@ import { NuevaRecetaPage } from './feature/Recetas/pages/NuevaRecetaPage.tsx';
 import { EditarRecetaPage } from './feature/Recetas/pages/EditarRecetaPage.tsx';
 import { VerRecetaPage } from './feature/Recetas/pages/VerRecetaPage.tsx';
 import { EscalarRecetaPage } from './feature/Recetas/pages/EscalarRecetaPage.tsx'
+import { RecetasVigentesPage } from './feature/Recetas/pages/RecetasVigentesPage.tsx';
+import { ConsultaRecetaPage } from './feature/Recetas/pages/ConsultaRecetaPage.tsx';
 import { ReglasRotuladoPage } from './feature/Rotulado/pages/ReglasRotuladoPage.tsx'
+import { RotuladoProductoPage } from './feature/Rotulado/pages/RotuladoProductoPage.tsx'
 
 import { LotesHistorialPage } from './feature/LoteProduccionHistorial/pages/ListPage.tsx'
 import { ListPage as LoteProduccionListPage } from './feature/LotesProduccion/pages/ListPage.tsx'
 import { NuevoLoteProduccionPage } from './feature/LotesProduccion/pages/NuevoLoteProduccionPage.tsx'
 import { EditarLoteProduccionPage } from './feature/LotesProduccion/pages/EditarLoteProduccionPage.tsx'
 import { VerLoteProduccionPage } from './feature/LotesProduccion/pages/VerLoteProduccionPage.tsx'
+import { TrazabilidadLoteProduccionPage } from './feature/LotesProduccion/pages/TrazabilidadLoteProduccionPage.tsx';
 
 import { ListPage as ProveedorListPage } from './feature/Proveedores/pages/ListPage.tsx'
 import { NuevoProveedorPage } from './feature/Proveedores/pages/NuevoProveedorPage.tsx'
@@ -154,6 +157,8 @@ import { VerClientePage } from './feature/Clientes/pages/VerClientePage.tsx'
 
 import { ListPage as InsumoLoteListPage } from './feature/InsumosLote/pages/ListPage.tsx'
 import { VerInsumoLotePage } from './feature/InsumosLote/pages/VerInsumoLotePage.tsx'
+import { ProduccionesInsumoLotePage } from './feature/InsumosLote/pages/ProduccionesInsumoLotePage.tsx'
+import { TrazabilidadInsumoLotePage } from './feature/InsumosLote/pages/TrazabilidadInsumoLotePage.tsx'
 
 import { ListPage as PedidosProveedorListPage } from './feature/PedidosProveedor/pages/Listpage.tsx'
 import { NuevoPedidoProveedorPage } from './feature/PedidosProveedor/pages/NuevoPedidoProveedorPage.tsx'
@@ -170,6 +175,10 @@ import { ConfiguracionCalculoNutricionalPage } from './feature/CalculoNutriciona
 import { ListPage as AlergenosListPage } from './feature/Alergenos/pages/ListPage.tsx'
 import { NuevoAlergenoPage } from './feature/Alergenos/pages/NuevoAlergenoPage.tsx'
 import { EditarAlergenoPage } from './feature/Alergenos/pages/EditarAlergenoPage.tsx'
+
+import { ListPage as ChecklistSupervisionListPage } from './feature/ChecklistSupervision/pages/ListPage.tsx'
+import { HistorialSupervisionPage } from './feature/HistorialSupervision/pages/ListPage.tsx'
+import { VerDetalleSupervisionOcurrenciaPage } from './feature/HistorialSupervision/pages/VerDetalleSupervisionOcurrenciaPage.tsx'
 
 import { Login, NoAutorizado } from './feature/auth'
 import AuthLayout from './layouts/AuthLayout.tsx'
@@ -288,7 +297,6 @@ const router = createBrowserRouter([
             children: [
               { index: true, element: <UnidadMedidaListPage />},
               { path: 'new', element: <NuevaUnidadMedidaPage />},
-              { path: ':id', element: <VerUnidadMedidaPage />},
               { path: ':id/edit', element: <EditarUnidadMedidaPage />},
             ],
           },
@@ -304,6 +312,7 @@ const router = createBrowserRouter([
               { path: ':id/receta/editar', element: <EditarRecetaPage /> },
               { path: ':id/receta', element: <VerRecetaPage /> },
               { path: ':id/receta/escalar', element: <EscalarRecetaPage />},
+              { path: ':id/rotulado', element: <RotuladoProductoPage />},
             ],
           },
           {
@@ -336,7 +345,9 @@ const router = createBrowserRouter([
             path: 'insumos-lote',
             children: [
               { index: true, element: <InsumoLoteListPage />},
-              { path: ':id', element: <VerInsumoLotePage />}
+              { path: ':id', element: <VerInsumoLotePage />},
+              { path: ':id/producciones', element: <ProduccionesInsumoLotePage />},
+              { path: ':id/trazabilidad', element: <TrazabilidadInsumoLotePage />},
             ]
           },
           {
@@ -351,6 +362,14 @@ const router = createBrowserRouter([
           },
           { path: 'tareas', element: <TareasPage /> },
           { path: 'checklist', element: <ChecklistListPage /> },
+          {
+            path: 'recetas',
+            children: [
+              { index: true, element: <RecetasVigentesPage /> },
+              { path: ':id', element: <ConsultaRecetaPage /> },
+              { path: ':id/escalar', element: <EscalarRecetaPage /> },
+            ],
+          },
           {
             path: 'incidentes',
             children: [
@@ -430,6 +449,7 @@ const router = createBrowserRouter([
             path: 'equipos',
             children: [
               { index: true, element: <EquiposPage /> },
+              { path: ':id', element: <VerEquipoPage /> },
               {
                 element: <ProtectedRoute requireAdmin />,
                 children: [
@@ -473,6 +493,7 @@ const router = createBrowserRouter([
               { path: 'new', element: <NuevoLoteProduccionPage />},
               { path: ':id/edit', element: <EditarLoteProduccionPage />},
               { path: ':id', element: <VerLoteProduccionPage />},
+              { path: ':id/trazabilidad', element: <TrazabilidadLoteProduccionPage />},
             ],
           },
           {
@@ -551,7 +572,6 @@ const router = createBrowserRouter([
             path: 'tipos-quimicos',
             children: [
               { index: true, element: <TipoQuimicoListPage /> },
-              { path: ':id', element: <VerTipoQuimicoPage /> },
               {
                 element: <ProtectedRoute requireAdmin />,
                 children: [
@@ -620,6 +640,26 @@ const router = createBrowserRouter([
               { index: true, element: <AlergenosListPage /> },
               { path: 'new', element: <NuevoAlergenoPage /> },
               { path: ':id/edit', element: <EditarAlergenoPage /> },
+            ],
+          },
+          {
+            path: 'checklist-supervision',
+            children: [
+              { index: true, element: <ChecklistSupervisionListPage /> },
+            ],
+          },
+          {
+            path: 'historial-supervision',
+            element: <ProtectedRoute requireAdminOrSupervisor />,
+            children: [
+              { index: true, element: <HistorialSupervisionPage /> },
+            ],
+          },
+          {
+            path: 'supervision-lotes',
+            element: <ProtectedRoute requireAdminOrSupervisor />,
+            children: [
+              { path: ':id', element: <VerDetalleSupervisionOcurrenciaPage /> },
             ],
           },
           { path: '*', element: <Page404 /> }

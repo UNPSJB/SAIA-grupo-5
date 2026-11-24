@@ -15,7 +15,7 @@ from src.personal.models import Persona
 from src.auth.utils import get_password_hash
 from src.unidad_medida.models import UnidadMedida
 from src.producto.models import Producto
-from src.lote_produccion.models import LoteProduccion
+from src.lote_produccion.models import LoteProduccion, InsumoUtilizado
 from src.proveedor.models import Proveedor, ProveedorInsumo
 from src.lote_proveedor.models import LoteProveedor
 from src.clientes.models import Cliente
@@ -26,6 +26,14 @@ from src.insumos_lote.models import InsumoLote
 from src.insumos.models import Insumo
 from src.pedidos_proveedor.models import PedidoProveedor, PedidoProveedorItem
 from src.pedidos_proveedor.constants import EstadoPedidoProveedor
+from src.sector.models import Sector
+from src.equipos.models import Equipo
+from src.registro_temperatura.models import RegistroTemperatura
+from src.receta.models import Receta, InsumoReceta
+from src.etapa_receta.models import EtapaReceta
+from src.paso_etapa.models import PasoEtapa
+from src.supervision_lote import services as supervision_services
+from src.supervision_lote.models import SupervisionOcurrencia
 
 from src.main import app
 engine = create_engine(
@@ -134,9 +142,10 @@ def multiples_unidades_medida(db_session):
     return unidades
 
 @pytest.fixture(scope="function")
-def unico_lote_produccion(db_session, unico_producto):
+def unico_lote_produccion(db_session, unico_producto, unica_receta, unico_insumo_lote):
     lote = LoteProduccion(
         producto_id=unico_producto.id, 
+        receta_id=unica_receta.id,
         fecha_produccion=date(2026,10,1),
         fecha_vencimiento=date(2028, 10, 1), 
         cantidad_producida=100,
@@ -144,6 +153,14 @@ def unico_lote_produccion(db_session, unico_producto):
         activo=True)
 
     db_session.add(lote)
+    db_session.flush()
+    db_session.add(
+        InsumoUtilizado(
+            lote_produccion_id=lote.id,
+            insumo_lote_id=unico_insumo_lote.id,
+            cantidad_utilizada=10,
+        )
+    )
     db_session.commit()
     db_session.refresh(lote)
     return lote
@@ -499,8 +516,8 @@ def unico_insumo_lote(db_session, unico_insumo, unico_lote_proveedor):
 
 @pytest.fixture(scope="function")
 def multiples_insumos_lote(db_session, unica_unidad_medida, unico_insumo, unico_lote_proveedor):
-    insumo2 = Insumo(nombre="Sal Fina", unidad_medida_id=unica_unidad_medida.id, activo=True)
-    insumo3 = Insumo(nombre="Levadura Seca", unidad_medida_id=unica_unidad_medida.id, activo=True)
+    insumo2 = Insumo(nombre="Sal Fina", marca="Generica", unidad_medida_id=unica_unidad_medida.id, activo=True)
+    insumo3 = Insumo(nombre="Levadura Seca", marca="Generica", unidad_medida_id=unica_unidad_medida.id, activo=True)
     db_session.add_all([insumo2, insumo3])
     db_session.commit()
 
@@ -549,6 +566,7 @@ def multiples_insumos_lote(db_session, unica_unidad_medida, unico_insumo, unico_
 def unico_insumo(db_session, unica_unidad_medida):
     insumo = Insumo(
         nombre="Harina de Trigo 000",
+        marca="Generica",
         unidad_medida_id=unica_unidad_medida.id,
         activo=True,
     )
@@ -627,3 +645,235 @@ def multiples_pedidos_proveedor(db_session, unico_proveedor, unico_insumo):
     for p in [ped1, ped2, ped3]:
         db_session.refresh(p)
     return [ped1, ped2, ped3]
+
+
+@pytest.fixture(scope="function")
+def persona_supervisor(db_session):
+    supervisor = Persona(
+        nombre="Carlos",
+        apellido="Supervisor",
+        dni="44556677",
+        mail="carlos_sup@test.com",
+        username="carlos_sup",
+        hashed_password=get_password_hash("1234"),
+        operar=False,
+        administrar=False,
+        supervisor=True,
+        activo=True,
+    )
+    db_session.add(supervisor)
+    db_session.commit()
+    db_session.refresh(supervisor)
+    return supervisor
+
+
+@pytest.fixture(scope="function")
+def otro_supervisor(db_session):
+    supervisor = Persona(
+        nombre="Laura",
+        apellido="Supervisora",
+        dni="55667788",
+        mail="laura_sup@test.com",
+        username="laura_sup",
+        hashed_password=get_password_hash("1234"),
+        operar=False,
+        administrar=False,
+        supervisor=True,
+        activo=True,
+    )
+    db_session.add(supervisor)
+    db_session.commit()
+    db_session.refresh(supervisor)
+    return supervisor
+
+
+@pytest.fixture(scope="function")
+def auth_headers_supervisor(client, persona_supervisor):
+    res = client.post("/auth/token", data={"username": persona_supervisor.username, "password": "1234"})
+    token = res.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture(scope="function")
+def unico_sector(db_session):
+    sector = Sector(nombre="Deposito Frio", activo=True)
+    db_session.add(sector)
+    db_session.commit()
+    db_session.refresh(sector)
+    return sector
+
+
+@pytest.fixture(scope="function")
+def unico_equipo_frio(db_session, unico_sector):
+    equipo = Equipo(
+        nombre="Camara Frigorifica 1",
+        categoria="Refrigeracion",
+        ubicacion="Ala Norte",
+        estado=True,
+        sector_id=unico_sector.id,
+        controla_temperatura=True,
+        temperatura_minima=0.0,
+        temperatura_maxima=5.0,
+    )
+    db_session.add(equipo)
+    db_session.commit()
+    db_session.refresh(equipo)
+    return equipo
+
+
+@pytest.fixture(scope="function")
+def unico_equipo_sin_control(db_session, unico_sector):
+    equipo = Equipo(
+        nombre="Mesa de Trabajo 1",
+        categoria="Mobiliario",
+        ubicacion="Ala Central",
+        estado=True,
+        sector_id=unico_sector.id,
+        controla_temperatura=False,
+        temperatura_minima=None,
+        temperatura_maxima=None,
+    )
+    db_session.add(equipo)
+    db_session.commit()
+    db_session.refresh(equipo)
+    return equipo
+
+
+@pytest.fixture(scope="function")
+def multiples_equipos_frio(db_session, unico_sector):
+    eq1 = Equipo(
+        nombre="Camara Frigorifica 1",
+        categoria="Refrigeracion",
+        ubicacion="Ala Norte",
+        estado=True,
+        sector_id=unico_sector.id,
+        controla_temperatura=True,
+        temperatura_minima=0.0,
+        temperatura_maxima=5.0,
+    )
+    eq2 = Equipo(
+        nombre="Camara Frigorifica 2",
+        categoria="Refrigeracion",
+        ubicacion="Ala Sur",
+        estado=True,
+        sector_id=unico_sector.id,
+        controla_temperatura=True,
+        temperatura_minima=-2.0,
+        temperatura_maxima=4.0,
+    )
+    db_session.add_all([eq1, eq2])
+    db_session.commit()
+    db_session.refresh(eq1)
+    db_session.refresh(eq2)
+    return [eq1, eq2]
+
+
+@pytest.fixture(scope="function")
+def unico_registro_temperatura(db_session, unico_equipo_frio, persona_supervisor):
+    reg = RegistroTemperatura(
+        equipo_id=unico_equipo_frio.id,
+        operario_id=persona_supervisor.id,
+        temperatura_registrada=3.0,
+        fuera_de_rango=False,
+        accion_tomada=None,
+    )
+    db_session.add(reg)
+    db_session.commit()
+    db_session.refresh(reg)
+    return reg
+
+
+@pytest.fixture(scope="function")
+def multiples_registros_temperatura(db_session, unico_equipo_frio, persona_supervisor):
+    reg1 = RegistroTemperatura(
+        equipo_id=unico_equipo_frio.id,
+        operario_id=persona_supervisor.id,
+        temperatura_registrada=2.5,
+        fuera_de_rango=False,
+        accion_tomada=None,
+    )
+    reg2 = RegistroTemperatura(
+        equipo_id=unico_equipo_frio.id,
+        operario_id=persona_supervisor.id,
+        temperatura_registrada=9.5,
+        fuera_de_rango=True,
+        accion_tomada="Se ajusto termostato",
+    )
+    db_session.add_all([reg1, reg2])
+    db_session.commit()
+    db_session.refresh(reg1)
+    db_session.refresh(reg2)
+    return [reg1, reg2]
+
+
+@pytest.fixture(scope="function")
+def unica_receta(db_session, unico_producto, unico_insumo):
+    receta = Receta(
+        producto_id=unico_producto.id,
+        version=1,
+        vigente=True,
+    )
+    db_session.add(receta)
+    db_session.flush()
+
+    db_session.add(
+        InsumoReceta(
+            receta_id=receta.id,
+            insumo_id=unico_insumo.id,
+            cantidad=0.1,
+        )
+    )
+
+    etapa = EtapaReceta(
+        receta_id=receta.id,
+        nombre="Amasado",
+        orden=1,
+    )
+    db_session.add(etapa)
+    db_session.flush()
+
+    paso1 = PasoEtapa(
+        etapa_id=etapa.id,
+        descripcion="Mezclar harina y agua durante 15 minutos",
+        orden=1,
+    )
+    paso2 = PasoEtapa(
+        etapa_id=etapa.id,
+        descripcion="Dejar reposar la masa 30 minutos",
+        orden=2,
+    )
+    db_session.add_all([paso1, paso2])
+    db_session.commit()
+    db_session.refresh(receta)
+    return receta
+
+
+@pytest.fixture(scope="function")
+def unico_lote_con_supervision(db_session, unico_producto, unica_receta, unico_insumo_lote):
+    lote = LoteProduccion(
+        producto_id=unico_producto.id,
+        receta_id=unica_receta.id,
+        fecha_produccion=date(2026, 10, 10),
+        fecha_vencimiento=date(2026, 12, 10),
+        cantidad_producida=50,
+        cantidad_disponible=50,
+        activo=True,
+    )
+    db_session.add(lote)
+    db_session.flush()
+    db_session.add(
+        InsumoUtilizado(
+            lote_produccion_id=lote.id,
+            insumo_lote_id=unico_insumo_lote.id,
+            cantidad_utilizada=5,
+        )
+    )
+    db_session.commit()
+    db_session.refresh(lote)
+    supervision_services.generar_checklist_elaboracion_lote(db_session, lote)
+    return lote
+
+
+@pytest.fixture(scope="function")
+def multiples_supervisiones_ocurrencia(db_session, unico_lote_con_supervision):
+    return supervision_services.listar_ocurrencias_por_lote(db_session, unico_lote_con_supervision.id)

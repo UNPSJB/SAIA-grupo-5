@@ -3,7 +3,11 @@ from datetime import date
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from src.auth.dependencies import get_current_persona, tiene_permiso_operar
+from src.auth.dependencies import (
+    get_current_persona,
+    tiene_permiso_operar,
+    tiene_permiso_operar_o_supervisor,
+)
 from src.auth.router_base import PermissionedRouter
 from src.database import get_db
 from src.incidentes import schemas, services
@@ -40,14 +44,19 @@ def read_incidentes(
     tipo_id: int | None = None,
     fecha_desde: date | None = None,
     fecha_hasta: date | None = None,
+    lote_produccion_id: int | None = None,
+    lote_proveedor_id: int | None = None,
+    insumo_lote_id: int | None = None,
     db: Session = Depends(get_db),
 ):
     return services.listar_incidentes(
         db, estado=estado, orden=orden,
         tipo_id=tipo_id, fecha_desde=fecha_desde, fecha_hasta=fecha_hasta,
+        lote_produccion_id=lote_produccion_id, lote_proveedor_id=lote_proveedor_id,
+        insumo_lote_id=insumo_lote_id,
     )
 
-@router.post("/", response_model=schemas.Incidente, dependencies=[Depends(tiene_permiso_operar)])
+@router.post("/", response_model=schemas.Incidente, dependencies=[Depends(tiene_permiso_operar_o_supervisor)])
 def create_incidente(
     incidente: schemas.IncidenteCreate,
     db: Session = Depends(get_db),

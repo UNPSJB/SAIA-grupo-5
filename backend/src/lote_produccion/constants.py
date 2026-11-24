@@ -15,3 +15,7 @@ class ErrorCode:
     INSUMO_LOTE_VENCIDO = "No se puede asociar el insumo: su fecha de vencimiento ya expiró."
     INSUMO_LOTE_PROXIMO_A_VENCER = "No se puede asociar el insumo: le quedan menos de 15 días de vida útil."
     STOCK_INSUFICIENTE_INSUMO_LOTE = "Stock insuficiente en el lote de insumo seleccionado."
+    LOTE_SIN_RECETA_PARA_AVANZAR = "No se puede avanzar a Empaquetando porque el lote no tiene una receta con insumos asignada."
+    INSUMOS_INSUFICIENTES_PARA_PRODUCCION = "Faltan asociar insumos o cantidades requeridas por la receta para avanzar a Empaquetando."
+    CANTIDAD_INSUMO_NO_ENTERA = "La cantidad de insumo utilizada debe ser un numero entero (unidad completa)."
+    CANTIDAD_INSUMO_EXCEDE_RECETA = "La cantidad asociada supera lo requerido por la receta del lote."

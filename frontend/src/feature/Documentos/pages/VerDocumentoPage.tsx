@@ -6,6 +6,8 @@ import type { Documento } from "../types";
 import { useAuth } from '../../../hooks';
 import type { VersionDocumento } from "../../VersionesDocumentos/types"; 
 import { PageLoading } from "../../../components/PageLoading";
+import { Dato } from "../../../components/Dato";
+import { EstadoBadge } from "../../../components/EstadoBadge";
 
 
 export function VerDocumentoPage() {
@@ -44,105 +46,76 @@ export function VerDocumentoPage() {
         <Container>
             <PageHeader title="Detalle del Documento" />
 
-            <Row className="justify-content-center mt-3">
-                <Col md={8}>
-                    <Card data-tour="info-documento" className="shadow-sm border-0 rounded-3">                       
-                        <Card.Body className="p-4">
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Nombre</Col>
-                                <Col sm={8} className="fs-5">{documento.nombre}</Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Descripcion</Col>
-                                <Col sm={8}>
-                                    {documento.descripcion ? (
-                                        <span>{documento.descripcion}</span>) : (<span className="text-muted fst-italic">Sin descripcion detallada</span>)}
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Tipo de Documento</Col>
-                                <Col sm={8}>{documento.tipo.nombre}</Col>
-                            </Row>
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Versiones</Col>
-                                <Col sm={8} className="d-flex flex-wrap gap-2">
-                                    <Button
-                                        data-tour={isAdmin ? 'btn-historial-versiones' : undefined}
-                                        variant="outline-info"
-                                        size="sm"
-                                        disabled={!documento.activo || (!isAdmin && (cargandoVersiones || !versionVigente))}
-                                        onClick={() =>
-                                            navigate(
-                                                isAdmin
-                                                    ? `/versiones-documentos/documento/${documento.id}`
-                                                    : `/versiones-documentos/version/${versionVigente?.id}`
-                                            )
-                                        }
-                                    >
-                                        <i className="bi bi-eye me-2"></i>Ver
-                                    </Button>
-
-                                    {!isAdmin && (
-                                        <Button
-                                            data-tour="btn-historial-versiones"
-                                            variant="outline-secondary"
-                                            size="sm"
-                                            disabled={!documento.activo}
-                                            onClick={() => navigate(`/versiones-documentos/documento/${documento.id}`)}
-                                        >
-                                            <i className="bi bi-clock-history me-2"></i>Historial de versiones
-                                        </Button>
-                                    )}
-
-                                    {!isAdmin && !cargandoVersiones && !versionVigente && (
-                                        <span className="text-muted small align-self-center">Sin versión vigente</span>
-                                    )}
-                                </Col>
-                            </Row>
-                            <Row className="mb-2 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Estado Actual</Col>
-                                <Col sm={8}>
-                                    <div
-                                        style={{
-                                            padding: '6px 16px',
-                                            borderRadius: '20px',
-                                            background: documento.activo ? '#dcfce7' : '#fee2e2',
-                                            color: documento.activo ? '#166534' : '#991b1b',
-                                            fontWeight: 700,
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                        }}
-                                    >
-                                        <i className={`bi ${documento.activo ? 'bi-check-circle-fill' : 'bi-x-circle-fill'} me-2`}></i>
-                                        {documento.activo ? 'Activo' : 'Inactivo'}
-                                    </div>
-                                </Col>
-                            </Row>
-                        </Card.Body>
-
-                        <Card.Footer className="bg-light border-top p-3 d-flex justify-content-start gap-2">
-                            <Button 
-                                variant="outline-secondary" 
-                                onClick={() => navigate('/documentos')}
+            <Card data-tour="info-documento" className="shadow-sm border-0 rounded-3 mb-4 mt-3 text-start">
+                <Card.Body className="p-4">
+                    <h6 className="detalle-seccion-titulo">Datos del documento</h6>
+                    <Row className="g-3 mb-4">
+                        <Dato etiqueta="Nombre" md={6} lg={4}>
+                            <span className="fw-semibold">{documento.nombre}</span>
+                        </Dato>
+                        <Dato etiqueta="Tipo de Documento" md={6} lg={4}>{documento.tipo.nombre}</Dato>
+                        <Dato etiqueta="Estado Actual" md={6} lg={4}>
+                            <EstadoBadge
+                                tono={documento.activo ? 'success' : 'danger'}
+                                icono={documento.activo ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}
                             >
-                                <i className="bi bi-arrow-left me-1"></i>Volver a la lista
+                                {documento.activo ? 'Activo' : 'Inactivo'}
+                            </EstadoBadge>
+                        </Dato>
+                        <Dato etiqueta="Descripción">
+                            {documento.descripcion || <span className="text-muted fst-italic">Sin descripción detallada</span>}
+                        </Dato>
+                    </Row>
+
+                    <h6 className="detalle-seccion-titulo">Versiones</h6>
+                    <div className="d-flex flex-wrap align-items-center gap-2">
+                        <Button
+                            data-tour={isAdmin ? 'btn-historial-versiones' : undefined}
+                            variant="outline-primary"
+                            disabled={!documento.activo || (!isAdmin && (cargandoVersiones || !versionVigente))}
+                            onClick={() =>
+                                navigate(
+                                    isAdmin
+                                        ? `/versiones-documentos/documento/${documento.id}`
+                                        : `/versiones-documentos/version/${versionVigente?.id}`
+                                )
+                            }
+                        >
+                            <i className="bi bi-eye me-2"></i>{isAdmin ? 'Ver versiones' : 'Ver versión vigente'}
+                        </Button>
+
+                        {!isAdmin && (
+                            <Button
+                                data-tour="btn-historial-versiones"
+                                variant="outline-secondary"
+                                disabled={!documento.activo}
+                                onClick={() => navigate(`/versiones-documentos/documento/${documento.id}`)}
+                            >
+                                <i className="bi bi-clock-history me-2"></i>Historial de versiones
                             </Button>
-                            {isAdmin && (
-                                <Button 
-                                    variant="primary" 
-                                    disabled={!documento.activo}
-                                    onClick={() => navigate(`/documentos/${documento.id}/edit`)}
-                                >
-                                    <i className="bi bi-pencil me-1"></i>Editar Documento   
-                                </Button>
-                            )}
-                        </Card.Footer>
-                    </Card>
-                </Col>
-            </Row>
+                        )}
+
+                        {!isAdmin && !cargandoVersiones && !versionVigente && (
+                            <span className="text-muted small">Sin versión vigente</span>
+                        )}
+                    </div>
+                </Card.Body>
+            </Card>
+
+            <div className="d-flex flex-wrap justify-content-start gap-2 mb-4">
+                <Button variant="outline-secondary" onClick={() => navigate('/documentos')}>
+                    <i className="bi bi-arrow-left me-1"></i>Volver a la lista
+                </Button>
+                {isAdmin && (
+                    <Button
+                        variant="primary"
+                        disabled={!documento.activo}
+                        onClick={() => navigate(`/documentos/${documento.id}/edit`)}
+                    >
+                        <i className="bi bi-pencil me-1"></i>Editar Documento
+                    </Button>
+                )}
+            </div>
         </Container>
     );
 }

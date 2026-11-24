@@ -18,7 +18,7 @@ class Insumo(ModeloBase):
 
     unidad_medida_id: Mapped[int] = mapped_column(ForeignKey("unidades_medida.id"), nullable=False)
     unidad_medida: Mapped["UnidadMedida"] = relationship()
-
+    denominacion_rotulo: Mapped[str | None] = mapped_column(String(120), nullable=True)
     activo: Mapped[bool] = mapped_column(Boolean, default=True)
     
     valor_energetico: Mapped[float | None] = mapped_column(Float, nullable=True)

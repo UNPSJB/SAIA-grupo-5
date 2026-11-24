@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { Alert, Badge, Button, Col, Form, ProgressBar, Row, Spinner, Table } from 'react-bootstrap';
+import { Alert, Badge, Button, Form, ProgressBar, Row, Spinner, Table } from 'react-bootstrap';
 import { mutate } from 'swr';
 import { isAxiosError } from 'axios';
 import { api } from '../../../libs/axios';
+import { Dato } from '../../../components/Dato';
 import { useApi } from '../../../hooks/useApi';
 import { mostrarAlertaError, mostrarAlertaExito } from '../../../libs/alertas';
 import type { Producto } from '../../Productos/types';
-import type { BorradorRotuladoCAA, CampoCompletitud, DatosRotuladoCAA } from '../types';
+import type { BorradorRotuladoCAA, CampoCompletitud, DatosRotuladoCAA, ListaIngredientesRotulo } from '../types';
 
 interface RotuladoCAAFormProps {
     producto: Producto;
@@ -39,7 +40,95 @@ export function RotuladoCAAForm({ producto, puedeEditar }: RotuladoCAAFormProps)
         />
     );
 }
+interface OrdenIngredientesProps {
+    lista: ListaIngredientesRotulo;
+    producto: Producto;
+    claveBorrador: string;
+    puedeEditar: boolean;
+    sinGuardar: boolean;
+    textoEditado: boolean;
+}
 
+function OrdenIngredientes({ lista, producto, claveBorrador, puedeEditar, sinGuardar, textoEditado }: OrdenIngredientesProps) {
+    const [moviendo, setMoviendo] = useState(false);
+    const { ingredientes } = lista;
+
+    const enviar = async (orden: number[]) => {
+        if (textoEditado && !window.confirm(
+            'Reordenar vuelve a generar la lista de ingredientes y reemplaza el texto que editaste a mano. ¿Continuar?',
+        )) return;
+        setMoviendo(true);
+        try {
+            const { data } = await api.put<BorradorRotuladoCAA>(
+                `/rotulado/productos/${producto.id}/ingredientes/orden`, { orden },
+            );
+            await mutate(claveBorrador, data, false);
+        } catch (error) {
+            const detail = isAxiosError(error) ? error.response?.data?.detail : undefined;
+            mostrarAlertaError(typeof detail === 'string' ? detail : 'No se pudo cambiar el orden de los ingredientes.');
+        } finally {
+            setMoviendo(false);
+        }
+    };
+
+    const mover = (indice: number, delta: number) => {
+        const ids = ingredientes.map((i) => i.insumo_id);
+        [ids[indice], ids[indice + delta]] = [ids[indice + delta], ids[indice]];
+        enviar(ids);
+    };
+
+    const puedeMover = (indice: number, delta: number) => {
+        const otro = ingredientes[indice + delta];
+        const actual = ingredientes[indice];
+        return puedeEditar && !sinGuardar && !moviendo && !!otro
+            && actual.porcentaje !== null && actual.porcentaje === otro.porcentaje;
+    };
+
+    return (
+        <div className="mb-3">
+            <div className="d-flex align-items-center mb-1">
+                <span className="fw-semibold me-2">Orden de los ingredientes</span>
+                {lista.orden_manual && <Badge bg="warning" text="dark">Orden ajustado a mano</Badge>}
+                {lista.orden_manual && puedeEditar && (
+                    <Button size="sm" variant="link" disabled={sinGuardar || moviendo} onClick={() => enviar([])}>
+                        Volver al orden automático
+                    </Button>
+                )}
+            </div>
+            <Table size="sm" bordered className="mb-1">
+                <tbody>
+                    {ingredientes.map((ing, indice) => (
+                        <tr key={ing.insumo_id}>
+                            <td style={{ width: '2.5rem' }}>{indice + 1}</td>
+                            <td>{ing.texto}</td>
+                            <td style={{ width: '6rem' }}>{ing.porcentaje !== null ? `${ing.porcentaje} %` : 'sin %'}</td>
+                            <td style={{ width: '6rem' }} className="text-end">
+                                <Button size="sm" variant="outline-secondary" className="me-1"
+                                    disabled={!puedeMover(indice, -1)} onClick={() => mover(indice, -1)}>
+                                    <i className="bi bi-arrow-up" />
+                                </Button>
+                                <Button size="sm" variant="outline-secondary"
+                                    disabled={!puedeMover(indice, 1)} onClick={() => mover(indice, 1)}>
+                                    <i className="bi bi-arrow-down" />
+                                </Button>
+                            </td>
+                        </tr>
+                    ))}
+                    {lista.aditivos.map((ad) => (
+                        <tr key={ad.texto} className="text-muted">
+                            <td>·</td>
+                            <td colSpan={3}>{ad.texto}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </Table>
+            <Form.Text className="text-muted">
+                Solo se pueden intercambiar ingredientes con el mismo porcentaje.
+                {sinGuardar && ' Guardá el borrador antes de reordenar.'}
+            </Form.Text>
+        </div>
+    );
+}
 interface FormularioCAAProps {
     producto: Producto;
     borrador: BorradorRotuladoCAA;
@@ -50,9 +139,9 @@ interface FormularioCAAProps {
 const OrigenBadge = ({ campo }: { campo?: CampoCompletitud }) => {
     if (!campo?.automatico) return null;
     return campo.origen === 'manual' ? (
-        <Badge bg="warning" text="dark" className="ms-2">Editado a mano</Badge>
+        <Badge bg="warning" text="dark">Editado a mano</Badge>
     ) : (
-        <Badge bg="secondary" className="ms-2">Automático · {campo.referencia}</Badge>
+        <Badge bg="secondary">Automático · {campo.referencia}</Badge>
     );
 };
 
@@ -85,6 +174,9 @@ function FormularioCAA({ producto, borrador, clave, puedeEditar }: FormularioCAA
         return obligatorio;
     });
     const faltantes = obligatorios.filter((c) => valorTexto(c.clave) === '').map((c) => c.nombre);
+    const clavesObligatorias = new Set(obligatorios.map((c) => c.clave));
+    const etiqueta = (claveCampo: string, texto: string) =>
+        clavesObligatorias.has(claveCampo) ? `${texto} (*)` : texto;
     const completitud = obligatorios.length
         ? Math.round((100 * (obligatorios.length - faltantes.length)) / obligatorios.length)
         : 100;
@@ -141,13 +233,13 @@ function FormularioCAA({ producto, borrador, clave, puedeEditar }: FormularioCAA
                 )}
             </Alert>
 
-            <h6 className="fw-bold">Identificación del producto</h6>
-            <Row className="mb-3">
-                <Col md={7}>
-                    <Form.Group className="mb-2" controlId="caa-denominacion">
-                        <Form.Label className="mb-1">
-                            Denominación de venta <OrigenBadge campo={campo('denominacion_venta')} />
-                        </Form.Label>
+            <p className="text-muted small mb-3">Los campos marcados con (*) son obligatorios para el rótulo.</p>
+
+            <h6 className="detalle-seccion-titulo">Identificación del producto</h6>
+            <Row className="g-3 mb-4">
+                <Dato etiqueta={etiqueta('denominacion_venta', 'Denominación de venta')} accion={<OrigenBadge campo={campo('denominacion_venta')} />} md={7}>
+                    <Form.Group controlId="caa-denominacion">
+                        <Form.Label className="visually-hidden">Denominación de venta</Form.Label>
                         <Form.Control
                             value={datos.denominacion_venta}
                             maxLength={120}
@@ -156,12 +248,10 @@ function FormularioCAA({ producto, borrador, clave, puedeEditar }: FormularioCAA
                         />
                         <Form.Text className="text-muted">{textoAyuda('denominacion_venta')}</Form.Text>
                     </Form.Group>
-                </Col>
-                <Col md={5}>
-                    <Form.Group className="mb-2" controlId="caa-contenido">
-                        <Form.Label className="mb-1">
-                            Contenido neto <OrigenBadge campo={campo('contenido_neto')} />
-                        </Form.Label>
+                </Dato>
+                <Dato etiqueta={etiqueta('contenido_neto', 'Contenido neto')} accion={<OrigenBadge campo={campo('contenido_neto')} />} md={5}>
+                    <Form.Group controlId="caa-contenido">
+                        <Form.Label className="visually-hidden">Contenido neto</Form.Label>
                         <Form.Control
                             value={datos.contenido_neto}
                             maxLength={60}
@@ -170,38 +260,38 @@ function FormularioCAA({ producto, borrador, clave, puedeEditar }: FormularioCAA
                         />
                         <Form.Text className="text-muted">{textoAyuda('contenido_neto')}</Form.Text>
                     </Form.Group>
-                </Col>
+                </Dato>
             </Row>
 
-            <h6 className="fw-bold">Identificación del origen</h6>
-            <Row className="mb-2">
-                <Col md={6}>
-                    <Form.Group className="mb-2" controlId="caa-razon-social">
-                        <Form.Label className="mb-1">Razón social del elaborador</Form.Label>
+            <h6 className="detalle-seccion-titulo">Identificación del origen</h6>
+            <Row className="g-3 mb-4">
+                <Dato etiqueta={etiqueta('razon_social', 'Razón social del elaborador')} accion={<OrigenBadge campo={campo('razon_social')} />} md={6}>
+                    <Form.Group controlId="caa-razon-social">
+                        <Form.Label className="visually-hidden">Razón social del elaborador</Form.Label>
                         <Form.Control
                             value={datos.razon_social}
                             maxLength={150}
                             disabled={!puedeEditar}
                             onChange={(e) => cambiar('razon_social', e.target.value)}
                         />
+                        <Form.Text className="text-muted">{textoAyuda('razon_social')}</Form.Text>
                     </Form.Group>
-                </Col>
-                <Col md={6}>
-                    <Form.Group className="mb-2" controlId="caa-domicilio">
-                        <Form.Label className="mb-1">Domicilio del elaborador</Form.Label>
+                </Dato>
+                <Dato etiqueta={etiqueta('domicilio', 'Domicilio del elaborador')} accion={<OrigenBadge campo={campo('domicilio')} />} md={6}>
+                    <Form.Group controlId="caa-domicilio">
+                        <Form.Label className="visually-hidden">Domicilio del elaborador</Form.Label>
                         <Form.Control
                             value={datos.domicilio}
                             maxLength={200}
                             disabled={!puedeEditar}
                             onChange={(e) => cambiar('domicilio', e.target.value)}
                         />
+                        <Form.Text className="text-muted">{textoAyuda('domicilio')}</Form.Text>
                     </Form.Group>
-                </Col>
-            </Row>
-            <Row className="mb-3">
-                <Col md={6}>
-                    <Form.Group className="mb-2" controlId="caa-registro">
-                        <Form.Label className="mb-1">Número de RNPA/RPPA</Form.Label>
+                </Dato>
+                <Dato etiqueta={etiqueta('numero_registro', 'Número de RNPA/RPPA')} accion={<OrigenBadge campo={campo('numero_registro')} />} md={6}>
+                    <Form.Group controlId="caa-registro">
+                        <Form.Label className="visually-hidden">Número de RNPA/RPPA</Form.Label>
                         <Form.Control
                             value={datos.numero_registro}
                             maxLength={30}
@@ -210,11 +300,11 @@ function FormularioCAA({ producto, borrador, clave, puedeEditar }: FormularioCAA
                             onChange={(e) => cambiar('numero_registro', e.target.value)}
                         />
                         <Form.Text className="text-muted">
-                            Dato declarado por el elaborador; el sistema no lo verifica contra registros oficiales.
+                            {textoAyuda('numero_registro')} Dato declarado por el elaborador; el sistema no lo verifica contra registros oficiales.
                         </Form.Text>
                     </Form.Group>
-                </Col>
-                <Col md={6} className="d-flex align-items-start pt-4">
+                </Dato>
+                <Dato etiqueta="Procedencia" md={6}>
                     <Form.Check
                         type="checkbox"
                         id="caa-importado"
@@ -223,16 +313,16 @@ function FormularioCAA({ producto, borrador, clave, puedeEditar }: FormularioCAA
                         disabled={!puedeEditar}
                         onChange={(e) => cambiar('es_importado', e.target.checked)}
                     />
-                </Col>
+                </Dato>
             </Row>
 
             {datos.es_importado && (
                 <>
-                    <h6 className="fw-bold">Importador</h6>
-                    <Row className="mb-3">
-                        <Col md={5}>
-                            <Form.Group className="mb-2" controlId="caa-importador-razon">
-                                <Form.Label className="mb-1">Razón social del importador</Form.Label>
+                    <h6 className="detalle-seccion-titulo">Importador</h6>
+                    <Row className="g-3 mb-4">
+                        <Dato etiqueta={etiqueta('importador_razon_social', 'Razón social del importador')} md={5}>
+                            <Form.Group controlId="caa-importador-razon">
+                                <Form.Label className="visually-hidden">Razón social del importador</Form.Label>
                                 <Form.Control
                                     value={datos.importador_razon_social}
                                     maxLength={150}
@@ -240,10 +330,10 @@ function FormularioCAA({ producto, borrador, clave, puedeEditar }: FormularioCAA
                                     onChange={(e) => cambiar('importador_razon_social', e.target.value)}
                                 />
                             </Form.Group>
-                        </Col>
-                        <Col md={5}>
-                            <Form.Group className="mb-2" controlId="caa-importador-domicilio">
-                                <Form.Label className="mb-1">Domicilio del importador</Form.Label>
+                        </Dato>
+                        <Dato etiqueta={etiqueta('importador_domicilio', 'Domicilio del importador')} md={4}>
+                            <Form.Group controlId="caa-importador-domicilio">
+                                <Form.Label className="visually-hidden">Domicilio del importador</Form.Label>
                                 <Form.Control
                                     value={datos.importador_domicilio}
                                     maxLength={200}
@@ -251,10 +341,10 @@ function FormularioCAA({ producto, borrador, clave, puedeEditar }: FormularioCAA
                                     onChange={(e) => cambiar('importador_domicilio', e.target.value)}
                                 />
                             </Form.Group>
-                        </Col>
-                        <Col md={2}>
-                            <Form.Group className="mb-2" controlId="caa-importador-cuit">
-                                <Form.Label className="mb-1">CUIT</Form.Label>
+                        </Dato>
+                        <Dato etiqueta={etiqueta('importador_cuit', 'CUIT')} md={3}>
+                            <Form.Group controlId="caa-importador-cuit">
+                                <Form.Label className="visually-hidden">CUIT del importador</Form.Label>
                                 <Form.Control
                                     value={datos.importador_cuit}
                                     maxLength={20}
@@ -262,18 +352,16 @@ function FormularioCAA({ producto, borrador, clave, puedeEditar }: FormularioCAA
                                     onChange={(e) => cambiar('importador_cuit', e.target.value)}
                                 />
                             </Form.Group>
-                        </Col>
+                        </Dato>
                     </Row>
                 </>
             )}
 
-            <h6 className="fw-bold">Lote y fecha de duración</h6>
-            <Row className="mb-3">
-                <Col md={7}>
-                    <Form.Group className="mb-2" controlId="caa-lote">
-                        <Form.Label className="mb-1">
-                            Identificación del lote <OrigenBadge campo={campo('identificacion_lote')} />
-                        </Form.Label>
+            <h6 className="detalle-seccion-titulo">Lote y fecha de duración</h6>
+            <Row className="g-3 mb-4">
+                <Dato etiqueta={etiqueta('identificacion_lote', 'Identificación del lote')} accion={<OrigenBadge campo={campo('identificacion_lote')} />} md={7}>
+                    <Form.Group controlId="caa-lote">
+                        <Form.Label className="visually-hidden">Identificación del lote</Form.Label>
                         <Form.Control
                             value={datos.identificacion_lote}
                             maxLength={100}
@@ -282,10 +370,10 @@ function FormularioCAA({ producto, borrador, clave, puedeEditar }: FormularioCAA
                         />
                         <Form.Text className="text-muted">{textoAyuda('identificacion_lote')}</Form.Text>
                     </Form.Group>
-                </Col>
-                <Col md={5}>
-                    <Form.Group className="mb-2" controlId="caa-fecha-duracion">
-                        <Form.Label className="mb-1">Fecha de duración</Form.Label>
+                </Dato>
+                <Dato etiqueta={etiqueta('fecha_duracion', 'Fecha de duración')} md={5}>
+                    <Form.Group controlId="caa-fecha-duracion">
+                        <Form.Label className="visually-hidden">Fecha de duración</Form.Label>
                         <Form.Control
                             type="date"
                             value={datos.fecha_duracion ?? ''}
@@ -293,81 +381,97 @@ function FormularioCAA({ producto, borrador, clave, puedeEditar }: FormularioCAA
                             onChange={(e) => cambiar('fecha_duracion', e.target.value || null)}
                         />
                     </Form.Group>
-                </Col>
+                </Dato>
             </Row>
 
-            <h6 className="fw-bold">Lista de ingredientes</h6>
-            <Form.Group className="mb-3" controlId="caa-ingredientes">
-                <Form.Label className="mb-1">
-                    Ingredientes <OrigenBadge campo={campo('lista_ingredientes')} />
-                </Form.Label>
-                <Form.Control
-                    as="textarea"
-                    rows={3}
-                    value={datos.lista_ingredientes}
-                    maxLength={2000}
-                    disabled={!puedeEditar}
-                    onChange={(e) => cambiar('lista_ingredientes', e.target.value)}
+            <h6 className="detalle-seccion-titulo">Lista de ingredientes</h6>
+            <Row className="g-3 mb-3">
+                <Dato etiqueta={etiqueta('lista_ingredientes', 'Ingredientes')} accion={<OrigenBadge campo={campo('lista_ingredientes')} />}>
+                    <Form.Group controlId="caa-ingredientes">
+                        <Form.Label className="visually-hidden">Ingredientes</Form.Label>
+                        <Form.Control
+                            as="textarea"
+                            rows={3}
+                            value={datos.lista_ingredientes}
+                            maxLength={2000}
+                            disabled={!puedeEditar}
+                            onChange={(e) => cambiar('lista_ingredientes', e.target.value)}
+                        />
+                        <Form.Text className="text-muted">
+                            {textoAyuda('lista_ingredientes')} Si lo editás, el cambio queda registrado en el historial.
+                        </Form.Text>
+                    </Form.Group>
+                </Dato>
+            </Row>
+            {borrador.lista_ordenada && (
+                <OrdenIngredientes
+                    lista={borrador.lista_ordenada}
+                    producto={producto}
+                    claveBorrador={clave}
+                    puedeEditar={puedeEditar}
+                    sinGuardar={JSON.stringify(datos) !== JSON.stringify(borrador.datos)}
+                    textoEditado={campo('lista_ingredientes')?.origen === 'manual'}
                 />
-                <Form.Text className="text-muted">
-                    {textoAyuda('lista_ingredientes')} Si lo editás, el cambio queda registrado en el historial.
-                </Form.Text>
-            </Form.Group>
-
-            <h6 className="fw-bold">Preparación e instrucciones de uso</h6>
-            <Form.Group className="mb-3" controlId="caa-instrucciones">
-                <Form.Label className="mb-1">Instrucciones de uso (cuando corresponda)</Form.Label>
-                <Form.Control
-                    as="textarea"
-                    rows={2}
-                    value={datos.instrucciones_uso}
-                    maxLength={2000}
-                    disabled={!puedeEditar}
-                    placeholder="Conservar en frío. Una vez abierto, consumir dentro de los 3 días."
-                    onChange={(e) => cambiar('instrucciones_uso', e.target.value)}
-                />
-            </Form.Group>
-
-            <h6 className="fw-bold">
-                Información nutricional <OrigenBadge campo={campo('informacion_nutricional')} />
-            </h6>
-            {borrador.tabla_nutricional?.length ? (
-                <Table size="sm" bordered className="mb-2">
-                    <thead>
-                        <tr>
-                            <th>Nutriente</th>
-                            <th>Por porción</th>
-                            <th>%VD</th>
-                            <th>Cada 100 g/ml</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {borrador.tabla_nutricional.map((fila) => (
-                            <tr key={fila.codigo}>
-                                <td>{fila.nombre}</td>
-                                <td>{fila.texto_porcion} {fila.unidad}</td>
-                                <td>{fila.porcentaje_vd ?? '-'}</td>
-                                <td>{fila.texto_100g} {fila.unidad}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </Table>
-            ) : (
-                <p className="text-muted small">La receta todavía no tiene la información nutricional calculada (E11).</p>
             )}
 
-            <div className="mb-3">
-                <span className="fw-semibold me-2">
-                    Sellos de advertencia <OrigenBadge campo={campo('sellos')} />
-                </span>
-                {borrador.sellos.length ? (
-                    borrador.sellos.map((sello) => (
-                        <Badge key={sello} bg="danger" className="me-1">{sello}</Badge>
-                    ))
-                ) : (
-                    <span className="text-muted small">Sin sellos según la evaluación vigente (E12).</span>
-                )}
-            </div>
+            <h6 className="detalle-seccion-titulo mt-4">Preparación e instrucciones de uso</h6>
+            <Row className="g-3 mb-4">
+                <Dato etiqueta={etiqueta('instrucciones_uso', 'Instrucciones de uso (cuando corresponda)')}>
+                    <Form.Group controlId="caa-instrucciones">
+                        <Form.Label className="visually-hidden">Instrucciones de uso</Form.Label>
+                        <Form.Control
+                            as="textarea"
+                            rows={2}
+                            value={datos.instrucciones_uso}
+                            maxLength={2000}
+                            disabled={!puedeEditar}
+                            placeholder="Conservar en frío. Una vez abierto, consumir dentro de los 3 días."
+                            onChange={(e) => cambiar('instrucciones_uso', e.target.value)}
+                        />
+                    </Form.Group>
+                </Dato>
+            </Row>
+
+            <h6 className="detalle-seccion-titulo">Información nutricional y sellos</h6>
+            <Row className="g-3 mb-4">
+                <Dato etiqueta={etiqueta('informacion_nutricional', 'Tabla nutricional')} accion={<OrigenBadge campo={campo('informacion_nutricional')} />} lg={7}>
+                    {borrador.tabla_nutricional?.length ? (
+                        <Table size="sm" bordered responsive className="mb-0">
+                            <thead className="table-light">
+                                <tr>
+                                    <th className="px-3">Nutriente</th>
+                                    <th className="px-3">Por porción</th>
+                                    <th className="px-3">%VD</th>
+                                    <th className="px-3">Cada 100 g/ml</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {borrador.tabla_nutricional.map((fila) => (
+                                    <tr key={fila.codigo}>
+                                        <td className="px-3">{fila.nombre}</td>
+                                        <td className="px-3">{fila.texto_porcion} {fila.unidad}</td>
+                                        <td className="px-3">{fila.porcentaje_vd ?? '-'}</td>
+                                        <td className="px-3">{fila.texto_100g} {fila.unidad}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </Table>
+                    ) : (
+                        <span className="text-muted small">La receta todavía no tiene la información nutricional calculada (E11).</span>
+                    )}
+                </Dato>
+                <Dato etiqueta={etiqueta('sellos', 'Sellos de advertencia')} accion={<OrigenBadge campo={campo('sellos')} />} lg={5}>
+                    {borrador.sellos.length ? (
+                        <div className="d-flex flex-wrap gap-1">
+                            {borrador.sellos.map((sello) => (
+                                <Badge key={sello} bg="danger">{sello}</Badge>
+                            ))}
+                        </div>
+                    ) : (
+                        <span className="text-muted small">Sin sellos según la evaluación vigente (E12).</span>
+                    )}
+                </Dato>
+            </Row>
 
             {borrador.historial.length > 0 && (
                 <details className="mb-3">

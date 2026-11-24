@@ -1,0 +1,22 @@
+/* Tabla chica con scroll vertical */
+.tabla-trazabilidad-scroll {
+    max-height: 15rem;
+    overflow: auto;
+    border: 1px solid rgba(6, 121, 79, 0.15);
+    border-radius: 0.375rem;
+}
+
+.tabla-trazabilidad-scroll thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: #e8f6f0;
+    color: #123c29;
+}
+
+/* Insumos recibidos en la recepción: ~10 filas visibles, sin borde extra dentro de la card */
+.tabla-insumos-recibidos-scroll {
+    max-height: 32rem;
+    border: 0;
+    border-radius: 0;
+}

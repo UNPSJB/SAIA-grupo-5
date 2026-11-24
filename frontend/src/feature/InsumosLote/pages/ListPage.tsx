@@ -179,9 +179,13 @@ export function ListPage() {
             minWidth: '120px',
             cell: row => {
                 const esCero = row.cantidad_restante === 0;
-                const esBajoStock = row.cantidad_restante <= row.minimo_alerta;
+                const esBajoStock = row.cantidad_restante > 0 && row.cantidad_restante <= row.minimo_alerta;
                 return (
-                    <span data-tour="stock-insumo-lote" className={esCero ? 'text-muted fw-bold' : esBajoStock ? 'text-danger fw-bold' : 'fw-bold text-success'}>
+                    <span
+                        data-tour="stock-insumo-lote"
+                        className={esCero ? 'text-danger fw-bold' : esBajoStock ? 'fw-bold' : 'text-success fw-bold'}
+                        style={esBajoStock ? { color: '#d97706' } : undefined}
+                    >
                         {row.cantidad_restante} <span className="text-muted fw-normal">/ {row.cantidad}</span>
                     </span>
                 );

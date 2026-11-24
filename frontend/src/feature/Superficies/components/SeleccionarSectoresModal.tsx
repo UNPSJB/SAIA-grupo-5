@@ -1,5 +1,6 @@
-import { Button, Form, ListGroup, Modal } from "react-bootstrap";
+import { Button, ListGroup, Modal } from "react-bootstrap";
 import type { Sector } from "../../Sectores/types";
+import { AppSwitch } from "../../../components/AppSwitch";
 
 interface SeleccionarSectoresModalProps {
     show: boolean;
@@ -20,8 +21,7 @@ export function SeleccionarSectoresModal({ show, sectores, selectedIds, onToggle
                     <ListGroup variant="flush">
                         {sectores.map((sector) => (
                             <ListGroup.Item key={sector.id}>
-                                <Form.Check
-                                    type="switch"
+                                <AppSwitch
                                     id={`sector-switch-${sector.id}`}
                                     label={sector.nombre}
                                     checked={selectedIds.includes(String(sector.id))}

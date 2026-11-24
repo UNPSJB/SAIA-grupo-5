@@ -1,5 +1,6 @@
 import logging
-from fastapi import Depends
+from fastapi import Depends, Response
+from src.auth.dependencies import tiene_permiso_administrar
 from sqlalchemy.orm import Session
 from src.database import get_db
 from src.auth.router_base import PermissionedRouter
@@ -32,3 +33,16 @@ def calcular_nutricion_receta(receta_id: int, datos: schemas.CalculoRecetaCreate
 @router.get("/recetas/{receta_id}", response_model=schemas.InformacionNutricionalReceta)
 def read_nutricion_receta(receta_id: int, db: Session = Depends(get_db)):
     return services.leer_informacion_receta(db, receta_id)
+
+@router.get("/recetas/{receta_id}/tabla", response_model=schemas.TablaNutricionalRotulo)
+def read_tabla_rotulo(receta_id: int, db: Session = Depends(get_db)):
+    return services.obtener_tabla_rotulo(db, receta_id)
+
+
+@router.get("/recetas/{receta_id}/tabla.pdf", dependencies=[Depends(tiene_permiso_administrar)])
+def exportar_tabla_pdf(receta_id: int, db: Session = Depends(get_db)):
+    return Response(
+        content=services.generar_tabla_pdf(db, receta_id),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="tabla_nutricional_{receta_id}.pdf"'},
+    )

@@ -39,14 +39,6 @@ export const tutorialesUnidadesMedida: Tutorial[] = [
                     side: 'left',
                 },
             },
-            {
-                element: t('btn-ver-unidad-medida'),
-                popover: {
-                    title: 'Ver',
-                    description: 'Abre el detalle de la unidad de medida.',
-                    side: 'left',
-                },
-            },
         ],
     },
 

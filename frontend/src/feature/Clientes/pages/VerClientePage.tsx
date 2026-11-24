@@ -1,10 +1,12 @@
-import { Container, Alert, Row, Col, Card, Button, ListGroup } from "react-bootstrap";
+import { Container, Alert, Row, Col, Card, Button } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 import { useAuth } from "../../../hooks/useAuth";
 import type { Cliente } from "../types";
 import { PageLoading } from "../../../components/PageLoading";
+import { Dato } from "../../../components/Dato";
+import { EstadoBadge } from "../../../components/EstadoBadge";
 
 export function VerClientePage() {
     const navigate = useNavigate();
@@ -37,93 +39,61 @@ export function VerClientePage() {
         <Container>
             <PageHeader title={tituloPagina} />
 
-            <Row className="justify-content-center mt-3">
-                <Col md={8}>
-                    <Card className="shadow-sm border-0 rounded-3">
-                        <Card.Body className="p-4">
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={5} className="fw-bold text-secondary">Razon Social</Col>
-                                <Col sm={7} className="fs-6 fw-semibold">{cliente.razon_social}</Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={5} className="fw-bold text-secondary">CUIT</Col>
-                                <Col sm={7} className="fs-6">{cliente.cuit}</Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={5} className="fw-bold text-secondary">Telefono</Col>
-                                <Col sm={7} className="fs-6">{cliente.telefono || '-'}</Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={5} className="fw-bold text-secondary">Email</Col>
-                                <Col sm={7} className="fs-6">{cliente.email || '-'}</Col>
-                            </Row>
-
-                            <Row className="mb-2 align-items-center">
-                                <Col sm={5} className="fw-bold text-secondary">Estado Actual</Col>
-                                <Col sm={7}>
-                                    <div
-                                        style={{
-                                            padding: '6px 16px',
-                                            borderRadius: '20px',
-                                            background: cliente.activo ? '#dcfce7' : '#fee2e2',
-                                            color: cliente.activo ? '#166534' : '#991b1b',
-                                            fontWeight: 700,
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                        }}
-                                    >
-                                        {cliente.activo ? 'Activo' : 'Inactivo'}
-                                    </div>
-                                </Col>
-                            </Row>
-
-                            <hr className="my-4" />
-
-                            <h5 className="mb-3">Direcciones de entrega registradas</h5>
-
-                            {direcciones.length === 0 ? (
-                                <p className="text-muted mb-0">Este cliente todavia no tiene direcciones registradas.</p>
-                            ) : (
-                                <ListGroup variant="flush" className="border rounded bg-white">
-                                    {direcciones.map((dir) => (
-                                        <ListGroup.Item key={dir.id} className="py-2">
-                                            <div>
-                                                <strong>{dir.calle_altura}</strong> - {dir.localidad}, {dir.provincia} (CP: {dir.codigo_postal})
-                                            </div>
-                                            {dir.descripcion ? (
-                                                <div className="small text-muted">{dir.descripcion}</div>
-                                            ) : null}
-                                        </ListGroup.Item>
-                                    ))}
-                                </ListGroup>
-                            )}
-                        </Card.Body>
-
-                        <Card.Footer className="bg-light border-top p-3 d-flex justify-content-start gap-2">
-                            <Button
-                                variant="outline-secondary"
-                                onClick={() => navigate('/clientes')}
+            <Card className="shadow-sm border-0 rounded-3 mb-4 mt-3 text-start">
+                <Card.Body className="p-4">
+                    <h6 className="detalle-seccion-titulo">Datos del cliente</h6>
+                    <Row className="g-3 mb-4">
+                        <Dato etiqueta="Razón Social" lg={6}>
+                            <span className="fw-semibold">{cliente.razon_social}</span>
+                        </Dato>
+                        <Dato etiqueta="CUIT" md={6} lg={3}>{cliente.cuit}</Dato>
+                        <Dato etiqueta="Estado Actual" md={6} lg={3}>
+                            <EstadoBadge
+                                tono={cliente.activo ? 'success' : 'danger'}
+                                icono={cliente.activo ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}
                             >
-                                <i className="bi bi-arrow-left me-1"></i>Volver a la lista
-                            </Button>
+                                {cliente.activo ? 'Activo' : 'Inactivo'}
+                            </EstadoBadge>
+                        </Dato>
+                        <Dato etiqueta="Teléfono" md={6}>
+                            {cliente.telefono || <span className="text-muted fst-italic">Sin teléfono</span>}
+                        </Dato>
+                        <Dato etiqueta="Email" md={6}>
+                            {cliente.email || <span className="text-muted fst-italic">Sin email</span>}
+                        </Dato>
+                    </Row>
 
-                            {currentUser?.administrar && (
-                                <Button
-                                    variant="primary"
-                                    disabled={!cliente.activo}
-                                    onClick={() => navigate(`/clientes/${cliente.id}/edit`)}
-                                >
-                                    <i className="bi bi-pencil me-1"></i>Editar Cliente
-                                </Button>
-                            )}
-                        </Card.Footer>
-                    </Card>
-                </Col>
-            </Row>
+                    <h6 className="detalle-seccion-titulo">Direcciones de entrega registradas</h6>
+                    {direcciones.length === 0 ? (
+                        <p className="text-muted mb-0">Este cliente todavía no tiene direcciones registradas.</p>
+                    ) : (
+                        <Row className="g-3">
+                            {direcciones.map((dir) => (
+                                <Dato key={dir.id} etiqueta={`${dir.localidad}, ${dir.provincia}`} md={6}>
+                                    <span className="fw-semibold">{dir.calle_altura}</span>
+                                    <div className="small text-muted">CP: {dir.codigo_postal}</div>
+                                    {dir.descripcion && <div className="small text-muted">{dir.descripcion}</div>}
+                                </Dato>
+                            ))}
+                        </Row>
+                    )}
+                </Card.Body>
+            </Card>
+
+            <div className="d-flex flex-wrap justify-content-start gap-2 mb-4">
+                <Button variant="outline-secondary" onClick={() => navigate('/clientes')}>
+                    <i className="bi bi-arrow-left me-1"></i>Volver a la lista
+                </Button>
+                {currentUser?.administrar && (
+                    <Button
+                        variant="primary"
+                        disabled={!cliente.activo}
+                        onClick={() => navigate(`/clientes/${cliente.id}/edit`)}
+                    >
+                        <i className="bi bi-pencil me-1"></i>Editar Cliente
+                    </Button>
+                )}
+            </div>
         </Container>
     );
 }

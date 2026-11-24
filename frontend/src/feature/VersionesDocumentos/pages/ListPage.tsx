@@ -15,6 +15,7 @@ import { DeleteVersionDocumentoModal } from '../components/DeleteVersionDocument
 import { MarcarVigenteModal } from '../components/MarcarVigenteModal';
 import type { VersionDocumento } from '../types';
 import { ActionButton } from '../../../components/ActionButton';
+import { AppSwitch } from '../../../components/AppSwitch';
 
 export function ListPage() {
     const navigate = useNavigate();  
@@ -221,8 +222,7 @@ export function ListPage() {
                 </Col>
                 <Col xs="auto" className="align-self-center">
                     <div data-tour="switch-historicas">
-                        <Form.Check
-                            type="switch"
+                        <AppSwitch
                             id="switch-historicas"
                             label="Ver históricas"
                             checked={incluirHistoricas}

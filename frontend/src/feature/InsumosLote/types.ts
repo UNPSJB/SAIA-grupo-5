@@ -21,6 +21,18 @@ export interface ProduccionAsociada {
     };
 }
 
+export interface SectorAlmacenamientoResumen {
+    id: number;
+    nombre: string;
+}
+
+export interface EquipoAlmacenamientoResumen {
+    id: number;
+    nombre: string;
+    ubicacion?: string | null;
+    sector?: SectorAlmacenamientoResumen | null;
+}
+
 export interface InsumoLote {
     id: number;
     lote_proveedor_id: number;
@@ -33,6 +45,10 @@ export interface InsumoLote {
     costo_unitario?: number | null;
     minimo_alerta: number;
     activo: boolean;
+    equipo_id?: number | null;
+    sector_id?: number | null;
+    equipo?: EquipoAlmacenamientoResumen | null;
+    sector?: SectorAlmacenamientoResumen | null;
     insumo: Insumo;
     lote_proveedor?: LoteProveedorResumen;
     producciones_asociadas?: ProduccionAsociada[];
@@ -46,4 +62,6 @@ export interface InsumoLoteCreate {
     fecha_vencimiento: string;
     costo_unitario?: number | null;
     minimo_alerta: number;
+    equipo_id?: number | null;
+    sector_id?: number | null;
 }

@@ -1,10 +1,10 @@
-
 import jsPDF from 'jspdf';
 import { api } from '../libs/axios';
 
 export interface DatosPymePdf {
     nombre_pyme: string;
     logo_pyme: string | null;
+    mostrar_logo_pdf: boolean;
     telefono_pyme: string | null;
     email_pyme: string | null;
     direccion_pyme: string | null;
@@ -23,7 +23,7 @@ export function tieneDatosPyme(datos: DatosPymePdf | null): boolean {
 
     return (
         (nombre !== '' && nombre !== NOMBRE_PYME_DEFAULT) ||
-        !!datos.logo_pyme ||
+        (!!datos.logo_pyme && datos.mostrar_logo_pdf !== false) ||
         !!datos.telefono_pyme?.trim() ||
         !!datos.email_pyme?.trim() ||
         !!datos.direccion_pyme?.trim()
@@ -46,7 +46,7 @@ function dibujarCabeceraPdf(doc: jsPDF, datos: DatosPymePdf) {
 
     let logoInsertado = false;
 
-    if (datos.logo_pyme) {
+    if (datos.logo_pyme && datos.mostrar_logo_pdf !== false) {
         try {
             const imagen = doc.getImageProperties(datos.logo_pyme);
             const escala = Math.min(26 / imagen.width, 26 / imagen.height);

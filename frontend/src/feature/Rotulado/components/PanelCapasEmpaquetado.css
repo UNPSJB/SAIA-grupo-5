@@ -1,0 +1,197 @@
+.empaquetado-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.empaquetado-lienzo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    height: 70vh;
+    min-height: 420px;
+    min-width: 0;
+}
+
+.empaquetado-editor .capas-empaquetado {
+    max-height: 280px;
+}
+
+@media (min-width: 992px) {
+    .empaquetado-editor {
+        flex-direction: row;
+        height: calc(100vh - 330px);
+        min-height: 480px;
+    }
+
+    .empaquetado-editor .capas-empaquetado {
+        flex: 0 0 290px;
+        max-height: none;
+    }
+
+    .empaquetado-lienzo {
+        flex: 1;
+        height: auto;
+        min-height: 0;
+    }
+}
+
+/* ---------- Panel de capas ---------- */
+.capas-empaquetado {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(6, 121, 79, 0.15);
+    border-radius: 0.5rem;
+    background: #fff;
+    overflow: hidden;
+    text-align: start;
+}
+
+.capas-encabezado {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.6rem 0.75rem;
+    background: #e8f6f0;
+    border-bottom: 1px solid rgba(6, 121, 79, 0.15);
+}
+
+.capas-titulo {
+    color: #123c29;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.capas-encabezado small {
+    display: block;
+}
+
+.capas-lista {
+    flex: 1;
+    margin: 0;
+    padding: 0.25rem 0;
+    list-style: none;
+    overflow-y: auto;
+}
+
+.capa {
+    border-left: 3px solid transparent;
+}
+
+.capa-fila {
+    display: flex;
+    align-items: center;
+}
+
+.capa-nombre {
+    color: inherit;
+    cursor: pointer;
+    user-select: none;
+}
+
+.capa-check {
+    display: flex;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 2.25rem;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.capa-check .form-check-input {
+    float: none;
+    margin: 0;
+}
+
+.capa-nombre {
+    flex: 1;
+    min-width: 0;
+    padding: 0.4rem 0.5rem 0.4rem 0;
+    font-size: 0.9rem;
+    text-align: start;
+}
+
+.capa:hover {
+    background: #f6fbf8;
+}
+
+/* Bloque seleccionado (sincronizado con el lienzo) */
+.capa-activa {
+    border-left-color: var(--sb-seafoam-secondary);
+    background: #e8f6f0;
+}
+
+.capa-activa .capa-nombre {
+    font-weight: 600;
+    color: #123c29;
+}
+
+/* Bloque oculto */
+.capa-oculta .capa-nombre {
+    color: #9aa5a0;
+}
+
+
+.capas-ayuda {
+    margin: 0;
+    padding: 0.5rem 0.75rem;
+    border-top: 1px solid rgba(6, 121, 79, 0.15);
+    color: #6c757d;
+    font-size: 0.78rem;
+}
+
+.empaquetado-editor.empaquetado-editor-maximizado {
+    position: fixed;
+    inset: 0;
+    z-index: 1045;
+    flex-direction: row;
+    height: 100vh;
+    min-height: 0;
+    padding: 1rem;
+    background: #f5f7fa;
+}
+
+.empaquetado-editor-maximizado .capas-empaquetado {
+    flex: 0 0 290px;
+    max-height: none;
+}
+
+.empaquetado-editor-maximizado .empaquetado-lienzo {
+    flex: 1;
+    height: auto;
+    min-height: 0;
+}
+
+@media (max-width: 767.98px) {
+    .empaquetado-editor.empaquetado-editor-maximizado {
+        flex-direction: column;
+    }
+
+    .empaquetado-editor-maximizado .capas-empaquetado {
+        flex: 0 0 auto;
+        max-height: 30vh;
+    }
+}
+
+.empaquetado-editor-maximizado .empaquetado-lienzo {
+    position: relative;
+}
+
+.empaquetado-restaurar {
+    position: absolute;
+    top: 0.75rem;
+    right: 1.25rem;
+    z-index: 5;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.5rem;
+    border: 1px solid rgba(6, 121, 79, 0.15);
+    border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.95);
+}

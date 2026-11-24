@@ -28,12 +28,18 @@ export function Nav({ children }: { children: React.ReactNode }) {
     });
     const visibleGroups = useMemo(
         () => navGroups
-            .filter((group) => !group.adminOnly || currentUser?.administrar)
+            .filter((group) =>
+                (!group.adminOnly || currentUser?.administrar) &&
+                (!group.adminOrSupervisorOnly || currentUser?.administrar || currentUser?.supervisor)
+            )
             .map((group) => ({
                 ...group,
-                items: group.items.filter((item) => !item.adminOnly || currentUser?.administrar),
+                items: group.items.filter((item) =>
+                    (!item.adminOnly || currentUser?.administrar) &&
+                    (!item.adminOrSupervisorOnly || currentUser?.administrar || currentUser?.supervisor)
+                ),
             })),
-        [currentUser?.administrar],
+        [currentUser?.administrar, currentUser?.supervisor],
     );
 
     const activeGroupId = visibleGroups.find((group) =>
