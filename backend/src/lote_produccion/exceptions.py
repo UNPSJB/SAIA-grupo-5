@@ -56,3 +56,29 @@ class InsumoLoteProximoAVencer(BadRequest):
 
 class StockInsuficienteInsumoLote(BadRequest):
     DETAIL = ErrorCode.STOCK_INSUFICIENTE_INSUMO_LOTE
+
+
+class LoteSinRecetaParaAvanzar(BadRequest):
+    DETAIL = ErrorCode.LOTE_SIN_RECETA_PARA_AVANZAR
+
+
+class InsumosInsuficientesParaProduccion(BadRequest):
+    DETAIL = ErrorCode.INSUMOS_INSUFICIENTES_PARA_PRODUCCION
+
+    def __init__(self, detalle: str | None = None) -> None:
+        if detalle:
+            self.DETAIL = detalle
+        super().__init__()
+
+
+class CantidadInsumoNoEntera(BadRequest):
+    DETAIL = ErrorCode.CANTIDAD_INSUMO_NO_ENTERA
+
+
+class CantidadInsumoExcedeReceta(BadRequest):
+    DETAIL = ErrorCode.CANTIDAD_INSUMO_EXCEDE_RECETA
+
+    def __init__(self, detalle: str | None = None) -> None:
+        if detalle:
+            self.DETAIL = detalle
+        super().__init__()

@@ -1,4 +1,5 @@
 import logging
+import math
 from typing import List, Literal
 from datetime import date
 from sqlalchemy import select, func, delete
@@ -20,6 +21,7 @@ from src.sector import exceptions as sector_exceptions
 from src.sector.models import Sector
 from src.supervision_lote import services as supervision_services
 from src.lote_produccion.receta_lote import buscar_receta_para_lote
+from src.receta.models import Receta, InsumoReceta
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +67,7 @@ def listar_lotes_produccion(db: Session) -> List[schemas.LoteProduccionDetalle]:
                                                 joinedload(Producto.unidad_medida),
                                                 joinedload(LoteProduccion.equipo).joinedload(Equipo.sector),
                                                 joinedload(LoteProduccion.sector),
-                                                joinedload(LoteProduccion.receta),
+                                                joinedload(LoteProduccion.receta).selectinload(Receta.insumos),
                                                 selectinload(LoteProduccion.supervisiones),
                                                 selectinload(LoteProduccion.insumos_utilizados).joinedload(InsumoUtilizado.insumo_lote).
                                                 joinedload(InsumoLote.insumo).
@@ -78,7 +80,7 @@ def leer_lote_produccion(db: Session, lote_id: int) -> schemas.LoteProduccionDet
             joinedload(LoteProduccion.producto).joinedload(Producto.unidad_medida),
             joinedload(LoteProduccion.equipo).joinedload(Equipo.sector),
             joinedload(LoteProduccion.sector),
-            joinedload(LoteProduccion.receta),
+            joinedload(LoteProduccion.receta).selectinload(Receta.insumos).joinedload(InsumoReceta.insumo).joinedload(Insumo.unidad_medida),
             selectinload(LoteProduccion.supervisiones),
             selectinload(LoteProduccion.insumos_utilizados).joinedload(InsumoUtilizado.insumo_lote)
             .joinedload(InsumoLote.insumo).joinedload(Insumo.unidad_medida),
@@ -96,14 +98,71 @@ def listar_lotes_por_producto(db: Session, producto_id: int) -> List[schemas.Lot
                              selectinload(LoteProduccion.supervisiones))).all()
 
 
-def cambiar_estado_lote_produccion(
-    db: Session,
-    lote_id: int,
-    usuario_id: int,
-    observacion: str | None = None,
-    equipo_id: int | None = None,
-    sector_id: int | None = None,
-) -> schemas.LoteProduccion:
+def validar_tope_insumos_receta(db: Session, db_lote: LoteProduccion, nuevos_items: list[schemas.InsumoUtilizadoCreate], reemplazar: bool = False) -> None:
+    receta = db_lote.receta
+    if receta is None:
+        receta = buscar_receta_para_lote(db, db_lote.producto_id, db_lote.fecha_produccion)
+    if receta is None or not receta.insumos:
+        return
+
+    requerido_por_insumo = {
+        item.insumo_id: math.ceil(item.cantidad * db_lote.cantidad_producida)
+        for item in receta.insumos
+    }
+    nombres_insumo = {
+        item.insumo_id: item.insumo.nombre if item.insumo else f"Insumo #{item.insumo_id}"
+        for item in receta.insumos
+    }
+
+    totales: dict[int, int] = {}
+    if not reemplazar:
+        for usado in db_lote.insumos_utilizados:
+            if usado.insumo_lote:
+                ins_id = usado.insumo_lote.insumo_id
+                totales[ins_id] = totales.get(ins_id, 0) + int(usado.cantidad_utilizada)
+
+    for item in nuevos_items:
+        insumo_lote = db.get(InsumoLote, item.insumo_lote_id)
+        if insumo_lote:
+            ins_id = insumo_lote.insumo_id
+            totales[ins_id] = totales.get(ins_id, 0) + int(item.cantidad_utilizada)
+
+    for ins_id, requerido in requerido_por_insumo.items():
+        if totales.get(ins_id, 0) > requerido:
+            raise exceptions.CantidadInsumoExcedeReceta(
+                f"La cantidad asociada de {nombres_insumo[ins_id]} ({totales[ins_id]}) supera lo requerido por la receta ({requerido})."
+            )
+
+
+def validar_insumos_suficientes_lote(db: Session, db_lote: LoteProduccion) -> None:
+    receta = db_lote.receta
+    if receta is None:
+        receta = buscar_receta_para_lote(db, db_lote.producto_id, db_lote.fecha_produccion)
+    if receta is None or not receta.insumos:
+        raise exceptions.LoteSinRecetaParaAvanzar()
+
+    asociados_por_insumo: dict[int, int] = {}
+    for usado in db_lote.insumos_utilizados:
+        if usado.insumo_lote:
+            ins_id = usado.insumo_lote.insumo_id
+            asociados_por_insumo[ins_id] = asociados_por_insumo.get(ins_id, 0) + int(usado.cantidad_utilizada)
+
+    faltantes: list[str] = []
+    for item in receta.insumos:
+        requerido = math.ceil(item.cantidad * db_lote.cantidad_producida)
+        asociado = asociados_por_insumo.get(item.insumo_id, 0)
+        if asociado < requerido:
+            nombre = item.insumo.nombre if item.insumo else f"Insumo #{item.insumo_id}"
+            unidad = item.insumo.unidad_medida.nombre if item.insumo and item.insumo.unidad_medida else "u."
+            faltantes.append(f"{nombre} ({asociado}/{requerido} {unidad})")
+
+    if faltantes:
+        raise exceptions.InsumosInsuficientesParaProduccion(
+            "Faltan insumos requeridos por la receta para avanzar a Empaquetando: " + ", ".join(faltantes)
+        )
+
+
+def cambiar_estado_lote_produccion(db: Session, lote_id: int, usuario_id: int, observacion: str | None = None, equipo_id: int | None = None, sector_id: int | None = None) -> schemas.LoteProduccion:
     db_lote = leer_lote_produccion(db, lote_id)
 
     if not db_lote.producto.activo:
@@ -113,6 +172,9 @@ def cambiar_estado_lote_produccion(
         raise exceptions.LoteYaEnviado()
 
     supervision_services.validar_checklist_fase_completo(db, db_lote.id, db_lote.estado)
+
+    if db_lote.estado == EstadoLote.EN_PRODUCCION.value:
+        validar_insumos_suficientes_lote(db, db_lote)
 
     nuevo_estado = SIGUIENTE_ESTADO[db_lote.estado]
     db_lote.estado = nuevo_estado
@@ -313,6 +375,9 @@ def validar_insumos_lote(db: Session, insumos: list[schemas.InsumoUtilizadoCreat
     hoy = date.today()
 
     for item in insumos:
+        if item.cantidad_utilizada != int(item.cantidad_utilizada):
+            raise exceptions.CantidadInsumoNoEntera()
+
         insumo_lote = db.scalar(
             select(InsumoLote)
             .where(InsumoLote.id == item.insumo_lote_id)
@@ -341,8 +406,10 @@ def listar_insumos_lote(db: Session, lote_id: int) -> list[InsumoUtilizado]:
 
 
 def asociar_insumos_lote(db: Session, lote_id: int, datos: schemas.InsumosUtilizadosCreate) -> list[InsumoUtilizado]:
+    db_lote = leer_lote_produccion(db, lote_id)
     validar_lote_para_insumos(db, lote_id)
     validar_insumos_lote(db, datos.insumos)
+    validar_tope_insumos_receta(db, db_lote, datos.insumos, reemplazar=False)
 
     insumos_ids = [insumo.insumo_lote_id for insumo in datos.insumos]
     existentes = db.scalars(select(InsumoUtilizado).where(
@@ -362,11 +429,14 @@ def asociar_insumos_lote(db: Session, lote_id: int, datos: schemas.InsumosUtiliz
         descontar_stock_insumo_lote(db, item.insumo_lote_id, int(item.cantidad_utilizada))
 
     db.commit()
+    db.expire_all()
     return listar_insumos_lote(db, lote_id)
 
 
 def actualizar_insumos_lote(db: Session, lote_id: int, datos: schemas.InsumosUtilizadosUpdate) -> list[InsumoUtilizado]:
+    db_lote = leer_lote_produccion(db, lote_id)
     validar_lote_para_insumos(db, lote_id)
+    validar_tope_insumos_receta(db, db_lote, datos.insumos, reemplazar=True)
 
     anteriores = db.scalars(
         select(InsumoUtilizado).where(InsumoUtilizado.lote_produccion_id == lote_id)
