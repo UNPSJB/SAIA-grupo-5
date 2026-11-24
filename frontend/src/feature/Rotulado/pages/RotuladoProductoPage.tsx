@@ -210,7 +210,7 @@ function FormularioRotulado({ producto, evaluacion, puedeEditar, onGuardado }: F
 
                 <h6 className="detalle-seccion-titulo">Agregados, edulcorantes y cafeína</h6>
                 <p className="text-muted small mb-2">
-                    Se toman de las marcas de los ingredientes de la receta. Podés corregirlas si no reflejan el producto.
+                    Se toman de las marcas de los ingredientes y aditivos de la receta. Podés corregirlas si no reflejan el producto.
                 </p>
                 <Table responsive bordered hover size="sm" className="align-middle mb-4">
                     <thead className="table-light">

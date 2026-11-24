@@ -1,4 +1,5 @@
 import logging
+import unicodedata
 from datetime import datetime
 from typing import TYPE_CHECKING
 from sqlalchemy import or_, select
@@ -32,6 +33,7 @@ from src.configuracion_sistema.constants import ID_CONFIGURACION_SISTEMA
 from src.configuracion_sistema.models import ConfiguracionSistema
 
 if TYPE_CHECKING:
+    from src.aditivo.models import Aditivo
     from src.producto.models import Producto
     from src.rotulado.ingredientes import ListaIngredientes
 
@@ -151,7 +153,7 @@ def crear_version_reglas(db: Session, datos: schemas.ReglasRotuladoCreate) -> sc
 
 def obtener_rotulado_producto(db: Session, producto_id: int) -> schemas.EvaluacionRotulado:
     db_producto = leer_producto(db, producto_id)
-    return evaluar_rotulado(db, db_producto, _insumos_de_receta(db, producto_id))
+    return _evaluar_producto(db, db_producto)
 
 def evaluar_rotulado_receta(db: Session, datos: EvaluacionSellosCreate) -> schemas.EvaluacionRotulado:
     producto = leer_producto(db, datos.producto_id)
@@ -165,11 +167,16 @@ def actualizar_rotulado_producto(db: Session, producto_id: int, datos: schemas.R
         setattr(db_producto, campo, valor)
     db.commit()
     db.refresh(db_producto)
-    return evaluar_rotulado(db, db_producto, _insumos_de_receta(db, producto_id))
+    return _evaluar_producto(db, db_producto)
 
-def evaluar_rotulado(db: Session, producto: "Producto", insumos: list[tuple["Insumo", float]]) -> schemas.EvaluacionRotulado:
+def evaluar_rotulado(
+    db: Session,
+    producto: "Producto",
+    insumos: list[tuple["Insumo", float]],
+    aditivos: list["Aditivo"] | None = None,
+) -> schemas.EvaluacionRotulado:
     reglas = obtener_reglas_vigentes(db)
-    marcas = [_evaluar_marca(marca, producto, insumos, reglas) for marca in MARCAS]
+    marcas = [_evaluar_marca(marca, producto, insumos, reglas, aditivos) for marca in MARCAS]
     base = {
         "envasado_ausencia_cliente": producto.envasado_ausencia_cliente,
         "requiere_envasado_ausencia_cliente": reglas.requiere_envasado_ausencia_cliente,
@@ -195,8 +202,26 @@ def evaluar_rotulado(db: Session, producto: "Producto", insumos: list[tuple["Ins
     )
 
 
-def _evaluar_marca(marca, producto: "Producto", insumos: list[tuple["Insumo", float]], reglas: ReglasRotulado) -> schemas.MarcaEvaluada:
+def _es_aditivo_edulcorante(aditivo: "Aditivo") -> bool:
+    clase = unicodedata.normalize("NFKD", aditivo.clase_funcional).encode("ascii", "ignore").decode()
+    return clase.strip().lower().startswith("edulcorante")
+
+
+def _evaluar_marca(
+    marca,
+    producto: "Producto",
+    insumos: list[tuple["Insumo", float]],
+    reglas: ReglasRotulado,
+    aditivos: list["Aditivo"] | None = None,
+) -> schemas.MarcaEvaluada:
     insumos_con_marca = [insumo.nombre for insumo, _ in insumos if getattr(insumo, marca.campo_insumo)]
+    if marca.clave == "edulcorantes":
+        # Un aditivo de clase funcional "Edulcorante" marca al producto aunque el insumo no lo declare.
+        insumos_con_marca += [
+            f"{aditivo.nombre} ({aditivo.clase_funcional})"
+            for aditivo in (aditivos or [])
+            if _es_aditivo_edulcorante(aditivo)
+        ]
     declarado = getattr(producto, marca.campo_producto)
     sugerido = bool(insumos_con_marca)
     return schemas.MarcaEvaluada(
@@ -232,7 +257,12 @@ def generar_borrador_pdf(db: Session, producto_id: int) -> bytes:
     if info_nutricional is None:
         raise exceptions.InformacionNutricionalNoCalculada()
 
-    evaluacion = evaluar_rotulado(db, producto, [(item.insumo, item.cantidad) for item in receta.insumos])
+    evaluacion = evaluar_rotulado(
+        db,
+        producto,
+        [(item.insumo, item.cantidad) for item in receta.insumos],
+        [item.aditivo for item in receta.insumos if item.aditivo is not None],
+    )
 
     return generar_pdf(DatosBorrador(
         producto=producto,
@@ -275,11 +305,17 @@ def _fuentes_nutricionales(db: Session, receta: Receta) -> dict[str, Informacion
     return fuentes
 
 
-def _insumos_de_receta(db: Session, producto_id: int) -> list[tuple["Insumo", float]]:
-    receta = db.scalar(select(Receta).where(Receta.producto_id == producto_id))
+def _evaluar_producto(db: Session, producto: "Producto") -> schemas.EvaluacionRotulado:
+    """Evalúa el rotulado frontal con la receta vigente y los aditivos que declara."""
+    receta = _receta_vigente(db, producto.id)
     if receta is None:
-        return []
-    return [(item.insumo, item.cantidad) for item in receta.insumos]
+        return evaluar_rotulado(db, producto, [])
+    return evaluar_rotulado(
+        db,
+        producto,
+        [(item.insumo, item.cantidad) for item in receta.insumos],
+        [item.aditivo for item in receta.insumos if item.aditivo is not None],
+    )
 
 
 # --- Datos del rótulo del Capítulo V del CAA ---
@@ -447,7 +483,7 @@ def _armar_borrador(db, producto, registro, sugeridos, datos):
         if lista else None
     )
     tabla = _tabla_nutricional(db, producto.id)
-    evaluacion = evaluar_rotulado(db, producto, _insumos_de_receta(db, producto.id))
+    evaluacion = _evaluar_producto(db, producto)
     campos = _campos_completitud(datos, sugeridos, tabla, evaluacion)
     
 
@@ -727,7 +763,7 @@ def obtener_empaquetado(db: Session, producto_id: int) -> schemas.EmpaquetadoPro
     sugeridos = _sugeridos(db, producto)
     datos = _datos_del_borrador(registro, sugeridos)
     tabla = _tabla_nutricional(db, producto_id)
-    evaluacion = evaluar_rotulado(db, producto, _insumos_de_receta(db, producto_id))
+    evaluacion = _evaluar_producto(db, producto)
 
     versiones = db.scalars(
         select(VersionEmpaquetado)
@@ -838,7 +874,7 @@ def obtener_version_empaquetado(db: Session, version_id: int) -> schemas.Version
 def generar_pdf_empaquetado(db: Session, producto_id: int) -> bytes:
     producto = leer_producto(db, producto_id)
     empaquetado = obtener_empaquetado(db, producto_id)
-    evaluacion = evaluar_rotulado(db, producto, _insumos_de_receta(db, producto_id))
+    evaluacion = _evaluar_producto(db, producto)
     info = _info_nutricional_vigente(db, producto_id)
 
     return generar_pdf_composicion(DatosEmpaquetado(
