@@ -99,6 +99,21 @@ function EditorEmpaquetado({ producto, empaquetado, clave, puedeEditar }: Editor
     const [zoom, setZoom] = useState(1);
     const [resolucion, setResolucion] = useState<{ ancho: number; alto: number } | null>(null);
     const [desplazando, setDesplazando] = useState(false);
+    const [maximizado, setMaximizado] = useState(false);
+
+    useEffect(() => {
+        if (!maximizado) return;
+        const overflowPrevio = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        const alPresionar = (evento: KeyboardEvent) => {
+            if (evento.key === 'Escape') setMaximizado(false);
+        };
+        window.addEventListener('keydown', alPresionar);
+        return () => {
+            document.body.style.overflow = overflowPrevio;
+            window.removeEventListener('keydown', alPresionar);
+        };
+    }, [maximizado]);
 
     const areaRef = useRef<HTMLDivElement>(null);
     const lienzoRef = useRef<HTMLDivElement>(null);
@@ -443,15 +458,57 @@ function EditorEmpaquetado({ producto, empaquetado, clave, puedeEditar }: Editor
                 </Button>
             </div>
 
-            <div className="empaquetado-editor">
-                <PanelCapasEmpaquetado
-                    elementos={elementos}
-                    seleccionado={seleccionado}
-                    puedeEditar={puedeEditar}
-                    onCambiar={cambiarElemento}
-                />
+            <div className={`empaquetado-editor${maximizado ? ' empaquetado-editor-maximizado' : ''}`}>
+                {!maximizado && (
+                    <PanelCapasEmpaquetado
+                        elementos={elementos}
+                        seleccionado={seleccionado}
+                        puedeEditar={puedeEditar}
+                        onCambiar={cambiarElemento}
+                    />
+                )}
 
                 <div className="empaquetado-lienzo">
+                    {maximizado && (
+                        <div className="empaquetado-restaurar shadow">
+                            <Button
+                                variant="outline-secondary"
+                                size="sm"
+                                onClick={() => cambiarZoom(1 / 1.25)}
+                                aria-label="Alejar"
+                                title="Alejar"
+                            >
+                                <i className="bi bi-zoom-out"></i>
+                            </Button>
+                            <span className="small text-muted text-center" style={{ minWidth: '48px' }}>
+                                {Math.round(zoom * 100)} %
+                            </span>
+                            <Button
+                                variant="outline-secondary"
+                                size="sm"
+                                onClick={() => cambiarZoom(1.25)}
+                                aria-label="Acercar"
+                                title="Acercar"
+                            >
+                                <i className="bi bi-zoom-in"></i>
+                            </Button>
+                            <Button variant="outline-secondary" size="sm" onClick={ajustarZoom}>
+                                Ajustar
+                            </Button>
+                            <Button variant="outline-secondary" size="sm" onClick={() => setZoom(1)}>
+                                100 %
+                            </Button>
+                            <Button
+                                variant="primary"
+                                size="sm"
+                                onClick={() => setMaximizado(false)}
+                                title="Restaurar (Esc)"
+                            >
+                                <i className="bi bi-fullscreen-exit me-1"></i>
+                                Restaurar
+                            </Button>
+                        </div>
+                    )}
                     <div
                         ref={lienzoRef}
                         className="flex-grow-1 border rounded bg-light"
@@ -492,43 +549,54 @@ function EditorEmpaquetado({ producto, empaquetado, clave, puedeEditar }: Editor
                         </div>
                     </div>
 
-                    <div className="d-flex flex-wrap align-items-center gap-2 small text-muted">
-                        <span className="fw-semibold">Zoom</span>
-                        <Button
-                            variant="outline-secondary"
-                            size="sm"
-                            onClick={() => cambiarZoom(1 / 1.25)}
-                            aria-label="Alejar"
-                            title="Alejar"
-                        >
-                            <i className="bi bi-zoom-out"></i>
-                        </Button>
-                        <span className="text-center" style={{ minWidth: '52px' }}>
-                            {Math.round(zoom * 100)} %
-                        </span>
-                        <Button
-                            variant="outline-secondary"
-                            size="sm"
-                            onClick={() => cambiarZoom(1.25)}
-                            aria-label="Acercar"
-                            title="Acercar"
-                        >
-                            <i className="bi bi-zoom-in"></i>
-                        </Button>
-                        <Button variant="outline-secondary" size="sm" onClick={ajustarZoom}>
-                            Ajustar
-                        </Button>
-                        <Button variant="outline-secondary" size="sm" onClick={() => setZoom(1)}>
-                            100 %
-                        </Button>
-                        <span>
-                            {resolucion
-                                ? `Foto a resolución real: ${resolucion.ancho} × ${resolucion.alto} px (100 % = 1:1)`
-                                : 'Sin foto: el 100 % es el lienzo ajustado'}
-                            {' · '}Ruedita sobre la foto para acercar o alejar donde apuntás y arrastrá el fondo para
-                            desplazarla.
-                        </span>
-                    </div>
+                    {!maximizado && (
+                        <div className="d-flex flex-wrap align-items-center gap-2 small text-muted">
+                            <span className="fw-semibold">Zoom</span>
+                            <Button
+                                variant="outline-secondary"
+                                size="sm"
+                                onClick={() => cambiarZoom(1 / 1.25)}
+                                aria-label="Alejar"
+                                title="Alejar"
+                            >
+                                <i className="bi bi-zoom-out"></i>
+                            </Button>
+                            <span className="text-center" style={{ minWidth: '52px' }}>
+                                {Math.round(zoom * 100)} %
+                            </span>
+                            <Button
+                                variant="outline-secondary"
+                                size="sm"
+                                onClick={() => cambiarZoom(1.25)}
+                                aria-label="Acercar"
+                                title="Acercar"
+                            >
+                                <i className="bi bi-zoom-in"></i>
+                            </Button>
+                            <Button variant="outline-secondary" size="sm" onClick={ajustarZoom}>
+                                Ajustar
+                            </Button>
+                            <Button variant="outline-secondary" size="sm" onClick={() => setZoom(1)}>
+                                100 %
+                            </Button>
+                            <Button
+                                variant="outline-primary"
+                                size="sm"
+                                onClick={() => setMaximizado(true)}
+                                title="Maximizar el editor"
+                            >
+                                <i className="bi bi-arrows-fullscreen me-1"></i>
+                                Maximizar
+                            </Button>
+                            <span>
+                                {resolucion
+                                    ? `Foto a resolución real: ${resolucion.ancho} × ${resolucion.alto} px (100 % = 1:1)`
+                                    : 'Sin foto: el 100 % es el lienzo ajustado'}
+                                {' · '}Ruedita sobre la foto para acercar o alejar donde apuntás y arrastrá el fondo para
+                                desplazarla.
+                            </span>
+                        </div>
+                    )}
                 </div>
             </div>
 
