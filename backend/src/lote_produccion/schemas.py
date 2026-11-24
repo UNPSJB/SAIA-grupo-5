@@ -40,6 +40,7 @@ class LoteProduccion(LoteProduccionBase):
     sector: Optional[SectorAlmacenamientoResumen] = None
     pasos_pendientes: int = 0
     checklist_completo: bool = True
+    insumos_completos: bool = False
     receta_id: Optional[int] = None
     receta: Optional[RecetaVersion] = None
 

@@ -15,7 +15,7 @@ from src.personal.models import Persona
 from src.auth.utils import get_password_hash
 from src.unidad_medida.models import UnidadMedida
 from src.producto.models import Producto
-from src.lote_produccion.models import LoteProduccion
+from src.lote_produccion.models import LoteProduccion, InsumoUtilizado
 from src.proveedor.models import Proveedor, ProveedorInsumo
 from src.lote_proveedor.models import LoteProveedor
 from src.clientes.models import Cliente
@@ -29,7 +29,7 @@ from src.pedidos_proveedor.constants import EstadoPedidoProveedor
 from src.sector.models import Sector
 from src.equipos.models import Equipo
 from src.registro_temperatura.models import RegistroTemperatura
-from src.receta.models import Receta
+from src.receta.models import Receta, InsumoReceta
 from src.etapa_receta.models import EtapaReceta
 from src.paso_etapa.models import PasoEtapa
 from src.supervision_lote import services as supervision_services
@@ -142,9 +142,10 @@ def multiples_unidades_medida(db_session):
     return unidades
 
 @pytest.fixture(scope="function")
-def unico_lote_produccion(db_session, unico_producto):
+def unico_lote_produccion(db_session, unico_producto, unica_receta, unico_insumo_lote):
     lote = LoteProduccion(
         producto_id=unico_producto.id, 
+        receta_id=unica_receta.id,
         fecha_produccion=date(2026,10,1),
         fecha_vencimiento=date(2028, 10, 1), 
         cantidad_producida=100,
@@ -152,6 +153,14 @@ def unico_lote_produccion(db_session, unico_producto):
         activo=True)
 
     db_session.add(lote)
+    db_session.flush()
+    db_session.add(
+        InsumoUtilizado(
+            lote_produccion_id=lote.id,
+            insumo_lote_id=unico_insumo_lote.id,
+            cantidad_utilizada=10,
+        )
+    )
     db_session.commit()
     db_session.refresh(lote)
     return lote
@@ -798,7 +807,7 @@ def multiples_registros_temperatura(db_session, unico_equipo_frio, persona_super
 
 
 @pytest.fixture(scope="function")
-def unica_receta(db_session, unico_producto):
+def unica_receta(db_session, unico_producto, unico_insumo):
     receta = Receta(
         producto_id=unico_producto.id,
         version=1,
@@ -806,6 +815,14 @@ def unica_receta(db_session, unico_producto):
     )
     db_session.add(receta)
     db_session.flush()
+
+    db_session.add(
+        InsumoReceta(
+            receta_id=receta.id,
+            insumo_id=unico_insumo.id,
+            cantidad=0.1,
+        )
+    )
 
     etapa = EtapaReceta(
         receta_id=receta.id,
@@ -832,9 +849,10 @@ def unica_receta(db_session, unico_producto):
 
 
 @pytest.fixture(scope="function")
-def unico_lote_con_supervision(db_session, unico_producto, unica_receta):
+def unico_lote_con_supervision(db_session, unico_producto, unica_receta, unico_insumo_lote):
     lote = LoteProduccion(
         producto_id=unico_producto.id,
+        receta_id=unica_receta.id,
         fecha_produccion=date(2026, 10, 10),
         fecha_vencimiento=date(2026, 12, 10),
         cantidad_producida=50,
@@ -842,6 +860,14 @@ def unico_lote_con_supervision(db_session, unico_producto, unica_receta):
         activo=True,
     )
     db_session.add(lote)
+    db_session.flush()
+    db_session.add(
+        InsumoUtilizado(
+            lote_produccion_id=lote.id,
+            insumo_lote_id=unico_insumo_lote.id,
+            cantidad_utilizada=5,
+        )
+    )
     db_session.commit()
     db_session.refresh(lote)
     supervision_services.generar_checklist_elaboracion_lote(db_session, lote)

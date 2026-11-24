@@ -84,6 +84,7 @@ export function ListPage() {
 
     const handleInsumosAsociados = () => {
         mutate("/lotes-produccion/");
+        mutate("/insumos-lote/");
         if (loteInsumos) mutate(`/lotes-produccion/${loteInsumos.id}`);
         setLoteInsumos(null);
     };
@@ -175,11 +176,20 @@ export function ListPage() {
                 const config = CONFIG_BOTON[row.estado] || CONFIG_BOTON["En produccion"];
                 const stockActual = row.cantidad_disponible ?? row.cantidad_producida;
                 const checklistCompleto = row.checklist_completo ?? true;
+                const insumosCompletos = row.insumos_completos ?? true;
                 const pasosPendientes = row.pasos_pendientes ?? 0;
-                const puedeAvanzar = (row.estado === "En produccion" || row.estado === "Empaquetando") && checklistCompleto;
-                const tooltipAvanzar = !checklistCompleto
-                    ? `Checklist incompleto (${pasosPendientes} ${pasosPendientes === 1 ? "paso pendiente" : "pasos pendientes"})`
-                    : config.tooltip;
+                const puedeAvanzarEnProd = row.estado === "En produccion" && checklistCompleto && insumosCompletos;
+                const puedeAvanzarEmp = row.estado === "Empaquetando" && checklistCompleto;
+                const puedeAvanzar = puedeAvanzarEnProd || puedeAvanzarEmp;
+
+                let tooltipAvanzar = config.tooltip;
+                if (row.estado === "En produccion" && !insumosCompletos && !checklistCompleto) {
+                    tooltipAvanzar = `Faltan insumos de la receta y ${pasosPendientes} ${pasosPendientes === 1 ? "paso" : "pasos"} del checklist`;
+                } else if (row.estado === "En produccion" && !insumosCompletos) {
+                    tooltipAvanzar = "Faltan asociar los insumos requeridos por la receta";
+                } else if (!checklistCompleto) {
+                    tooltipAvanzar = `Checklist incompleto (${pasosPendientes} ${pasosPendientes === 1 ? "paso pendiente" : "pasos pendientes"})`;
+                }
                 const puedeModificarInsumos = row.activo && row.estado === "En produccion";
                 const tieneInsumos = (row.insumos_utilizados?.length ?? 0) > 0;
                 const mostrarBotonAvanzar = row.estado === "En produccion" || row.estado === "Empaquetando";
@@ -315,10 +325,14 @@ export function ListPage() {
             <CambiarEstadoLoteModal
                 lote={loteToChange}
                 onHide={() => setLoteToChange(null)}
-                onChanged={() => mutate("/lotes-produccion/")}
+                onChanged={() => {
+                    mutate("/lotes-produccion/");
+                    mutate("/supervision-lotes/");
+                }}
             />
             {loteInsumos && (
                 <AsociarInsumosModal
+                    lote={loteInsumos}
                     loteId={loteInsumos.id}
                     insumosAsociados={loteInsumos.insumos_utilizados ?? []}
                     onHide={() => setLoteInsumos(null)}

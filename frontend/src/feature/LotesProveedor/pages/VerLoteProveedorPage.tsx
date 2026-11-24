@@ -319,9 +319,7 @@ export function VerLoteProveedorPage() {
                     )}
                 </Card.Body>
                 <Card.Footer className="bg-light border-top p-3 d-flex justify-content-between align-items-center">
-                    <Button variant="outline-secondary" onClick={() => navigate('/recepciones')}>
-                        <i className="bi bi-arrow-left me-1"></i>Volver al Listado
-                    </Button>
+                    
 
                     {currentUser?.operar && lote.activo && lote.estado !== 'acomodado' && (
                         <Button variant="success" onClick={() => setModalAvanzar(true)}>
@@ -335,6 +333,10 @@ export function VerLoteProveedorPage() {
             <TarjetaTrazabilidadLote modo="lote_proveedor" entidadId={lote.id} />
 
             <ListaIncidentesVinculados loteProveedorId={lote.id} />
+
+            <Button variant="outline-secondary" onClick={() => navigate('/recepciones')}>
+                <i className="bi bi-arrow-left me-1"></i>Volver al Listado
+            </Button>
 
             <AvanzarEtapaLoteProveedorModal
                 lote={modalAvanzar ? lote : null}
