@@ -131,6 +131,7 @@ import { EscalarRecetaPage } from './feature/Recetas/pages/EscalarRecetaPage.tsx
 import { RecetasVigentesPage } from './feature/Recetas/pages/RecetasVigentesPage.tsx';
 import { ConsultaRecetaPage } from './feature/Recetas/pages/ConsultaRecetaPage.tsx';
 import { ReglasRotuladoPage } from './feature/Rotulado/pages/ReglasRotuladoPage.tsx'
+import { RotuladoProductoPage } from './feature/Rotulado/pages/RotuladoProductoPage.tsx'
 
 import { LotesHistorialPage } from './feature/LoteProduccionHistorial/pages/ListPage.tsx'
 import { ListPage as LoteProduccionListPage } from './feature/LotesProduccion/pages/ListPage.tsx'
@@ -311,6 +312,7 @@ const router = createBrowserRouter([
               { path: ':id/receta/editar', element: <EditarRecetaPage /> },
               { path: ':id/receta', element: <VerRecetaPage /> },
               { path: ':id/receta/escalar', element: <EscalarRecetaPage />},
+              { path: ':id/rotulado', element: <RotuladoProductoPage />},
             ],
           },
           {

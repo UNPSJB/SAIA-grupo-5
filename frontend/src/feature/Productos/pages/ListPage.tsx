@@ -14,7 +14,6 @@ import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
 
 import { DeleteProductoModal } from '../components/DeleteProductoModal';
-import { RotuladoProductoModal } from '../../Rotulado/components/RotuladoProductoModal';
 import type { Producto } from '../types';
 import { ListFilter } from "../../../components/ListFilter";
 
@@ -32,7 +31,6 @@ export function ListPage() {
     const [search, setSearch] = useState('');
     const { data: productos, error, isLoading } = useApi<Producto[]>("/productos/");
     const [productoToDelete, setProductoToDelete] = useState<Producto | null>(null);
-    const [productoRotulado, setProductoRotulado] = useState<Producto | null>(null);
     const [estadoFiltro, setEstadoFiltro] = useState<EstadoFiltro>("todos");
 
     const filteredProducto = useMemo(() => {
@@ -177,7 +175,7 @@ export function ListPage() {
                         size="sm"
                         tooltip="Rotulado frontal"
                         icon="bi bi-tags"
-                        onClick={() => setProductoRotulado(row)}
+                        onClick={() => navigate(`/productos/${row.id}/rotulado`)}
                     />
                     {row.receta != null && (
                         <ActionButton
@@ -276,11 +274,6 @@ export function ListPage() {
                 producto={productoToDelete}
                 onHide={() => setProductoToDelete(null)}
                 onDeleted={() => mutate("/productos/")}
-            />
-            <RotuladoProductoModal
-                producto={productoRotulado}
-                onHide={() => setProductoRotulado(null)}
-                puedeEditar={Boolean(currentUser?.administrar)}
             />
         </Container>
     );

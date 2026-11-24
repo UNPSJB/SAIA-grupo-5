@@ -17,6 +17,19 @@
     letter-spacing: 0.03em;
 }
 
+.dato-encabezado {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.25rem 0.5rem;
+    margin-bottom: 0.2rem;
+}
+
+.dato-encabezado .dato-etiqueta {
+    margin-bottom: 0;
+}
+
 .dato-valor {
     font-size: 1rem;
     overflow-wrap: anywhere;

@@ -7,6 +7,7 @@ type Ancho = ColProps['xs'];
 interface DatoProps {
     etiqueta: string;
     children: ReactNode;
+    accion?: ReactNode;
     xs?: Ancho;
     sm?: Ancho;
     md?: Ancho;
@@ -15,11 +16,18 @@ interface DatoProps {
     className?: string;
 }
 
-export function Dato({ etiqueta, children, xs = 12, sm, md, lg, xl, className }: DatoProps) {
+export function Dato({ etiqueta, children, accion, xs = 12, sm, md, lg, xl, className }: DatoProps) {
     return (
         <Col xs={xs} sm={sm} md={md} lg={lg} xl={xl} className={className}>
             <div className="dato">
-                <span className="dato-etiqueta">{etiqueta}</span>
+                {accion ? (
+                    <div className="dato-encabezado">
+                        <span className="dato-etiqueta">{etiqueta}</span>
+                        {accion}
+                    </div>
+                ) : (
+                    <span className="dato-etiqueta">{etiqueta}</span>
+                )}
                 <div className="dato-valor">{children}</div>
             </div>
         </Col>

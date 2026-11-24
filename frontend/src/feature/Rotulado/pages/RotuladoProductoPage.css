@@ -1,0 +1,30 @@
+.valor-marca .btn {
+    --bs-btn-color: var(--sb-seafoam-secondary);
+    --bs-btn-border-color: var(--sb-seafoam-secondary);
+    --bs-btn-hover-color: var(--sb-seafoam-secondary);
+    --bs-btn-hover-bg: #e8f6f0;
+    --bs-btn-hover-border-color: var(--sb-seafoam-secondary);
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: var(--sb-seafoam-secondary);
+    --bs-btn-active-border-color: var(--sb-seafoam-secondary);
+    --bs-btn-disabled-color: var(--sb-seafoam-secondary);
+    --bs-btn-disabled-border-color: var(--sb-seafoam-secondary);
+}
+
+.valor-marca .btn-check:checked + .btn {
+    background-color: var(--sb-seafoam-secondary);
+    border-color: var(--sb-seafoam-secondary);
+    color: #fff;
+}
+
+/* Radios y checks de la página con la paleta del proyecto (Bootstrap los pinta de azul primary) */
+.rotulado-producto .form-check-input:checked,
+.rotulado-producto .form-check-input[type="checkbox"]:indeterminate {
+    background-color: var(--sb-seafoam-secondary);
+    border-color: var(--sb-seafoam-secondary);
+}
+
+.rotulado-producto .form-check-input:focus {
+    border-color: var(--sb-seafoam-secondary);
+    box-shadow: 0 0 0 0.25rem rgba(15, 162, 139, 0.25);
+}
