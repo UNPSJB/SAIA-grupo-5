@@ -39,6 +39,29 @@ def generar_codigo_barras(prefijo_gs1: str, prefijo_empresa: str, codigo_product
     return codigo12 + str(digito_control)
 
 
+def completar_codigos_barras(db: Session, configuracion: ConfiguracionSistema | None = None) -> int:
+    """Genera el código de barras de los productos que tienen código de producto pero no código de barras.
+
+    Cubre los productos cargados antes de configurar el prefijo de empresa. No modifica
+    los códigos ya generados. No hace commit: lo hace quien la llama.
+    """
+    configuracion = configuracion or db.get(ConfiguracionSistema, ID_CONFIGURACION_SISTEMA)
+    if configuracion is None or not configuracion.prefijo_empresa:
+        return 0
+
+    db.flush()
+    productos = db.scalars(
+        select(Producto).where(Producto.codigo_producto.is_not(None), Producto.codigo_barras.is_(None))
+    ).all()
+    for producto in productos:
+        producto.codigo_barras = generar_codigo_barras(
+            configuracion.prefijo_gs1,
+            configuracion.prefijo_empresa,
+            producto.codigo_producto,
+        )
+    return len(productos)
+
+
 # operaciones CRUD para Productos
 
 def crear_producto(db: Session, producto: schemas.ProductoCreate) -> schemas.Producto:

@@ -366,6 +366,7 @@ export function ConfiguracionSistemaPage() {
                                 </Row>
                                 <Form.Text className="text-muted d-block mb-3">
                                     Los códigos generados son demostrativos hasta disponer de un prefijo oficial asignado por GS1.
+                                    Al guardar, los productos con código de producto que todavía no tienen código de barras lo reciben.
                                     Modificar los prefijos no cambia los códigos ya guardados.
                                 </Form.Text>
                                 <div className="d-flex justify-content-end">
