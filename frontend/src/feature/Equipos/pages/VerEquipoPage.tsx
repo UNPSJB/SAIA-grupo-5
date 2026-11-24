@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Badge, Button, Card, Col, Container, Form, Row, Tab, Table } from 'react-bootstrap';
+import { Badge, Button, Card, Col, Container, Row, Tab, Table } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 import { mutate } from 'swr';
 import { AppTabs } from '../../../components/AppTabs';
@@ -13,6 +13,7 @@ import { useAuth } from '../../../hooks/useAuth';
 import { GraficoTemperaturaEquipo } from '../components/GraficoTemperaturaEquipo';
 import { RegistrarTemperaturaModal } from '../components/RegistrarTemperaturaModal';
 import type { AlmacenamientoEquipoResponse, Equipo, RegistroTemperatura } from '../types';
+import { AppSwitch } from '../../../components/AppSwitch';
 
 export function VerEquipoPage() {
     const { id } = useParams();
@@ -130,8 +131,7 @@ export function VerEquipoPage() {
                                     <h5 className="fw-bold mb-1">Historial de registros de temperatura</h5>
                                     <p className="text-muted small mb-0">Mediciones cargadas por operarios y supervisores</p>
                                 </div>
-                                <Form.Check
-                                    type="switch"
+                                <AppSwitch
                                     id="filtro-solo-alertas-temp"
                                     label="Solo alertas fuera de rango"
                                     checked={soloAlertas}

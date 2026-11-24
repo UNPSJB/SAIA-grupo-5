@@ -6,6 +6,7 @@ import { useAuth } from "../../../hooks/useAuth";
 import { api } from "../../../libs/axios";
 import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
 import type { FilaNutrienteCalculado, InformacionNutricionalReceta } from "../types";
+import { AppSwitch } from "../../../components/AppSwitch";
 
 interface InfoNutricionalRecetaFormProps {
     recetaId: number;
@@ -92,8 +93,7 @@ export function InfoNutricionalReceta({ recetaId }: InfoNutricionalRecetaFormPro
 
                 <div className="d-flex align-items-center gap-3">
                     {infoReceta && (
-                        <Form.Check
-                            type="switch"
+                        <AppSwitch
                             id={`switch-exactos-${recetaId}`}
                             label="Ver valores exactos"
                             className="small mb-0"

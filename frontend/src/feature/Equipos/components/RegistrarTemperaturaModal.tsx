@@ -9,6 +9,7 @@ import { api } from '../../../libs/axios';
 import type { Sector } from '../../Sectores/types';
 import type { TipoIncidente } from '../../TiposIncidentes/types';
 import type { AlmacenamientoEquipoResponse, Equipo, RegistroTemperaturaResultado } from '../types';
+import { AppSwitch } from '../../../components/AppSwitch';
 
 interface RegistrarTemperaturaModalProps {
     equipo: Equipo | null;
@@ -470,8 +471,7 @@ export function RegistrarTemperaturaModal({ equipo, onHide, onRegistrado }: Regi
 
                                 {tieneMercaderiaActual && (
                                     <div className="mt-3 pt-3 border-top text-start">
-                                        <Form.Check
-                                            type="switch"
+                                        <AppSwitch
                                             id="switch-reubicar-mercaderia"
                                             label="Trasladar mercaderia almacenada a otra ubicacion"
                                             className="fw-bold small mb-2"

@@ -9,6 +9,7 @@ import { useApi } from "../../../hooks/useApi";
 import { api } from "../../../libs/axios";
 import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
 import type { ConfiguracionSistema } from "../types";
+import { AppSwitch } from "../../../components/AppSwitch";
 
 const CONFIGURACION_URL = "/configuracion-sistema/";
 
@@ -114,8 +115,7 @@ export function VistaPublicaPage() {
                                 </Col>
 
                                 <Col xs="auto">
-                                    <Form.Check
-                                        type="switch"
+                                    <AppSwitch
                                         id="vista-publica-activa"
                                         aria-label="Activar vista pública"
                                         checked={activa}
@@ -195,8 +195,7 @@ export function VistaPublicaPage() {
                                                     <p className="small text-secondary mb-0">{detalle}</p>
                                                 </div>
 
-                                                <Form.Check
-                                                    type="switch"
+                                                <AppSwitch
                                                     id={clave}
                                                     aria-label={`Mostrar ${titulo}`}
                                                     checked={Boolean(seleccionados[clave])}

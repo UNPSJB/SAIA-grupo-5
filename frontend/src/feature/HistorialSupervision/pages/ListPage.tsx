@@ -11,6 +11,7 @@ import { useAuth } from '../../../hooks';
 import { useApi } from '../../../hooks/useApi';
 import type { SupervisionOcurrencia } from '../../ChecklistSupervision/types';
 import { ESTADO_HISTORIAL_ESTILOS } from '../../Historial/types';
+import { AppSwitch } from '../../../components/AppSwitch';
 
 function toISODate(fecha: Date): string {
     const mes = String(fecha.getMonth() + 1).padStart(2, '0');
@@ -229,8 +230,7 @@ export function HistorialSupervisionPage() {
                 </Col>
                 <Col className="d-flex flex-wrap justify-content-end align-items-center gap-2">
                     {currentUser?.supervisor && (
-                        <Form.Check
-                            type="switch"
+                        <AppSwitch
                             id="switch-solo-mios-supervision"
                             label="Solo supervisados por mi"
                             checked={soloMios}

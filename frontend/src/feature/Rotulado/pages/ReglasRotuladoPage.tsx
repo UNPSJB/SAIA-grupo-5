@@ -17,6 +17,7 @@ import { api } from '../../../libs/axios';
 import { mostrarAlertaError, mostrarAlertaExito } from '../../../libs/alertas';
 import { REGLAS_POR_MARCA, type NewReglasRotulado, type ReglasRotulado } from '../types';
 import './ReglasRotuladoPage.css';
+import { AppSwitch } from '../../../components/AppSwitch';
 
 const formatearFecha = (fecha: string | null) =>
     fecha ? new Date(fecha).toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" }) : "-";
@@ -184,8 +185,7 @@ function FormularioReglas({ vigente, puedeEditar }: FormularioReglasProps) {
                         <h6 className="detalle-seccion-titulo">Alcance del rotulado</h6>
                         <Row className="g-3 mb-4">
                             <Dato etiqueta="Condición de comercialización">
-                                <Form.Check
-                                    type="switch"
+                                <AppSwitch
                                     id="requiere_envasado"
                                     label="Solo corresponde el rotulado si el producto se comercializa envasado en ausencia del cliente"
                                     {...register("requiere_envasado_ausencia_cliente")}

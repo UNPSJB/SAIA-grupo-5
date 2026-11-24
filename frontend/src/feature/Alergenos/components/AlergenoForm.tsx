@@ -2,6 +2,7 @@ import { Button, Form } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import type { NewAlergeno } from '../types';
+import { AppSwitch } from '../../../components/AppSwitch';
 
 interface AlergenoFormProps {
     textoBoton: string;
@@ -69,8 +70,7 @@ export function AlergenoForm({ textoBoton, onSubmit, valoresIniciales }: Alergen
                 </Form.Group>
 
                 <Form.Group className="mb-3 text-start" controlId="formEsTacc">
-                    <Form.Check
-                        type="switch"
+                    <AppSwitch
                         label="Contiene gluten (TACC: Trigo, Avena, Cebada o Centeno)"
                         {...register("es_tacc")}
                     />

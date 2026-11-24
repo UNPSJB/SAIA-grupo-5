@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import type { Sector } from '../../Sectores/types';
 import { useApi } from '../../../hooks/useApi';
 import type { NewEquipo } from '../types';
+import { AppSwitch } from '../../../components/AppSwitch';
 
 interface EquipoFormProps {
   textoBoton: string;
@@ -129,8 +130,7 @@ export function EquipoForm({ textoBoton, onSubmit, valoresIniciales }: EquipoFor
         </Form.Group>
 
         <div className="p-3 mb-3 border rounded bg-light-subtle text-start">
-          <Form.Check
-            type="switch"
+          <AppSwitch
             id="switch-controla-temperatura"
             label={<strong>Controla temperatura (Cadena de frio / termica)</strong>}
             checked={controlaTemperatura}
