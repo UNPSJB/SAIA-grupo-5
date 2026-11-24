@@ -11,6 +11,7 @@ from src.configuracion_sistema.constants import (
 class DatosPymeBase(BaseModel):
     nombre_pyme: Annotated[str, Field(min_length=1, max_length=100)] = "Mi establecimiento"
     logo_pyme: str | None = None
+    mostrar_logo_pdf: bool = True
     telefono_pyme: Annotated[str | None, Field(max_length=30)] = None
     email_pyme: Annotated[str | None, Field(max_length=150)] = None
     direccion_pyme: Annotated[str | None, Field(max_length=200)] = None
@@ -69,6 +70,7 @@ class ConfiguracionSistemaBase(DatosPymeBase):
 class ConfiguracionSistemaUpdate(BaseModel):
     nombre_pyme: Annotated[str | None, Field(min_length=1, max_length=100)] = None
     logo_pyme: str | None = None
+    mostrar_logo_pdf: bool | None = None
     telefono_pyme: Annotated[str | None, Field(max_length=30)] = None
     email_pyme: Annotated[str | None, Field(max_length=150)] = None
     direccion_pyme: Annotated[str | None, Field(max_length=200)] = None

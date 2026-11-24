@@ -1,5 +1,10 @@
 import { toPng } from "html-to-image";
 import jsPDF from "jspdf";
+import {
+    finalizarPaginasPdf,
+    INICIO_CONTENIDO_PDF,
+    obtenerDatosPymePdf,
+} from "../../components/CabeceraPdf";
 
 function sanitizarNombreArchivo(nombre: string): string {
     return nombre
@@ -81,31 +86,40 @@ export async function exportarGraficoImagen({ contenedor, titulo, subtitulo, per
 
 export async function exportarGraficoPdf({ contenedor, titulo, subtitulo, periodo }: ExportarGraficoOpciones): Promise<void> {
     const imgGrafico = await capturarContenedorPng(contenedor);
+    const datosPyme = await obtenerDatosPymePdf();
 
     const doc = new jsPDF({ orientation: "landscape" });
     const margin = 14;
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
+
+    const inicioTitulo = datosPyme ? INICIO_CONTENIDO_PDF + 5 : 18;
+    const inicioGrafico = datosPyme ? INICIO_CONTENIDO_PDF + 17 : 30;
+
     const maxWidth = pageWidth - margin * 2;
-    const maxHeight = pageHeight - 42;
+    const maxHeight = pageHeight - inicioGrafico - 12;
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
     doc.setTextColor(0);
-    doc.text(titulo, margin, 18);
+    doc.text(titulo, margin, inicioTitulo);
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor(90);
+
     const bajada = [subtitulo, periodo ? `Período: ${periodo}` : undefined].filter(Boolean).join(" · ");
-    doc.text(bajada, margin, 25);
+    doc.text(bajada, margin, inicioTitulo + 7);
 
     const ratio = Math.min(maxWidth / imgGrafico.width, maxHeight / imgGrafico.height);
     const imgWidth = imgGrafico.width * ratio;
     const imgHeight = imgGrafico.height * ratio;
 
-    doc.addImage(imgGrafico.src, "PNG", margin, 30, imgWidth, imgHeight);
+    doc.addImage(imgGrafico.src, "PNG", margin, inicioGrafico, imgWidth, imgHeight);
+
+    if (datosPyme) {
+        finalizarPaginasPdf(doc, datosPyme);
+    }
 
     doc.save(`grafico_${sanitizarNombreArchivo(titulo)}.pdf`);
 }
-

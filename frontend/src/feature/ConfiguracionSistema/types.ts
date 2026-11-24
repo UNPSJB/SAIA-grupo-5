@@ -2,6 +2,7 @@ export type ConfiguracionSistema = {
     id: number
     nombre_pyme: string
     logo_pyme: string | null
+    mostrar_logo_pdf: boolean
     telefono_pyme: string | null
     email_pyme: string | null
     direccion_pyme: string | null
@@ -33,6 +34,7 @@ export type ConfiguracionSistema = {
 export type ConfiguracionSistemaUpdate = {
     nombre_pyme?: string
     logo_pyme?: string | null
+    mostrar_logo_pdf?: boolean
     telefono_pyme?: string | null
     email_pyme?: string | null
     direccion_pyme?: string | null

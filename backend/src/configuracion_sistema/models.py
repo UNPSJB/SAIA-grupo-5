@@ -13,6 +13,7 @@ class ConfiguracionSistema(ModeloBase):
     # Datos de la PyME
     nombre_pyme: Mapped[str] = mapped_column(String(100), nullable=False, default="Mi establecimiento")
     logo_pyme: Mapped[str | None] = mapped_column(Text, nullable=True)
+    mostrar_logo_pdf: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     telefono_pyme: Mapped[str | None] = mapped_column(String(30), nullable=True)
     email_pyme: Mapped[str | None] = mapped_column(String(150), nullable=True)
     direccion_pyme: Mapped[str | None] = mapped_column(String(200), nullable=True)

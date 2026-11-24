@@ -12,6 +12,11 @@ logger = logging.getLogger(__name__)
 router = PermissionedRouter(prefix="/configuracion-sistema", tags=["configuracion_sistema"])
 
 
+@router.get("/datos-pyme", response_model=schemas.DatosPymeBase)
+def read_datos_pyme(db: Session = Depends(get_db)):
+    return services.leer_configuracion(db)
+
+
 @router.get("/", response_model=schemas.ConfiguracionSistema, dependencies=[Depends(tiene_permiso_administrar)])
 def read_configuracion(db: Session = Depends(get_db)):
     return services.leer_configuracion(db)
