@@ -3,6 +3,7 @@ import { Button, Col, Form, Modal, Row } from "react-bootstrap";
 import { api } from "../../../libs/axios";
 import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
 import type { ParametroNutriente } from "../types";
+import { AppSwitch } from "../../../components/AppSwitch";
 
 interface EditarParametroModalProps {
     parametro: ParametroNutriente | null;
@@ -135,8 +136,7 @@ export function EditarParametroModal({ parametro, onHide, onSaved }: EditarParam
                             </Form.Group>
                         </Col>
                         <Col md={6}>
-                            <Form.Check
-                                type="switch"
+                            <AppSwitch
                                 id="switch-declara-vd"
                                 label="Declara %VD en tabla"
                                 checked={declaraVd}

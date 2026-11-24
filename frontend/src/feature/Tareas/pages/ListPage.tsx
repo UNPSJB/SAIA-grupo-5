@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Alert, Badge, Button, ButtonGroup, Card, Col, Container, Dropdown, Form, Row, Spinner, Tab, Tabs } from "react-bootstrap";
+import { Alert, Badge, Button, ButtonGroup, Card, Col, Container, Dropdown, Form, Row, Spinner, Tab } from "react-bootstrap";
+import { AppTabs } from "../../../components/AppTabs";
 import { useSearchParams } from "react-router-dom";
 import { mutate } from "swr";
 import { PageHeader } from "../../../components/PageHeader";
@@ -161,7 +162,7 @@ export function TareasPage() {
 
             {planId && !isLoadingTareas && !errorTareas && (
                 <div data-tour="tarjetas-tareas">
-                    <Tabs defaultActiveKey={String(Frecuencia.DIARIA)} className="mb-3">
+                    <AppTabs defaultActiveKey={String(Frecuencia.DIARIA)} className="mb-3">
                         {FRECUENCIA_TABS.map(({ key, label, emptyMessage }) => {
                             const tareasDeLaPestania = tareasPorFrecuencia[key] ?? [];
                             return (
@@ -206,7 +207,7 @@ export function TareasPage() {
                                 </Tab>
                             );
                         })}
-                    </Tabs>
+                    </AppTabs>
                 </div>
             )}
 

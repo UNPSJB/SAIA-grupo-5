@@ -8,6 +8,7 @@ import { api } from "../../../libs/axios";
 import { EstadoBadge } from "../../../components/EstadoBadge";
 import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
 import type { Alergeno, ContaminacionCruzadaItem, DeclaracionAlergenos } from "../types";
+import { AppSwitch } from "../../../components/AppSwitch";
 
 interface AlergenosRecetaFormProps {
     recetaId: number;
@@ -189,8 +190,7 @@ export function AlergenosReceta({ recetaId, recetaVigente = true }: AlergenosRec
                                             onChange={() => cambiarSeleccionCruzada(alergeno.id)}
                                         />
                                         {seleccionado && (
-                                            <Form.Check
-                                                type="switch"
+                                            <AppSwitch
                                                 id={`cc-der-${alergeno.id}`}
                                                 label="Derivado"
                                                 checked={seleccionado.es_derivado}

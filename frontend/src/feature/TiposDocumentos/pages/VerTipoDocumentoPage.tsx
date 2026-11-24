@@ -4,6 +4,8 @@ import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 import type { TipoDocumento } from "../types";
 import { PageLoading } from "../../../components/PageLoading";
+import { Dato } from "../../../components/Dato";
+import { EstadoBadge } from "../../../components/EstadoBadge";
 
 
 export function VerTipoDocumentoPage() {
@@ -32,65 +34,40 @@ export function VerTipoDocumentoPage() {
         <Container>
             <PageHeader title="Detalle del Tipo Documento" />
 
-            <Row className="justify-content-center mt-3">
-                <Col md={8}>
-                    <Card className="shadow-sm border-0 rounded-3">
-                        <Card.Body className="p-4">
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Nombre</Col>
-                                <Col sm={8} className="fs-5">{tipoDocumento.nombre}</Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Descripcion</Col>
-                                <Col sm={8}>
-                                    {tipoDocumento.descripcion ? (
-                                        <span>{tipoDocumento.descripcion}</span>) : (<span className="text-muted fst-italic">Sin descripcion detallada</span>)}
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-2 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Estado Actual</Col>
-                                <Col sm={8}>
-                                    <div
-                                        style={{
-                                            padding: '6px 16px',
-                                            borderRadius: '20px',
-                                            background: tipoDocumento.activo ? '#dcfce7' : '#fee2e2',
-                                            color: tipoDocumento.activo ? '#166534' : '#991b1b',
-                                            fontWeight: 700,
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                        }}
-                                    >
-                                        <i className={`bi ${tipoDocumento.activo ? 'bi-check-circle-fill' : 'bi-x-circle-fill'} me-2`}></i>
-                                        {tipoDocumento.activo ? 'Activo' : 'Inactivo'}
-                                    </div>
-                                </Col>
-                            </Row>
-                        </Card.Body>
-
-                        <Card.Footer className="bg-light border-top p-3 d-flex justify-content-start gap-2">
-                            <Button 
-                                variant="outline-secondary" 
-                                onClick={() => navigate('/tipos-documentos')}
+            <Card className="shadow-sm border-0 rounded-3 mb-4 mt-3 text-start">
+                <Card.Body className="p-4">
+                    <h6 className="detalle-seccion-titulo">Datos del tipo de documento</h6>
+                    <Row className="g-3">
+                        <Dato etiqueta="Nombre" md={8}>
+                            <span className="fw-semibold">{tipoDocumento.nombre}</span>
+                        </Dato>
+                        <Dato etiqueta="Estado Actual" md={4}>
+                            <EstadoBadge
+                                tono={tipoDocumento.activo ? 'success' : 'danger'}
+                                icono={tipoDocumento.activo ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}
                             >
-                                <i className="bi bi-arrow-left me-1"></i>Volver a la lista
-                            </Button>
-                            
-                            <Button 
-                                variant="primary" 
-                                disabled={!tipoDocumento.activo}
-                                onClick={() => navigate(`/tipos-documentos/${tipoDocumento.id}/edit`)}
-                            >
-                                <i className="bi bi-pencil me-1"></i>Editar Tipo Documento   
+                                {tipoDocumento.activo ? 'Activo' : 'Inactivo'}
+                            </EstadoBadge>
+                        </Dato>
+                        <Dato etiqueta="Descripción">
+                            {tipoDocumento.descripcion || <span className="text-muted fst-italic">Sin descripción detallada</span>}
+                        </Dato>
+                    </Row>
+                </Card.Body>
+            </Card>
 
-                            </Button>
-                        </Card.Footer>
-                    </Card>
-                </Col>
-            </Row>
+            <div className="d-flex flex-wrap justify-content-start gap-2 mb-4">
+                <Button variant="outline-secondary" onClick={() => navigate('/tipos-documentos')}>
+                    <i className="bi bi-arrow-left me-1"></i>Volver a la lista
+                </Button>
+                <Button
+                    variant="primary"
+                    disabled={!tipoDocumento.activo}
+                    onClick={() => navigate(`/tipos-documentos/${tipoDocumento.id}/edit`)}
+                >
+                    <i className="bi bi-pencil me-1"></i>Editar Tipo Documento
+                </Button>
+            </div>
         </Container>
     );
 }

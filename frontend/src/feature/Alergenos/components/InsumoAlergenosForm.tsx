@@ -1,6 +1,7 @@
 import { Badge, Col, Form, Row } from "react-bootstrap";
 import { useApi } from "../../../hooks/useApi";
 import type { Alergeno, InsumoAlergenoItem, InsumoAlergenosUpdate } from "../types";
+import { AppSwitch } from "../../../components/AppSwitch";
 
 interface InsumoAlergenosFieldsProps {
     valor: InsumoAlergenosUpdate;
@@ -44,8 +45,7 @@ export function InsumoAlergenosForm({ valor, onChange }: InsumoAlergenosFieldsPr
             </p>
 
             <div className="p-2 mb-3 rounded border bg-light">
-                <Form.Check
-                    type="switch"
+                <AppSwitch
                     id="form_contiene_gluten"
                     label={ <span className="fw-semibold"> Contiene gluten (No apto celíacos / Con TACC) </span> }
                     checked={hayAlergenoConTacc || valor.contiene_gluten}
@@ -99,8 +99,7 @@ export function InsumoAlergenosForm({ valor, onChange }: InsumoAlergenosFieldsPr
 
                                     {alergenoElegido && (
                                         <div className="mt-2 ps-4">
-                                            <Form.Check
-                                                type="switch"
+                                            <AppSwitch
                                                 id={`derivado_${alergeno.id}`}
                                                 label={<span className="small text-secondary"> Es derivado </span>}
                                                 checked={alergenoElegido.es_derivado}

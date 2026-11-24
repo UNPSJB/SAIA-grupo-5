@@ -4,6 +4,8 @@ import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 import type { TipoVencimiento } from "../types";
 import { PageLoading } from "../../../components/PageLoading";
+import { Dato } from "../../../components/Dato";
+import { EstadoBadge } from "../../../components/EstadoBadge";
 
 export function VerTipoVencimientoPage() {
     const navigate = useNavigate();
@@ -33,65 +35,40 @@ export function VerTipoVencimientoPage() {
         <Container>
             <PageHeader title={tituloPagina} />
 
-            <Row className="justify-content-center mt-3">
-                <Col md={8}>
-                    <Card className="shadow-sm border-0 rounded-3">
-                        <Card.Body className="p-4">
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Nombre</Col>
-                                <Col sm={8} className="fs-6">{tipoVencimiento.nombre}</Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Descripcion</Col>
-                                <Col sm={8}>
-                                    {tipoVencimiento.descripcion ? (
-                                        <span>{tipoVencimiento.descripcion}</span>) : (<span className="text-muted fst-italic">Sin descripcion detallada</span>)}
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-2 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Estado Actual</Col>
-                                <Col sm={8}>
-                                    <div
-                                        style={{
-                                            padding: '6px 16px',
-                                            borderRadius: '20px',
-                                            background: tipoVencimiento.activo ? '#dcfce7' : '#fee2e2',
-                                            color: tipoVencimiento.activo ? '#166534' : '#991b1b',
-                                            fontWeight: 700,
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                        }}
-                                    >
-                                        <i className={`bi ${tipoVencimiento.activo ? 'bi-check-circle-fill' : 'bi-x-circle-fill'} me-2`}></i>
-                                        {tipoVencimiento.activo ? 'Activo' : 'Inactivo'}
-                                    </div>
-                                </Col>
-                            </Row>
-                        </Card.Body>
-
-                        <Card.Footer className="bg-light border-top p-3 d-flex justify-content-start gap-2">
-                            <Button 
-                                variant="outline-secondary" 
-                                onClick={() => navigate('/tipos-vencimientos')}
+            <Card className="shadow-sm border-0 rounded-3 mb-4 mt-3 text-start">
+                <Card.Body className="p-4">
+                    <h6 className="detalle-seccion-titulo">Datos del tipo de vencimiento</h6>
+                    <Row className="g-3">
+                        <Dato etiqueta="Nombre" md={8}>
+                            <span className="fw-semibold">{tipoVencimiento.nombre}</span>
+                        </Dato>
+                        <Dato etiqueta="Estado Actual" md={4}>
+                            <EstadoBadge
+                                tono={tipoVencimiento.activo ? 'success' : 'danger'}
+                                icono={tipoVencimiento.activo ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}
                             >
-                                <i className="bi bi-arrow-left me-1"></i>Volver a la lista
-                            </Button>
-                            
-                            <Button 
-                                variant="primary" 
-                                disabled={!tipoVencimiento.activo}
-                                onClick={() => navigate(`/tipos-vencimientos/${tipoVencimiento.id}/edit`)}
-                            >
-                                <i className="bi bi-pencil me-1"></i>Editar Tipo Vencimiento   
+                                {tipoVencimiento.activo ? 'Activo' : 'Inactivo'}
+                            </EstadoBadge>
+                        </Dato>
+                        <Dato etiqueta="Descripción">
+                            {tipoVencimiento.descripcion || <span className="text-muted fst-italic">Sin descripción detallada</span>}
+                        </Dato>
+                    </Row>
+                </Card.Body>
+            </Card>
 
-                            </Button>
-                        </Card.Footer>
-                    </Card>
-                </Col>
-            </Row>
+            <div className="d-flex flex-wrap justify-content-start gap-2 mb-4">
+                <Button variant="outline-secondary" onClick={() => navigate('/tipos-vencimientos')}>
+                    <i className="bi bi-arrow-left me-1"></i>Volver a la lista
+                </Button>
+                <Button
+                    variant="primary"
+                    disabled={!tipoVencimiento.activo}
+                    onClick={() => navigate(`/tipos-vencimientos/${tipoVencimiento.id}/edit`)}
+                >
+                    <i className="bi bi-pencil me-1"></i>Editar Tipo Vencimiento
+                </Button>
+            </div>
         </Container>
     );
 }

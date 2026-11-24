@@ -4,12 +4,20 @@ import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
 import type { Persona } from "../types";
 import { PageLoading } from "../../../components/PageLoading";
+import { Dato } from "../../../components/Dato";
+import { EstadoBadge, type TonoEstado } from "../../../components/EstadoBadge";
 import { Capacidades } from '../../Capacidades/types'
 
 const capacidadLabels: Record<string, string> = {
     [Capacidades.OPERAR]: 'Operar',
     [Capacidades.ADMINISTRAR]: 'Administrar',
     [Capacidades.SUPERVISOR]: 'Supervisor',
+};
+
+const capacidadTonos: Record<string, TonoEstado> = {
+    [Capacidades.OPERAR]: 'secondary',
+    [Capacidades.ADMINISTRAR]: 'info',
+    [Capacidades.SUPERVISOR]: 'warning',
 };
 
 export function VerPersonalPage() {
@@ -40,109 +48,57 @@ export function VerPersonalPage() {
         <Container>
             <PageHeader title={tituloPagina} />
 
-            <Row className="justify-content-center mt-3">
-                <Col md={8}>
-                    <Card className="shadow-sm border-0 rounded-3">
-                        <Card.Body className="p-4">
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Nombre Completo</Col>
-                                <Col sm={8} className="fs-6">{persona.nombre} {persona.apellido}</Col>
-                            </Row>
+            <Card className="shadow-sm border-0 rounded-3 mb-4 mt-3 text-start">
+                <Card.Body className="p-4">
+                    <h6 className="detalle-seccion-titulo">Datos personales</h6>
+                    <Row className="g-3 mb-4">
+                        <Dato etiqueta="Nombre Completo" md={6} lg={4}>
+                            <span className="fw-semibold">{persona.nombre} {persona.apellido}</span>
+                        </Dato>
+                        <Dato etiqueta="DNI" md={6} lg={4}>{persona.dni}</Dato>
+                        <Dato etiqueta="Correo electrónico" md={12} lg={4}>{persona.mail}</Dato>
+                    </Row>
 
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">DNI</Col>
-                                <Col sm={8}>
-                                    {persona.dni}
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Correo electroncio</Col>
-                                <Col sm={8}>
-                                    {persona.mail}
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Nombre de usuario</Col>
-                                <Col sm={8}>
-                                    {persona.username}
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Capacidades</Col>
-                                <Col sm={8}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                                        {!persona.capacidades || persona.capacidades.length === 0 ? (
-                                            <span className="text-muted fst-italic">Sin capacidades</span>
-                                        ) : (
-                                            persona.capacidades.map((capacidad) => (
-                                                <div
-                                                    key={capacidad}
-                                                    style={{
-                                                        padding: '3px 10px',
-                                                        borderRadius: '14px',
-                                                        background: capacidad === Capacidades.ADMINISTRAR ? '#dbeafe' : capacidad === Capacidades.SUPERVISOR ? '#fef3c7' : '#e5e7eb',
-                                                        color: capacidad === Capacidades.ADMINISTRAR ? '#1d4ed8' : capacidad === Capacidades.SUPERVISOR ? '#92400e' : '#374151',
-                                                        fontWeight: 600,
-                                                        fontSize: '0.85rem',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        whiteSpace: 'nowrap',
-                                                    }}
-                                                >
-                                                    {capacidadLabels[capacidad] ?? capacidad}
-                                                </div>
-                                            ))
-                                        )}
-                                    </div>
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-2 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Estado Actual</Col>
-                                <Col sm={8}>
-                                    <div
-                                        style={{
-                                            padding: '6px 16px',
-                                            borderRadius: '20px',
-                                            background: persona.activo ? '#dcfce7' : '#fee2e2',
-                                            color: persona.activo ? '#166534' : '#991b1b',
-                                            fontWeight: 700,
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                        }}
-                                    >
-                                        <i className={`bi ${persona.activo ? 'bi-check-circle-fill' : 'bi-x-circle-fill'} me-2`}></i>
-                                        {persona.activo ? 'Activo' : 'Inactivo'}
-                                    </div>
-                                </Col>
-                            </Row>
-                        </Card.Body>
-
-                        <Card.Footer className="bg-light border-top p-3 d-flex justify-content-start gap-2">
-                            <Button 
-                                variant="outline-secondary" 
-                                onClick={() => navigate('/personal')}
+                    <h6 className="detalle-seccion-titulo">Cuenta y permisos</h6>
+                    <Row className="g-3">
+                        <Dato etiqueta="Nombre de usuario" md={6} lg={4}>{persona.username}</Dato>
+                        <Dato etiqueta="Capacidades" md={6} lg={4}>
+                            {!persona.capacidades || persona.capacidades.length === 0 ? (
+                                <span className="text-muted fst-italic">Sin capacidades</span>
+                            ) : (
+                                <div className="d-flex flex-wrap gap-2">
+                                    {persona.capacidades.map((capacidad) => (
+                                        <EstadoBadge key={capacidad} tono={capacidadTonos[capacidad] ?? 'secondary'}>
+                                            {capacidadLabels[capacidad] ?? capacidad}
+                                        </EstadoBadge>
+                                    ))}
+                                </div>
+                            )}
+                        </Dato>
+                        <Dato etiqueta="Estado Actual" md={6} lg={4}>
+                            <EstadoBadge
+                                tono={persona.activo ? 'success' : 'danger'}
+                                icono={persona.activo ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}
                             >
-                                <i className="bi bi-arrow-left me-1"></i>Volver a la lista
-                            </Button>
-                            
-                            <Button 
-                                variant="primary" 
-                                disabled={!persona.activo}
-                                onClick={() => navigate(`/personal/${persona.id}/edit`)}
-                            >
-                                <i className="bi bi-pencil me-1"></i>Editar Personal   
+                                {persona.activo ? 'Activo' : 'Inactivo'}
+                            </EstadoBadge>
+                        </Dato>
+                    </Row>
+                </Card.Body>
+            </Card>
 
-                            </Button>
-                        </Card.Footer>
-                    </Card>
-                </Col>
-            </Row>
+            <div className="d-flex flex-wrap justify-content-start gap-2 mb-4">
+                <Button variant="outline-secondary" onClick={() => navigate('/personal')}>
+                    <i className="bi bi-arrow-left me-1"></i>Volver a la lista
+                </Button>
+                <Button
+                    variant="primary"
+                    disabled={!persona.activo}
+                    onClick={() => navigate(`/personal/${persona.id}/edit`)}
+                >
+                    <i className="bi bi-pencil me-1"></i>Editar Personal
+                </Button>
+            </div>
         </Container>
     );
 }

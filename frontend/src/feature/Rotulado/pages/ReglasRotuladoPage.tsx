@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { Alert, Button, Card, Col, Container, Form, ListGroup, Modal, Row } from 'react-bootstrap';
+import { Alert, Button, Card, Col, Container, Form, ListGroup, Modal, Row, Tab } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { mutate } from 'swr';
 import { isAxiosError } from 'axios';
 import { type TableColumn } from 'react-data-table-component';
 import { AppTable } from '../../../components/AppTable';
+import { AppTabs } from '../../../components/AppTabs';
+import { Dato } from '../../../components/Dato';
 import { ActionButton } from '../../../components/ActionButton';
 import { EstadoBadge } from '../../../components/EstadoBadge';
 import { PageHeader } from '../../../components/PageHeader';
@@ -14,6 +16,8 @@ import { useAuth } from '../../../hooks/useAuth';
 import { api } from '../../../libs/axios';
 import { mostrarAlertaError, mostrarAlertaExito } from '../../../libs/alertas';
 import { REGLAS_POR_MARCA, type NewReglasRotulado, type ReglasRotulado } from '../types';
+import './ReglasRotuladoPage.css';
+import { AppSwitch } from '../../../components/AppSwitch';
 
 const formatearFecha = (fecha: string | null) =>
     fecha ? new Date(fecha).toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" }) : "-";
@@ -66,7 +70,7 @@ export function ReglasRotuladoPage() {
     ];
 
     return (
-        <Container>
+        <Container className="reglas-rotulado">
             <Row className="p-2 align-items-center">
                 <Col>
                     <PageHeader
@@ -77,10 +81,14 @@ export function ReglasRotuladoPage() {
                 </Col>
             </Row>
 
-            <FormularioReglas key={vigente.id} vigente={vigente} puedeEditar={Boolean(currentUser?.administrar)} />
-
-            <h5 className="text-start fw-bold mt-4 mb-2">Historial de versiones</h5>
-            <AppTable columns={columns} data={versiones} />
+            <AppTabs defaultActiveKey="vigente" id="secciones-reglas-rotulado" className="mb-3" mountOnEnter>
+                <Tab eventKey="vigente" title="Versión vigente">
+                    <FormularioReglas key={vigente.id} vigente={vigente} puedeEditar={Boolean(currentUser?.administrar)} />
+                </Tab>
+                <Tab eventKey="historial" title="Historial de versiones">
+                    <AppTable columns={columns} data={versiones} />
+                </Tab>
+            </AppTabs>
 
             <Modal show={versionVer !== null} onHide={() => setVersionVer(null)}>
                 <Modal.Header closeButton>
@@ -172,44 +180,67 @@ function FormularioReglas({ vigente, puedeEditar }: FormularioReglasProps) {
                 <span className="text-muted small">{vigencia(vigente)}</span>
             </Card.Header>
             <Form onSubmit={handleSubmit(onSubmit)} noValidate>
-                <Card.Body>
+                <Card.Body className="p-4">
                     <fieldset disabled={!puedeEditar}>
-                        <Form.Check
-                            type="switch"
-                            id="requiere_envasado"
-                            className="mb-3"
-                            label="Solo corresponde el rotulado si el producto se comercializa envasado en ausencia del cliente"
-                            {...register("requiere_envasado_ausencia_cliente")}
-                        />
-                        <Form.Label className="fw-bold mb-1">El producto queda alcanzado por el rotulado si tiene:</Form.Label>
-                        <div className="d-flex flex-wrap gap-3 mb-1">
-                            {REGLAS_POR_MARCA.map(({ campo, nombre }) => (
-                                <Form.Check key={campo} type="checkbox" id={campo} label={nombre} {...register(campo)} />
-                            ))}
-                        </div>
-                        <Form.Text className="text-muted d-block mb-3">
-                            Si el producto no tiene ninguna de las marcas seleccionadas, queda exceptuado del rotulado frontal.
-                        </Form.Text>
+                        <h6 className="detalle-seccion-titulo">Alcance del rotulado</h6>
+                        <Row className="g-3 mb-4">
+                            <Dato etiqueta="Condición de comercialización">
+                                <AppSwitch
+                                    id="requiere_envasado"
+                                    label="Solo corresponde el rotulado si el producto se comercializa envasado en ausencia del cliente"
+                                    {...register("requiere_envasado_ausencia_cliente")}
+                                />
+                            </Dato>
+                        </Row>
 
-                        <Form.Group className="mb-3" controlId="mensaje_no_corresponde">
-                            <Form.Label className="fw-bold">Mensaje cuando no corresponde el rotulado</Form.Label>
-                            <Form.Control as="textarea" rows={2} {...register("mensaje_no_corresponde", validarTexto(5, "El mensaje"))}
-                                isInvalid={!!errors.mensaje_no_corresponde} />
-                            <Form.Control.Feedback type="invalid">{errors.mensaje_no_corresponde?.message}</Form.Control.Feedback>
-                        </Form.Group>
-                        <Form.Group className="mb-3" controlId="mensaje_exceptuado">
-                            <Form.Label className="fw-bold">Mensaje cuando el producto queda exceptuado</Form.Label>
-                            <Form.Control as="textarea" rows={2} {...register("mensaje_exceptuado", validarTexto(5, "El mensaje"))}
-                                isInvalid={!!errors.mensaje_exceptuado} />
-                            <Form.Control.Feedback type="invalid">{errors.mensaje_exceptuado?.message}</Form.Control.Feedback>
-                        </Form.Group>
+                        <h6 className="detalle-seccion-titulo">Marcas que activan el rotulado</h6>
+                        <Row className="g-3 mb-4">
+                            <Dato etiqueta="El producto queda alcanzado si tiene">
+                                <div className="d-flex flex-wrap gap-4">
+                                    {REGLAS_POR_MARCA.map(({ campo, nombre }) => (
+                                        <Form.Check key={campo} type="checkbox" id={campo} label={nombre} {...register(campo)} />
+                                    ))}
+                                </div>
+                                <Form.Text className="text-muted d-block mt-2">
+                                    Si el producto no tiene ninguna de las marcas seleccionadas, queda exceptuado del rotulado frontal.
+                                </Form.Text>
+                            </Dato>
+                        </Row>
+
+                        <h6 className="detalle-seccion-titulo">Mensajes</h6>
+                        <Row className={`g-3 ${puedeEditar ? "mb-4" : ""}`}>
+                            <Dato etiqueta="Cuando no corresponde el rotulado" md={6}>
+                                <Form.Group controlId="mensaje_no_corresponde">
+                                    <Form.Label className="visually-hidden">Mensaje cuando no corresponde el rotulado</Form.Label>
+                                    <Form.Control as="textarea" rows={3} {...register("mensaje_no_corresponde", validarTexto(5, "El mensaje"))}
+                                        isInvalid={!!errors.mensaje_no_corresponde} />
+                                    <Form.Control.Feedback type="invalid">{errors.mensaje_no_corresponde?.message}</Form.Control.Feedback>
+                                </Form.Group>
+                            </Dato>
+                            <Dato etiqueta="Cuando el producto queda exceptuado" md={6}>
+                                <Form.Group controlId="mensaje_exceptuado">
+                                    <Form.Label className="visually-hidden">Mensaje cuando el producto queda exceptuado</Form.Label>
+                                    <Form.Control as="textarea" rows={3} {...register("mensaje_exceptuado", validarTexto(5, "El mensaje"))}
+                                        isInvalid={!!errors.mensaje_exceptuado} />
+                                    <Form.Control.Feedback type="invalid">{errors.mensaje_exceptuado?.message}</Form.Control.Feedback>
+                                </Form.Group>
+                            </Dato>
+                        </Row>
+
                         {puedeEditar && (
-                            <Form.Group controlId="observacion">
-                                <Form.Label className="fw-bold">Motivo del cambio *</Form.Label>
-                                <Form.Control type="text" placeholder="Ej. Actualización por nueva resolución"
-                                    {...register("observacion", validarTexto(5, "El motivo"))} isInvalid={!!errors.observacion} />
-                                <Form.Control.Feedback type="invalid">{errors.observacion?.message}</Form.Control.Feedback>
-                            </Form.Group>
+                            <>
+                                <h6 className="detalle-seccion-titulo">Nueva versión</h6>
+                                <Row className="g-3">
+                                    <Dato etiqueta="Motivo del cambio *">
+                                        <Form.Group controlId="observacion">
+                                            <Form.Label className="visually-hidden">Motivo del cambio</Form.Label>
+                                            <Form.Control type="text" placeholder="Ej. Actualización por nueva resolución"
+                                                {...register("observacion", validarTexto(5, "El motivo"))} isInvalid={!!errors.observacion} />
+                                            <Form.Control.Feedback type="invalid">{errors.observacion?.message}</Form.Control.Feedback>
+                                        </Form.Group>
+                                    </Dato>
+                                </Row>
+                            </>
                         )}
                     </fieldset>
                 </Card.Body>

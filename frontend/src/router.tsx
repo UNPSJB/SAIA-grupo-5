@@ -57,7 +57,6 @@ import { VerInsumoQuimicoPage } from './feature/InsumosQuimicos/pages/VerInsumoQ
 import { ListPage as TipoQuimicoListPage } from './feature/TiposQuimicos/pages/ListPage.tsx'
 import { NuevoTipoQuimicoPage } from './feature/TiposQuimicos/pages/NuevoTipoQuimicoPage.tsx'
 import { EditarTipoQuimicoPage } from './feature/TiposQuimicos/pages/EditarTipoQuimicoPage.tsx'
-import { VerTipoQuimicoPage } from './feature/TiposQuimicos/pages/VerTipoQuimicoPage.tsx'
 
 import { ListPage as ConsumoProductoListPage } from './feature/ConsumoProducto/pages/ListPage.tsx'
 import { EditarConsumoProductoPage } from './feature/ConsumoProducto/pages/EditarConsumoProductoPage.tsx'
@@ -120,7 +119,6 @@ import { EditarPlanCalibracionPage } from './feature/PlanesCalibracion/pages/Edi
 import { ListPage as UnidadMedidaListPage } from './feature/UnidadMedida/pages/ListPage.tsx'
 import { NuevaUnidadMedidaPage } from './feature/UnidadMedida/pages/NuevaUnidadMedidaPage.tsx'
 import { EditarUnidadMedidaPage } from './feature/UnidadMedida/pages/EditarUnidadMedidaPage.tsx'
-import { VerUnidadMedidaPage } from './feature/UnidadMedida/pages/VerUnidadMedidaPage.tsx'
 
 import { ListPage as ProductoListPage } from './feature/Productos/pages/ListPage.tsx'
 import { NuevoProductoPage } from './feature/Productos/pages/NuevoProductoPage.tsx'
@@ -133,6 +131,7 @@ import { EscalarRecetaPage } from './feature/Recetas/pages/EscalarRecetaPage.tsx
 import { RecetasVigentesPage } from './feature/Recetas/pages/RecetasVigentesPage.tsx';
 import { ConsultaRecetaPage } from './feature/Recetas/pages/ConsultaRecetaPage.tsx';
 import { ReglasRotuladoPage } from './feature/Rotulado/pages/ReglasRotuladoPage.tsx'
+import { RotuladoProductoPage } from './feature/Rotulado/pages/RotuladoProductoPage.tsx'
 
 import { LotesHistorialPage } from './feature/LoteProduccionHistorial/pages/ListPage.tsx'
 import { ListPage as LoteProduccionListPage } from './feature/LotesProduccion/pages/ListPage.tsx'
@@ -298,7 +297,6 @@ const router = createBrowserRouter([
             children: [
               { index: true, element: <UnidadMedidaListPage />},
               { path: 'new', element: <NuevaUnidadMedidaPage />},
-              { path: ':id', element: <VerUnidadMedidaPage />},
               { path: ':id/edit', element: <EditarUnidadMedidaPage />},
             ],
           },
@@ -314,6 +312,7 @@ const router = createBrowserRouter([
               { path: ':id/receta/editar', element: <EditarRecetaPage /> },
               { path: ':id/receta', element: <VerRecetaPage /> },
               { path: ':id/receta/escalar', element: <EscalarRecetaPage />},
+              { path: ':id/rotulado', element: <RotuladoProductoPage />},
             ],
           },
           {
@@ -573,7 +572,6 @@ const router = createBrowserRouter([
             path: 'tipos-quimicos',
             children: [
               { index: true, element: <TipoQuimicoListPage /> },
-              { path: ':id', element: <VerTipoQuimicoPage /> },
               {
                 element: <ProtectedRoute requireAdmin />,
                 children: [

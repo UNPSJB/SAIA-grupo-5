@@ -102,47 +102,33 @@ const filteredUnidadesMedida = useMemo(() => {
                 </div>
             )
         },
-        {
+        ...(currentUser?.administrar ? [{
             name: "Acciones",
             center: true,
-            cell: (row) => (
+            cell: (row: UnidadMedida) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span data-tour="btn-ver-unidad-medida">
+                    <span data-tour="btn-editar-unidad-medida">
                         <ActionButton
-                            variant="outline-info"
+                            variant="outline-primary"
                             size="sm"
-                            tooltip="Ver"
-                            icon="bi-eye"
-                            onClick={() => navigate(`/unidades-medida/${row.id}`)}
+                            tooltip="Editar"
+                            icon="bi-pencil"
+                            disabled={!row.activo}      // Si no esta activo se muestra en gris y no se puede editar
+                            onClick={() => navigate(`/unidades-medida/${row.id}/edit`)}
                         />
                     </span>
-
-                    {currentUser?.administrar && (
-                        <>
-                            <span data-tour="btn-editar-unidad-medida">
-                                <ActionButton
-                                    variant="outline-primary"
-                                    size="sm"
-                                    tooltip="Editar"
-                                    icon="bi-pencil"
-                                    disabled={!row.activo}      // Si no esta activo se muestra en gris y no se puede editar
-                                    onClick={() => navigate(`/unidades-medida/${row.id}/edit`)}
-                                />
-                            </span>
-                            <span data-tour="btn-baja-unidad-medida">
-                                <ActionButton
-                                    variant={row.activo ? 'outline-danger' : 'outline-success'}
-                                    size="sm"
-                                    tooltip={row.activo ? 'Dar de baja' : 'Dar de alta'}
-                                    icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
-                                    onClick={() => setUnidadMedidaToDelete(row)}
-                                />
-                            </span>
-                        </>
-                    )}
+                    <span data-tour="btn-baja-unidad-medida">
+                        <ActionButton
+                            variant={row.activo ? 'outline-danger' : 'outline-success'}
+                            size="sm"
+                            tooltip={row.activo ? 'Dar de baja' : 'Dar de alta'}
+                            icon={row.activo ? 'bi-dash-circle' : 'bi-check-circle'}
+                            onClick={() => setUnidadMedidaToDelete(row)}
+                        />
+                    </span>
                 </div>
             )
-        },
+        }] : []),
     ];
 
     return (

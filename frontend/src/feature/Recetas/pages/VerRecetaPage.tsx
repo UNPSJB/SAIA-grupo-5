@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Accordion, Alert, Button, Card, Container, Form, ListGroup, Spinner } from 'react-bootstrap';
 import Tab from 'react-bootstrap/Tab';
-import Tabs from 'react-bootstrap/Tabs';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
@@ -15,7 +14,7 @@ import { IngredientesComposicion } from '../components/IngredientesComposicion';
 import { AlergenosReceta } from '../../Alergenos/components/AlergenosRecetaForm';
 import type { UnidadMedida } from '../../UnidadMedida/types';
 import { exportarRecetaPdf } from '../ExportRecetapdf';
-import './VerRecetaPage.css';
+import { AppTabs } from '../../../components/AppTabs';
 
 const formatearFecha = (fecha: string | null) =>
     fecha ? new Date(fecha).toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" }) : "-";
@@ -162,7 +161,7 @@ export function VerRecetaPage() {
                                         </ListGroup.Item>
                                     </ListGroup>
 
-                                    <Tabs key={receta.id} defaultActiveKey="ingredientes" id="secciones-receta" className="mb-3 receta-tabs" mountOnEnter>
+                                    <AppTabs key={receta.id} defaultActiveKey="ingredientes" id="secciones-receta" className="mb-3" mountOnEnter>
                                         <Tab eventKey="ingredientes" title="Ingredientes y composición">
                                             <IngredientesComposicion insumos={receta.insumos} mostrarComposicion={!!currentUser?.administrar} />
                                         </Tab>
@@ -200,7 +199,7 @@ export function VerRecetaPage() {
                                                 <InfoNutricionalReceta recetaId={receta.id} />
                                             </div>
                                         </Tab>
-                                    </Tabs>
+                                    </AppTabs>
                                 </>
                             )}
                         </>

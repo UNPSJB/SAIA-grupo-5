@@ -1,4 +1,4 @@
-import { Container, Alert, Row, Col, Card, Button } from "react-bootstrap";
+import { Container, Alert, Row, Col, Card, Button, Tab } from "react-bootstrap";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { PageHeader } from "../../../components/PageHeader";
 import { useApi } from "../../../hooks/useApi";
@@ -7,6 +7,9 @@ import { PageLoading } from "../../../components/PageLoading";
 import { useAuth } from "../../../hooks";
 import { ResumenRecetaProducto } from "../../Recetas/components/ResumenRecetaProducto";
 import { CodigoBarras } from "../components/CodigoBarras";
+import { AppTabs } from "../../../components/AppTabs";
+import { Dato } from "../../../components/Dato";
+import { EstadoBadge } from "../../../components/EstadoBadge";
 
 export function VerProductoPage() {
     const navigate = useNavigate();
@@ -15,7 +18,6 @@ export function VerProductoPage() {
     const { currentUser } = useAuth();
 
     const { data: producto, isLoading, error } = useApi<Producto>(`/productos/${id}`);
-
 
     const tituloPagina = "Detalle del Producto";
 
@@ -35,57 +37,45 @@ export function VerProductoPage() {
         </Container>
     );
 
-
     return (
         <Container>
             <PageHeader title={tituloPagina} />
 
-            <Row className="justify-content-center mt-3">
-                <Col md={8}>
-                    <Card className="shadow-sm border-0 rounded-3">
-
+            <AppTabs defaultActiveKey="general" id="secciones-producto" className="mb-3 mt-3" mountOnEnter>
+                <Tab eventKey="general" title="Información general">
+                    <Card className="shadow-sm border-0 rounded-3 mb-4 text-start">
                         <Card.Body className="p-4">
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Producto</Col>
-                                <Col sm={8} className="fs-6">
-                                    {producto.nombre} 
-                                </Col>
+                            <h6 className="detalle-seccion-titulo">Datos del producto</h6>
+                            <Row className="g-3 mb-4">
+                                <Dato etiqueta="Producto" md={6} lg={4}>
+                                    <span className="fw-semibold">{producto.nombre}</span>
+                                </Dato>
+                                <Dato etiqueta="Código del producto" md={6} lg={4}>
+                                    {producto.codigo_producto || <span className="text-muted fst-italic">Sin código asignado</span>}
+                                </Dato>
+                                <Dato etiqueta="Estado Actual" md={6} lg={4}>
+                                    <EstadoBadge
+                                        tono={producto.activo ? "success" : "danger"}
+                                        icono={producto.activo ? "bi-check-circle-fill" : "bi-x-circle-fill"}
+                                    >
+                                        {producto.activo ? "Vigente" : "Descontinuado"}
+                                    </EstadoBadge>
+                                </Dato>
+                                <Dato etiqueta="Cantidad neta" md={6} lg={4}>
+                                    {producto.cantidad_neta} {producto.unidad_medida.nombre}
+                                </Dato>
+                                <Dato etiqueta="Unidad de medida" md={6} lg={4}>{producto.unidad_medida.nombre}</Dato>
+                                <Dato etiqueta="Fecha de lanzamiento" md={6} lg={4}>
+                                    {producto.fecha_lanzamiento.split("-").reverse().join("/")}
+                                </Dato>
+                                <Dato etiqueta="Descripción">
+                                    {producto.descripcion || <span className="text-muted fst-italic">Sin descripción detallada</span>}
+                                </Dato>
                             </Row>
 
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Descripcion</Col>
-                                <Col sm={8}>
-                                    {producto.descripcion ? (
-                                        <span>{producto.descripcion}</span>
-                                    ) : (
-                                        <span className="text-muted fst-italic">Sin descripcion detallada</span>
-                                    )}
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Unidad de medida</Col>
-                                <Col sm={8}>{producto.unidad_medida.nombre}</Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Cantidad neta</Col>
-                                <Col sm={8}>{producto.cantidad_neta}</Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Fecha de lanzamiento</Col>
-                                <Col sm={8}>{producto.fecha_lanzamiento.split("-").reverse().join("/")}</Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Código del producto</Col>
-                                <Col sm={8}>{producto.codigo_producto || "Sin código asignado"}</Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Código de barras</Col>
-                                <Col sm={8}>
+                            <h6 className="detalle-seccion-titulo">Identificación</h6>
+                            <Row className="g-3">
+                                <Dato etiqueta="Código de barras" md={6}>
                                     {producto.codigo_barras ? (
                                         <div>
                                             <CodigoBarras codigo={producto.codigo_barras} />
@@ -94,76 +84,51 @@ export function VerProductoPage() {
                                     ) : (
                                         <span className="text-muted fst-italic">Sin código de barras asignado</span>
                                     )}
-                                </Col>
-                            </Row>
-
-                            {/* Para el archivo adjunto preguntamos si existe, si no tiene nada cargado se muestra un texto, sino se comprueba si es una foto para mostrarla y si no lo es se deja descargar el archivo */}
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Foto del producto</Col>
-                                <Col sm={8}>
+                                </Dato>
+                                <Dato etiqueta="Foto del producto" md={6}>
                                     {producto.foto_producto ? (
-                                            <img
-                                                src={producto.foto_producto}
-                                                alt={producto.nombre}
-                                                style={{ maxWidth: '100%', maxHeight: '250px', borderRadius: '8px', objectFit: 'cover' }}
-                                                className="border shadow-sm"
-                                            />
+                                        <img
+                                            src={producto.foto_producto}
+                                            alt={producto.nombre}
+                                            style={{ maxWidth: '100%', maxHeight: '250px', borderRadius: '8px', objectFit: 'cover' }}
+                                            className="border shadow-sm"
+                                        />
                                     ) : (
                                         <span className="text-muted fst-italic">Sin foto</span>
                                     )}
-                                </Col>
+                                </Dato>
                             </Row>
-
-                            <Row className="mb-2 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Estado Actual</Col>
-                                <Col sm={8}>
-                                    <div
-                                        style={{
-                                            padding: '6px 16px',
-                                            borderRadius: '20px',
-                                            background: producto.activo ? '#dcfce7' : '#fee2e2',
-                                            color: producto.activo ? '#166534' : '#991b1b',
-                                            fontWeight: 700,
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                        }}
-                                    >
-                                        <i className={`bi ${producto.activo ? 'bi-check-circle-fill' : 'bi-x-circle-fill'} me-2`}></i>
-                                        {producto.activo ? 'Vigente' : 'Descontinuado'}
-                                    </div>
-                                </Col>
-                            </Row>
-
-                            
-                            
-                            
                         </Card.Body>
-
-                        <Card.Footer className="bg-light border-top p-3 d-flex justify-content-start gap-2">
-                            <Button
-                                variant="outline-secondary"
-                                onClick={() => navigate(`/productos`)}
-                            >
-                                <i className="bi bi-arrow-left me-1"></i>Volver a la lista
-                            </Button>
-                            {currentUser?.administrar && (
-                            <Button
-                                variant="primary"
-                                disabled={!producto.activo}
-                                onClick={() => navigate(`/productos/${producto.id}/edit`, { state: locacion.state })}
-                            >
-                                <i className="bi bi-pencil me-1"></i>Editar Producto
-                            </Button>
-                            )}
-                        </Card.Footer>
                     </Card>
-                    <ResumenRecetaProducto
-                        productoId={producto.id}
-                        tieneReceta={producto.receta != null}
-                    />
-                </Col>
-            </Row>
+                </Tab>
+
+                <Tab eventKey="receta" title="Receta">
+                    <div className="mb-4">
+                        <ResumenRecetaProducto
+                            productoId={producto.id}
+                            tieneReceta={producto.receta != null}
+                        />
+                    </div>
+                </Tab>
+            </AppTabs>
+
+            <div className="d-flex flex-wrap justify-content-start gap-2 mb-4">
+                <Button
+                    variant="outline-secondary"
+                    onClick={() => navigate(`/productos`)}
+                >
+                    <i className="bi bi-arrow-left me-1"></i>Volver a la lista
+                </Button>
+                {currentUser?.administrar && (
+                    <Button
+                        variant="primary"
+                        disabled={!producto.activo}
+                        onClick={() => navigate(`/productos/${producto.id}/edit`, { state: locacion.state })}
+                    >
+                        <i className="bi bi-pencil me-1"></i>Editar Producto
+                    </Button>
+                )}
+            </div>
         </Container>
     );
 }

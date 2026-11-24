@@ -3,6 +3,8 @@ import { useAuth } from "../../../hooks/useAuth";
 import { Container, Spinner, Alert, Row, Col, Card, Button } from "react-bootstrap";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { PageHeader } from "../../../components/PageHeader";
+import { Dato } from "../../../components/Dato";
+import { EstadoBadge, type TonoEstado } from "../../../components/EstadoBadge";
 import { useApi } from "../../../hooks/useApi";
 import type { ElementoLimpieza } from "../types";
 import type { TipoElementoLimpieza } from "../../TiposElementoLimpieza/types";
@@ -49,126 +51,90 @@ export function VerElementoPage() {
         </Container>
     );
 
+    const dias = elementoLimpieza.dias_restantes;
+    const recambio: { tono: TonoEstado; texto: string } | null = dias === null
+        ? null
+        : dias < 0
+            ? { tono: "danger", texto: "Vencido" }
+            : dias === 0
+                ? { tono: "warning", texto: "Recambio hoy" }
+                : { tono: "success", texto: `${dias} ${dias === 1 ? "día" : "días"}` };
+
     return (
         <Container>
             <PageHeader title="Detalle del Elemento de Limpieza" />
 
-            <Row className="justify-content-center mt-3">
-                <Col md={8}>
-                    <Card className="shadow-sm border-0 rounded-3">
-                        <Card.Body className="p-4">
-                            <Row className="mb-3 border-bottom pb-3 align-items-center ">
-                                <Col sm={4} className="fw-bold text-secondary">Código</Col>
-                                <Col sm={8} className="fs-5">{elementoLimpieza.codigo}</Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Nombre</Col>
-                                <Col sm={8} className="fs-5">{elementoLimpieza.nombre}</Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Tipo</Col>
-                                <Col sm={8} className="fs-5">{nombreTipo}</Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Material</Col>
-                                <Col sm={8} className="fs-5">{elementoLimpieza.material ?? "-"}</Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Ubicación</Col>
-                                <Col sm={8} className="fs-5">{elementoLimpieza.ubicacion ?? "-"}</Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Frecuencia de recambio</Col>
-                                <Col sm={8} className="fs-5">
-                                    {elementoLimpieza.frecuencia_recambio
-                                        ? `${elementoLimpieza.frecuencia_recambio} días`
-                                        : "Sin definir"}
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-3 border-bottom pb-3 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Días para recambio</Col>
-                                <Col sm={8} className="fs-5">
-                                    {elementoLimpieza.dias_restantes === null
-                                        ? "Sin definir"
-                                        : elementoLimpieza.dias_restantes < 0
-                                            ? "Vencido"
-                                            : elementoLimpieza.dias_restantes === 0
-                                                ? "Recambio hoy"
-                                                : elementoLimpieza.dias_restantes === 1
-                                                    ? `${elementoLimpieza.dias_restantes} dia`
-                                                    : `${elementoLimpieza.dias_restantes} días`}
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-2 align-items-center">
-                                <Col sm={4} className="fw-bold text-secondary">Estado Actual</Col>
-                                <Col sm={8}>
-                                    <div
-                                        style={{
-                                            padding: "6px 16px",
-                                            borderRadius: "20px",
-                                            background: elementoLimpieza.estado ? "#dcfce7" : "#fee2e2",
-                                            color: elementoLimpieza.estado ? "#166534" : "#991b1b",
-                                            fontWeight: 700,
-                                            display: "inline-flex",
-                                            alignItems: "center",
-                                            justifyContent: "center",
-                                        }}
-                                    >
-                                        <i className={`bi ${elementoLimpieza.estado ? "bi-check-circle-fill" : "bi-x-circle-fill"} me-2`}></i>
-                                        {elementoLimpieza.estado ? "Activo" : "Inactivo"}
-                                    </div>
-                                </Col>
-                            </Row>
-                        </Card.Body>
-
-                        <Card.Footer className="bg-light border-top p-3 d-flex justify-content-start gap-2">
-                            <Button
-                                variant="outline-secondary"
-                                onClick={() => navigate(volverA)}
+            <Card className="shadow-sm border-0 rounded-3 mb-4 mt-3 text-start">
+                <Card.Body className="p-4">
+                    <h6 className="detalle-seccion-titulo">Datos del elemento</h6>
+                    <Row className="g-3 mb-4">
+                        <Dato etiqueta="Código" md={6} lg={3}>
+                            <span className="fw-bold">{elementoLimpieza.codigo}</span>
+                        </Dato>
+                        <Dato etiqueta="Nombre" md={6} lg={3}>
+                            <span className="fw-semibold">{elementoLimpieza.nombre}</span>
+                        </Dato>
+                        <Dato etiqueta="Tipo" md={6} lg={3}>{nombreTipo}</Dato>
+                        <Dato etiqueta="Estado Actual" md={6} lg={3}>
+                            <EstadoBadge
+                                tono={elementoLimpieza.estado ? "success" : "danger"}
+                                icono={elementoLimpieza.estado ? "bi-check-circle-fill" : "bi-x-circle-fill"}
                             >
-                                <i className="bi bi-arrow-left me-1"></i>
-                                Volver a la lista
-                            </Button>
+                                {elementoLimpieza.estado ? "Activo" : "Inactivo"}
+                            </EstadoBadge>
+                        </Dato>
+                        <Dato etiqueta="Material" md={6}>{elementoLimpieza.material ?? "-"}</Dato>
+                        <Dato etiqueta="Ubicación" md={6}>{elementoLimpieza.ubicacion ?? "-"}</Dato>
+                    </Row>
 
-                            <Button
-                                variant="outline-primary"
-                                onClick={() => setMostrarHistorial(true)}
-                            >
-                                <i className="bi bi-clock-history me-1"></i>
-                                Historial de Recambios
-                            </Button>
+                    <h6 className="detalle-seccion-titulo d-flex justify-content-between align-items-center gap-2">
+                        <span>Recambio</span>
+                        <Button variant="outline-primary" size="sm" onClick={() => setMostrarHistorial(true)}>
+                            <i className="bi bi-clock-history me-1"></i>
+                            Historial de Recambios{recambios && recambios.length > 0 ? ` (${recambios.length})` : ""}
+                        </Button>
+                    </h6>
+                    <Row className="g-3">
+                        <Dato etiqueta="Frecuencia de recambio" md={6}>
+                            {elementoLimpieza.frecuencia_recambio
+                                ? `${elementoLimpieza.frecuencia_recambio} días`
+                                : <span className="text-muted fst-italic">Sin definir</span>}
+                        </Dato>
+                        <Dato etiqueta="Días para recambio" md={6}>
+                            {recambio
+                                ? <EstadoBadge tono={recambio.tono}>{recambio.texto}</EstadoBadge>
+                                : <span className="text-muted fst-italic">Sin definir</span>}
+                        </Dato>
+                    </Row>
+                </Card.Body>
+            </Card>
 
-                            {currentUser?.administrar && elementoLimpieza.estado && (
-                                <Button
-                                    variant="success"
-                                    onClick={() => navigate(`/recambios-elementos-limpieza/new/${elementoLimpieza.id}`)}
-                                >
-                                    <i className="bi bi-arrow-repeat me-1"></i>
-                                    Registrar Recambio
-                                </Button>
-                            )}
-                            {currentUser?.administrar && (
-                                <Button
-                                    variant="primary"
-                                    disabled={!elementoLimpieza.estado}
-                                    onClick={() => navigate(`/elementos-limpieza/${elementoLimpieza.id}/edit`)}
-                                >
-                                    <i className="bi bi-pencil me-1"></i>
-                                    Editar Elemento
-                                </Button>
-                            )}
-                        </Card.Footer>
-                    </Card>
+            <div className="d-flex flex-wrap justify-content-start gap-2 mb-4">
+                <Button variant="outline-secondary" onClick={() => navigate(volverA)}>
+                    <i className="bi bi-arrow-left me-1"></i>
+                    Volver a la lista
+                </Button>
+                {currentUser?.administrar && elementoLimpieza.estado && (
+                    <Button
+                        variant="success"
+                        onClick={() => navigate(`/recambios-elementos-limpieza/new/${elementoLimpieza.id}`)}
+                    >
+                        <i className="bi bi-arrow-repeat me-1"></i>
+                        Registrar Recambio
+                    </Button>
+                )}
+                {currentUser?.administrar && (
+                    <Button
+                        variant="primary"
+                        disabled={!elementoLimpieza.estado}
+                        onClick={() => navigate(`/elementos-limpieza/${elementoLimpieza.id}/edit`)}
+                    >
+                        <i className="bi bi-pencil me-1"></i>
+                        Editar Elemento
+                    </Button>
+                )}
+            </div>
 
-                </Col>
-            </Row>
             <HistorialRecambiosModal
                 show={mostrarHistorial}
                 onHide={() => setMostrarHistorial(false)}

@@ -1,5 +1,6 @@
 import { useSearchParams } from 'react-router-dom';
-import { Container, Tab, Tabs } from "react-bootstrap"
+import { Container, Tab } from "react-bootstrap"
+import { AppTabs } from "../../../components/AppTabs"
 import { PageHeader } from "../../../components/PageHeader"
 import { useApi } from "../../../hooks/useApi"
 import type { ConfiguracionSistema } from "../../ConfiguracionSistema/types"
@@ -21,7 +22,7 @@ export function VencimientosConsolidadosPage() {
                 title="Vencimientos consolidados"
                 subtitle="Revisá los distintos vencimientos con sus respectivas acciones de renovación"
             />
-            <Tabs defaultActiveKey={defaultTab != null ? defaultTab : "personal"} className="mb-3">
+            <AppTabs defaultActiveKey={defaultTab != null ? defaultTab : "personal"} className="mb-3">
                 <Tab eventKey="personal" title="Personal">
                     <PersonalTab diasAntelacion={diasAntelacion} />
                 </Tab>
@@ -31,7 +32,7 @@ export function VencimientosConsolidadosPage() {
                 <Tab eventKey="equipos" title="Equipos">
                     <EquiposTab diasAntelacion={diasAntelacion} />
                 </Tab>
-            </Tabs>
+            </AppTabs>
         </Container>
     )
 }

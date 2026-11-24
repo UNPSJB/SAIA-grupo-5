@@ -1,0 +1,5 @@
+
+.reglas-rotulado .form-control:focus {
+    border-color: var(--sb-seafoam-secondary);
+    box-shadow: 0 0 0 0.25rem rgba(15, 162, 139, 0.25);
+}

@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
+import { Button, Card, Col, Container, Form, Row, Tab } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { mutate } from "swr";
 import { PageHeader } from "../../../components/PageHeader";
 import { PageLoading } from "../../../components/PageLoading";
 import { PageError } from "../../../components/PageError";
+import { AppTabs } from "../../../components/AppTabs";
+import { Dato } from "../../../components/Dato";
 import { useApi } from "../../../hooks/useApi";
 import { api } from "../../../libs/axios";
 import { mostrarAlertaError, mostrarAlertaExito } from "../../../libs/alertas";
@@ -171,159 +173,203 @@ export function ConfiguracionSistemaPage() {
     );
 
     return (
-        <Container>
-            <PageHeader title="Configuración del Sistema" actions={<Button variant="outline-success" onClick={() => navigate("/configuracion-sistema/vista-publica")}><i className="bi bi-qr-code me-2" />Vista pública</Button>} />
+        <Container fluid style={{ maxWidth: '1400px' }}>
+            <PageHeader
+                eyebrow="CONFIGURACIÓN"
+                title="Configuración del Sistema"
+                subtitle="Datos de la PyME, parámetros de alertas y checklists, códigos de barras y preferencias."
+                actions={
+                    <Button variant="outline-success" onClick={() => navigate("/configuracion-sistema/vista-publica")}>
+                        <i className="bi bi-qr-code me-2" />Vista pública
+                    </Button>
+                }
+            />
 
-            <Row className="justify-content-center">
-                <Col md={7} lg={6}>
-                    <Card className="shadow-sm mb-4">
-                        <Card.Header className="fw-bold">
-                            <i className="bi bi-building me-2"></i>Datos de la PyME
-                        </Card.Header>
-                        <Card.Body>
-                            <Form onSubmit={handleSubmitPyme}>
-                                <Form.Group className="mb-3 text-start" controlId="formNombrePyme">
-                                    <Form.Label className="p-1 fw-bold">Nombre de la PyME *</Form.Label>
-                                    <Form.Control required maxLength={100} value={nombrePyme} onChange={(e) => setNombrePyme(e.target.value)} />
-                                </Form.Group>
-
-                                <Form.Group className="mb-3 text-start" controlId="formLogoPyme">
-                                    <Form.Label className="p-1 fw-bold">Logo de la PyME</Form.Label>
-                                    <Form.Control type="file" accept="image/png,image/jpeg,image/webp" onChange={handleLogoChange} isInvalid={!!logoError} />
-                                    <Form.Control.Feedback type="invalid">{logoError}</Form.Control.Feedback>
-                                    <Form.Text className="text-muted">Formatos PNG, JPG o WebP. Máximo 2 MB.</Form.Text>
-
-                                    {logoBase64 && (
-                                        <div className="mt-3 text-center">
-                                            <p className="small text-muted mb-1">Logo de la PyME:</p>
-                                            <img src={logoBase64} alt="Logo de la PyME" style={{ maxHeight: "150px", maxWidth: "100%", borderRadius: "8px", objectFit: "contain" }} className="border shadow-sm" />
-                                        </div>
-                                    )}
-
-                                    {logoBase64 && (
-                                        <div className="mt-2">
-                                            <Button variant="outline-danger" size="sm" type="button" disabled={guardandoPyme} onClick={() => { setLogoBase64(null); setLogoError(null); }}>
-                                                <i className="bi bi-trash me-1"></i>Quitar logo
-                                            </Button>
-                                        </div>
-                                    )}
-                                </Form.Group>
-
-                                <Row className="g-3">
-                                    <Col md={6}>
-                                        <Form.Group className="text-start" controlId="formTelefonoPyme">
-                                            <Form.Label className="p-1 fw-bold">Teléfono</Form.Label>
-                                            <Form.Control type="tel" maxLength={30} value={telefonoPyme} onChange={(e) => setTelefonoPyme(e.target.value)} />
+            <AppTabs defaultActiveKey="parametros" id="secciones-configuracion" className="mb-3">
+                <Tab eventKey="parametros" title="Parámetros generales">
+                    <Card className="shadow-sm border-0 rounded-3 mb-4 text-start">
+                        <Card.Body className="p-4">
+                            <Form onSubmit={handleSubmit} data-tour="form-configuracion">
+                                <h6 className="detalle-seccion-titulo">Parámetros generales</h6>
+                                <Row className="g-3 mb-3">
+                                    <Dato etiqueta="Alerta de vencimientos de personal (días antes)" md={4}>
+                                        <Form.Group controlId="formDiasAntelacion" data-tour="antelacion-personal">
+                                            <Form.Label className="visually-hidden">Antelación de alerta de vencimientos de personal en días</Form.Label>
+                                            <Form.Control required type="number" min={0} value={diasAntelacion} onChange={(e) => setDiasAntelacion(Number(e.target.value))} />
+                                            <Form.Text className="text-muted">Con cuántos días de anticipación se avisa que un vencimiento de personal está por vencer.</Form.Text>
                                         </Form.Group>
-                                    </Col>
-                                    <Col md={6}>
-                                        <Form.Group className="text-start" controlId="formEmailPyme">
-                                            <Form.Label className="p-1 fw-bold">Correo electrónico</Form.Label>
-                                            <Form.Control type="email" maxLength={150} value={emailPyme} onChange={(e) => setEmailPyme(e.target.value)} />
+                                    </Dato>
+                                    <Dato etiqueta="Alerta de vencimientos de elementos de limpieza (días antes)" md={4}>
+                                        <Form.Group controlId="formDiasAntelacionElementos" data-tour="antelacion-elementos">
+                                            <Form.Label className="visually-hidden">Antelación de alerta de vencimientos de elementos en días</Form.Label>
+                                            <Form.Control required type="number" min={0} value={diasAntelacionElementos} onChange={(e) => setDiasAntelacionElementos(Number(e.target.value))} />
+                                            <Form.Text className="text-muted">Con cuántos días de anticipación se avisa que un elemento está por vencer.</Form.Text>
                                         </Form.Group>
-                                    </Col>
+                                    </Dato>
+                                    <Dato etiqueta="Hora de generación de checklists" md={4}>
+                                        <Form.Group controlId="formHoraGeneracion" data-tour="hora-generacion-checklists">
+                                            <Form.Label className="visually-hidden">Hora de generación de checklists</Form.Label>
+                                            <Form.Control required type="time" value={horaGeneracion} onChange={(e) => setHoraGeneracion(e.target.value)} />
+                                            <Form.Text className="text-muted">Hora en la que se generan las tareas pendientes del checklist diario.</Form.Text>
+                                        </Form.Group>
+                                    </Dato>
                                 </Row>
-
-                                <Form.Group className="my-3 text-start" controlId="formDireccionPyme">
-                                    <Form.Label className="p-1 fw-bold">Dirección</Form.Label>
-                                    <Form.Control maxLength={200} value={direccionPyme} onChange={(e) => setDireccionPyme(e.target.value)} />
-                                </Form.Group>
-
-                                <Button variant="primary" type="submit" disabled={guardandoPyme || leyendoLogo || !!logoError}>
-                                    <i className="bi bi-floppy me-1"></i> {guardandoPyme ? "Guardando..." : "Guardar datos de la PyME"}
-                                </Button>
+                                <div className="d-flex justify-content-end">
+                                    <Button variant="primary" type="submit" disabled={guardando}>
+                                        <i className="bi bi-floppy me-1"></i> {guardando ? "Guardando..." : "Guardar cambios"}
+                                    </Button>
+                                </div>
                             </Form>
                         </Card.Body>
                     </Card>
-
-                    <Card className="shadow-sm mb-4">
-                        <Card.Header className="fw-bold">
-                            <i className="bi bi-upc-scan me-2"></i>Configuración de códigos de barras
-                        </Card.Header>
-                        <Card.Body>
+                </Tab>
+                <Tab eventKey="pyme" title="Datos de la PyME">
+                    <Card className="shadow-sm border-0 rounded-3 mb-4 text-start">
+                        <Card.Body className="p-4">
+                            <Form onSubmit={handleSubmitPyme}>
+                                <h6 className="detalle-seccion-titulo">Datos de la PyME</h6>
+                                <Row className="g-3 mb-3">
+                                    <Dato etiqueta="Logo" md={4}>
+                                        <div className="d-flex flex-column align-items-center gap-2">
+                                            {logoBase64 ? (
+                                                <img
+                                                    src={logoBase64}
+                                                    alt="Logo de la PyME"
+                                                    style={{ maxHeight: "120px", maxWidth: "100%", borderRadius: "8px", objectFit: "contain" }}
+                                                    className="border shadow-sm bg-white p-1"
+                                                />
+                                            ) : (
+                                                <div
+                                                    className="d-flex align-items-center justify-content-center border rounded text-muted bg-light w-100"
+                                                    style={{ height: "120px" }}
+                                                >
+                                                    <i className="bi bi-image fs-1"></i>
+                                                </div>
+                                            )}
+                                            <Form.Group controlId="formLogoPyme" className="w-100">
+                                                <Form.Label className="visually-hidden">Logo de la PyME</Form.Label>
+                                                <Form.Control
+                                                    type="file"
+                                                    size="sm"
+                                                    accept="image/png,image/jpeg,image/webp"
+                                                    onChange={handleLogoChange}
+                                                    isInvalid={!!logoError}
+                                                />
+                                                <Form.Control.Feedback type="invalid">{logoError}</Form.Control.Feedback>
+                                                <Form.Text className="text-muted">PNG, JPG o WebP. Máximo 2 MB.</Form.Text>
+                                            </Form.Group>
+                                            {logoBase64 && (
+                                                <Button
+                                                    variant="outline-danger"
+                                                    size="sm"
+                                                    type="button"
+                                                    disabled={guardandoPyme}
+                                                    onClick={() => { setLogoBase64(null); setLogoError(null); }}
+                                                >
+                                                    <i className="bi bi-trash me-1"></i>Quitar logo
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </Dato>
+                                    <Col md={8}>
+                                        <Row className="g-3">
+                                            <Dato etiqueta="Nombre de la PyME (*)">
+                                                <Form.Group controlId="formNombrePyme">
+                                                    <Form.Label className="visually-hidden">Nombre de la PyME</Form.Label>
+                                                    <Form.Control required maxLength={100} value={nombrePyme} onChange={(e) => setNombrePyme(e.target.value)} />
+                                                </Form.Group>
+                                            </Dato>
+                                            <Dato etiqueta="Teléfono" md={6}>
+                                                <Form.Group controlId="formTelefonoPyme">
+                                                    <Form.Label className="visually-hidden">Teléfono</Form.Label>
+                                                    <Form.Control type="tel" maxLength={30} value={telefonoPyme} onChange={(e) => setTelefonoPyme(e.target.value)} />
+                                                </Form.Group>
+                                            </Dato>
+                                            <Dato etiqueta="Correo electrónico" md={6}>
+                                                <Form.Group controlId="formEmailPyme">
+                                                    <Form.Label className="visually-hidden">Correo electrónico</Form.Label>
+                                                    <Form.Control type="email" maxLength={150} value={emailPyme} onChange={(e) => setEmailPyme(e.target.value)} />
+                                                </Form.Group>
+                                            </Dato>
+                                            <Dato etiqueta="Dirección">
+                                                <Form.Group controlId="formDireccionPyme">
+                                                    <Form.Label className="visually-hidden">Dirección</Form.Label>
+                                                    <Form.Control maxLength={200} value={direccionPyme} onChange={(e) => setDireccionPyme(e.target.value)} />
+                                                </Form.Group>
+                                            </Dato>
+                                        </Row>
+                                    </Col>
+                                </Row>
+                                <div className="d-flex justify-content-end">
+                                    <Button variant="primary" type="submit" disabled={guardandoPyme || leyendoLogo || !!logoError}>
+                                        <i className="bi bi-floppy me-1"></i> {guardandoPyme ? "Guardando..." : "Guardar datos de la PyME"}
+                                    </Button>
+                                </div>
+                            </Form>
+                        </Card.Body>
+                    </Card>
+                </Tab>
+                <Tab eventKey="codigos" title="Códigos de barras">
+                    <Card className="shadow-sm border-0 rounded-3 mb-4 text-start">
+                        <Card.Body className="p-4">
                             <Form onSubmit={handleSubmitPrefijos}>
-                                <Row className="g-3">
-                                    <Col md={6}>
-                                        <Form.Group className="mb-3 text-start" controlId="formPrefijoGs1">
-                                            <Form.Label className="p-1 fw-bold">Prefijo GS1 *</Form.Label>
+                                <h6 className="detalle-seccion-titulo">Códigos de barras</h6>
+                                <Row className="g-3 mb-2">
+                                    <Dato etiqueta="Prefijo GS1 (*)" md={6}>
+                                        <Form.Group controlId="formPrefijoGs1">
+                                            <Form.Label className="visually-hidden">Prefijo GS1</Form.Label>
                                             <Form.Control required type="text" inputMode="numeric" maxLength={3} value={prefijoGs1} onChange={(e) => setPrefijoGs1(e.target.value.replace(/\D/g, ""))} />
                                             <Form.Text className="text-muted">Por defecto, 779 (GS1 Argentina).</Form.Text>
                                         </Form.Group>
-                                    </Col>
-                                    <Col md={6}>
-                                        <Form.Group className="mb-3 text-start" controlId="formPrefijoEmpresa">
-                                            <Form.Label className="p-1 fw-bold">Prefijo de empresa</Form.Label>
+                                    </Dato>
+                                    <Dato etiqueta="Prefijo de empresa" md={6}>
+                                        <Form.Group controlId="formPrefijoEmpresa">
+                                            <Form.Label className="visually-hidden">Prefijo de empresa</Form.Label>
                                             <Form.Control type="text" inputMode="numeric" maxLength={4} placeholder="Ej: 1234" value={prefijoEmpresa} onChange={(e) => setPrefijoEmpresa(e.target.value.replace(/\D/g, ""))} />
                                             <Form.Text className="text-muted">Dejar vacío para no generar códigos nuevos.</Form.Text>
                                         </Form.Group>
-                                    </Col>
+                                    </Dato>
                                 </Row>
-
-                                <Form.Text className="text-muted d-block mb-3">Los códigos generados son demostrativos hasta disponer de un prefijo oficial asignado por GS1. Modificar los prefijos no cambia los códigos ya guardados.</Form.Text>
-
-                                <Button variant="primary" type="submit" disabled={guardandoPrefijos}>
-                                    <i className="bi bi-floppy me-1"></i> {guardandoPrefijos ? "Guardando..." : "Guardar prefijos"}
-                                </Button>
-                            </Form>
-                        </Card.Body>
-                    </Card>
-
-                    <Card className="shadow-sm">
-                        <Card.Header className="fw-bold">
-                            <i className="bi bi-gear me-2"></i>Parámetros generales
-                        </Card.Header>
-                        <Card.Body>
-                            <Form onSubmit={handleSubmit} data-tour="form-configuracion">
-                                <Form.Group className="mb-3 text-start" controlId="formDiasAntelacion" data-tour="antelacion-personal">
-                                    <Form.Label className="p-1 fw-bold">Antelación de alerta de vencimientos de personal (días)</Form.Label>
-                                    <Form.Control required type="number" min={0} value={diasAntelacion} onChange={(e) => setDiasAntelacion(Number(e.target.value))} />
-                                    <Form.Text className="text-muted">Con cuántos días de anticipación se avisa que un vencimiento de personal está por vencer.</Form.Text>
-                                </Form.Group>
-
-                                <Form.Group className="mb-3 text-start" controlId="formDiasAntelacionElementos" data-tour="antelacion-elementos">
-                                    <Form.Label className="p-1 fw-bold">Antelación de alerta de vencimientos de elementos de limpieza (días)</Form.Label>
-                                    <Form.Control required type="number" min={0} value={diasAntelacionElementos} onChange={(e) => setDiasAntelacionElementos(Number(e.target.value))} />
-                                    <Form.Text className="text-muted">Con cuántos días de anticipación se avisa que un vencimiento de elementos está por vencer.</Form.Text>
-                                </Form.Group>
-
-                                <Form.Group className="mb-3 text-start" controlId="formHoraGeneracion" data-tour="hora-generacion-checklists">
-                                    <Form.Label className="p-1 fw-bold">Hora de generación de checklists</Form.Label>
-                                    <Form.Control required type="time" value={horaGeneracion} onChange={(e) => setHoraGeneracion(e.target.value)} />
-                                    <Form.Text className="text-muted">Hora del día en la que se generan automáticamente las tareas pendientes del checklist diario.</Form.Text>
-                                </Form.Group>
-
-                                <Button variant="primary" type="submit" disabled={guardando}>
-                                    <i className="bi bi-floppy me-1"></i> {guardando ? "Guardando..." : "Guardar cambios"}
-                                </Button>
-                            </Form>
-                        </Card.Body>
-                    </Card>
-                    <Card className="shadow-sm mt-4" data-tour="tamanio-tutorial">
-                        <Card.Header className="fw-bold">
-                            <i className="bi bi-fonts me-2"></i>Preferencias del tutorial
-                        </Card.Header>
-                        <Card.Body>
-                            <Form.Group className="text-start" controlId="formTamanioTutorial">
-                                <Form.Label className="p-1 fw-bold">
-                                    Tamaño de letra del tutorial
-                                </Form.Label>
-                                <Form.Select
-                                    value={tamanioTutorial}
-                                    onChange={(e) => cambiarTamanioTutorial(Number(e.target.value))}
-                                >
-                                    <option value={14}>Chico</option>
-                                    <option value={16}>Normal</option>
-                                    <option value={18}>Grande</option>
-                                    <option value={22}>Muy grande</option>
-                                </Form.Select>
-                                <Form.Text className="text-muted">
-                                    Se aplica automaticamente y se guarda solo en este navegador.
+                                <Form.Text className="text-muted d-block mb-3">
+                                    Los códigos generados son demostrativos hasta disponer de un prefijo oficial asignado por GS1.
+                                    Modificar los prefijos no cambia los códigos ya guardados.
                                 </Form.Text>
-                            </Form.Group>
+                                <div className="d-flex justify-content-end">
+                                    <Button variant="primary" type="submit" disabled={guardandoPrefijos}>
+                                        <i className="bi bi-floppy me-1"></i> {guardandoPrefijos ? "Guardando..." : "Guardar prefijos"}
+                                    </Button>
+                                </div>
+                            </Form>
                         </Card.Body>
                     </Card>
-                </Col>
-            </Row>
+                </Tab>
+                <Tab eventKey="preferencias" title="Preferencias">
+                    <Card className="shadow-sm border-0 rounded-3 mb-4 text-start" data-tour="tamanio-tutorial">
+                        <Card.Body className="p-4">
+                            <h6 className="detalle-seccion-titulo">Preferencias del tutorial</h6>
+                            <Row className="g-3">
+                                <Dato etiqueta="Tamaño de letra del tutorial" md={6} lg={4}>
+                                    <Form.Group controlId="formTamanioTutorial">
+                                        <Form.Label className="visually-hidden">Tamaño de letra del tutorial</Form.Label>
+                                        <Form.Select
+                                            value={tamanioTutorial}
+                                            onChange={(e) => cambiarTamanioTutorial(Number(e.target.value))}
+                                        >
+                                            <option value={14}>Chico</option>
+                                            <option value={16}>Normal</option>
+                                            <option value={18}>Grande</option>
+                                            <option value={22}>Muy grande</option>
+                                        </Form.Select>
+                                        <Form.Text className="text-muted">
+                                            Se aplica automáticamente y se guarda solo en este navegador.
+                                        </Form.Text>
+                                    </Form.Group>
+                                </Dato>
+                            </Row>
+                        </Card.Body>
+                    </Card>
+                </Tab>
+            </AppTabs>
         </Container>
     );
 }

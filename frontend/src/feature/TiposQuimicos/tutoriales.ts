@@ -39,14 +39,6 @@ export const tutorialesTiposQuimicos: Tutorial[] = [
                     side: 'left',
                 },
             },
-            {
-                element: t('btn-ver-tipo-quimico'),
-                popover: {
-                    title: 'Ver',
-                    description: 'Abre el detalle del tipo químico.',
-                    side: 'left',
-                },
-            },
         ],
     },
 

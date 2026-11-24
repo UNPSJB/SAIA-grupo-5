@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Container, Row, Col, Card, Button, Alert, Spinner, Table, Badge } from 'react-bootstrap';
+import { Container, Row, Card, Button, Alert, Spinner, Table, Badge, Tab } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
 import { mutate } from 'swr';
 import { useApi, useAuth } from '../../../hooks';
@@ -14,6 +14,9 @@ import { DeleteInsumoLoteModal } from '../../InsumosLote/components/DeleteInsumo
 import { ActionButton } from '../../../components/ActionButton';
 import { TarjetaTrazabilidadLote } from '../../LotesProduccion/components/TarjetaTrazabilidadLote';
 import { ListaIncidentesVinculados } from '../../Incidentes/components/ListaIncidentesVinculados';
+import { AppTabs } from '../../../components/AppTabs';
+import { Dato } from '../../../components/Dato';
+import { EstadoBadge, type TonoEstado } from '../../../components/EstadoBadge';
 import '../../LotesProduccion/components/TarjetaTrazabilidadLote.css';
 
 const PASOS_FIJOS = ["Llegada", "Desempaque", "Acomodado"];
@@ -25,10 +28,10 @@ const INDICE_ESTADO: Record<EstadoLoteProveedor, number> = {
     acomodado: 2,
 };
 
-const ESTILOS_ETAPA: Record<EstadoLoteProveedor, { label: string; bg: string; color: string }> = {
-    llegada: { label: "Llegada", bg: "#e0f2fe", color: "#0369a1" },
-    desempaque: { label: "Desempaque", bg: "#fef3c7", color: "#92400e" },
-    acomodado: { label: "Acomodado", bg: "#dcfce7", color: "#166534" },
+const ETAPA: Record<EstadoLoteProveedor, { label: string; tono: TonoEstado }> = {
+    llegada: { label: "Llegada", tono: "info" },
+    desempaque: { label: "Desempaque", tono: "warning" },
+    acomodado: { label: "Acomodado", tono: "success" },
 };
 
 export function VerLoteProveedorPage() {
@@ -55,7 +58,7 @@ export function VerLoteProveedorPage() {
 
     const pasoActual = INDICE_ESTADO[lote.estado] ?? 0;
     const esImagen = lote.archivo_adjunto?.startsWith('data:image/');
-    const confEtapa = ESTILOS_ETAPA[lote.estado] || { label: lote.estado, bg: '#f1f5f9', color: '#475569' };
+    const confEtapa = ETAPA[lote.estado] ?? { label: lote.estado, tono: 'secondary' as TonoEstado };
 
     const totalInsumosDisponibles = lote.pedido?.items
         ? lote.pedido.items.length
@@ -101,242 +104,218 @@ export function VerLoteProveedorPage() {
                 subtitle={`Proveedor: ${lote.proveedor?.nombre || 'N/A'}`} 
             />
 
-            <Card className="shadow-sm border-0 rounded-3 mb-4 text-start">
-                <Card.Body className="p-4">
-                    <Row className="mb-3 border-bottom pb-3 align-items-center">
-                        <Col sm={4} className="fw-bold text-secondary">Proveedor</Col>
-                        <Col sm={8}>{lote.proveedor?.nombre} (CUIT: {lote.proveedor?.cuit})</Col>
-                    </Row>
-
-                    <Row className="mb-3 border-bottom pb-3 align-items-center">
-                        <Col sm={4} className="fw-bold text-secondary">N° de Remito</Col>
-                        <Col sm={8} className="fw-bold">{lote.numero_remito || <span className="text-muted fst-italic">Sin remito</span>}</Col>
-                    </Row>
-
-                    <Row className="mb-3 border-bottom pb-3 align-items-center">
-                        <Col sm={4} className="fw-bold text-secondary">Pedido Asociado</Col>
-                        <Col sm={8}>
-                            {lote.pedido ? (
-                                <Button
-                                    variant="link"
-                                    className="p-0 fw-bold text-decoration-none"
-                                    onClick={() => navigate(`/pedidos-proveedor/${lote.pedido?.id}`)}
-                                >
-                                    <i className="bi bi-clipboard-check me-1"></i>
-                                    Pedido #{lote.pedido.id} ({lote.pedido.fecha_pedido.split("-").reverse().join("/")})
-                                </Button>
-                            ) : (
-                                <span className="text-muted fst-italic">Recepción directa (sin pedido asociado)</span>
-                            )}
-                        </Col>
-                    </Row>
-
-                    <Row className="mb-3 border-bottom pb-3 align-items-center">
-                        <Col sm={4} className="fw-bold text-secondary">Fecha de Recepcion</Col>
-                        <Col sm={8}>{lote.fecha_recepcion.split("-").reverse().join("/")}</Col>
-                    </Row>
-
-                    <Row className="mb-3 border-bottom pb-3 align-items-center">
-                        <Col sm={4} className="fw-bold text-secondary">Etapa Actual</Col>
-                        <Col sm={8}>
-                            <div
-                                style={{
-                                    padding: '4px 14px',
-                                    borderRadius: '16px',
-                                    background: confEtapa.bg,
-                                    color: confEtapa.color,
-                                    fontWeight: 700,
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    fontSize: '0.85rem'
-                                }}
-                            >
-                                {confEtapa.label}
-                            </div>
-                        </Col>
-                    </Row>
-
-                    <Row className="mb-3 border-bottom pb-3 align-items-center">
-                        <Col sm={4} className="fw-bold text-secondary">Registrado por</Col>
-                        <Col sm={8}>
-                            {lote.registrado_por
-                                ? `${lote.registrado_por.nombre} ${lote.registrado_por.apellido}`
-                                : 'Sistema'}
-                        </Col>
-                    </Row>
-
-                    {lote.archivo_adjunto && (
-                        <Row className="align-items-center pt-2">
-                            <Col sm={4} className="fw-bold text-secondary">Comprobante de Remito</Col>
-                            <Col sm={8}>
-                                {esImagen ? (
-                                    <div>
-                                        <img
-                                            src={lote.archivo_adjunto}
-                                            alt="Remito Adjunto"
-                                            style={{ maxHeight: 180, borderRadius: '8px', objectFit: 'contain' }}
-                                            className="border shadow-sm p-1 bg-white"
-                                        />
-                                    </div>
-                                ) : (
-                                    <div className="p-2 px-3 border rounded bg-white d-inline-flex align-items-center gap-2 shadow-sm">
-                                        <i className="bi bi-file-earmark-pdf-fill text-danger fs-3"></i>
-                                        <span className="fw-semibold small">Remito_Recepcion.pdf</span>
-                                        <a
-                                            href={lote.archivo_adjunto}
-                                            download={`Remito_${lote.numero_remito || lote.id}.pdf`}
-                                            className="btn btn-outline-success btn-sm ms-2 d-inline-flex align-items-center gap-1"
+            <AppTabs defaultActiveKey="general" id="secciones-recepcion" className="mb-3" mountOnEnter>
+                <Tab eventKey="general" title="Información general">
+                    <Card className="shadow-sm border-0 rounded-3 mb-4 text-start">
+                        <Card.Body className="p-4">
+                            <h6 className="detalle-seccion-titulo">Información de la recepción</h6>
+                            <Row className="g-3">
+                                <Dato etiqueta="Proveedor" md={6} lg={4}>
+                                    <span className="fw-semibold">{lote.proveedor?.nombre ?? 'N/A'}</span>
+                                    {lote.proveedor?.cuit && <div className="text-muted small">CUIT: {lote.proveedor.cuit}</div>}
+                                </Dato>
+                                <Dato etiqueta="N° de Remito" md={6} lg={4}>
+                                    {lote.numero_remito
+                                        ? <span className="fw-bold">{lote.numero_remito}</span>
+                                        : <span className="text-muted fst-italic">Sin remito</span>}
+                                </Dato>
+                                <Dato etiqueta="Pedido Asociado" md={6} lg={4}>
+                                    {lote.pedido ? (
+                                        <Button
+                                            variant="link"
+                                            className="p-0 fw-bold text-decoration-none text-start"
+                                            onClick={() => navigate(`/pedidos-proveedor/${lote.pedido?.id}`)}
                                         >
-                                            <i className="bi bi-download"></i> Ver / Descargar
-                                        </a>
-                                    </div>
-                                )}
-                            </Col>
-                        </Row>
-                    )}
-                </Card.Body>
-            </Card>
-
-            <Card className="shadow-sm border-0 rounded-3 mb-4 text-start">
-                <Card.Header className="bg-white p-4 border-bottom d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5 className="fw-bold mb-1">Insumos Recibidos en la Recepcion</h5>
-                        <p className="text-muted small mb-0">Detalle de mercaderia física ingresada con este remito</p>
-                    </div>
-
-                    {currentUser?.operar && lote.activo && lote.estado === 'desempaque' && (
-                        <Button 
-                            variant="primary" 
-                            size="sm"
-                            disabled={todosInsumosRegistrados}
-                            onClick={() => setModalAgregarInsumo(true)}
-                        >
-                            <i className="bi bi-plus-circle me-1"></i>
-                            {todosInsumosRegistrados ? 'Todos los insumos registrados' : 'Registrar Insumo'}
-                        </Button>
-                    )}
-                </Card.Header>
-                <Card.Body className="p-0">
-                    {cargandoInsumos ? (
-                        <div className="text-muted d-flex align-items-center gap-2 p-4">
-                            <Spinner animation="border" size="sm" /> Cargando insumos...
-                        </div>
-                    ) : !insumosLote || insumosLote.length === 0 ? (
-                        <p className="text-muted small p-4 mb-0">No hay insumos registrados en esta recepcion todavia.</p>
-                    ) : (
-                        <div className={insumosLote.length > MAX_INSUMOS_SIN_SCROLL
-                            ? 'tabla-trazabilidad-scroll tabla-insumos-recibidos-scroll'
-                            : 'table-responsive'}>
-                            <Table hover className="mb-0 align-middle">
-                                <thead className="table-light">
-                                    <tr>
-                                        <th>Insumo</th>
-                                        <th>N° Lote</th>
-                                        <th>Marca</th>
-                                        <th>Recibido</th>
-                                        <th>Restante</th>
-                                        <th>Vencimiento</th>
-                                        <th>Mín. Alerta</th>
-                                        <th>Costo Unit.</th>
-                                        {currentUser?.operar && lote.activo && lote.estado === 'desempaque' && (
-                                            <th className="text-end pe-4">Acciones</th>
+                                            <i className="bi bi-clipboard-check me-1"></i>
+                                            Pedido #{lote.pedido.id} ({lote.pedido.fecha_pedido.split("-").reverse().join("/")})
+                                        </Button>
+                                    ) : (
+                                        <span className="text-muted fst-italic">Recepción directa (sin pedido asociado)</span>
+                                    )}
+                                </Dato>
+                                <Dato etiqueta="Fecha de Recepción" md={6} lg={4}>
+                                    {lote.fecha_recepcion.split("-").reverse().join("/")}
+                                </Dato>
+                                <Dato etiqueta="Etapa Actual" md={6} lg={4}>
+                                    <EstadoBadge tono={confEtapa.tono}>{confEtapa.label}</EstadoBadge>
+                                </Dato>
+                                <Dato etiqueta="Registrado por" md={6} lg={4}>
+                                    {lote.registrado_por
+                                        ? `${lote.registrado_por.nombre} ${lote.registrado_por.apellido}`
+                                        : 'Sistema'}
+                                </Dato>
+                                {lote.archivo_adjunto && (
+                                    <Dato etiqueta="Comprobante de Remito">
+                                        {esImagen ? (
+                                            <img
+                                                src={lote.archivo_adjunto}
+                                                alt="Remito Adjunto"
+                                                style={{ maxHeight: 180, maxWidth: '100%', borderRadius: '8px', objectFit: 'contain' }}
+                                                className="border shadow-sm p-1 bg-white"
+                                            />
+                                        ) : (
+                                            <div className="d-flex flex-wrap align-items-center gap-2">
+                                                <i className="bi bi-file-earmark-pdf-fill text-danger fs-3"></i>
+                                                <span className="fw-semibold small">Remito_Recepcion.pdf</span>
+                                                <a
+                                                    href={lote.archivo_adjunto}
+                                                    download={`Remito_${lote.numero_remito || lote.id}.pdf`}
+                                                    className="btn btn-outline-success btn-sm d-inline-flex align-items-center gap-1"
+                                                >
+                                                    <i className="bi bi-download"></i> Ver / Descargar
+                                                </a>
+                                            </div>
                                         )}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {insumosLote.map((item) => (
-                                        <tr key={item.id}>
-                                            <td className="fw-semibold">
-                                                {item.insumo.nombre}{' '}
-                                                <span className="text-muted small">
-                                                    ({item.insumo.unidad_medida?.nombre || 'Unidades'})
-                                                </span>
-                                                {item.cantidad_restante === 0 ? (
-                                                    <Badge bg="secondary" className="ms-2">Agotado</Badge>
-                                                ) : !item.activo ? (
-                                                    <Badge bg="danger" className="ms-2">Inactivo</Badge>
-                                                ) : null}
-                                            </td>
-                                            <td>
-                                                <Badge bg="light" text="dark" className="border">
-                                                    {item.numero_lote}
-                                                </Badge>
-                                            </td>
-                                            <td>{item.marca}</td>
-                                            <td>
-                                                <Badge bg="secondary">{item.cantidad}</Badge>
-                                            </td>
-                                            <td>
-                                                <Badge bg={item.cantidad_restante <= item.minimo_alerta ? 'danger' : 'success'}>
-                                                    {item.cantidad_restante}
-                                                </Badge>
-                                            </td>
-                                            <td>{item.fecha_vencimiento.split("-").reverse().join("/")}</td>
-                                            <td>{item.minimo_alerta}</td>
-                                            <td>
-                                                {item.costo_unitario != null
-                                                    ? `$${Number(item.costo_unitario).toFixed(2)}`
-                                                    : '-'}
-                                            </td>
-                                            {currentUser?.operar && lote.activo && lote.estado === 'desempaque' && (
-                                                <td className="text-end pe-4">
-                                                    <ActionButton
-                                                        variant="outline-danger"
-                                                        size="sm"
-                                                        onClick={() => setInsumoAEliminar(item)}
-                                                        icon="bi bi-trash"
-                                                        tooltip="Eliminar insumo"
-                                                    >
-                                                    </ActionButton>
-                                                </td>
-                                            )}
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </Table>
-                        </div>
-                    )}
-                </Card.Body>
-            </Card>
+                                    </Dato>
+                                )}
+                            </Row>
+                        </Card.Body>
+                    </Card>
 
-            <Card className="shadow-sm border-0 mb-4 rounded-3 text-start">
-                <Card.Body className="p-4">
-                    <h5 className="fw-bold mb-4">Linea de Tiempo de la Recepcion</h5>
+                    <Card className="shadow-sm border-0 rounded-3 mb-4 text-start">
+                        <Card.Header className="bg-white p-4 border-bottom d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 className="fw-bold mb-1">Insumos Recibidos en la Recepcion</h5>
+                                <p className="text-muted small mb-0">Detalle de mercaderia física ingresada con este remito</p>
+                            </div>
 
-                    <Stepper items={itemsHorizontal} pasoActual={pasoActual} direction="horizontal" colorPrimario="#198754" />
+                            {currentUser?.operar && lote.activo && lote.estado === 'desempaque' && (
+                                <Button 
+                                    variant="primary" 
+                                    size="sm"
+                                    disabled={todosInsumosRegistrados}
+                                    onClick={() => setModalAgregarInsumo(true)}
+                                >
+                                    <i className="bi bi-plus-circle me-1"></i>
+                                    {todosInsumosRegistrados ? 'Todos los insumos registrados' : 'Registrar Insumo'}
+                                </Button>
+                            )}
+                        </Card.Header>
+                        <Card.Body className="p-0">
+                            {cargandoInsumos ? (
+                                <div className="text-muted d-flex align-items-center gap-2 p-4">
+                                    <Spinner animation="border" size="sm" /> Cargando insumos...
+                                </div>
+                            ) : !insumosLote || insumosLote.length === 0 ? (
+                                <p className="text-muted small p-4 mb-0">No hay insumos registrados en esta recepcion todavia.</p>
+                            ) : (
+                                <div className={insumosLote.length > MAX_INSUMOS_SIN_SCROLL
+                                    ? 'tabla-trazabilidad-scroll tabla-insumos-recibidos-scroll'
+                                    : 'table-responsive'}>
+                                    <Table hover className="mb-0 align-middle">
+                                        <thead className="table-light">
+                                            <tr>
+                                                <th>Insumo</th>
+                                                <th>N° Lote</th>
+                                                <th>Marca</th>
+                                                <th>Recibido</th>
+                                                <th>Restante</th>
+                                                <th>Vencimiento</th>
+                                                <th>Mín. Alerta</th>
+                                                <th>Costo Unit.</th>
+                                                {currentUser?.operar && lote.activo && lote.estado === 'desempaque' && (
+                                                    <th className="text-end pe-4">Acciones</th>
+                                                )}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {insumosLote.map((item) => (
+                                                <tr key={item.id}>
+                                                    <td className="fw-semibold">
+                                                        {item.insumo.nombre}{' '}
+                                                        <span className="text-muted small">
+                                                            ({item.insumo.unidad_medida?.nombre || 'Unidades'})
+                                                        </span>
+                                                        {item.cantidad_restante === 0 ? (
+                                                            <Badge bg="secondary" className="ms-2">Agotado</Badge>
+                                                        ) : !item.activo ? (
+                                                            <Badge bg="danger" className="ms-2">Inactivo</Badge>
+                                                        ) : null}
+                                                    </td>
+                                                    <td>
+                                                        <Badge bg="light" text="dark" className="border">
+                                                            {item.numero_lote}
+                                                        </Badge>
+                                                    </td>
+                                                    <td>{item.marca}</td>
+                                                    <td>
+                                                        <Badge bg="secondary">{item.cantidad}</Badge>
+                                                    </td>
+                                                    <td>
+                                                        <Badge bg={item.cantidad_restante <= item.minimo_alerta ? 'danger' : 'success'}>
+                                                            {item.cantidad_restante}
+                                                        </Badge>
+                                                    </td>
+                                                    <td>{item.fecha_vencimiento.split("-").reverse().join("/")}</td>
+                                                    <td>{item.minimo_alerta}</td>
+                                                    <td>
+                                                        {item.costo_unitario != null
+                                                            ? `$${Number(item.costo_unitario).toFixed(2)}`
+                                                            : '-'}
+                                                    </td>
+                                                    {currentUser?.operar && lote.activo && lote.estado === 'desempaque' && (
+                                                        <td className="text-end pe-4">
+                                                            <ActionButton
+                                                                variant="outline-danger"
+                                                                size="sm"
+                                                                onClick={() => setInsumoAEliminar(item)}
+                                                                icon="bi bi-trash"
+                                                                tooltip="Eliminar insumo"
+                                                            >
+                                                            </ActionButton>
+                                                        </td>
+                                                    )}
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </Table>
+                                </div>
+                            )}
+                        </Card.Body>
+                    </Card>
 
-                    <hr className="my-4" />
+                    <Card className="shadow-sm border-0 mb-4 rounded-3 text-start">
+                        <Card.Body className="p-4">
+                            <h5 className="fw-bold mb-4">Linea de Tiempo de la Recepcion</h5>
 
-                    <h6 className="fw-bold mb-3">Historial de etapas y observaciones</h6>
-                    {cargandoHistorial ? (
-                        <div className="text-muted d-flex align-items-center gap-2">
-                            <Spinner animation="border" size="sm" /> Cargando historial...
-                        </div>
-                    ) : itemsVertical.length === 0 ? (
-                        <p className="text-muted small mb-0">No hay cambios de estado registrados aun.</p>
-                    ) : (
-                        <Stepper items={itemsVertical} direction="vertical" colorPrimario="#198754" />
-                    )}
-                </Card.Body>
-                <Card.Footer className="bg-light border-top p-3 d-flex justify-content-between align-items-center">
-                    
+                            <Stepper items={itemsHorizontal} pasoActual={pasoActual} direction="horizontal" colorPrimario="#198754" />
 
-                    {currentUser?.operar && lote.activo && lote.estado !== 'acomodado' && (
-                        <Button variant="success" onClick={() => setModalAvanzar(true)}>
-                            <i className="bi bi-arrow-right-circle me-1"></i>
-                            Avanzar a {lote.estado === 'llegada' ? 'Desempaque' : 'Acomodado'}
-                        </Button>
-                    )}
-                </Card.Footer>
-            </Card>
+                            <hr className="my-4" />
 
-            <TarjetaTrazabilidadLote modo="lote_proveedor" entidadId={lote.id} />
+                            <h6 className="fw-bold mb-3">Historial de etapas y observaciones</h6>
+                            {cargandoHistorial ? (
+                                <div className="text-muted d-flex align-items-center gap-2">
+                                    <Spinner animation="border" size="sm" /> Cargando historial...
+                                </div>
+                            ) : itemsVertical.length === 0 ? (
+                                <p className="text-muted small mb-0">No hay cambios de estado registrados aun.</p>
+                            ) : (
+                                <Stepper items={itemsVertical} direction="vertical" colorPrimario="#198754" />
+                            )}
+                        </Card.Body>
+                        {currentUser?.operar && lote.activo && lote.estado !== 'acomodado' && (
+                            <Card.Footer className="bg-light border-top p-3 d-flex justify-content-end align-items-center">
+                                <Button variant="success" onClick={() => setModalAvanzar(true)}>
+                                    <i className="bi bi-arrow-right-circle me-1"></i>
+                                    Avanzar a {lote.estado === 'llegada' ? 'Desempaque' : 'Acomodado'}
+                                </Button>
+                            </Card.Footer>
+                        )}
+                    </Card>
+                </Tab>
+                <Tab eventKey="trazabilidad" title="Trazabilidad">
+                    <TarjetaTrazabilidadLote modo="lote_proveedor" entidadId={lote.id} />
+                </Tab>
+                <Tab eventKey="incidentes" title="Incidentes vinculados">
+                    <ListaIncidentesVinculados loteProveedorId={lote.id} />
+                </Tab>
+            </AppTabs>
 
-            <ListaIncidentesVinculados loteProveedorId={lote.id} />
-
-            <Button variant="outline-secondary" onClick={() => navigate('/recepciones')}>
-                <i className="bi bi-arrow-left me-1"></i>Volver al Listado
-            </Button>
+            <div className="d-flex justify-content-start mb-4">
+                <Button variant="outline-secondary" onClick={() => navigate('/recepciones')}>
+                    <i className="bi bi-arrow-left me-1"></i>Volver al Listado
+                </Button>
+            </div>
 
             <AvanzarEtapaLoteProveedorModal
                 lote={modalAvanzar ? lote : null}
